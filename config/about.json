@@ -1,0 +1,107 @@
+{
+  "handle": "KevinTrinh1227",
+  "displayName": "Kevin Huy Trinh",
+  "roleLine": "Computer Science student focused on building clean, useful software.",
+  "schoolName": "University of Houston",
+
+  "avatarUrl": "/avatar.jpg",
+
+  "cta": {
+    "primary": {
+      "label": "Read more about me",
+      "href": "/about",
+      "external": false
+    },
+    "secondary": {
+      "label": "View my resume",
+      "href": "/resume",
+      "external": true
+    }
+  },
+
+  "followers": { "followers": 506, "following": 26 },
+
+  "profileLinks": [
+    { "type": "school", "label": "University of Houston" },
+    { "type": "location", "label": "Houston, TX" },
+    {
+      "type": "email",
+      "label": "kevintrinh1227@gmail.com",
+      "href": "mailto:kevintrinh1227@gmail.com"
+    },
+    {
+      "type": "linkedin",
+      "label": "in/kevintrinh1227",
+      "href": "https://www.linkedin.com/in/kevintrinh1227"
+    },
+    {
+      "type": "github",
+      "label": "github.com/kevintrinh1227",
+      "href": "https://github.com/kevintrinh1227"
+    }
+  ],
+
+  "readme": {
+    "fileLabel": "README.md",
+    "paragraphs": [
+      "I'm currently an undergraduate student at the University of Houston pursuing a B.S. in Computer Science. Recently, I built a full-stack app used by 100+ students that helps UH students understand their degree progress and get schedule recommendations.",
+      "I'm interested in machine learning, operating systems, and full-stack development, and I care a lot about clean UI and maintainable architecture. Outside of tech, I’m really into desk setups and PCs, and I spend my free time playing chess, thrifting, and gaming."
+    ]
+  },
+
+  "techUsed": [
+    "C++",
+    "Python",
+    "React",
+    "PostgreSQL",
+    "Google Cloud",
+    "Linux Ubuntu",
+    "Git"
+  ],
+
+  "snapshot": {
+    "title": "Developer Snapshot",
+    "cards": [
+      {
+        "title": "Projects & Repositories",
+        "description": "Overall stats of some of my projects & work.",
+        "icon": "FolderGit2",
+        "stats": [
+          { "icon": "Star", "label": "Stars", "value": "109" },
+          { "icon": "GitFork", "label": "Forks", "value": "17" },
+          { "icon": "Activity", "label": "Downloads", "value": "120" }
+        ]
+      },
+      {
+        "title": "GitHub avtivity overview",
+        "description": "Recent activity across my work on GitHub.",
+        "icon": "Github",
+        "stats": [
+          { "icon": "GitCommitHorizontal", "label": "Commits", "value": "985" },
+          { "icon": "FolderGit2", "label": "Repos", "value": "42" },
+          { "icon": "GitPullRequest", "label": "PRs", "value": "12" }
+        ]
+      },
+      {
+        "title": "Open source projects I worked on",
+        "description": "Open-source projects I've contributed to & collaborated on.",
+        "icon": "GitPullRequest",
+        "stats": [
+          { "icon": "GitPullRequest", "label": "PRs", "value": "12" },
+          { "icon": "MessageSquare", "label": "Reviews", "value": "28" },
+          { "icon": "Bug", "label": "Issues", "value": "7" }
+        ]
+      },
+      {
+        "title": "All my Articles and Writing",
+        "description": "Blogs, wiki pages, documentations & learnings I've posted.",
+        "icon": "FileText",
+        "stats": [
+          { "icon": "NotebookPen", "label": "Blogs", "value": "8" },
+          { "icon": "BookOpenText", "label": "Docs", "value": "10" },
+          { "icon": "Folder", "label": "Total", "value": "18" }
+        ]
+      }
+    ]
+  }
+}

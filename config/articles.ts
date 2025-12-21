@@ -1,5 +1,5 @@
 // config/blog.ts
-import raw from "./blog.json";
+import raw from "./articles.json";
 
 export type BlogPlatform = "devto" | "medium";
 

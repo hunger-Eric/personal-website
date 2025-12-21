@@ -1,6 +1,6 @@
 // components/sections/Blog.tsx
 import { ExternalLink } from "lucide-react";
-import { blogPosts } from "../../config/blog";
+import { blogPosts } from "../../config/articles";
 import { siteConfig } from "../../config/siteConfig";
 
 export function BlogSection() {
@@ -33,7 +33,7 @@ export function BlogSection() {
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-md bg-accent px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-accent/90 sm:text-sm"
               >
-                <span>View Dev.to profile</span>
+                <span>View my writing</span>
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
             )}

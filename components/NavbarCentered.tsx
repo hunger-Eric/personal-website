@@ -172,11 +172,7 @@ export function NavbarCentered() {
             </Link>
           </div>
 
-          {/* Center: desktop nav with mega dropdowns */}
-          <nav
-            className="hidden flex-none items-center justify-center sm:flex"
-            onMouseLeave={() => setOpenDropdownId(null)}
-          >
+          <nav className="hidden flex-none items-center justify-center sm:flex">
             <div className="pointer-events-none relative flex items-center justify-center">
               <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-1 text-xs text-muted-foreground shadow-sm md:gap-2 md:px-3 md:py-1.5 md:text-sm">
                 {textLinks.map((item) => {
@@ -210,6 +206,7 @@ export function NavbarCentered() {
                         {/* Centered dropdown, Solvia-style (anchored to outer relative container) */}
                         <div
                           onMouseEnter={() => setOpenDropdownId(item.id)}
+                          onMouseLeave={() => setOpenDropdownId(null)}
                           className={`absolute left-1/2 top-full z-30 mt-2 w-[min(800px,95vw)] -translate-x-1/2 origin-top rounded-2xl border border-white/15 bg-slate-950 p-4 text-xs shadow-2xl shadow-slate-950/60 transition-all duration-150 ease-out md:text-sm ${
                             isOpen
                               ? "pointer-events-auto translate-y-1 opacity-100"
@@ -240,6 +237,7 @@ export function NavbarCentered() {
 
                       <div
                         onMouseEnter={() => setOpenDropdownId(item.id)}
+                        onMouseLeave={() => setOpenDropdownId(null)}
                         className={`absolute left-1/2 top-full z-30 mt-2 w-[min(850px,95vw)] -translate-x-1/2 origin-top rounded-2xl border border-white/15 bg-slate-950 p-4 text-xs shadow-2xl shadow-slate-950/60 transition-all duration-150 ease-out md:text-sm ${
                           isOpen
                             ? "pointer-events-auto translate-y-1 opacity-100"
@@ -301,7 +299,7 @@ export function NavbarCentered() {
                     target={item.external ? "_blank" : undefined}
                     rel={item.external ? "noreferrer" : undefined}
                     onClick={() => setIsOpen(false)}
-                    className="rounded-md px-3 py-2 font-medium transition hover:bg:white/5 hover:text-foreground"
+                    className="rounded-md px-3 py-2 font-medium transition hover:bg-white/5 hover:text-foreground"
                   >
                     {item.label}
                   </a>
@@ -415,7 +413,7 @@ function DesktopDropdownItem({ item }: { item: NavDropdownItemCfg }) {
       href={item.href}
       target={item.external ? "_blank" : undefined}
       rel={item.external ? "noreferrer" : undefined}
-      className="group flex min-h[64px] items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs transition hover:bg-slate-900 md:text-sm"
+      className="group flex min-h-[64px] items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs transition hover:bg-slate-900 md:text-sm"
     >
       {IconComponent && (
         <div className="flex h-10 w-10 flex-none items-center justify-center rounded-md bg-slate-900 text-slate-100 transition-transform duration-150 group-hover:scale-110">
