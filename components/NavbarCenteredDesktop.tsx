@@ -1,7 +1,7 @@
-// components/NavbarCentered.tsx
+// components/NavbarCenteredDesktop.tsx
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -10,7 +10,7 @@ import {
   type NavDropdownItemCfg,
   type NavDropdownFooterCfg,
 } from "../config/siteConfig";
-import { Menu, X } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
 type NavItem = {
@@ -25,8 +25,32 @@ type NavItem = {
 };
 
 export function NavbarCentered() {
-  const [isOpen, setIsOpen] = useState(false); // mobile menu
-  const [openDropdownId, setOpenDropdownId] = useState<string | null>(null); // desktop dropdown
+  const [openDropdownKey, setOpenDropdownKey] = useState<string | null>(null); // desktop dropdown
+  const [scrolled, setScrolled] = useState(false);
+
+  // Desktop dropdown positioning (fixed + centered)
+  const [dropdownTop, setDropdownTop] = useState<number>(56); // will be computed
+  const headerRef = useRef<HTMLElement | null>(null);
+
+  // Hover-intent timer so dropdown doesn’t instantly close when moving pointer
+  const closeTimerRef = useRef<number | null>(null);
+  const scheduleCloseDesktop = (delayMs = 180) => {
+    if (closeTimerRef.current) window.clearTimeout(closeTimerRef.current);
+    closeTimerRef.current = window.setTimeout(() => {
+      setOpenDropdownKey(null);
+      closeTimerRef.current = null;
+    }, delayMs);
+  };
+  const cancelCloseDesktop = () => {
+    if (closeTimerRef.current) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  };
+  const openDesktop = (key: string) => {
+    cancelCloseDesktop();
+    setOpenDropdownKey(key);
+  };
 
   const navCfg = (siteConfig as any).nav as
     | { items?: NavItemCfg[] }
@@ -45,7 +69,11 @@ export function NavbarCentered() {
           const href =
             typeof it.href === "string" ? it.href : id ? `#${id}` : "";
 
-          const external = it.external ?? href.startsWith("http");
+          const external =
+            it.external ??
+            (href.startsWith("http") ||
+              href.startsWith("mailto:") ||
+              href.startsWith("tel:"));
           const isButton = !!it.isButton;
 
           return {
@@ -149,8 +177,50 @@ export function NavbarCentered() {
     return true;
   });
 
+  // Darken background slightly after scrolling
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 6);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const updateTop = () => {
+      const el = headerRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      // tiny breathing room
+      setDropdownTop(Math.round(rect.bottom + 1));
+    };
+
+    updateTop();
+
+    window.addEventListener("resize", updateTop);
+    window.addEventListener("scroll", updateTop, { passive: true });
+
+    return () => {
+      window.removeEventListener("resize", updateTop);
+      window.removeEventListener("scroll", updateTop);
+    };
+  }, []);
+
+  const headerBg = scrolled ? "bg-background/92" : "bg-background/80";
+
   return (
-    <header className="sticky top-0 z-20 border-b border-white/10 bg-background/80 backdrop-blur">
+    <header
+      ref={headerRef as any}
+      className={[
+        // ✅ Desktop-only: hide on mobile (you’ll replace with a separate component later)
+        "hidden sm:block",
+        "sticky top-0 z-[9999] isolate border-b border-white/10",
+        headerBg,
+        "backdrop-blur supports-[backdrop-filter]:backdrop-blur",
+        "transition-colors",
+      ].join(" ")}
+      onMouseLeave={() => scheduleCloseDesktop(180)}
+      onMouseEnter={() => cancelCloseDesktop()}
+    >
       <div className="mx-auto w-full max-w-6xl px-4">
         <div className="flex items-center gap-4 py-4">
           {/* Left: logo + title */}
@@ -158,6 +228,10 @@ export function NavbarCentered() {
             <Link
               href="/"
               className="group flex items-center gap-2 transform-gpu transition hover:scale-[0.97] active:scale-95"
+              onClick={() => {
+                cancelCloseDesktop();
+                setOpenDropdownKey(null);
+              }}
             >
               <Image
                 src="/images/favicon.png"
@@ -172,81 +246,106 @@ export function NavbarCentered() {
             </Link>
           </div>
 
-          <nav className="hidden flex-none items-center justify-center sm:flex">
+          {/* Center: pill nav + mega menus (desktop) */}
+          <nav className="flex flex-none items-center justify-center">
             <div className="pointer-events-none relative flex items-center justify-center">
               <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-1 text-xs text-muted-foreground shadow-sm md:gap-2 md:px-3 md:py-1.5 md:text-sm">
                 {textLinks.map((item) => {
-                  const hasDropdown = item.children && item.children.length > 0;
-                  const isOpen = openDropdownId === item.id;
+                  const hasDropdown = !!(
+                    item.children && item.children.length > 0
+                  );
+                  const itemKey = item.key;
+                  const isDropdownOpen = openDropdownKey === itemKey;
 
-                  // No dropdown at all → also close any open dropdown on hover
                   if (!hasDropdown) {
                     return (
                       <DesktopNavItemSimple
                         key={item.key}
                         item={item}
-                        onHover={() => setOpenDropdownId(null)}
+                        onHover={() => {
+                          cancelCloseDesktop();
+                          setOpenDropdownKey(null);
+                        }}
+                        fontClass="font-semibold"
                       />
                     );
                   }
 
-                  // With dropdown + href (e.g. Projects)
-                  if (item.href) {
-                    return (
-                      <div key={item.key}>
+                  return (
+                    <div
+                      key={item.key}
+                      className="relative"
+                      onMouseEnter={() => openDesktop(itemKey)}
+                      onFocus={() => openDesktop(itemKey)}
+                      // Don’t close instantly on leaving trigger; allow grace for pointer travel
+                      onMouseLeave={() => scheduleCloseDesktop(180)}
+                    >
+                      {item.href ? (
                         <Link
                           href={item.href}
-                          onMouseEnter={() => setOpenDropdownId(item.id)}
-                          onFocus={() => setOpenDropdownId(item.id)}
-                          className="inline-flex items-center rounded-md px-2.5 py-1 font-medium text-muted-foreground transition hover:bg-white/10 hover:text-foreground md:px-3 md:py-1.5"
+                          className={[
+                            "group inline-flex items-center gap-1.5 rounded-md px-2.5 py-1",
+                            "font-semibold text-muted-foreground transition",
+                            "hover:bg-white/10 hover:text-foreground",
+                            "md:px-3 md:py-1.5",
+                          ].join(" ")}
+                          aria-haspopup="menu"
+                          aria-expanded={isDropdownOpen}
                         >
-                          {item.label}
+                          <span>{item.label}</span>
+                          <ChevronDown
+                            className={[
+                              "h-4 w-4 transition-transform duration-200",
+                              isDropdownOpen ? "rotate-180" : "rotate-0",
+                              "group-hover:translate-y-[1px]",
+                            ].join(" ")}
+                          />
                         </Link>
-
-                        {/* Centered dropdown, Solvia-style (anchored to outer relative container) */}
-                        <div
-                          onMouseEnter={() => setOpenDropdownId(item.id)}
-                          onMouseLeave={() => setOpenDropdownId(null)}
-                          className={`absolute left-1/2 top-full z-30 mt-2 w-[min(800px,95vw)] -translate-x-1/2 origin-top rounded-2xl border border-white/15 bg-slate-950 p-4 text-xs shadow-2xl shadow-slate-950/60 transition-all duration-150 ease-out md:text-sm ${
-                            isOpen
-                              ? "pointer-events-auto translate-y-1 opacity-100"
-                              : "pointer-events-none translate-y-0 opacity-0"
-                          }`}
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(e) => e.preventDefault()}
+                          className={[
+                            "group inline-flex items-center gap-1.5 rounded-md px-2.5 py-1",
+                            "font-semibold text-muted-foreground transition",
+                            "hover:bg-white/10 hover:text-foreground",
+                            "md:px-3 md:py-1.5",
+                          ].join(" ")}
+                          aria-haspopup="menu"
+                          aria-expanded={isDropdownOpen}
                         >
-                          {renderMegaMenuFromChildren(
-                            item.children || [],
-                            item.dropdownFooter
-                          )}
-                        </div>
-                      </div>
-                    );
-                  }
+                          <span>{item.label}</span>
+                          <ChevronDown
+                            className={[
+                              "h-4 w-4 transition-transform duration-200",
+                              isDropdownOpen ? "rotate-180" : "rotate-0",
+                              "group-hover:translate-y-[1px]",
+                            ].join(" ")}
+                          />
+                        </button>
+                      )}
 
-                  // With dropdown but NO href
-                  return (
-                    <div key={item.key}>
-                      <button
-                        type="button"
-                        onMouseEnter={() => setOpenDropdownId(item.id)}
-                        onFocus={() => setOpenDropdownId(item.id)}
-                        onClick={(e) => e.preventDefault()}
-                        className="inline-flex items-center rounded-md px-2.5 py-1 font-medium text-muted-foreground transition hover:bg-white/10 hover:text-foreground md:px-3 md:py-1.5"
-                      >
-                        {item.label}
-                      </button>
-
+                      {/* Desktop dropdown: fixed + centered to screen, positioned right under navbar */}
                       <div
-                        onMouseEnter={() => setOpenDropdownId(item.id)}
-                        onMouseLeave={() => setOpenDropdownId(null)}
-                        className={`absolute left-1/2 top-full z-30 mt-2 w-[min(850px,95vw)] -translate-x-1/2 origin-top rounded-2xl border border-white/15 bg-slate-950 p-4 text-xs shadow-2xl shadow-slate-950/60 transition-all duration-150 ease-out md:text-sm ${
-                          isOpen
+                        className={[
+                          "fixed left-1/2 z-30 w-[min(850px,95vw)] -translate-x-1/2 origin-top",
+                          "rounded-2xl border border-white/15 bg-slate-950 p-4 text-xs shadow-2xl shadow-slate-950/60",
+                          "transition-all duration-200 ease-out md:text-sm",
+                          isDropdownOpen
                             ? "pointer-events-auto translate-y-1 opacity-100"
-                            : "pointer-events-none translate-y-0 opacity-0"
-                        }`}
+                            : "pointer-events-none translate-y-0 opacity-0",
+                        ].join(" ")}
+                        style={{ top: dropdownTop }}
+                        onMouseEnter={() => {
+                          cancelCloseDesktop();
+                          setOpenDropdownKey(itemKey);
+                        }}
+                        onMouseLeave={() => scheduleCloseDesktop(180)}
                       >
                         {renderMegaMenuFromChildren(
                           item.children || [],
-                          item.dropdownFooter
+                          item.dropdownFooter,
+                          () => setOpenDropdownKey(null)
                         )}
                       </div>
                     </div>
@@ -257,12 +356,20 @@ export function NavbarCentered() {
           </nav>
 
           {/* Right: CTAs (desktop) */}
-          <div className="hidden flex-1 items-center justify-end gap-2 sm:flex">
+          <div className="flex flex-1 items-center justify-end gap-3">
             <a
               href={contactLink.href}
               target={contactLink.external ? "_blank" : undefined}
               rel={contactLink.external ? "noreferrer" : undefined}
-              className="rounded-lg border border-white/25 px-3.5 py-1.5 text-xs font-medium text-slate-50 underline-offset-2 transition hover:border-accent hover:bg-white/10 hover:text-slate-50 md:text-sm"
+              className={[
+                "text-xs md:text-sm",
+                "font-semibold text-slate-50 underline-offset-4",
+                "transition hover:text-slate-50/90 hover:underline",
+              ].join(" ")}
+              onMouseEnter={() => {
+                cancelCloseDesktop();
+                setOpenDropdownKey(null);
+              }}
             >
               {contactLink.label}
             </a>
@@ -271,87 +378,16 @@ export function NavbarCentered() {
               href={resumeLink.href}
               target={resumeLink.external ? "_blank" : undefined}
               rel={resumeLink.external ? "noreferrer" : undefined}
-              className="rounded-lg border border-accent bg-accent px-3.5 py-1.5 text-xs font-medium text-slate-50 shadow-sm transition-transform transition-colors hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md md:text-sm"
+              className="rounded-md border border-accent bg-accent px-3.5 py-1.5 text-xs font-semibold text-slate-50 shadow-sm transition-transform transition-colors hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md md:text-sm"
+              onMouseEnter={() => {
+                cancelCloseDesktop();
+                setOpenDropdownKey(null);
+              }}
             >
               {resumeLink.label}
             </a>
           </div>
-
-          {/* Mobile toggle (mobile nav stays simple for now) */}
-          <button
-            type="button"
-            className="ml-auto inline-flex items-center justify-center rounded-md border border-white/15 p-1.5 text-muted-foreground hover:border-accent hover:text-foreground sm:hidden"
-            onClick={() => setIsOpen((o) => !o)}
-            aria-label="Toggle navigation menu"
-          >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
         </div>
-
-        {/* Mobile menu (unchanged, simple list + children) */}
-        {isOpen && (
-          <div className="pb-4 sm:hidden">
-            <nav className="flex flex-col gap-1 text-sm text-muted-foreground">
-              {textLinks.map((item) => (
-                <div key={item.key} className="flex flex-col">
-                  <a
-                    href={item.href || undefined}
-                    target={item.external ? "_blank" : undefined}
-                    rel={item.external ? "noreferrer" : undefined}
-                    onClick={() => setIsOpen(false)}
-                    className="rounded-md px-3 py-2 font-medium transition hover:bg-white/5 hover:text-foreground"
-                  >
-                    {item.label}
-                  </a>
-
-                  {item.children && item.children.length > 0 && (
-                    <div className="ml-3 mt-1 flex flex-col gap-0.5 border-l border-white/10 pl-3 text-xs text-muted-foreground">
-                      {item.children.map((child) => (
-                        <a
-                          key={child.id || child.href}
-                          href={child.href}
-                          target={child.external ? "_blank" : undefined}
-                          rel={child.external ? "noreferrer" : undefined}
-                          onClick={() => setIsOpen(false)}
-                          className="rounded-md px-2 py-1 font-medium transition hover:bg-white/5 hover:text-foreground"
-                        >
-                          <span className="block">{child.label}</span>
-                          {child.description && (
-                            <span className="block text-[0.7rem] text-muted-foreground/80">
-                              {child.description}
-                            </span>
-                          )}
-                        </a>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-
-              <div className="mt-1 h-px bg-white/5" />
-
-              <a
-                href={contactLink.href}
-                target={contactLink.external ? "_blank" : undefined}
-                rel={contactLink.external ? "noreferrer" : undefined}
-                onClick={() => setIsOpen(false)}
-                className="mt-1 rounded-lg border border-white/20 px-3 py-2 text-sm font-medium text-slate-50 underline-offset-2 transition hover:border-accent hover:bg-white/10"
-              >
-                {contactLink.label}
-              </a>
-
-              <a
-                href={resumeLink.href}
-                target={resumeLink.external ? "_blank" : undefined}
-                rel={resumeLink.external ? "noreferrer" : undefined}
-                onClick={() => setIsOpen(false)}
-                className="mt-1 rounded-lg border border-accent bg-accent px-3 py-2 text-sm font-medium text-slate-50 shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md"
-              >
-                {resumeLink.label}
-              </a>
-            </nav>
-          </div>
-        )}
       </div>
     </header>
   );
@@ -360,14 +396,19 @@ export function NavbarCentered() {
 function DesktopNavItemSimple({
   item,
   onHover,
+  fontClass = "font-medium",
 }: {
   item: NavItem;
   onHover?: () => void;
+  fontClass?: string;
 }) {
-  const classes =
-    "rounded-md px-2.5 py-1 font-medium text-muted-foreground transition hover:bg-white/10 hover:text-foreground md:px-3 md:py-1.5";
+  const classes = [
+    "rounded-md px-2.5 py-1",
+    fontClass,
+    "text-muted-foreground transition hover:bg-white/10 hover:text-foreground",
+    "md:px-3 md:py-1.5",
+  ].join(" ");
 
-  // no href → do nothing on click (for safety)
   if (!item.href) {
     return (
       <button
@@ -380,6 +421,9 @@ function DesktopNavItemSimple({
       </button>
     );
   }
+
+  const isHash = item.href.startsWith("#");
+  const isInternalRoute = item.href.startsWith("/") && !item.external;
 
   if (item.external) {
     return (
@@ -395,6 +439,22 @@ function DesktopNavItemSimple({
     );
   }
 
+  if (isInternalRoute) {
+    return (
+      <Link href={item.href} className={classes} onMouseEnter={onHover}>
+        {item.label}
+      </Link>
+    );
+  }
+
+  if (isHash) {
+    return (
+      <a href={item.href} className={classes} onMouseEnter={onHover}>
+        {item.label}
+      </a>
+    );
+  }
+
   return (
     <a href={item.href} className={classes} onMouseEnter={onHover}>
       {item.label}
@@ -402,7 +462,13 @@ function DesktopNavItemSimple({
   );
 }
 
-function DesktopDropdownItem({ item }: { item: NavDropdownItemCfg }) {
+function DesktopDropdownItem({
+  item,
+  onNavigate,
+}: {
+  item: NavDropdownItemCfg;
+  onNavigate?: () => void;
+}) {
   const IconComponent =
     item.icon && (LucideIcons as any)[item.icon]
       ? (LucideIcons as any)[item.icon]
@@ -413,6 +479,7 @@ function DesktopDropdownItem({ item }: { item: NavDropdownItemCfg }) {
       href={item.href}
       target={item.external ? "_blank" : undefined}
       rel={item.external ? "noreferrer" : undefined}
+      onClick={onNavigate}
       className="group flex min-h-[64px] items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs transition hover:bg-slate-900 md:text-sm"
     >
       {IconComponent && (
@@ -435,15 +502,10 @@ function DesktopDropdownItem({ item }: { item: NavDropdownItemCfg }) {
   );
 }
 
-/**
- * Build a 3-column mega menu from flat children:
- * - left column = children with column === "left"
- * - right area = 2-column grid with the rest
- * - optional footer (text + link) at bottom
- */
 function renderMegaMenuFromChildren(
   children: NavDropdownItemCfg[],
-  footer?: NavDropdownFooterCfg
+  footer?: NavDropdownFooterCfg,
+  onNavigate?: () => void
 ) {
   if (!children || children.length === 0) return null;
 
@@ -452,28 +514,32 @@ function renderMegaMenuFromChildren(
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Top: left (1/3) + right (2/3) */}
       <div className="flex flex-col gap-3 md:flex-row">
-        {/* Left column */}
         <div className="w-full md:w-1/3 md:border-r md:border-white/10 md:pr-4">
           <div className="flex flex-col gap-2">
             {leftItems.map((item) => (
-              <DesktopDropdownItem key={item.id || item.href} item={item} />
+              <DesktopDropdownItem
+                key={item.id || item.href}
+                item={item}
+                onNavigate={onNavigate}
+              />
             ))}
           </div>
         </div>
 
-        {/* Right: 2-column grid */}
         <div className="w-full md:w-2/3 md:pl-4">
           <div className="grid grid-cols-1 gap-2 md:grid-cols-2 md:gap-2.5">
             {rightItems.map((item) => (
-              <DesktopDropdownItem key={item.id || item.href} item={item} />
+              <DesktopDropdownItem
+                key={item.id || item.href}
+                item={item}
+                onNavigate={onNavigate}
+              />
             ))}
           </div>
         </div>
       </div>
 
-      {/* Footer row (optional) */}
       {footer && (
         <div className="mt-1 flex items-center justify-between gap-3 border-t border-white/10 pt-3 text-xs text-muted-foreground">
           <span className="font-semibold text-foreground">{footer.text}</span>
@@ -481,7 +547,8 @@ function renderMegaMenuFromChildren(
             href={footer.href}
             target="_blank"
             rel="noreferrer"
-            className="font-semibold text-indigo-400 hover:text-indigo-300"
+            onClick={onNavigate}
+            className="font-semibold text-indigo-400 transition hover:text-indigo-300"
           >
             {footer.linkLabel}
           </a>

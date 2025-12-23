@@ -14,7 +14,7 @@ import {
   ChevronUp,
   ChevronLeft,
   ChevronRight,
-  Info,
+  FolderGit2,
 } from "lucide-react";
 import type { ProjectItem } from "../../config/projects";
 
@@ -63,17 +63,61 @@ function getTools(project: ProjectItem) {
   return techs.slice(0, 6);
 }
 
+function fmtDate(d: Date) {
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    year: "numeric",
+  }).format(d);
+}
+
+function parseDateLike(v: unknown): Date | null {
+  if (!v) return null;
+  if (v instanceof Date && !Number.isNaN(v.getTime())) return v;
+  if (typeof v === "number") {
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  if (typeof v === "string") {
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  return null;
+}
+
+/**
+ * Best-effort date range extraction.
+ * Supports optional fields if you ever add them to ProjectItem:
+ * - startDate / endDate
+ * - dateRange (string)
+ * - date (string)
+ */
+function getDateRange(project: ProjectItem): string | null {
+  const p = project as any;
+
+  if (typeof p?.dateRange === "string" && p.dateRange.trim())
+    return p.dateRange;
+  if (typeof p?.date === "string" && p.date.trim()) return p.date;
+
+  const start = parseDateLike(p?.startDate ?? p?.from);
+  const end = parseDateLike(p?.endDate ?? p?.to);
+
+  if (start && end) return `${fmtDate(start)} – ${fmtDate(end)}`;
+  if (start) return fmtDate(start);
+  if (end) return fmtDate(end);
+
+  return null;
+}
+
 type ContentStage = "in" | "out";
 
 /**
  * Split carousel:
- * - Desktop: Image LEFT (60%) sliding track, Content RIGHT (40%) crossfade/swap
+ * - Desktop: CONTENT LEFT (40%), Image RIGHT (60%) sliding track
  * - Mobile: Image ABOVE, Content BELOW (image is large)
- * - Indicators live OUTSIDE the carousel (desktop + mobile)
- * - Top-right controls:
- *    - Mobile: image top-right (prev/next)
- *    - Desktop: content top-right (prev/next)
- * - Mobile: description is expandable (content height grows naturally)
+ * - Indicators live in the LEFT column, but OUTSIDE the centered content block (bottom)
+ * - Controls:
+ *    - Top-right of IMAGE (prev/next)
+ * - Mobile: description hidden by default; toggle "View description"
  * - Auto-advance every 4s; dots are clickable
  */
 export function FeaturedProjectsCarousel({
@@ -108,7 +152,7 @@ export function FeaturedProjectsCarousel({
     return () => mq.removeEventListener?.("change", apply);
   }, []);
 
-  // Pause autoplay on hover/focus
+  // Pause autoplay on hover/focus (section-level)
   const [paused, setPaused] = useState(false);
 
   // Touch swipe (image track)
@@ -122,8 +166,17 @@ export function FeaturedProjectsCarousel({
   const [contentIndex, setContentIndex] = useState(0);
   const [contentStage, setContentStage] = useState<ContentStage>("in");
 
-  // Mobile description expand/collapse
+  // Mobile description toggle (HIDDEN by default)
   const [mobileDescOpen, setMobileDescOpen] = useState(false);
+
+  // Tiny counter bump animation
+  const [counterBump, setCounterBump] = useState(false);
+  useEffect(() => {
+    if (total <= 1) return;
+    setCounterBump(true);
+    const t = window.setTimeout(() => setCounterBump(false), 220);
+    return () => window.clearTimeout(t);
+  }, [realIndex, total]);
 
   // Ensure sane state if slide count changes
   useEffect(() => {
@@ -139,7 +192,7 @@ export function FeaturedProjectsCarousel({
     return () => cancelAnimationFrame(t);
   }, [total]);
 
-  // Reset mobile expand when slide changes
+  // Reset mobile description when slide changes
   useEffect(() => {
     setMobileDescOpen(false);
   }, [contentIndex]);
@@ -296,10 +349,16 @@ export function FeaturedProjectsCarousel({
   const tools = getTools(current);
   const links = (current.links ?? []).slice(0, 4);
   const primary = pickPrimary(current);
+  const primaryHref = primary?.href ?? null;
 
   const openHref = (href?: string | null) => {
     if (!href) return;
     window.open(href, "_blank", "noopener,noreferrer");
+  };
+
+  const openPrimary = () => {
+    if (!primaryHref) return;
+    openHref(primaryHref);
   };
 
   // Indicators reflect REAL slide index
@@ -321,24 +380,36 @@ export function FeaturedProjectsCarousel({
         onTouchEnd={onTouchEnd}
         aria-label="Featured projects carousel"
       >
-        {/* Desktop fixed height; mobile can grow via content expand */}
-        <article className="grid w-full grid-cols-1 md:grid-cols-[3fr_2fr] md:h-[420px]">
-          {/* LEFT: IMAGE TRACK */}
-          <div className="relative overflow-hidden">
+        {/* Desktop fixed height; mobile can grow via content */}
+        <article className="grid w-full grid-cols-1 md:grid-cols-[2fr_3fr] md:h-[420px]">
+          {/* IMAGE (mobile: top) / (desktop: right) */}
+          <div
+            className={[
+              "relative overflow-hidden md:order-2 group/image",
+              primaryHref ? "cursor-pointer" : "",
+            ].join(" ")}
+            role={primaryHref ? "button" : undefined}
+            tabIndex={primaryHref ? 0 : -1}
+            onClick={openPrimary}
+            onKeyDown={(e) => {
+              if (!primaryHref) return;
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openPrimary();
+              }
+            }}
+          >
             <div className="relative h-[260px] w-full sm:h-[320px] md:h-full">
-              {/* Pinned (top-left) */}
-              <div className="pointer-events-none absolute left-5 top-5 z-20 inline-flex items-center gap-2 text-xs font-semibold text-slate-200/85">
-                <Pin className="h-4 w-4 opacity-80" />
-                <span className="uppercase tracking-[0.18em]">Pinned</span>
-              </div>
-
-              {/* MOBILE ONLY: top-right prev/next controls */}
+              {/* TOP-RIGHT: prev/next controls */}
               {total > 1 ? (
-                <div className="absolute right-5 top-5 z-30 flex items-center gap-0.5 md:hidden">
+                <div className="absolute right-5 top-5 z-30 flex items-center gap-1">
                   <button
                     type="button"
-                    onClick={goPrev}
-                    className="inline-flex items-center justify-center p-1 text-slate-200/55 opacity-45 drop-shadow-[0_3px_10px_rgba(0,0,0,0.55)] transition-all duration-200 hover:text-slate-50 hover:opacity-100 hover:scale-[1.06] group-hover:opacity-100"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goPrev();
+                    }}
+                    className="inline-flex items-center justify-center rounded-md bg-slate-950/45 p-2 text-slate-50/90 shadow-sm backdrop-blur-md transition-all duration-200 hover:bg-slate-950/60 hover:scale-[1.06] active:scale-[0.99]"
                     aria-label="Previous project"
                     title="Previous"
                   >
@@ -347,8 +418,11 @@ export function FeaturedProjectsCarousel({
 
                   <button
                     type="button"
-                    onClick={goNext}
-                    className="inline-flex items-center justify-center p-1 text-slate-200/55 opacity-45 drop-shadow-[0_3px_10px_rgba(0,0,0,0.55)] transition-all duration-200 hover:text-slate-50 hover:opacity-100 hover:scale-[1.06] group-hover:opacity-100"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goNext();
+                    }}
+                    className="inline-flex items-center justify-center rounded-md bg-slate-950/45 p-2 text-slate-50/90 shadow-sm backdrop-blur-md transition-all duration-200 hover:bg-slate-950/60 hover:scale-[1.06] active:scale-[0.99]"
                     aria-label="Next project"
                     title="Next"
                   >
@@ -370,7 +444,6 @@ export function FeaturedProjectsCarousel({
               >
                 {extended.map((project, idx) => {
                   const image = project.imageUrl;
-
                   return (
                     <div
                       key={`${project.id}-${idx}`}
@@ -388,199 +461,229 @@ export function FeaturedProjectsCarousel({
                       ) : (
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/35 via-violet-500/20 to-sky-500/20" />
                       )}
-
-                      {/* Base overlay + bottom fade */}
-                      <div className="pointer-events-none absolute inset-0 bg-slate-950/20" />
-                      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/15 to-transparent" />
-
-                      {/* Desktop side fade to match content bg; fades away on hover */}
-                      <div className="pointer-events-none absolute inset-0 hidden bg-gradient-to-r from-transparent via-transparent to-slate-950/70 opacity-100 transition-opacity duration-300 group-hover:opacity-0 md:block" />
                     </div>
                   );
                 })}
               </div>
+
+              {/* STABLE overlays ABOVE the moving track (fixes fade disappearing during slide) */}
+              <div className="pointer-events-none absolute inset-0">
+                {/* Base overlay */}
+                <div className="absolute inset-0 bg-slate-950/20" />
+
+                {/* Mobile: bottom->up fade */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-slate-950/20 to-transparent md:hidden" />
+
+                {/* Desktop: bottom fade */}
+                <div className="absolute inset-0 hidden bg-gradient-to-t from-slate-950/70 via-slate-950/15 to-transparent md:block" />
+
+                {/* Desktop: side fade (tight + smoother), fades away ONLY on hover of image column */}
+                <div
+                  className={[
+                    "absolute inset-0 hidden opacity-100 transition-opacity duration-300 md:block",
+                    // smoother than before, less harsh at the edge
+                    "bg-[linear-gradient(to_left,transparent_0%,transparent_80%,rgba(255,255,255,0.04)_92%,rgba(255,255,255,0.06)_100%)]",
+                    "group-hover/image:opacity-0",
+                  ].join(" ")}
+                />
+
+                {/* Desktop hover label (only image hover) */}
+                <div className="absolute inset-0 hidden items-center justify-center md:flex">
+                  <div
+                    className={[
+                      "inline-flex items-center gap-2",
+                      // subtle readable backing
+                      "px-3 py-2 rounded-lg",
+                      "bg-slate-950/18 backdrop-blur-[2px]",
+                      "opacity-0 translate-y-1 transition-all duration-300 ease-out",
+                      "group-hover/image:opacity-100 group-hover/image:translate-y-0",
+                    ].join(" ")}
+                  >
+                    <span className="text-lg font-semibold text-slate-50 drop-shadow-[0_12px_26px_rgba(0,0,0,0.92)] group-hover/image:underline">
+                      View Project
+                    </span>
+                    <ExternalLink className="h-5 w-5 text-slate-50/95 drop-shadow-[0_12px_26px_rgba(0,0,0,0.92)]" />
+                  </div>
+                </div>
+
+                {/* Desktop bottom-right date (for CURRENT slide only) */}
+                {(() => {
+                  const dateRange = getDateRange(current);
+                  if (!dateRange) return null;
+                  return (
+                    <div className="absolute bottom-4 right-5 z-20 hidden md:block">
+                      <span className="text-[11px] font-medium text-slate-200/55 drop-shadow-[0_10px_24px_rgba(0,0,0,0.85)]">
+                        {dateRange}
+                      </span>
+                    </div>
+                  );
+                })()}
+              </div>
             </div>
           </div>
 
-          {/* RIGHT: CONTENT */}
-          <div className="relative flex items-center justify-center p-5 sm:p-7">
-            {/* DESKTOP ONLY: top-right prev/next controls */}
-            {total > 1 ? (
-              <div className="absolute right-5 top-5 z-30 hidden items-center gap-0.5 md:flex">
-                <button
-                  type="button"
-                  onClick={goPrev}
-                  className="inline-flex items-center justify-center p-1 text-slate-200/55 opacity-40 drop-shadow-[0_3px_10px_rgba(0,0,0,0.35)] transition-all duration-200 hover:text-slate-50 hover:opacity-100 hover:scale-[1.06] group-hover:opacity-100"
-                  aria-label="Previous project"
-                  title="Previous"
-                >
-                  <ChevronLeft className="h-4 w-4" strokeWidth={2.6} />
-                </button>
+          {/* CONTENT (mobile: bottom) / (desktop: left) */}
+          <div className="relative bg-white/5 md:order-1 md:h-full">
+            {/* Desktop top-left pinned label + fraction */}
+            <div className="pointer-events-none absolute left-5 top-5 z-20 hidden items-center gap-1 text-xs font-semibold text-slate-200/85 md:inline-flex">
+              <Pin className="h-[18px] w-[18px] opacity-90" strokeWidth={2.2} />
+              <span className="uppercase tracking-[0.18em]">
+                Pinned Project
+              </span>
 
-                <button
-                  type="button"
-                  onClick={goNext}
-                  className="inline-flex items-center justify-center p-1 text-slate-200/55 opacity-40 drop-shadow-[0_3px_10px_rgba(0,0,0,0.35)] transition-all duration-200 hover:text-slate-50 hover:opacity-100 hover:scale-[1.06] group-hover:opacity-100"
-                  aria-label="Next project"
-                  title="Next"
-                >
-                  <ChevronRight className="h-4 w-4" strokeWidth={2.6} />
-                </button>
-              </div>
-            ) : null}
+              <span
+                className={[
+                  "inline-flex items-center rounded-md bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-slate-200/70",
+                  "transition-transform duration-200",
+                  counterBump ? "scale-[1.06]" : "scale-100",
+                ].join(" ")}
+              >
+                {indicatorIndex + 1} / {total}
+              </span>
+            </div>
 
-            {/* Animated content wrapper ONLY */}
-            <div
-              className={[
-                "w-full max-w-md px-1 py-6 sm:py-8",
-                reduceMotion ? "" : "transition-all duration-300 ease-out",
-                contentStage === "in"
-                  ? "opacity-100 translate-y-0 blur-0"
-                  : "opacity-0 translate-y-2 blur-[1px]",
-              ].join(" ")}
-            >
-              <div className="text-center">
-                <h4 className="text-2xl font-semibold text-slate-50 sm:text-3xl line-clamp-1">
-                  {current.name}
-                </h4>
+            {/* Centered content block (y-axis centered) */}
+            <div className="flex h-full flex-col items-center justify-center px-5 pb-14 pt-10 sm:px-7 sm:pb-16 sm:pt-12 md:pt-16">
+              <div
+                className={[
+                  "w-full max-w-md px-1",
+                  reduceMotion ? "" : "transition-all duration-300 ease-out",
+                  contentStage === "in"
+                    ? "opacity-100 translate-y-0 blur-0"
+                    : "opacity-0 translate-y-2 blur-[1px]",
+                ].join(" ")}
+              >
+                <div className="text-center">
+                  <h4 className="text-2xl font-semibold text-slate-50 sm:text-3xl line-clamp-1">
+                    {current.name}
+                  </h4>
 
-                {/* DESCRIPTION:
-                    - Desktop: clamped (stable)
-                    - Mobile: collapsible/expandable */}
-                <div className="mt-3">
-                  {/* Desktop */}
-                  <p className="hidden text-[15px] leading-7 text-slate-200/90 sm:text-base md:block line-clamp-5">
-                    {blurb}
-                  </p>
+                  {/* DESCRIPTION */}
+                  <div className="mt-3">
+                    {/* Desktop */}
+                    <p className="hidden text-[15px] leading-7 text-slate-200/90 sm:text-base md:block line-clamp-5">
+                      {blurb}
+                    </p>
 
-                  {/* Mobile */}
-                  <div className="md:hidden">
-                    {!mobileDescOpen ? (
-                      <>
-                        <p className="text-[15px] leading-7 text-slate-200/90 line-clamp-2">
-                          {blurb}
-                        </p>
+                    {/* Mobile (toggle only) */}
+                    <div className="md:hidden">
+                      {!mobileDescOpen ? (
                         <button
                           type="button"
                           onClick={() => setMobileDescOpen(true)}
-                          className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-slate-200/80 transition-colors hover:text-accent"
+                          className="mt-1 inline-flex items-center gap-1 text-sm font-medium text-slate-200/80 transition-all hover:opacity-100 hover:scale-[1.01]"
+                          aria-label="View description"
                         >
-                          <span>More</span>
+                          <span>View description</span>
                           <ChevronDown className="h-4 w-4 opacity-80" />
                         </button>
-                      </>
-                    ) : (
-                      <>
-                        <p className="text-[15px] leading-7 text-slate-200/90">
-                          {blurb}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => setMobileDescOpen(false)}
-                          className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-slate-200/80 transition-colors hover:text-accent"
-                        >
-                          <span>Less</span>
-                          <ChevronUp className="h-4 w-4 opacity-80" />
-                        </button>
-                      </>
-                    )}
+                      ) : (
+                        <>
+                          <p className="mt-2 text-[15px] leading-7 text-slate-200/90">
+                            {blurb}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => setMobileDescOpen(false)}
+                            className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-slate-200/80 transition-all hover:opacity-100 hover:scale-[1.01]"
+                            aria-label="Hide description"
+                          >
+                            <span>Hide description</span>
+                            <ChevronUp className="h-4 w-4 opacity-80" />
+                          </button>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Tools */}
-                {tools.length ? (
-                  <div className="mt-4 flex flex-wrap justify-center gap-2">
-                    {tools.map((t) => (
-                      <span
-                        key={t}
-                        className="rounded-md border border-white/10 bg-transparent px-3 py-1 text-xs font-medium text-muted-foreground"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
-
-                {/* Quick buttons (slightly smaller on mobile) */}
-                <div className="mt-5 flex flex-wrap justify-center gap-2">
-                  {/* NEW: View Project button ALWAYS FIRST (uses primary href) */}
-                  {primary?.href ? (
-                    <button
-                      type="button"
-                      onClick={() => openHref(primary.href)}
-                      className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-transparent px-2.5 py-1.5 text-[13px] font-medium text-slate-50/90 transition-colors hover:border-white/25 hover:bg-white/5 hover:text-slate-50 sm:px-3 sm:py-2 sm:text-sm"
-                    >
-                      <Info className="h-4 w-4 opacity-90" />
-                      <span className="truncate">View Project</span>
-                    </button>
+                  {/* Tools (bold) */}
+                  {tools.length ? (
+                    <p className="mt-4 text-center text-xs font-bold text-muted-foreground">
+                      {tools.join(" • ")}
+                    </p>
                   ) : null}
 
-                  {/* Existing quick links (unchanged) */}
-                  {links.map((l) => {
-                    const Ico = iconForLink(l.type);
-                    return (
+                  {/* Quick buttons */}
+                  <div className="mt-5 flex flex-wrap justify-center gap-2">
+                    {/* View Project ALWAYS FIRST */}
+                    {primary?.href ? (
                       <button
-                        key={`${current.id}-${l.type}-${l.href}`}
                         type="button"
-                        onClick={() => openHref(l.href)}
-                        className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-transparent px-2.5 py-1.5 text-[13px] font-medium text-slate-50/90 transition-colors hover:border-white/25 hover:bg-white/5 hover:text-slate-50 sm:px-3 sm:py-2 sm:text-sm"
+                        onClick={() => openHref(primary.href)}
+                        className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-transparent px-2.5 py-1.5 text-[13px] font-medium text-slate-50/90 transition-all duration-200 hover:border-accent/45 hover:bg-white/5 hover:text-slate-50 sm:px-3 sm:py-2 sm:text-sm"
                       >
-                        <Ico className="h-4 w-4 opacity-90" />
-                        <span className="truncate">
-                          {l.label ||
-                            (l.type === "live"
-                              ? "Live"
-                              : l.type === "github"
-                              ? "GitHub"
-                              : l.type === "docs"
-                              ? "Docs"
-                              : l.type === "download"
-                              ? "Download"
-                              : l.type === "video"
-                              ? "Video"
-                              : "Open")}
-                        </span>
+                        <FolderGit2 className="h-4 w-4 opacity-90" />
+                        <span className="truncate">View Project</span>
                       </button>
-                    );
-                  })}
+                    ) : null}
+
+                    {links.map((l) => {
+                      const Ico = iconForLink(l.type);
+                      return (
+                        <button
+                          key={`${current.id}-${l.type}-${l.href}`}
+                          type="button"
+                          onClick={() => openHref(l.href)}
+                          className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-transparent px-2.5 py-1.5 text-[13px] font-medium text-slate-50/90 transition-all duration-200 hover:border-accent/45 hover:bg-white/5 hover:text-slate-50 sm:px-3 sm:py-2 sm:text-sm"
+                        >
+                          <Ico className="h-4 w-4 opacity-90" />
+                          <span className="truncate">
+                            {l.label ||
+                              (l.type === "live"
+                                ? "Live"
+                                : l.type === "github"
+                                ? "GitHub"
+                                : l.type === "docs"
+                                ? "Docs"
+                                : l.type === "download"
+                                ? "Download"
+                                : l.type === "video"
+                                ? "Video"
+                                : "Open")}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
               </div>
             </div>
+
+            {/* INDICATORS: bottom of LEFT column, OUTSIDE the centered content block */}
+            {total > 1 ? (
+              <div className="pointer-events-auto absolute bottom-4 left-0 right-0">
+                <div className="flex w-full items-center justify-center">
+                  <div className="flex items-center gap-2 px-3">
+                    {Array.from({ length: total }).map((_, i) => {
+                      const isActive = i === indicatorIndex;
+
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => goTo(i)}
+                          className="group inline-flex items-center"
+                          aria-label={`Go to slide ${i + 1}`}
+                        >
+                          <span
+                            className={[
+                              "h-[5px] rounded-full transition-all duration-300",
+                              isActive ? "w-9 bg-accent" : "w-6 bg-white/20",
+                              isActive
+                                ? "group-hover:bg-accent"
+                                : "group-hover:bg-white/30",
+                            ].join(" ")}
+                          />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </div>
         </article>
       </div>
-
-      {/* INDICATORS OUTSIDE (desktop + mobile) */}
-      {total > 1 ? (
-        <div className="mt-4 flex w-full items-center justify-center">
-          <div className="flex items-center gap-2 px-3">
-            {Array.from({ length: total }).map((_, i) => {
-              const isActive = i === indicatorIndex;
-
-              return (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => goTo(i)}
-                  className="group inline-flex items-center"
-                  aria-label={`Go to slide ${i + 1}`}
-                >
-                  <span
-                    className={[
-                      "h-[5px] rounded-full transition-all duration-300",
-                      isActive ? "w-9 bg-accent" : "w-6 bg-white/20",
-                      // IMPORTANT: hover should NOT override the active dot color
-                      isActive
-                        ? "group-hover:bg-accent"
-                        : "group-hover:bg-white/30",
-                    ].join(" ")}
-                  />
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

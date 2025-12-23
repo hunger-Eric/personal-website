@@ -1,7 +1,8 @@
 // components/sections/ProjectsClient.tsx
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Github,
   Globe,
@@ -11,6 +12,7 @@ import {
   ExternalLink,
   ChevronDown,
   ChevronUp,
+  FolderOpen,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ProjectItem } from "../../config/projects";
@@ -31,6 +33,43 @@ export function ProjectsSectionClient({
 
   const [showAll, setShowAll] = useState(false);
 
+  // Collapsed count by breakpoint:
+  // - Mobile: 3 (stacked, looks fine)
+  // - Tablet (sm): 2 (fills exactly one row in a 2-col grid)
+  // - Desktop (lg): 3 (fills exactly one row in a 3-col grid)
+  const [collapsedCount, setCollapsedCount] = useState(3);
+
+  // Subtle reveal animation for the "new" cards when expanding
+  const [revealExtras, setRevealExtras] = useState(false);
+
+  useEffect(() => {
+    const mqLg = window.matchMedia("(min-width: 1024px)"); // Tailwind lg
+    const mqSm = window.matchMedia("(min-width: 640px)"); // Tailwind sm
+
+    const compute = () => {
+      setCollapsedCount(mqLg.matches ? 3 : mqSm.matches ? 2 : 3);
+    };
+
+    compute();
+    mqLg.addEventListener?.("change", compute);
+    mqSm.addEventListener?.("change", compute);
+
+    return () => {
+      mqLg.removeEventListener?.("change", compute);
+      mqSm.removeEventListener?.("change", compute);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!showAll) {
+      setRevealExtras(false);
+      return;
+    }
+    setRevealExtras(false);
+    const t = requestAnimationFrame(() => setRevealExtras(true));
+    return () => cancelAnimationFrame(t);
+  }, [showAll]);
+
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -44,8 +83,10 @@ export function ProjectsSectionClient({
     [selectedProjectId, projects]
   );
 
-  const visibleProjects = showAll ? projects : projects.slice(0, 6);
-  const showToggle = projects.length > 6;
+  const visibleProjects = showAll
+    ? projects
+    : projects.slice(0, collapsedCount);
+  const showToggle = projects.length > collapsedCount;
 
   // Use featured projects for the carousel; fallback to first projects if none marked featured.
   // Also cap to 8 to keep the carousel clean.
@@ -91,13 +132,27 @@ export function ProjectsSectionClient({
     <section id="projects" className="py-16 scroll-mt-12 overflow-x-hidden">
       {/* Heading container */}
       <div className="mx-auto w-full max-w-6xl px-4">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          ~/Projects
-        </h2>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              ~/Projects
+            </h2>
 
-        <h3 className="mt-3 text-2xl font-semibold sm:text-3xl">
-          Some things I&apos;ve been working on.
-        </h3>
+            <h3 className="mt-3 text-2xl font-semibold sm:text-3xl">
+              Some things I&apos;ve been working on.
+            </h3>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/projects"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            >
+              <FolderOpen className="h-4 w-4" />
+              <span>View all projects</span>
+            </Link>
+          </div>
+        </div>
       </div>
 
       {/* Featured projects carousel (kept aligned to section container like your other sections) */}
@@ -110,14 +165,38 @@ export function ProjectsSectionClient({
       {/* Regular project cards grid back inside container */}
       <div className="mx-auto mt-8 w-full max-w-6xl px-4">
         <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {visibleProjects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              onOpenDetails={openProject}
-              iconFor={iconFor}
-            />
-          ))}
+          {visibleProjects.map((project, idx) => {
+            const isExtra = showAll && idx >= collapsedCount;
+
+            return (
+              <div
+                key={project.id}
+                className={[
+                  "transition-all duration-300 ease-out",
+                  isExtra
+                    ? revealExtras
+                      ? "opacity-100 translate-y-0"
+                      : "opacity-0 translate-y-2"
+                    : "opacity-100 translate-y-0",
+                ].join(" ")}
+                style={
+                  isExtra
+                    ? {
+                        transitionDelay: `${
+                          Math.min(idx - collapsedCount, 8) * 45
+                        }ms`,
+                      }
+                    : undefined
+                }
+              >
+                <ProjectCard
+                  project={project}
+                  onOpenDetails={openProject}
+                  iconFor={iconFor}
+                />
+              </div>
+            );
+          })}
         </div>
 
         {showToggle && (
@@ -125,7 +204,7 @@ export function ProjectsSectionClient({
             <button
               type="button"
               onClick={() => setShowAll((prev) => !prev)}
-              className="inline-flex items-center gap-2 rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white/80 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-4 py-2 text-sm font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-white/10 active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
               <span>{showAll ? "Show less" : "View more"}</span>
               {showAll ? (

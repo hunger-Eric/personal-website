@@ -32,7 +32,7 @@ export function ProjectCard({
         <button
           type="button"
           onClick={() => onOpenDetails(project)}
-          className="inline-flex h-7 w-7 items-center justify-center text-accent/80 transition hover:scale-105 hover:text-accent"
+          className="inline-flex h-7 w-7 items-center justify-center text-slate-400 transition group-hover:text-slate-50/90 hover:scale-105 hover:text-accent"
           aria-label={`Open details for ${project.name}`}
           title={`View details for ${project.name}`}
         >
@@ -58,13 +58,16 @@ export function ProjectCard({
         </div>
 
         {project.technologies?.length ? (
-          <div className="mt-1 flex flex-wrap gap-1.5">
-            {project.technologies.map((tech) => (
-              <span
-                key={tech}
-                className="rounded-full border border-white/10 px-2 py-1 text-xs text-muted-foreground transition-transform transition-colors duration-200 hover:-translate-y-[1px] hover:border-accent/60 hover:bg-white/5"
-              >
-                {tech}
+          <div className="mt-2 flex flex-wrap items-center justify-start text-[13px]">
+            {project.technologies.map((tech, idx) => (
+              <span key={tech} className="inline-flex items-center">
+                <span className="font-semibold text-muted-foreground underline-offset-4 decoration-white/15 hover:underline hover:decoration-accent/70">
+                  {tech}
+                </span>
+
+                {idx !== project.technologies.length - 1 ? (
+                  <span className="mx-2 text-slate-500/80">•</span>
+                ) : null}
               </span>
             ))}
           </div>

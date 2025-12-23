@@ -5,7 +5,7 @@ import { use, useEffect } from "react";
 import { notFound } from "next/navigation";
 import { siteConfig } from "../../config/siteConfig";
 
-import { Navbar } from "../../components/Navbar";
+import { Navbar } from "../../components/OLD-Navbar";
 import { Footer } from "../../components/Footer";
 import { HeroSection } from "../../components/sections/Hero";
 import { AboutSection } from "../../components/sections/About";

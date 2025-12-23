@@ -11,6 +11,17 @@
   --selection-bg: #312e81;
 }
 
+html {
+  scroll-padding-top: 84px; /* desktop-ish navbar height */
+}
+
+/* Mobile navbar is usually a bit taller */
+@media (max-width: 639px) {
+  html {
+    scroll-padding-top: 76px;
+  }
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);

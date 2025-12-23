@@ -262,7 +262,7 @@
     "education": false,
     "experience": true,
     "projects": true,
-    "blog": true,
+    "blog": false,
     "youtube": false,
     "certifications": false,
     "contact": true,

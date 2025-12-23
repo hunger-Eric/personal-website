@@ -1,7 +1,6 @@
 // app/page.tsx
 import { Suspense } from "react";
 
-import { NavbarCentered } from "../components/NavbarCentered";
 import { Footer } from "../components/Footer";
 
 import { HeroShowcaseSection } from "@/components/sections/HeroShowcaseSection";
@@ -21,8 +20,6 @@ export default function Page() {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      <NavbarCentered />
-
       {/* Any section that (directly or via hooks) uses useSearchParams/usePathname/useRouter
           should live inside a Suspense boundary. */}
       <Suspense fallback={null}>
