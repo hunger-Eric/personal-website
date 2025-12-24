@@ -111,9 +111,9 @@ function getDateRange(project: ProjectItem): string | null {
 type ContentStage = "in" | "out";
 
 /**
- * Split carousel:
- * - Desktop: CONTENT LEFT (40%), Image RIGHT (60%) sliding track
- * - Mobile: Image ABOVE, Content BELOW (image is large)
+ * Crossfade carousel:
+ * - Desktop: CONTENT LEFT (40%), Image RIGHT (60%) crossfade stack
+ * - Mobile: Image ABOVE, Content BELOW
  * - Indicators live in the LEFT column, but OUTSIDE the centered content block (bottom)
  * - Controls:
  *    - Top-right of IMAGE (prev/next)
@@ -125,21 +125,6 @@ export function FeaturedProjectsCarousel({
 }: FeaturedProjectsTickerProps) {
   const slides = useMemo(() => projects.slice(0, 8), [projects]);
   const total = slides.length;
-
-  // Seamless loop render list: [lastClone, ...realSlides, firstClone]
-  const extended = useMemo(() => {
-    if (!total) return [];
-    const first = slides[0];
-    const last = slides[total - 1];
-    return [last, ...slides, first];
-  }, [slides, total]);
-
-  // pos indexes into extended (0..total+1). Start at 1 for first real slide.
-  const [pos, setPos] = useState(1);
-  const [animating, setAnimating] = useState(true);
-
-  const trackRef = useRef<HTMLDivElement | null>(null);
-  const isTransitioningRef = useRef(false);
 
   // Reduced motion support
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -155,12 +140,36 @@ export function FeaturedProjectsCarousel({
   // Pause autoplay on hover/focus (section-level)
   const [paused, setPaused] = useState(false);
 
-  // Touch swipe (image track)
-  const touchStartX = useRef<number | null>(null);
-  const touchDeltaX = useRef<number>(0);
+  // Crossfade timing (match CSS duration below)
+  const FADE_MS = 500;
 
-  // Real slide index derived from pos
-  const realIndex = total ? (((pos - 1) % total) + total) % total : 0;
+  // Active slide index (drives IMAGE + indicators)
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  // Prevent rapid spam while fading (no transitionend in reduced motion)
+  const isTransitioningRef = useRef(false);
+  const unlockTimerRef = useRef<number | null>(null);
+
+  const lockForFade = () => {
+    if (unlockTimerRef.current) window.clearTimeout(unlockTimerRef.current);
+
+    if (reduceMotion) {
+      isTransitioningRef.current = false;
+      return;
+    }
+
+    isTransitioningRef.current = true;
+    unlockTimerRef.current = window.setTimeout(() => {
+      isTransitioningRef.current = false;
+      unlockTimerRef.current = null;
+    }, FADE_MS);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (unlockTimerRef.current) window.clearTimeout(unlockTimerRef.current);
+    };
+  }, []);
 
   // Content swap state (decoupled)
   const [contentIndex, setContentIndex] = useState(0);
@@ -169,139 +178,71 @@ export function FeaturedProjectsCarousel({
   // Mobile description toggle (HIDDEN by default)
   const [mobileDescOpen, setMobileDescOpen] = useState(false);
 
-  // Tiny counter bump animation
-  const [counterBump, setCounterBump] = useState(false);
-  useEffect(() => {
-    if (total <= 1) return;
-    setCounterBump(true);
-    const t = window.setTimeout(() => setCounterBump(false), 220);
-    return () => window.clearTimeout(t);
-  }, [realIndex, total]);
+  // Touch swipe (image area)
+  const touchStartX = useRef<number | null>(null);
+  const touchDeltaX = useRef<number>(0);
 
   // Ensure sane state if slide count changes
   useEffect(() => {
     if (!total) return;
-    setAnimating(false);
-    setPos(1);
+    setActiveIndex(0);
     setContentIndex(0);
     setContentStage("in");
     setMobileDescOpen(false);
     isTransitioningRef.current = false;
-
-    const t = requestAnimationFrame(() => setAnimating(true));
-    return () => cancelAnimationFrame(t);
+    if (unlockTimerRef.current) {
+      window.clearTimeout(unlockTimerRef.current);
+      unlockTimerRef.current = null;
+    }
   }, [total]);
 
-  // Reset mobile description when slide changes
+  // Reset mobile description when content changes
   useEffect(() => {
     setMobileDescOpen(false);
   }, [contentIndex]);
 
-  // Snap logic for reduce-motion (no transitionend will fire)
+  // Smooth content transition (fade/slide) to follow activeIndex
   useEffect(() => {
     if (!total) return;
-    if (!reduceMotion) return;
-
-    if (pos === total + 1) {
-      setPos(1);
-      isTransitioningRef.current = false;
-      return;
-    }
-    if (pos === 0) {
-      setPos(total);
-      isTransitioningRef.current = false;
-    }
-  }, [pos, total, reduceMotion]);
-
-  // Transition end snap (image track only)
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el || !total) return;
-
-    const onEnd = (evt: TransitionEvent) => {
-      if (evt.target !== el) return;
-      if (evt.propertyName !== "transform") return;
-
-      isTransitioningRef.current = false;
-
-      if (pos === total + 1) {
-        setAnimating(false);
-        setPos(1);
-        requestAnimationFrame(() => setAnimating(true));
-        return;
-      }
-
-      if (pos === 0) {
-        setAnimating(false);
-        setPos(total);
-        requestAnimationFrame(() => setAnimating(true));
-      }
-    };
-
-    el.addEventListener("transitionend", onEnd as any);
-    return () => el.removeEventListener("transitionend", onEnd as any);
-  }, [pos, total]);
-
-  // Smooth content transition (fade/slide)
-  useEffect(() => {
-    if (!total) return;
-    if (realIndex === contentIndex) return;
+    if (activeIndex === contentIndex) return;
 
     if (reduceMotion) {
-      setContentIndex(realIndex);
+      setContentIndex(activeIndex);
       setContentStage("in");
       return;
     }
 
     setContentStage("out");
     const t = window.setTimeout(() => {
-      setContentIndex(realIndex);
+      setContentIndex(activeIndex);
       requestAnimationFrame(() => setContentStage("in"));
     }, 180);
 
     return () => window.clearTimeout(t);
-  }, [realIndex, contentIndex, total, reduceMotion]);
+  }, [activeIndex, contentIndex, total, reduceMotion]);
 
   const goNext = () => {
     if (total <= 1) return;
     if (isTransitioningRef.current) return;
 
-    isTransitioningRef.current = true;
-    setPos((p) => p + 1);
-
-    if (reduceMotion) {
-      requestAnimationFrame(() => {
-        isTransitioningRef.current = false;
-      });
-    }
+    lockForFade();
+    setActiveIndex((i) => (i + 1) % total);
   };
 
   const goPrev = () => {
     if (total <= 1) return;
     if (isTransitioningRef.current) return;
 
-    isTransitioningRef.current = true;
-    setPos((p) => p - 1);
-
-    if (reduceMotion) {
-      requestAnimationFrame(() => {
-        isTransitioningRef.current = false;
-      });
-    }
+    lockForFade();
+    setActiveIndex((i) => (i - 1 + total) % total);
   };
 
   const goTo = (i: number) => {
     if (total <= 1) return;
     if (isTransitioningRef.current) return;
 
-    isTransitioningRef.current = true;
-    setPos(i + 1);
-
-    if (reduceMotion) {
-      requestAnimationFrame(() => {
-        isTransitioningRef.current = false;
-      });
-    }
+    lockForFade();
+    setActiveIndex(() => ((i % total) + total) % total);
   };
 
   // Autoplay every 4s
@@ -316,7 +257,7 @@ export function FeaturedProjectsCarousel({
 
     return () => window.clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pos, total, reduceMotion, paused]);
+  }, [activeIndex, total, reduceMotion, paused]);
 
   // Touch swipe handlers
   const onTouchStart: React.TouchEventHandler<HTMLDivElement> = (e) => {
@@ -342,14 +283,21 @@ export function FeaturedProjectsCarousel({
 
   if (!total) return null;
 
+  // Content-driven slide (can lag slightly during content transition)
   const current = slides[contentIndex] ?? null;
   if (!current) return null;
+
+  // Image-driven slide (always matches the visible image)
+  const activeSlide = slides[activeIndex] ?? current;
 
   const blurb = getBlurb(current);
   const tools = getTools(current);
   const links = (current.links ?? []).slice(0, 4);
-  const primary = pickPrimary(current);
-  const primaryHref = primary?.href ?? null;
+
+  const primaryForContent = pickPrimary(current);
+  const primaryForImage = pickPrimary(activeSlide);
+
+  const primaryHref = primaryForImage?.href ?? null;
 
   const openHref = (href?: string | null) => {
     if (!href) return;
@@ -361,12 +309,22 @@ export function FeaturedProjectsCarousel({
     openHref(primaryHref);
   };
 
-  // Indicators reflect REAL slide index
-  const indicatorIndex = realIndex;
+  // Indicators reflect ACTIVE (image) slide
+  const indicatorIndex = activeIndex;
+
+  // Tiny counter bump animation
+  const [counterBump, setCounterBump] = useState(false);
+  useEffect(() => {
+    if (total <= 1) return;
+    setCounterBump(true);
+    const t = window.setTimeout(() => setCounterBump(false), 220);
+    return () => window.clearTimeout(t);
+  }, [indicatorIndex, total]);
 
   return (
+    // ✅ Hide entire section on mobile; show only on md+
     <div
-      className="w-full"
+      className="hidden md:block w-full"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -431,24 +389,24 @@ export function FeaturedProjectsCarousel({
                 </div>
               ) : null}
 
-              {/* Track */}
-              <div
-                ref={trackRef}
-                className={[
-                  "flex h-full will-change-transform",
-                  animating && !reduceMotion
-                    ? "transition-transform duration-500 ease-out"
-                    : "transition-none",
-                ].join(" ")}
-                style={{ transform: `translateX(-${pos * 100}%)` }}
-              >
-                {extended.map((project, idx) => {
+              {/* Crossfade stack (no sliding track) */}
+              <div className="absolute inset-0">
+                {slides.map((project, idx) => {
                   const image = project.imageUrl;
+                  const isActive = idx === indicatorIndex;
+
                   return (
                     <div
                       key={`${project.id}-${idx}`}
-                      className="relative h-full w-full shrink-0"
-                      aria-hidden={idx !== pos}
+                      className={[
+                        "absolute inset-0",
+                        "will-change-opacity",
+                        reduceMotion
+                          ? "transition-none"
+                          : "transition-opacity duration-500 ease-out",
+                        isActive ? "opacity-100" : "opacity-0",
+                      ].join(" ")}
+                      aria-hidden={!isActive}
                     >
                       {image ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -456,7 +414,7 @@ export function FeaturedProjectsCarousel({
                           src={image}
                           alt={project.name}
                           className="absolute inset-0 h-full w-full object-cover object-center"
-                          loading="lazy"
+                          loading={isActive ? "eager" : "lazy"}
                         />
                       ) : (
                         <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/35 via-violet-500/20 to-sky-500/20" />
@@ -466,7 +424,7 @@ export function FeaturedProjectsCarousel({
                 })}
               </div>
 
-              {/* STABLE overlays ABOVE the moving track (fixes fade disappearing during slide) */}
+              {/* STABLE overlays ABOVE the stack */}
               <div className="pointer-events-none absolute inset-0">
                 {/* Base overlay */}
                 <div className="absolute inset-0 bg-slate-950/20" />
@@ -481,7 +439,6 @@ export function FeaturedProjectsCarousel({
                 <div
                   className={[
                     "absolute inset-0 hidden opacity-100 transition-opacity duration-300 md:block",
-                    // smoother than before, less harsh at the edge
                     "bg-[linear-gradient(to_left,transparent_0%,transparent_80%,rgba(255,255,255,0.04)_92%,rgba(255,255,255,0.06)_100%)]",
                     "group-hover/image:opacity-0",
                   ].join(" ")}
@@ -492,7 +449,6 @@ export function FeaturedProjectsCarousel({
                   <div
                     className={[
                       "inline-flex items-center gap-2",
-                      // subtle readable backing
                       "px-3 py-2 rounded-lg",
                       "bg-slate-950/18 backdrop-blur-[2px]",
                       "opacity-0 translate-y-1 transition-all duration-300 ease-out",
@@ -506,9 +462,9 @@ export function FeaturedProjectsCarousel({
                   </div>
                 </div>
 
-                {/* Desktop bottom-right date (for CURRENT slide only) */}
+                {/* Desktop bottom-right date (for ACTIVE slide only) */}
                 {(() => {
-                  const dateRange = getDateRange(current);
+                  const dateRange = getDateRange(activeSlide);
                   if (!dateRange) return null;
                   return (
                     <div className="absolute bottom-4 right-5 z-20 hidden md:block">
@@ -605,11 +561,11 @@ export function FeaturedProjectsCarousel({
 
                   {/* Quick buttons */}
                   <div className="mt-5 flex flex-wrap justify-center gap-2">
-                    {/* View Project ALWAYS FIRST */}
-                    {primary?.href ? (
+                    {/* View Project ALWAYS FIRST (based on content slide) */}
+                    {primaryForContent?.href ? (
                       <button
                         type="button"
-                        onClick={() => openHref(primary.href)}
+                        onClick={() => openHref(primaryForContent.href)}
                         className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-transparent px-2.5 py-1.5 text-[13px] font-medium text-slate-50/90 transition-all duration-200 hover:border-accent/45 hover:bg-white/5 hover:text-slate-50 sm:px-3 sm:py-2 sm:text-sm"
                       >
                         <FolderGit2 className="h-4 w-4 opacity-90" />

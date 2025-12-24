@@ -13,8 +13,8 @@
       "external": false
     },
     "secondary": {
-      "label": "View my resume",
-      "href": "/resume",
+      "label": "Read more about me",
+      "href": "/about",
       "external": true
     }
   },

@@ -205,17 +205,23 @@ export function NavbarCentered() {
     };
   }, []);
 
-  const headerBg = scrolled ? "bg-background/92" : "bg-background/80";
+  // ✅ Top of page: looks like part of hero (no blur, no tinted bg, no visible border)
+  // ✅ After scroll: restore frosted/tinted style
+  const headerBg = scrolled ? "bg-background/92" : "bg-transparent";
+  const headerBlur = scrolled
+    ? "backdrop-blur supports-[backdrop-filter]:backdrop-blur"
+    : "";
+  const headerBorder = scrolled ? "border-white/10" : "border-transparent";
 
   return (
     <header
       ref={headerRef as any}
       className={[
-        // ✅ Desktop-only: hide on mobile (you’ll replace with a separate component later)
         "hidden sm:block",
-        "sticky top-0 z-[9999] isolate border-b border-white/10",
+        "sticky top-0 z-[9999] isolate border-b",
+        headerBorder,
         headerBg,
-        "backdrop-blur supports-[backdrop-filter]:backdrop-blur",
+        headerBlur,
         "transition-colors",
       ].join(" ")}
       onMouseLeave={() => scheduleCloseDesktop(180)}
@@ -241,7 +247,7 @@ export function NavbarCentered() {
                 className="shrink-0 rounded-sm"
               />
               <span className="text-base font-semibold leading-none tracking-tight sm:text-lg">
-                kevintrinh.dev
+                KevinTrinh.dev
               </span>
             </Link>
           </div>
@@ -249,7 +255,14 @@ export function NavbarCentered() {
           {/* Center: pill nav + mega menus (desktop) */}
           <nav className="flex flex-none items-center justify-center">
             <div className="pointer-events-none relative flex items-center justify-center">
-              <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-white/15 bg-white/5 px-2 py-1 text-xs text-muted-foreground shadow-sm md:gap-2 md:px-3 md:py-1.5 md:text-sm">
+              <div
+                className={[
+                  "pointer-events-auto flex items-center gap-1 rounded-2xl border px-2 py-1 text-xs md:gap-2 md:px-3 md:py-1.5 md:text-sm",
+                  scrolled
+                    ? "border-white/15 bg-white/5 text-muted-foreground shadow-sm transition-[background-color,border-color,box-shadow,color] duration-300 ease-out"
+                    : "border-white/20 bg-transparent text-slate-200/90 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition-[background-color,border-color,box-shadow,color] duration-300 ease-out",
+                ].join(" ")}
+              >
                 {textLinks.map((item) => {
                   const hasDropdown = !!(
                     item.children && item.children.length > 0
@@ -277,7 +290,6 @@ export function NavbarCentered() {
                       className="relative"
                       onMouseEnter={() => openDesktop(itemKey)}
                       onFocus={() => openDesktop(itemKey)}
-                      // Don’t close instantly on leaving trigger; allow grace for pointer travel
                       onMouseLeave={() => scheduleCloseDesktop(180)}
                     >
                       {item.href ? (
@@ -325,7 +337,7 @@ export function NavbarCentered() {
                         </button>
                       )}
 
-                      {/* Desktop dropdown: fixed + centered to screen, positioned right under navbar */}
+                      {/* Desktop dropdown */}
                       <div
                         className={[
                           "fixed left-1/2 z-30 w-[min(850px,95vw)] -translate-x-1/2 origin-top",
@@ -363,8 +375,8 @@ export function NavbarCentered() {
               rel={contactLink.external ? "noreferrer" : undefined}
               className={[
                 "text-xs md:text-sm",
-                "font-semibold text-slate-50 underline-offset-4",
-                "transition hover:text-slate-50/90 hover:underline",
+                "font-semibold text-muted-foreground underline-offset-4",
+                "transition hover:text-foreground hover:underline",
               ].join(" ")}
               onMouseEnter={() => {
                 cancelCloseDesktop();

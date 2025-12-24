@@ -6,14 +6,11 @@ import {
   FileText,
   Mail,
   ArrowUpRight,
-  Github,
-  Linkedin,
   Youtube,
   Code2,
   PenSquare,
   MessageCircle,
   Coffee,
-  Twitter,
   GraduationCap,
   AtSign,
 } from "lucide-react";
@@ -71,19 +68,62 @@ function resolveSocialHref(item: SocialItem, resumeHref: string): string {
   return socials[item.key] ?? "#";
 }
 
+/** Filled / more recognizable brand-ish icons (SVG) */
+function IconGithubFilled({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path
+        fill="currentColor"
+        d="M12 2C6.477 2 2 6.58 2 12.23c0 4.52 2.865 8.353 6.839 9.706.5.095.682-.22.682-.49 0-.244-.009-.89-.014-1.747-2.782.617-3.368-1.375-3.368-1.375-.454-1.176-1.11-1.49-1.11-1.49-.907-.634.069-.621.069-.621 1.003.073 1.532 1.052 1.532 1.052.892 1.56 2.341 1.11 2.91.848.091-.664.35-1.11.636-1.366-2.22-.262-4.555-1.137-4.555-5.06 0-1.118.39-2.032 1.03-2.748-.104-.262-.446-1.318.098-2.748 0 0 .84-.275 2.75 1.05A9.28 9.28 0 0 1 12 7.07c.85.004 1.705.117 2.504.344 1.909-1.325 2.748-1.05 2.748-1.05.545 1.43.203 2.486.1 2.748.64.716 1.028 1.63 1.028 2.748 0 3.933-2.339 4.795-4.566 5.052.36.318.68.943.68 1.902 0 1.374-.013 2.48-.013 2.818 0 .272.18.59.688.49C19.137 20.579 22 16.75 22 12.23 22 6.58 17.523 2 12 2Z"
+      />
+    </svg>
+  );
+}
+
+/** Square-ish LinkedIn icon (filled) */
+function IconLinkedInSquareFilled({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path
+        fill="currentColor"
+        d="M19.5 2h-15A2.5 2.5 0 0 0 2 4.5v15A2.5 2.5 0 0 0 4.5 22h15a2.5 2.5 0 0 0 2.5-2.5v-15A2.5 2.5 0 0 0 19.5 2ZM8.1 18.6H5.7V10h2.4v8.6ZM6.9 9.02a1.39 1.39 0 1 1 0-2.78 1.39 1.39 0 0 1 0 2.78ZM18.6 18.6h-2.4v-4.45c0-1.06-.02-2.42-1.47-2.42-1.47 0-1.7 1.15-1.7 2.34v4.53h-2.4V10h2.3v1.18h.03c.32-.6 1.1-1.23 2.26-1.23 2.42 0 2.87 1.6 2.87 3.67v4.98Z"
+      />
+    </svg>
+  );
+}
+
+/** Filled X (Twitter) icon */
+function IconXFilled({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <path
+        fill="currentColor"
+        d="M18.9 2H22l-6.8 7.78L22.9 22H17l-4.6-6.1L6.9 22H3.8l7.3-8.38L1.2 2H7.3l4.2 5.6L18.9 2Zm-1.1 18h1.7L6.4 3.9H4.6L17.8 20Z"
+      />
+    </svg>
+  );
+}
+
+function resolveIsExternal(href: string) {
+  return href.startsWith("http://") || href.startsWith("https://");
+}
+
 function SocialIcon({ item }: { item: SocialItem }) {
   const key = item.key.toLowerCase();
   const base =
     "h-4 w-4 text-slate-400 transition-colors group-hover:text-accent";
 
-  if (key === "github") return <Github className={base} />;
-  if (key === "linkedin") return <Linkedin className={base} />;
+  // Prefer filled/recognizable where it helps most
+  if (key === "github") return <IconGithubFilled className={base} />;
+  if (key === "linkedin") return <IconLinkedInSquareFilled className={base} />;
+  if (key === "x") return <IconXFilled className={base} />;
+
+  // Keep the rest as-is (works fine + consistent)
   if (key === "leetcode") return <Code2 className={base} />;
   if (key === "email") return <Mail className={base} />;
   if (key === "resume") return <FileText className={base} />;
   if (key === "youtube") return <Youtube className={base} />;
   if (key === "tiktok") return <PenSquare className={base} />; // placeholder icon
-  if (key === "x") return <Twitter className={base} />;
   if (key === "handshake") return <GraduationCap className={base} />;
   if (key === "devto" || key === "dev.to") return <Code2 className={base} />;
   if (key === "medium") return <PenSquare className={base} />;
@@ -122,7 +162,6 @@ export function HeroShowcaseSection() {
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           {/* Left: intro + socials + CTAs */}
           <div>
-            {/* small label */}
             <p className="text-sm font-medium text-muted-foreground sm:text-base">
               {smallLabel}
             </p>
@@ -130,12 +169,13 @@ export function HeroShowcaseSection() {
             {/* big heading, two lines (second line slightly smaller) */}
             <h1 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
               <span className="block">{lineOne}</span>
-              <span className="mt-1 block text-3xl sm:text-4xl lg:text-[2.6rem]">
+
+              {/* ✅ Slightly darker than the main line (still very subtle) */}
+              <span className="mt-1 block text-3xl text-slate-200/90 sm:text-4xl lg:text-[2.6rem]">
                 {lineTwo}
               </span>
             </h1>
 
-            {/* description paragraph with more width */}
             <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">
               {description}
             </p>
@@ -144,13 +184,14 @@ export function HeroShowcaseSection() {
             <div className="mt-5 flex flex-wrap gap-2 text-xs sm:text-sm">
               {SOCIALS.map((item) => {
                 const href = resolveSocialHref(item, resumeHref);
+                const external = resolveIsExternal(href);
 
                 return (
                   <a
                     key={item.key}
                     href={href}
-                    target={href.startsWith("http") ? "_blank" : undefined}
-                    rel={href.startsWith("http") ? "noreferrer" : undefined}
+                    target={external ? "_blank" : undefined}
+                    rel={external ? "noreferrer" : undefined}
                     className="group inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs sm:text-sm text-slate-50/90 transition-colors duration-150 hover:bg-white/5 hover:text-slate-50"
                   >
                     <SocialIcon item={item} />

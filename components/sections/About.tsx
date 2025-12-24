@@ -22,6 +22,7 @@ import {
   Github,
   NotebookPen,
   Folder,
+  SquareArrowOutUpRight,
 } from "lucide-react";
 
 import { siteConfig } from "../../config/siteConfig";
@@ -145,35 +146,23 @@ export function AboutSection() {
               </div>
             </div>
 
-            {/* Name + role */}
+            {/* Name */}
             <div>
               <div className="text-2xl font-semibold text-slate-50 sm:text-[28px]">
                 {a.displayName || siteConfig.name}
               </div>
-
-              <div className="mt-2 text-base font-normal text-slate-200 sm:text-[17px]">
-                {a.roleLine}
-              </div>
             </div>
 
-            {/* Buttons */}
+            {/* Single CTA button (secondary style) */}
             <div className="grid grid-cols-1 gap-2">
-              <Link
-                href={a.cta.primary.href}
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-transparent bg-accent px-3.5 py-2 text-sm font-semibold text-white shadow-sm transition-transform transition-colors duration-200 hover:border-accent hover:bg-accent/90 hover:shadow-md hover:-translate-y-0.5"
-              >
-                {a.cta.primary.label}
-                <ExternalLink className="h-4 w-4" />
-              </Link>
-
               <a
                 href={a.cta.secondary.href}
                 target={a.cta.secondary.external ? "_blank" : undefined}
                 rel={a.cta.secondary.external ? "noreferrer" : undefined}
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-white/20 px-3.5 py-2 text-sm font-semibold text-slate-50 transition-colors duration-150 hover:border-indigo-400 hover:bg-white/10"
+                className="group inline-flex items-center justify-center gap-2 rounded-md border border-white/20 px-3.5 py-2 text-sm font-semibold text-slate-200/80 transition-colors duration-150 hover:border-indigo-400 hover:bg-white/10 hover:text-slate-50"
               >
-                {a.cta.secondary.label}
-                <FileText className="h-4 w-4 opacity-90" />
+                Read more about me
+                <SquareArrowOutUpRight className="h-4 w-4 opacity-80 transition-colors group-hover:opacity-100 group-hover:text-slate-50" />
               </a>
             </div>
 
@@ -183,7 +172,7 @@ export function AboutSection() {
             */}
             <div className="flex flex-col gap-2 sm:gap-3">
               {/* Profile links (mobile first) */}
-              <div className="order-1 sm:order-2 space-y-2 pt-1 text-sm">
+              <div className="order-1 space-y-2 pt-1 text-sm sm:order-2">
                 {a.profileLinks.map((item: any) => {
                   const Icon = iconForProfileLink(String(item.type || ""));
                   const iconEl = (
@@ -234,11 +223,11 @@ export function AboutSection() {
               </div>
 
               {/* Followers / following (mobile below links) */}
-              <div className="order-2 sm:order-1 flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="order-2 flex items-center gap-2 text-sm text-muted-foreground sm:order-1">
                 <Users className="h-4 w-4 opacity-70" />
 
                 <span className="group cursor-default">
-                  <span className="font-semibold text-slate-50 transition-colors group-hover:text-indigo-300">
+                  <span className="font-semibold text-slate-200/80 transition-colors group-hover:text-indigo-300">
                     {followerCount}
                   </span>{" "}
                   <span className="transition-colors group-hover:text-indigo-300">
@@ -249,7 +238,7 @@ export function AboutSection() {
                 <span className="mx-1.5">•</span>
 
                 <span className="group cursor-default">
-                  <span className="font-semibold text-slate-50 transition-colors group-hover:text-indigo-300">
+                  <span className="font-semibold text-slate-200/80 transition-colors group-hover:text-indigo-300">
                     {followingCount}
                   </span>{" "}
                   <span className="transition-colors group-hover:text-indigo-300">
@@ -276,48 +265,25 @@ export function AboutSection() {
 
                 <Link
                   href="/about"
-                  className="inline-flex items-center justify-center text-indigo-300 transition-colors hover:text-indigo-200"
+                  className="group inline-flex items-center justify-center text-indigo-300 transition-colors hover:text-indigo-200"
                   aria-label="Open About page"
                 >
-                  <ExternalLink className="h-4 w-4" />
+                  <ExternalLink className="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:rotate-6" />
                 </Link>
               </div>
 
               <div className="px-4 py-5 sm:px-6">
-                <p className="text-xs font-semibold text-muted-foreground">
-                  Summary:
-                </p>
-
-                <div className="mt-3 space-y-4 text-sm leading-7 text-slate-200/90 sm:text-base">
+                <div className="space-y-4 text-sm leading-7 text-slate-200/90 sm:text-base">
                   {(a.readme?.paragraphs || []).slice(0, 2).map((p, idx) => (
                     <p key={idx}>{p}</p>
                   ))}
                 </div>
-
-                {/* Tech badges: old hover behavior restored */}
-                {a.techUsed?.length ? (
-                  <div className="mt-6">
-                    <p className="text-xs font-semibold text-muted-foreground">
-                      Tech I&apos;ve used:
-                    </p>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      {a.techUsed.map((tool: string) => (
-                        <span
-                          key={tool}
-                          className="rounded-md border border-white/10 px-2.5 py-1 text-sm text-muted-foreground transition-colors duration-200 hover:border-accent/60 hover:bg-white/5 hover:text-white"
-                        >
-                          {tool}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ) : null}
               </div>
             </div>
 
             {/* Snapshot */}
             <div>
-              <div className="mb-3 flex items-center gap-2 text-slate-200/80">
+              <div className="mb-3 flex items-center gap-2 text-muted-foreground">
                 <Activity className="h-4 w-4" />
                 <div className="text-xs font-semibold uppercase tracking-[0.2em]">
                   Live Metrics

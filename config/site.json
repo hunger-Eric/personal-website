@@ -113,35 +113,8 @@
       {
         "id": "projects",
         "label": "Projects",
-        "href": "#projects",
         "show": true,
-        "isButton": false,
-        "children": [
-          {
-            "id": "projects-list",
-            "label": "My Projects Directory",
-            "href": "/projects",
-            "description": "Archived & current projects",
-            "icon": "Folder",
-            "column": "left"
-          },
-          {
-            "id": "open-source",
-            "label": "Open Source",
-            "href": "/open-source",
-            "description": "My contributions & collabs",
-            "icon": "GitBranch",
-            "column": "right"
-          },
-          {
-            "id": "projects-wiki",
-            "label": "Wiki & Docs",
-            "href": "/wiki",
-            "description": "Project info & documentation",
-            "icon": "BookOpen",
-            "column": "right"
-          }
-        ]
+        "isButton": false
       },
 
       {
@@ -152,9 +125,9 @@
         "children": [
           {
             "id": "articles",
-            "label": "All Articles Page",
+            "label": "Articles Directory",
             "href": "/articles",
-            "description": "Articles, Thoughts, etc",
+            "description": "Explore my directory",
             "icon": "FileText",
             "column": "left"
           },
@@ -247,7 +220,7 @@
 
       {
         "id": "resume",
-        "label": "My Resume",
+        "label": "View My Resume",
         "href": "/resume",
         "show": true,
         "isButton": true,
