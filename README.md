@@ -92,8 +92,6 @@ A minimal, user-friendly, responsive dev/personal portfolio template that integr
 
 **DevfolioX** is a minimal, config-driven portfolio template built for developers and students who want a clean, professional online presence without a lot of overhead. It centralizes your projects, experience, writing, videos, resume/CV, and contact information into a single responsive page.
 
-The template is powered by a few small TypeScript config files, so most updates are made by editing data rather than UI code. It uses **Next.js (App Router)**, **React**, and **Tailwind CSS**, and is designed to be deployed on **Vercel** or **Netlify** as a simple, fully static site for this initial release.
-
 <details>
   <summary><strong>Why I designed DevfolioX with a “less is more” mindset</strong></summary>
 
@@ -104,30 +102,6 @@ If you overload a page with text, sections, and visual noise, the most important
 DevfolioX follows that same principle: fewer distractions, clearer hierarchy, and just enough detail to invite a deeper look if someone wants it.
 
 </details>
-
----
-
-## ✨ Features & Integrations
-
-- **Minimal one-page layout** – All key info visible with smooth scrolling and a clean navbar on one page.
-- **Config-driven content** – Most text, links, etc live in small JSON/TS config files, so you rarely need to touch UI code.
-- **Student & professional ready** – Handles education, experience, projects, open source, and more in a structured way.
-- **Resume viewer** – View and download a updated Google Docs–backed PDF directly on the site.
-- **Multi-channel contact** – A focused contact form that can notify you via email, Discord, and Telegram.
-- **Optional sponsor support** – Add a Sponsor button for GitHub Sponsors, Patreon, Ko-fi, etc.
-- **Free-hosting friendly** – Built to run entirely on Vercel or Netlify (including API routes) with no separate backend.
-- **And much more** - DevfolioX has dozens of features that tailors to everyone.
-
-**Integrations (all optional):**
-
-- **GitHub** – Display fully updated project details and info using GitHub.
-- **Dev.to / Medium** – Pull in recent posts so your writing section stays up-to-date automatically.
-- **YouTube** – Embed a featured video and/or a small list of recent uploads.
-- **Google Docs** – Use a single Google Doc as the source of truth for your resume/CV and export it as a PDF on demand.
-- **Email / Discord / Telegram** – Route contact form submissions to one or more channels so you don’t miss messages.
-- **Handshake / Sponsor links** – Surface your Handshake profile and sponsor pages with simple config-only links.
-
-All integrations degrade gracefully: if you don’t configure something, the related section or feature simply stays hidden.
 
 ---
 
@@ -159,31 +133,7 @@ DevfolioX is **config-driven**. Most customization is done by editing small conf
 
 3. **Configure projects**
 
-   For GitHub-backed projects, you can use a hidden block in each repo’s README:
-
-   ```html
-   <!-- devfoliox
-   {
-     "title": "My Project",
-     "summary": "Short summary here.",
-     "description": ["Longer description paragraph 1.", "Paragraph 2."],
-     "technologies": ["Next.js", "TypeScript", "Tailwind CSS"],
-     "start": "AUTO",
-     "end": "AUTO",
-     "auto_inactive_threshold_days": 90,
-     "stats_stars": true,
-     "stats_forks": true,
-     "stats_downloads": true,
-     "links": [
-       { "label": "Live Demo", "href": "https://example.com", "type": "live" },
-       { "label": "Source", "href": "https://github.com/you/repo", "type": "github" }
-     ],
-     "badges": [
-       "https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white"
-     ]
-   }
-   -->
-   ```
+   For GitHub-backed projects, you can use a hidden block in each repo’s README.
 
    The app will read this at build time, pull GitHub stats (if enabled), and use repo metadata (topics, homepage, created/last push dates) to auto-fill dates and details.
 
