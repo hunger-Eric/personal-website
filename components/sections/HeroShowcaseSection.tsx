@@ -214,7 +214,7 @@ export function HeroShowcaseSection() {
                 title={`Open ${resumeHref}`}
               >
                 <FileText className="h-4 w-4" />
-                <span>View Resume</span>
+                <span>View My Resume</span>
               </a>
 
               <a

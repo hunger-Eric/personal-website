@@ -113,11 +113,11 @@ type ContentStage = "in" | "out";
 /**
  * Crossfade carousel:
  * - Desktop: CONTENT LEFT (40%), Image RIGHT (60%) crossfade stack
- * - Mobile: Image ABOVE, Content BELOW
- * - Indicators live in the LEFT column, but OUTSIDE the centered content block (bottom)
+ * - Indicators live at the BOTTOM of the LEFT column
  * - Controls:
- *    - Top-right of IMAGE (prev/next)
- * - Mobile: description hidden by default; toggle "View description"
+ *    - Bottom-right of IMAGE (prev/next)
+ * - Pinned label:
+ *    - Top-right of IMAGE
  * - Auto-advance every 4s; dots are clickable
  */
 export function FeaturedProjectsCarousel({
@@ -175,7 +175,7 @@ export function FeaturedProjectsCarousel({
   const [contentIndex, setContentIndex] = useState(0);
   const [contentStage, setContentStage] = useState<ContentStage>("in");
 
-  // Mobile description toggle (HIDDEN by default)
+  // Mobile description toggle (unused currently because section is md+ only)
   const [mobileDescOpen, setMobileDescOpen] = useState(false);
 
   // Touch swipe (image area)
@@ -296,7 +296,6 @@ export function FeaturedProjectsCarousel({
 
   const primaryForContent = pickPrimary(current);
   const primaryForImage = pickPrimary(activeSlide);
-
   const primaryHref = primaryForImage?.href ?? null;
 
   const openHref = (href?: string | null) => {
@@ -321,6 +320,10 @@ export function FeaturedProjectsCarousel({
     return () => window.clearTimeout(t);
   }, [indicatorIndex, total]);
 
+  // Button styling to match content section (bg-white/5 + outline)
+  const navBtnClass =
+    "inline-flex items-center justify-center rounded-md border border-white/15 bg-white/5 p-2 text-slate-50/90 shadow-sm backdrop-blur-md transition-all duration-200 hover:bg-white/10 hover:border-white/25 hover:scale-[1.06] active:scale-[0.99]";
+
   return (
     // ✅ Hide entire section on mobile; show only on md+
     <div
@@ -338,9 +341,8 @@ export function FeaturedProjectsCarousel({
         onTouchEnd={onTouchEnd}
         aria-label="Featured projects carousel"
       >
-        {/* Desktop fixed height; mobile can grow via content */}
         <article className="grid w-full grid-cols-1 md:grid-cols-[2fr_3fr] md:h-[420px]">
-          {/* IMAGE (mobile: top) / (desktop: right) */}
+          {/* IMAGE (desktop: right) */}
           <div
             className={[
               "relative overflow-hidden md:order-2 group/image",
@@ -358,16 +360,37 @@ export function FeaturedProjectsCarousel({
             }}
           >
             <div className="relative h-[260px] w-full sm:h-[320px] md:h-full">
-              {/* TOP-RIGHT: prev/next controls */}
+              {/* TOP-RIGHT: pinned label + fraction */}
+              <div className="pointer-events-none absolute right-5 top-5 z-30 hidden items-center gap-1 text-xs font-semibold text-slate-200/85 md:inline-flex">
+                <Pin
+                  className="h-[18px] w-[18px] opacity-90"
+                  strokeWidth={2.2}
+                />
+                <span className="uppercase tracking-[0.18em]">
+                  Pinned Project
+                </span>
+
+                <span
+                  className={[
+                    "ml-1 inline-flex items-center rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-slate-200/70",
+                    "backdrop-blur-md transition-transform duration-200",
+                    counterBump ? "scale-[1.06]" : "scale-100",
+                  ].join(" ")}
+                >
+                  {indicatorIndex + 1} / {total}
+                </span>
+              </div>
+
+              {/* BOTTOM-RIGHT: prev/next controls */}
               {total > 1 ? (
-                <div className="absolute right-5 top-5 z-30 flex items-center gap-1">
+                <div className="absolute bottom-5 right-5 z-30 flex items-center gap-1">
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
                       goPrev();
                     }}
-                    className="inline-flex items-center justify-center rounded-md bg-slate-950/45 p-2 text-slate-50/90 shadow-sm backdrop-blur-md transition-all duration-200 hover:bg-slate-950/60 hover:scale-[1.06] active:scale-[0.99]"
+                    className={navBtnClass}
                     aria-label="Previous project"
                     title="Previous"
                   >
@@ -380,7 +403,7 @@ export function FeaturedProjectsCarousel({
                       e.stopPropagation();
                       goNext();
                     }}
-                    className="inline-flex items-center justify-center rounded-md bg-slate-950/45 p-2 text-slate-50/90 shadow-sm backdrop-blur-md transition-all duration-200 hover:bg-slate-950/60 hover:scale-[1.06] active:scale-[0.99]"
+                    className={navBtnClass}
                     aria-label="Next project"
                     title="Next"
                   >
@@ -389,7 +412,7 @@ export function FeaturedProjectsCarousel({
                 </div>
               ) : null}
 
-              {/* Crossfade stack (no sliding track) */}
+              {/* Crossfade stack */}
               <div className="absolute inset-0">
                 {slides.map((project, idx) => {
                   const image = project.imageUrl;
@@ -399,8 +422,7 @@ export function FeaturedProjectsCarousel({
                     <div
                       key={`${project.id}-${idx}`}
                       className={[
-                        "absolute inset-0",
-                        "will-change-opacity",
+                        "absolute inset-0 will-change-opacity",
                         reduceMotion
                           ? "transition-none"
                           : "transition-opacity duration-500 ease-out",
@@ -413,44 +435,47 @@ export function FeaturedProjectsCarousel({
                         <img
                           src={image}
                           alt={project.name}
-                          className="absolute inset-0 h-full w-full object-cover object-center"
+                          className={[
+                            "absolute inset-0 h-full w-full object-cover object-center",
+                            // ✅ hover: subtle dark + blur so label pops more
+                            "transition-all duration-300 ease-out",
+                            "group-hover/image:brightness-[0.82] group-hover/image:blur-[1.5px]",
+                          ].join(" ")}
                           loading={isActive ? "eager" : "lazy"}
                         />
                       ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/35 via-violet-500/20 to-sky-500/20" />
+                        <div
+                          className={[
+                            "absolute inset-0 bg-gradient-to-br from-indigo-500/35 via-violet-500/20 to-sky-500/20",
+                            "transition-all duration-300 ease-out",
+                            "group-hover/image:brightness-[0.82] group-hover/image:blur-[1.5px]",
+                          ].join(" ")}
+                        />
                       )}
                     </div>
                   );
                 })}
               </div>
 
+              {/* Hover dark overlay to boost contrast (also only on hover) */}
+              <div
+                className={[
+                  "pointer-events-none absolute inset-0",
+                  "opacity-0 transition-opacity duration-300 ease-out",
+                  "group-hover/image:opacity-100",
+                  "bg-slate-950/20",
+                ].join(" ")}
+              />
+
               {/* STABLE overlays ABOVE the stack */}
               <div className="pointer-events-none absolute inset-0">
-                {/* Base overlay */}
-                <div className="absolute inset-0 bg-slate-950/20" />
-
-                {/* Mobile: bottom->up fade */}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-slate-950/20 to-transparent md:hidden" />
-
-                {/* Desktop: bottom fade */}
-                <div className="absolute inset-0 hidden bg-gradient-to-t from-slate-950/70 via-slate-950/15 to-transparent md:block" />
-
-                {/* Desktop: side fade (tight + smoother), fades away ONLY on hover of image column */}
-                <div
-                  className={[
-                    "absolute inset-0 hidden opacity-100 transition-opacity duration-300 md:block",
-                    "bg-[linear-gradient(to_left,transparent_0%,transparent_80%,rgba(255,255,255,0.04)_92%,rgba(255,255,255,0.06)_100%)]",
-                    "group-hover/image:opacity-0",
-                  ].join(" ")}
-                />
-
                 {/* Desktop hover label (only image hover) */}
                 <div className="absolute inset-0 hidden items-center justify-center md:flex">
                   <div
                     className={[
                       "inline-flex items-center gap-2",
                       "px-3 py-2 rounded-lg",
-                      "bg-slate-950/18 backdrop-blur-[2px]",
+                      "bg-slate-950/24 backdrop-blur-[2px]",
                       "opacity-0 translate-y-1 transition-all duration-300 ease-out",
                       "group-hover/image:opacity-100 group-hover/image:translate-y-0",
                     ].join(" ")}
@@ -468,7 +493,7 @@ export function FeaturedProjectsCarousel({
                   if (!dateRange) return null;
                   return (
                     <div className="absolute bottom-4 right-5 z-20 hidden md:block">
-                      <span className="text-[11px] font-medium text-slate-200/55 drop-shadow-[0_10px_24px_rgba(0,0,0,0.85)]">
+                      <span className="text-[11px] font-medium text-slate-200/75 drop-shadow-[0_10px_24px_rgba(0,0,0,0.85)]">
                         {dateRange}
                       </span>
                     </div>
@@ -478,38 +503,21 @@ export function FeaturedProjectsCarousel({
             </div>
           </div>
 
-          {/* CONTENT (mobile: bottom) / (desktop: left) */}
+          {/* CONTENT (desktop: left) */}
           <div className="relative bg-white/5 md:order-1 md:h-full">
-            {/* Desktop top-left pinned label + fraction */}
-            <div className="pointer-events-none absolute left-5 top-5 z-20 hidden items-center gap-1 text-xs font-semibold text-slate-200/85 md:inline-flex">
-              <Pin className="h-[18px] w-[18px] opacity-90" strokeWidth={2.2} />
-              <span className="uppercase tracking-[0.18em]">
-                Pinned Project
-              </span>
-
-              <span
-                className={[
-                  "inline-flex items-center rounded-md bg-white/5 px-2 py-0.5 text-[11px] font-semibold text-slate-200/70",
-                  "transition-transform duration-200",
-                  counterBump ? "scale-[1.06]" : "scale-100",
-                ].join(" ")}
-              >
-                {indicatorIndex + 1} / {total}
-              </span>
-            </div>
-
-            {/* Centered content block (y-axis centered) */}
-            <div className="flex h-full flex-col items-center justify-center px-5 pb-14 pt-10 sm:px-7 sm:pb-16 sm:pt-12 md:pt-16">
-              <div
-                className={[
-                  "w-full max-w-md px-1",
-                  reduceMotion ? "" : "transition-all duration-300 ease-out",
-                  contentStage === "in"
-                    ? "opacity-100 translate-y-0 blur-0"
-                    : "opacity-0 translate-y-2 blur-[1px]",
-                ].join(" ")}
-              >
-                <div className="text-center">
+            {/* Grid keeps content perfectly centered, indicators pinned to bottom */}
+            <div className="grid h-full grid-rows-[1fr_auto]">
+              {/* Centered content (x + y) */}
+              <div className="flex items-center justify-center px-5 py-10 sm:px-7 md:px-8">
+                <div
+                  className={[
+                    "w-full max-w-md px-1 text-center",
+                    reduceMotion ? "" : "transition-all duration-300 ease-out",
+                    contentStage === "in"
+                      ? "opacity-100 translate-y-0 blur-0"
+                      : "opacity-0 translate-y-2 blur-[1px]",
+                  ].join(" ")}
+                >
                   <h4 className="text-2xl font-semibold text-slate-50 sm:text-3xl line-clamp-1">
                     {current.name}
                   </h4>
@@ -603,40 +611,42 @@ export function FeaturedProjectsCarousel({
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* INDICATORS: bottom of LEFT column, OUTSIDE the centered content block */}
-            {total > 1 ? (
-              <div className="pointer-events-auto absolute bottom-4 left-0 right-0">
-                <div className="flex w-full items-center justify-center">
-                  <div className="flex items-center gap-2 px-3">
-                    {Array.from({ length: total }).map((_, i) => {
-                      const isActive = i === indicatorIndex;
+              {/* INDICATORS: bottom of LEFT column (same place, less rounded) */}
+              {total > 1 ? (
+                <div className="pointer-events-auto pb-4">
+                  <div className="flex w-full items-center justify-center">
+                    <div className="flex items-center gap-2 px-3">
+                      {Array.from({ length: total }).map((_, i) => {
+                        const isActive = i === indicatorIndex;
 
-                      return (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => goTo(i)}
-                          className="group inline-flex items-center"
-                          aria-label={`Go to slide ${i + 1}`}
-                        >
-                          <span
-                            className={[
-                              "h-[5px] rounded-full transition-all duration-300",
-                              isActive ? "w-9 bg-accent" : "w-6 bg-white/20",
-                              isActive
-                                ? "group-hover:bg-accent"
-                                : "group-hover:bg-white/30",
-                            ].join(" ")}
-                          />
-                        </button>
-                      );
-                    })}
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() => goTo(i)}
+                            className="group inline-flex items-center"
+                            aria-label={`Go to slide ${i + 1}`}
+                          >
+                            <span
+                              className={[
+                                "h-[5px] rounded-sm transition-all duration-300",
+                                isActive ? "w-9 bg-accent" : "w-6 bg-white/20",
+                                isActive
+                                  ? "group-hover:bg-accent"
+                                  : "group-hover:bg-white/30",
+                              ].join(" ")}
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ) : null}
+              ) : (
+                <div className="pb-4" />
+              )}
+            </div>
           </div>
         </article>
       </div>

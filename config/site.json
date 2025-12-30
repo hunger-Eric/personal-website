@@ -121,33 +121,7 @@
         "id": "articles",
         "label": "Articles",
         "show": true,
-        "isButton": false,
-        "children": [
-          {
-            "id": "articles",
-            "label": "Articles Directory",
-            "href": "/articles",
-            "description": "Explore my directory",
-            "icon": "FileText",
-            "column": "left"
-          },
-          {
-            "id": "articles",
-            "label": "Articles",
-            "href": "/articles",
-            "description": "Thoughts & personal stories",
-            "icon": "FileText",
-            "column": "right"
-          },
-          {
-            "id": "wiki",
-            "label": "Wiki & Docs",
-            "href": "/wiki",
-            "description": "Project info & documentation",
-            "icon": "BookOpen",
-            "column": "right"
-          }
-        ]
+        "isButton": false
       },
 
       {
@@ -172,15 +146,31 @@
         "children": [
           {
             "id": "who-i-am",
-            "label": "More About Me",
+            "label": "About Me",
             "href": "/about",
             "description": "Who I am, my purpose & goals",
             "icon": "User",
             "column": "left"
           },
           {
+            "id": "status-uptime",
+            "label": "Projects' Status & Uptime",
+            "href": "/status",
+            "description": "Live online status of my projects",
+            "icon": "FileText",
+            "column": "right"
+          },
+          {
+            "id": "wiki",
+            "label": "Wiki & Docs",
+            "href": "/wiki",
+            "description": "Project info & documentation",
+            "icon": "BookOpen",
+            "column": "right"
+          },
+          {
             "id": "stats",
-            "label": "Coding Stats",
+            "label": "Live Coding Metrics",
             "href": "/stats",
             "description": "Data & statistics of my journey",
             "icon": "BarChart2",
@@ -192,29 +182,21 @@
             "href": "/gallery",
             "description": "Photos & videos of my life",
             "icon": "Image",
-            "column": "right"
+            "column": "left"
           },
           {
             "id": "socials",
-            "label": "Social Media",
+            "label": "Social Links",
             "href": "/socials",
-            "description": "View all my social profiles",
-            "icon": "Globe",
-            "column": "right"
-          },
-          {
-            "id": "donate",
-            "label": "Support Me",
-            "href": "/donate",
-            "description": "Help fuel my projects & hobby",
+            "description": "Find more of me on the web",
             "icon": "Heart",
             "column": "right"
           }
         ],
         "dropdownFooter": {
-          "text": "Looking for something else?",
-          "linkLabel": "Go to overview",
-          "href": "/about"
+          "text": "Want to help support my work?",
+          "linkLabel": "Donate to my Sponsor page",
+          "href": "/support"
         }
       },
 

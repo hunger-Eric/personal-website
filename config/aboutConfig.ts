@@ -2,7 +2,17 @@
 import raw from "./about.json";
 
 export type AboutProfileLink = {
-  type: "school" | "location" | "email" | "website" | "linkedin" | "youtube";
+  type:
+    | "school"
+    | "location"
+    | "email"
+    | "website"
+    | "linkedin"
+    | "github"
+    | "youtube"
+    | "x"
+    | "instagram"
+    | "tiktok";
   label: string;
   href?: string;
 };
@@ -15,7 +25,8 @@ export type AboutSnapshotStat = {
 
 export type AboutSnapshotCard = {
   title: string;
-  value: string;
+  // ✅ make optional so your current JSON is valid
+  value?: string;
   description?: string;
   icon: string;
   stats?: AboutSnapshotStat[];
@@ -48,6 +59,55 @@ export type AboutConfig = {
   snapshot: {
     title: string;
     cards: AboutSnapshotCard[];
+  };
+
+  // ✅ NEW optional dedicated About page content (home AboutSection unaffected)
+  aboutPage?: {
+    hero?: {
+      headline?: string;
+      subheadline?: string;
+      proofChips?: string[];
+      locationLabel?: string;
+      portraitUrl?: string;
+      primaryCta?: {
+        label: string;
+        href: string;
+        external?: boolean;
+        icon?: string;
+      };
+      secondaryCta?: {
+        label: string;
+        href: string;
+        external?: boolean;
+        icon?: string;
+      };
+    };
+
+    story?: {
+      paragraphs?: string[];
+      timeline?: Array<{ title: string; desc?: string }>;
+    };
+
+    now?: { items?: Array<{ title: string; bullets: string[] }> };
+
+    values?: {
+      principles?: Array<{ title: string; desc?: string }>;
+      workflow?: string[];
+      notAbout?: string[];
+    };
+
+    skills?: {
+      groups?: Array<{ label: string; items: string[] }>;
+      exploring?: string[];
+    };
+
+    socials?: { items?: AboutProfileLink[] };
+
+    funFacts?: { items?: string[] };
+
+    faq?: { items?: Array<{ q: string; a: string }> };
+
+    closer?: { line?: string };
   };
 
   contentSource?: {
