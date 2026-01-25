@@ -97,11 +97,63 @@ function SocialLogo({
   }
 }
 
-function resolveInspirationAvatar(src?: string) {
+/**
+ * Extract YouTube handle from a YouTube channel URL.
+ * Supports formats like:
+ * - https://www.youtube.com/@NeetCode
+ * - https://youtube.com/@NeetCode
+ * - https://www.youtube.com/c/NeetCode
+ * - https://www.youtube.com/channel/UC_mYaQAE6-71rjSN6CeCA-g
+ */
+function extractYouTubeHandle(href: string): string | null {
+  if (!href) return null;
+
+  // Match @handle format
+  const atMatch = href.match(/youtube\.com\/@([^/?#]+)/i);
+  if (atMatch) return atMatch[1];
+
+  // Match /c/handle format
+  const cMatch = href.match(/youtube\.com\/c\/([^/?#]+)/i);
+  if (cMatch) return cMatch[1];
+
+  // Match /user/handle format
+  const userMatch = href.match(/youtube\.com\/user\/([^/?#]+)/i);
+  if (userMatch) return userMatch[1];
+
+  return null;
+}
+
+/**
+ * Resolve inspiration avatar URL.
+ * For YouTube links, uses unavatar.io to fetch the channel avatar.
+ * Falls back to local images or default.
+ */
+function resolveInspirationAvatar(src?: string, href?: string) {
   const fallback = "/images/inspirations/default.jpg";
+
+  // If it's a YouTube link, use unavatar.io to get the channel avatar
+  if (href && href.includes("youtube.com")) {
+    const handle = extractYouTubeHandle(href);
+    if (handle) {
+      // unavatar.io is a free service that fetches avatars from various platforms
+      // It has built-in caching and fallback support
+      return `https://unavatar.io/youtube/${handle}?fallback=${encodeURIComponent(fallback)}`;
+    }
+  }
+
+  // If no src provided, use fallback
   if (!src || !String(src).trim()) return fallback;
 
   const v = String(src).trim();
+
+  // If it's "default.jpg" and we have a YouTube href, try to get the avatar
+  if ((v === "default.jpg" || v === "/images/inspirations/default.jpg") && href?.includes("youtube.com")) {
+    const handle = extractYouTubeHandle(href);
+    if (handle) {
+      return `https://unavatar.io/youtube/${handle}?fallback=${encodeURIComponent(fallback)}`;
+    }
+  }
+
   if (v.startsWith("/")) return v;
   return `/images/inspirations/${v}`;
 }
@@ -629,7 +681,7 @@ export function AboutPage() {
 
         <div className="mt-6 grid grid-cols-2 gap-x-7 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
           {inspirations.map((person, idx) => {
-            const avatarSrc = resolveInspirationAvatar(person.avatarUrl);
+            const avatarSrc = resolveInspirationAvatar(person.avatarUrl, person.href);
             const tag = person.tag?.trim() || deriveTagFromHref(person.href);
 
             return (

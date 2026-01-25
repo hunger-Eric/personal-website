@@ -45,6 +45,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cdn-images-1.medium.com",
       },
+      // Unavatar.io for fetching avatars from various platforms (YouTube, etc.)
+      {
+        protocol: "https",
+        hostname: "unavatar.io",
+      },
     ],
     // Cache optimized images for 1 year
     minimumCacheTTL: 31536000,
