@@ -29,29 +29,9 @@ export function ProjectsSectionClient({
   // If the loader somehow returns an empty list, show nothing
   if (!projects.length) return null;
 
-  // Default visible count by breakpoint:
-  // - Mobile: 3 (stacked, looks fine)
-  // - Tablet (sm): 4 (2 cols x 2 rows)
-  // - Desktop (lg): 6 (3 cols x 2 rows)
-  const [visibleCount, setVisibleCount] = useState(3);
-
-  useEffect(() => {
-    const mqLg = window.matchMedia("(min-width: 1024px)"); // Tailwind lg
-    const mqSm = window.matchMedia("(min-width: 640px)"); // Tailwind sm
-
-    const compute = () => {
-      setVisibleCount(mqLg.matches ? 6 : mqSm.matches ? 4 : 3);
-    };
-
-    compute();
-    mqLg.addEventListener?.("change", compute);
-    mqSm.addEventListener?.("change", compute);
-
-    return () => {
-      mqLg.removeEventListener?.("change", compute);
-      mqSm.removeEventListener?.("change", compute);
-    };
-  }, []);
+  // Always show 3 cards by default, then expand when "Show More" is clicked
+  const [showAll, setShowAll] = useState(false);
+  const defaultVisibleCount = 3;
 
   const router = useRouter();
   const pathname = usePathname();
@@ -66,11 +46,11 @@ export function ProjectsSectionClient({
     [selectedProjectId, projects]
   );
 
-  // ✅ Always show exactly two rows after the carousel (by breakpoint)
-  const visibleProjects = useMemo(
-    () => projects.slice(0, Math.min(visibleCount, projects.length)),
-    [projects, visibleCount]
-  );
+  // Show 3 cards by default, all if "Show More" is clicked
+  const visibleProjects = useMemo(() => {
+    if (showAll) return projects;
+    return projects.slice(0, Math.min(defaultVisibleCount, projects.length));
+  }, [projects, showAll]);
 
   // Use featured projects for the carousel; fallback to first projects if none marked featured.
   // Also cap to 8 to keep the carousel clean.
@@ -159,6 +139,32 @@ export function ProjectsSectionClient({
             </div>
           ))}
         </div>
+        
+        {/* Show More button */}
+        {!showAll && projects.length > defaultVisibleCount && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => setShowAll(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            >
+              <span>Show More Projects</span>
+              <ExternalLink className="h-4 w-4 rotate-90" />
+            </button>
+          </div>
+        )}
+        
+        {/* Show Less button when expanded */}
+        {showAll && projects.length > defaultVisibleCount && (
+          <div className="mt-8 flex justify-center">
+            <button
+              onClick={() => setShowAll(false)}
+              className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            >
+              <span>Show Less</span>
+              <ExternalLink className="h-4 w-4 -rotate-90" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Info Modal – cached data only */}
