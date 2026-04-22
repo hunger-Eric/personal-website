@@ -9,7 +9,10 @@
     "lint": "eslint",
     "setup": "node scripts/setup.js",
     "validate-env": "node scripts/validate-env.js",
-    "prebuild": "node scripts/validate-env.js"
+    "prebuild": "node scripts/validate-env.js",
+    "cf:build": "opennextjs-cloudflare build",
+    "cf:preview": "opennextjs-cloudflare preview",
+    "cf:deploy": "opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@notionhq/client": "^5.4.0",
@@ -18,7 +21,7 @@
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.552.0",
     "marked": "^17.0.0",
-    "next": "16.0.7",
+    "next": "^16.2.4",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "rehype": "^13.0.2",
@@ -35,6 +38,7 @@
     "zod": "^3.22.0"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.19.3",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -43,9 +47,10 @@
     "autoprefixer": "^10.4.21",
     "baseline-browser-mapping": "^2.9.5",
     "eslint": "^9",
-    "eslint-config-next": "16.0.7",
+    "eslint-config-next": "^16.2.4",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.18",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^4.84.1"
   }
 }
