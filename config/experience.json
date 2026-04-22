@@ -19,41 +19,5 @@
       "PostgreSQL",
       "REST APIs"
     ]
-  },
-  {
-    "id": "tutor",
-    "role": "Associate Engineer",
-    "company": "Wattpad",
-    "location": "Seattle, WA (Remote)",
-    "type": "part-time",
-    "start": "Sep 2023",
-    "end": "May 2024",
-    "description": [
-      "Tutored students in core CS topics including data structures, algorithms, and object-oriented programming.",
-      "Led weekly review sessions for introductory CS courses, preparing slide decks and practice problems.",
-      "Provided 1:1 guidance on studying for exams, whiteboard coding, and preparing for technical interviews."
-    ],
-    "technologies": ["Python", "Java", "Data Structures", "Algorithms"]
-  },
-  {
-    "id": "swe-intern-abc",
-    "role": "Software Engineering Intern",
-    "company": "ABC Startup",
-    "location": "Hybrid",
-    "type": "internship",
-    "start": "May 2023",
-    "end": "Aug 2023",
-    "description": [
-      "Developed a responsive React web page (the new Story Details) from scratch, both on client and server side, for an app with massive scale (2 billion daily requests).",
-      "Iteratively built web experiences for 80 million users across high-traffic pages.",
-      "Worked in an agile environment, participating in daily stand-ups, sprint planning, and demoing completed work to the team."
-    ],
-    "technologies": [
-      "React",
-      "TypeScript",
-      "Tailwind CSS",
-      "Node.js",
-      "REST APIs"
-    ]
   }
 ]
