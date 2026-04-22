@@ -151,46 +151,6 @@
             "description": "Who I am, my purpose & goals",
             "icon": "User",
             "column": "left"
-          },
-          {
-            "id": "status-uptime",
-            "label": "Projects' Status & Uptime",
-            "href": "/status",
-            "description": "Live online status of my projects",
-            "icon": "FileText",
-            "column": "right"
-          },
-          {
-            "id": "wiki",
-            "label": "Wiki & Docs",
-            "href": "/wiki",
-            "description": "Project info & documentation",
-            "icon": "BookOpen",
-            "column": "right"
-          },
-          {
-            "id": "stats",
-            "label": "Live Coding Metrics",
-            "href": "/stats",
-            "description": "Data & statistics of my journey",
-            "icon": "BarChart2",
-            "column": "right"
-          },
-          {
-            "id": "gallery",
-            "label": "Gallery",
-            "href": "/gallery",
-            "description": "Photos & videos of my life",
-            "icon": "Image",
-            "column": "left"
-          },
-          {
-            "id": "socials",
-            "label": "Social Links",
-            "href": "/socials",
-            "description": "Find more of me on the web",
-            "icon": "Heart",
-            "column": "right"
           }
         ],
         "dropdownFooter": {

@@ -107,10 +107,10 @@ export function ProjectsSectionClient({
             </h3>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center">
             <Link
               href="/projects"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:w-auto sm:justify-start"
             >
               <FolderGit2 className="h-4 w-4" />
               <span>Projects directory</span>

@@ -129,6 +129,26 @@ export default function NavbarCenteredMobile() {
     if (!isOpen) setOpenKey(null);
   }, [isOpen]);
 
+  // Lock background scroll while drawer is open
+  useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [isOpen]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen]);
+
   const headerBg = scrolled ? "bg-background/92" : "bg-background/80";
 
   return (
@@ -196,23 +216,49 @@ export default function NavbarCenteredMobile() {
         </div>
       </div>
 
-      {/* Slide-down menu */}
+      {/* Backdrop */}
       <div
+        aria-hidden
+        onClick={() => setIsOpen(false)}
         className={[
-          "sm:hidden overflow-hidden transition-all duration-200 ease-out",
-          isOpen ? "max-h-[85vh] opacity-100" : "max-h-0 opacity-0",
+          "sm:hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm transition-opacity duration-200",
+          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+        ].join(" ")}
+      />
+
+      {/* Slide-in drawer from the right */}
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Main navigation"
+        className={[
+          "sm:hidden fixed top-0 right-0 z-50 h-[100dvh] w-[85%] max-w-sm",
+          "border-l border-white/10 bg-slate-950/95 shadow-xl shadow-slate-950/40",
+          "backdrop-blur supports-[backdrop-filter]:backdrop-blur",
+          "transition-transform duration-300 ease-out",
+          isOpen ? "translate-x-0" : "translate-x-full",
         ].join(" ")}
       >
-        <div
-          ref={panelRef}
-          className={[
-            "border-t border-white/10",
-            "bg-slate-950/95",
-            "shadow-lg shadow-slate-950/30",
-            "backdrop-blur supports-[backdrop-filter]:backdrop-blur",
-          ].join(" ")}
-        >
-          <div className="mx-auto w-full max-w-6xl px-4 py-3">
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
+            <span className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+              Menu
+            </span>
+            <button
+              type="button"
+              aria-label="Close navigation menu"
+              onClick={() => setIsOpen(false)}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-200 transition hover:bg-white/10"
+            >
+              <span className="relative block h-5 w-5">
+                <span className="absolute left-0 top-2 block h-0.5 w-5 rotate-45 bg-white" />
+                <span className="absolute left-0 top-2 block h-0.5 w-5 -rotate-45 bg-white" />
+              </span>
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto px-4 py-4">
             <nav className="flex flex-col gap-1">
               {menuLinks.map((item) => {
                 const hasChildren = !!(

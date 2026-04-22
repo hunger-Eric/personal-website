@@ -9,6 +9,7 @@ import {
   getRelatedArticles,
 } from "@/lib/mdx/mdx";
 import { JsonLd } from "@/components/JsonLd";
+import { ShareButton } from "@/components/ShareButton";
 import {
   generateArticleSchema,
   generateBreadcrumbSchema,
@@ -25,8 +26,10 @@ import {
   BookOpen,
 } from "lucide-react";
 
-// Revalidate every hour
-export const revalidate = 3600; // 1 hour
+// Fully static — MDX is bundled at build time; fs access at runtime is not
+// available on Cloudflare Workers so we skip revalidation entirely.
+export const dynamic = "force-static";
+export const dynamicParams = false;
 
 // Generate static paths
 export async function generateStaticParams() {
@@ -125,18 +128,21 @@ export default async function ArticlePage({
       />
 
       <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
-        {/* Breadcrumbs */}
-        <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-accent">
-            Home
-          </Link>
-          <span>/</span>
-          <Link href="/articles" className="hover:text-accent">
-            Articles
-          </Link>
-          <span>/</span>
-          <span className="truncate text-foreground">{article.title}</span>
-        </nav>
+        {/* Breadcrumbs + share */}
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Link href="/" className="hover:text-accent">
+              Home
+            </Link>
+            <span>/</span>
+            <Link href="/articles" className="hover:text-accent">
+              Articles
+            </Link>
+            <span>/</span>
+            <span className="truncate text-foreground">{article.title}</span>
+          </nav>
+          <ShareButton label="Share" />
+        </div>
 
         {/* Header */}
         <header className="mb-12">

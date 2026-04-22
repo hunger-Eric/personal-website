@@ -405,8 +405,8 @@ export function AboutSection() {
               </div>
             </Link>
 
-            {/* ✅ Metric cards: underline triggers on CARD hover */}
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* ✅ Metric cards: hidden on mobile (issue #8) */}
+            <div className="hidden sm:grid sm:grid-cols-2 gap-3">
               {metricCards.map((card: any) => {
                 const CardIcon = iconForName(card.icon);
                 const stats = card.stats as

@@ -10,6 +10,7 @@ import { NavbarCentered } from "@/components/NavbarCenteredDesktop";
 import NavbarCenteredMobile from "@/components/NavbarCenteredMobile";
 import { Footer } from "@/components/Footer";
 import { JsonLd } from "@/components/JsonLd";
+import { PageTransition } from "@/components/PageTransition";
 import { ThemeProvider, ThemeScript } from "@/components/ThemeProvider";
 import {
   generatePersonSchema,
@@ -195,7 +196,9 @@ export default function RootLayout({
           <NavbarCenteredMobile />
           <NavbarCentered />
 
-          <main id="main-content">{children}</main>
+          <main id="main-content">
+            <PageTransition>{children}</PageTransition>
+          </main>
 
           {/* Global footer */}
           <Footer />

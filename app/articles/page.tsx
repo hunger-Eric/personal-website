@@ -4,6 +4,7 @@ import Link from "next/link";
 import { siteConfig } from "@/config/siteConfig";
 import { getArticles, getCategories, getTags } from "@/lib/mdx/mdx";
 import { JsonLd } from "@/components/JsonLd";
+import { ShareButton } from "@/components/ShareButton";
 import { generateBreadcrumbSchema } from "@/lib/structured-data";
 import {
   Calendar,
@@ -39,6 +40,16 @@ function formatDate(dateStr: string): string {
   }
 }
 
+// Dynamic fallback image generated from title/category when article has no imageSrc
+function articleImage(a: { imageSrc?: string; title: string; category?: string }): string {
+  if (a.imageSrc) return a.imageSrc;
+  const params = new URLSearchParams({
+    title: a.title,
+    subtitle: a.category || "Article",
+  });
+  return `/api/og?${params.toString()}`;
+}
+
 export default async function ArticlesPage() {
   const articles = await getArticles();
   const categories = await getCategories();
@@ -59,13 +70,16 @@ export default async function ArticlesPage() {
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12">
-          <nav className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-accent">
-              Home
-            </Link>
-            <span>/</span>
-            <span className="text-foreground">Articles</span>
-          </nav>
+          <div className="mb-4 flex items-center justify-between gap-4">
+            <nav className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Link href="/" className="hover:text-accent">
+                Home
+              </Link>
+              <span>/</span>
+              <span className="text-foreground">Articles</span>
+            </nav>
+            <ShareButton label="Share" />
+          </div>
 
           <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
             Articles
@@ -88,8 +102,18 @@ export default async function ArticlesPage() {
                     <Link
                       key={article.slug}
                       href={`/articles/${article.slug}`}
-                      className="group block rounded-xl border border-white/10 bg-white/5 p-6 transition-all hover:border-accent/50 hover:bg-white/[0.07]"
+                      className="group block overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-all hover:border-accent/50 hover:bg-white/[0.07]"
                     >
+                      <div className="relative aspect-[21/9] w-full overflow-hidden bg-white/5">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={articleImage(article)}
+                          alt={article.imageAlt || article.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="p-6">
                       <div className="mb-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                         {article.category && (
                           <span className="flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
@@ -127,6 +151,7 @@ export default async function ArticlesPage() {
                           ))}
                         </div>
                       )}
+                      </div>
                     </Link>
                   ))}
                 </div>
@@ -147,6 +172,15 @@ export default async function ArticlesPage() {
                       href={`/articles/${article.slug}`}
                       className="group flex items-start gap-4 rounded-lg border border-transparent p-4 transition-all hover:border-white/10 hover:bg-white/5"
                     >
+                      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-white/5 sm:h-24 sm:w-32">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={articleImage(article)}
+                          alt={article.imageAlt || article.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+                          loading="lazy"
+                        />
+                      </div>
                       <div className="flex-1 min-w-0">
                         <div className="mb-1.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                           <span className="flex items-center gap-1">

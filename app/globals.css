@@ -129,6 +129,28 @@ textarea {
   animation: fade-in 0.2s ease-out;
 }
 
+/* Page transition (issue #4) */
+@keyframes page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-page-fade {
+  animation: page-fade-in 0.28s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-page-fade {
+    animation: none;
+  }
+}
+
 /* Optional: generic skeleton shimmer */
 .skeleton {
   @apply rounded-md bg-white/5;
