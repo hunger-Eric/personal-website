@@ -26,12 +26,9 @@ function formatRelativeDate(iso?: string): string | null {
   return `${Math.floor(days / 365)}y ago`;
 }
 
-function fallbackImage(project: ProjectItem): string {
-  const params = new URLSearchParams({
-    title: project.name,
-    subtitle: project.technologies?.slice(0, 3).join(" · ") || "Project",
-  });
-  return `/api/og?${params.toString()}`;
+function fallbackImage(_project: ProjectItem): string {
+  // Static fallback (next/og isn't reliable on Cloudflare Workers).
+  return "/images/demo_1.png";
 }
 
 export function ProjectCard({ project, iconFor }: ProjectCardProps) {

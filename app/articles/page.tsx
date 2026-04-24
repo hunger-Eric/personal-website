@@ -40,14 +40,10 @@ function formatDate(dateStr: string): string {
   }
 }
 
-// Dynamic fallback image generated from title/category when article has no imageSrc
+// Static fallback image when article has no imageSrc
 function articleImage(a: { imageSrc?: string; title: string; category?: string }): string {
   if (a.imageSrc) return a.imageSrc;
-  const params = new URLSearchParams({
-    title: a.title,
-    subtitle: a.category || "Article",
-  });
-  return `/api/og?${params.toString()}`;
+  return "/images/demo_1.png";
 }
 
 export default async function ArticlesPage() {

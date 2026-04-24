@@ -83,7 +83,8 @@ export const metadata: Metadata = {
   // Manifest for PWA
   manifest: "/manifest.json",
 
-  // Open Graph
+  // Open Graph — use a static image (dynamic next/og doesn't work reliably
+  // on Cloudflare Workers via OpenNext).
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -93,9 +94,9 @@ export const metadata: Metadata = {
     description: siteConfig.tagline,
     images: [
       {
-        url: `/api/og?title=${encodeURIComponent(siteConfig.name)}&subtitle=${encodeURIComponent(siteConfig.title)}`,
-        width: 1200,
-        height: 630,
+        url: "/images/demo_1.png",
+        width: 1864,
+        height: 952,
         alt: `${siteConfig.name} - ${siteConfig.title}`,
       },
     ],
@@ -106,9 +107,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${siteConfig.name} – ${siteConfig.title}`,
     description: siteConfig.tagline,
-    images: [
-      `/api/og?title=${encodeURIComponent(siteConfig.name)}&subtitle=${encodeURIComponent(siteConfig.title)}`,
-    ],
+    images: ["/images/demo_1.png"],
     creator: "@KevinTrinhDev",
   },
 
