@@ -1,5 +1,5 @@
 {
-  "handle": "KevinTrinh1227",
+  "handle": "KevinTrinhDev",
   "displayName": "Kevin Huy Trinh",
   "roleLine": "Computer Science student focused on building clean, useful software.",
   "schoolName": "University of Houston",
@@ -24,18 +24,18 @@
     { "type": "school", "label": "University of Houston" },
     {
       "type": "email",
-      "label": "kevintrinh1227@gmail.com",
-      "href": "mailto:kevintrinh1227@gmail.com"
+      "label": "kevin@kevintrinh.dev",
+      "href": "mailto:kevin@kevintrinh.dev"
     },
     {
       "type": "linkedin",
-      "label": "in/kevintrinh1227",
-      "href": "https://www.linkedin.com/in/kevintrinh1227"
+      "label": "in/KevinTrinhDev",
+      "href": "https://www.linkedin.com/in/KevinTrinhDev"
     },
     {
       "type": "github",
-      "label": "github.com/kevintrinh1227",
-      "href": "https://github.com/kevintrinh1227"
+      "label": "github.com/KevinTrinhDev",
+      "href": "https://github.com/KevinTrinhDev"
     }
   ],
 
@@ -191,49 +191,49 @@
       "items": [
         {
           "type": "email",
-          "label": "kevintrinh1227@gmail.com",
-          "href": "mailto:kevintrinh1227@gmail.com"
+          "label": "kevin@kevintrinh.dev",
+          "href": "mailto:kevin@kevintrinh.dev"
         },
         {
           "type": "linkedin",
           "label": "LinkedIn",
-          "href": "https://www.linkedin.com/in/kevintrinh1227"
+          "href": "https://www.linkedin.com/in/KevinTrinhDev"
         },
         {
           "type": "github",
           "label": "GitHub",
-          "href": "https://github.com/kevintrinh1227"
+          "href": "https://github.com/KevinTrinhDev"
         },
         {
           "type": "tiktok",
           "label": "TikTok",
-          "href": "https://www.tiktok.com/@kevintrinh1227"
+          "href": "https://www.tiktok.com/@KevinTrinhDev"
         },
         {
           "type": "youtube",
           "label": "YouTube",
-          "href": "https://www.youtube.com/@KevinTrinh1227"
+          "href": "https://www.youtube.com/@KevinTrinhDev"
         },
-        { "type": "x", "label": "X", "href": "https://x.com/KevinTrinh1227" },
+        { "type": "x", "label": "X", "href": "https://x.com/KevinTrinhDev" },
         {
           "type": "threads",
           "label": "Threads",
-          "href": "https://www.threads.net/@kevintrinh1227"
+          "href": "https://www.threads.net/@KevinTrinhDev"
         },
         {
           "type": "devto",
           "label": "Dev.to",
-          "href": "https://dev.to/kevintrinh1227"
+          "href": "https://dev.to/KevinTrinhDev"
         },
         {
           "type": "medium",
           "label": "Medium",
-          "href": "https://medium.com/@kevintrinh1227"
+          "href": "https://medium.com/@KevinTrinhDev"
         },
         {
           "type": "leetcode",
           "label": "LeetCode",
-          "href": "https://leetcode.com/kevintrinh1227/"
+          "href": "https://leetcode.com/KevinTrinhDev/"
         },
         {
           "type": "handshake",

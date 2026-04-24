@@ -8,7 +8,7 @@
     {
       "key": "github",
       "label": "GitHub",
-      "href": "https://github.com/kevintrinh1227",
+      "href": "https://github.com/KevinTrinhDev",
       "icon": "Github",
       "detail": "My profile & projects",
       "showIn": { "footer": true, "about": true, "contact": true }
@@ -16,43 +16,74 @@
     {
       "key": "linkedin",
       "label": "LinkedIn",
-      "href": "https://www.linkedin.com/in/YOUR_LINKEDIN_SLUG",
+      "href": "https://www.linkedin.com/in/KevinTrinhDev",
       "icon": "Linkedin",
-      "detail": "in/kevintrinh1227",
+      "detail": "in/KevinTrinhDev",
       "showIn": { "footer": true, "about": true, "contact": true }
     },
     {
-      "key": "devto",
-      "label": "Dev.to",
-      "href": "https://dev.to/YOUR_DEVTO_HANDLE",
-      "icon": "Code2",
-      "detail": "View my articles",
+      "key": "tiktok",
+      "label": "TikTok",
+      "href": "https://www.tiktok.com/@KevinTrinhDev",
+      "icon": "Music2",
+      "detail": "@KevinTrinhDev",
+      "showIn": { "footer": true, "about": true, "contact": true }
+    },
+    {
+      "key": "leetcode",
+      "label": "LeetCode",
+      "href": "https://leetcode.com/KevinTrinhDev/",
+      "icon": "Code",
+      "detail": "View my solutions",
       "showIn": { "footer": true, "about": true, "contact": true }
     },
     {
       "key": "youtube",
       "label": "YouTube",
-      "href": "https://www.youtube.com/@CoderTrinh",
+      "href": "https://www.youtube.com/@KevinTrinhDev",
       "icon": "Youtube",
       "detail": "View my channel",
       "showIn": { "footer": true, "about": true, "contact": true }
     },
     {
-      "key": "email",
-      "label": "Email",
-      "href": "mailto:kevintrinh1227@gmail.com",
-      "icon": "Mail",
-      "detail": "kevintrinh1227@gmail.com",
+      "key": "threads",
+      "label": "Threads",
+      "href": "https://www.threads.net/@KevinTrinhDev",
+      "icon": "AtSign",
+      "detail": "@KevinTrinhDev",
       "showIn": { "footer": true, "about": true, "contact": true }
     },
-
     {
-      "key": "discord",
-      "label": "Discord (Server)",
-      "href": null,
-      "icon": "MessageCircle",
-      "detail": null,
-      "showIn": { "footer": false, "about": false, "contact": false }
+      "key": "x",
+      "label": "X",
+      "href": "https://x.com/KevinTrinhDev",
+      "icon": "Twitter",
+      "detail": "@KevinTrinhDev",
+      "showIn": { "footer": true, "about": true, "contact": true }
+    },
+    {
+      "key": "devto",
+      "label": "Dev.to",
+      "href": "https://dev.to/KevinTrinhDev",
+      "icon": "Code2",
+      "detail": "View my articles",
+      "showIn": { "footer": true, "about": true, "contact": true }
+    },
+    {
+      "key": "medium",
+      "label": "Medium",
+      "href": "https://medium.com/@KevinTrinhDev",
+      "icon": "PenSquare",
+      "detail": "Read my articles",
+      "showIn": { "footer": true, "about": true, "contact": true }
+    },
+    {
+      "key": "email",
+      "label": "Email",
+      "href": "mailto:kevin@kevintrinh.dev",
+      "icon": "Mail",
+      "detail": "kevin@kevintrinh.dev",
+      "showIn": { "footer": true, "about": true, "contact": true }
     },
     {
       "key": "discordTag",
@@ -62,12 +93,11 @@
       "detail": "Copy my Discord tag",
       "showIn": { "footer": true, "about": true, "contact": true }
     },
-
     {
-      "key": "medium",
-      "label": "Medium",
+      "key": "discord",
+      "label": "Discord (Server)",
       "href": null,
-      "icon": "PenSquare",
+      "icon": "MessageCircle",
       "detail": null,
       "showIn": { "footer": false, "about": false, "contact": false }
     },
@@ -82,9 +112,9 @@
     {
       "key": "handshake",
       "label": "Handshake",
-      "href": null,
+      "href": "https://joinhandshake.com/",
       "icon": "GraduationCap",
-      "detail": null,
+      "detail": "My Handshake profile",
       "showIn": { "footer": true, "about": false, "contact": false }
     }
   ],
@@ -185,11 +215,11 @@
   },
 
   "repo": {
-    "url": "https://github.com/KevinTrinh1227/DevfolioX",
+    "url": "https://github.com/KevinTrinhDev/DevfolioX",
     "lastCommitSha": "0a03d2a3698bf4095f1287bacaab7846dfb5e3d0",
     "lastCommitMessage": "Refined layout, sections, and contact form",
     "lastCommitDateISO": "2025-01-10T03:12:45Z",
-    "lastCommitUrl": "https://github.com/KevinTrinh1227/DevfolioX/commit/0a03d2a3698bf4095f1287bacaab7846dfb5e3d0",
+    "lastCommitUrl": "https://github.com/KevinTrinhDev/DevfolioX/commit/0a03d2a3698bf4095f1287bacaab7846dfb5e3d0",
     "stars": 42,
     "forks": 7,
     "downloads": 120
@@ -208,6 +238,6 @@
 
   "sponsor": {
     "enabled": true,
-    "url": "https://github.com/sponsors/kevintrinh1227"
+    "url": "https://github.com/sponsors/KevinTrinhDev"
   }
 }

@@ -392,14 +392,14 @@ export function AboutPage() {
       items.push({
         type: "devto",
         label: "Dev.to",
-        href: "https://dev.to/kevintrinh1227",
+        href: "https://dev.to/KevinTrinhDev",
       });
     }
     if (!items.some((x) => x.type === "medium")) {
       items.push({
         type: "medium",
         label: "Medium",
-        href: "https://medium.com/@kevintrinh1227",
+        href: "https://medium.com/@KevinTrinhDev",
       });
     }
 
@@ -420,7 +420,7 @@ export function AboutPage() {
   const emailLabel =
     socialItems.find((s) => s.type === "email")?.label ??
     a.profileLinks?.find((x: any) => x.type === "email")?.label ??
-    "kevintrinh1227@gmail.com";
+    "kevin@kevintrinh.dev";
 
   const schoolLabel =
     a.schoolName ??

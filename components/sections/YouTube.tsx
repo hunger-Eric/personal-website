@@ -15,7 +15,7 @@ export function YouTubeSection() {
 
   const youtubeProfile = {
     avatarUrl: "/images/codertrinh-avatar.jpg",
-    name: "CoderTrinh",
+    name: "KevinTrinhDev",
     description:
       "Software dev, CS student, and content creator sharing projects, tutorials, and dev logs.",
     stats: {

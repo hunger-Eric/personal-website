@@ -2,6 +2,7 @@
 import { MetadataRoute } from "next";
 import { siteConfig } from "@/config/siteConfig";
 import { loadProjects } from "@/config/projects";
+import { blogPosts } from "@/config/articles";
 
 // Base URL - should be configured in site.json or environment
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev";
@@ -65,13 +66,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.warn("Failed to load projects for sitemap:", error);
   }
 
-  // Future: Add article pages when MDX blog is implemented
-  // const articlePages = await getArticles().map(article => ({
-  //   url: `${BASE_URL}/articles/${article.slug}`,
-  //   lastModified: new Date(article.updated || article.date),
-  //   changeFrequency: 'monthly',
-  //   priority: 0.7,
-  // }));
+  // Article pages
+  const articlePages: MetadataRoute.Sitemap = siteConfig.sections?.articles
+    ? blogPosts.map((article) => ({
+        url: `${BASE_URL}/articles/${article.slug}`,
+        lastModified: article.date ? new Date(article.date) : now,
+        changeFrequency: "monthly" as const,
+        priority: 0.6,
+      }))
+    : [];
 
-  return [...staticPages, ...projectPages];
+  return [...staticPages, ...projectPages, ...articlePages];
 }

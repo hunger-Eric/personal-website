@@ -3,7 +3,7 @@
   "title": "DevfolioX",
   "summary": "A minimal, config-driven developer portfolio template built with Next.js and Tailwind CSS.",
   "featured": true,
-  "image_url": "https://raw.githubusercontent.com/KevinTrinh1227/devfoliox/main/public/images/demo_1.png",
+  "image_url": "https://raw.githubusercontent.com/KevinTrinhDev/devfoliox/main/public/images/demo_1.png",
   "description": [
     "DevfolioX is a one-page portfolio focused on simplicity, speed, and practical integrations for students and developers.",
     "It centralizes projects, experience, writing, and contact into a single minimal layout while remaining easy to configure and deploy on free hosting."
@@ -34,12 +34,12 @@
     },
     {
       "label": "Source",
-      "href": "https://github.com/KevinTrinh1227/DevfolioX",
+      "href": "https://github.com/KevinTrinhDev/DevfolioX",
       "type": "github"
     },
     {
       "label": "Download",
-      "href": "https://devfoliox.vercel.app/d/KevinTrinh1227/DevfolioX/",
+      "href": "https://devfoliox.vercel.app/d/KevinTrinhDev/DevfolioX/",
       "type": "download"
     }
   ]
@@ -53,21 +53,21 @@ A minimal, config-driven developer portfolio template built with **Next.js 16**,
 
 **Live Demo: [devfoliox.vercel.app](https://devfoliox.vercel.app)**
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/KevinTrinh1227/DevfolioX)
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/KevinTrinh1227/DevfolioX)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/KevinTrinhDev/DevfolioX)
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/KevinTrinhDev/DevfolioX)
 
-<img src="https://raw.githubusercontent.com/KevinTrinh1227/devfoliox/main/public/images/demo_1.png" alt="DevfolioX screenshot" />
+<img src="https://raw.githubusercontent.com/KevinTrinhDev/devfoliox/main/public/images/demo_1.png" alt="DevfolioX screenshot" />
 
 <details>
 <summary><strong>More Screenshots</strong></summary>
 <p align="center">
-<img src="https://raw.githubusercontent.com/KevinTrinh1227/devfoliox/main/public/images/demo_2.png" alt="DevfolioX screenshot 2" />
-<img src="https://raw.githubusercontent.com/KevinTrinh1227/devfoliox/main/public/images/demo_3.png" alt="DevfolioX screenshot 3" />
-<img src="https://raw.githubusercontent.com/KevinTrinh1227/devfoliox/main/public/images/demo_4.png" alt="DevfolioX screenshot 4" />
-<img src="https://raw.githubusercontent.com/KevinTrinh1227/devfoliox/main/public/images/demo_5.png" alt="DevfolioX screenshot 5" />
-<img src="https://raw.githubusercontent.com/KevinTrinh1227/devfoliox/main/public/images/demo_6.png" alt="DevfolioX screenshot 6" />
-<img src="https://raw.githubusercontent.com/KevinTrinh1227/devfoliox/main/public/images/demo_7.png" alt="DevfolioX screenshot 7" />
-<img src="https://raw.githubusercontent.com/KevinTrinh1227/devfoliox/main/public/images/demo_8.png" alt="DevfolioX screenshot 8" />
+<img src="https://raw.githubusercontent.com/KevinTrinhDev/devfoliox/main/public/images/demo_2.png" alt="DevfolioX screenshot 2" />
+<img src="https://raw.githubusercontent.com/KevinTrinhDev/devfoliox/main/public/images/demo_3.png" alt="DevfolioX screenshot 3" />
+<img src="https://raw.githubusercontent.com/KevinTrinhDev/devfoliox/main/public/images/demo_4.png" alt="DevfolioX screenshot 4" />
+<img src="https://raw.githubusercontent.com/KevinTrinhDev/devfoliox/main/public/images/demo_5.png" alt="DevfolioX screenshot 5" />
+<img src="https://raw.githubusercontent.com/KevinTrinhDev/devfoliox/main/public/images/demo_6.png" alt="DevfolioX screenshot 6" />
+<img src="https://raw.githubusercontent.com/KevinTrinhDev/devfoliox/main/public/images/demo_7.png" alt="DevfolioX screenshot 7" />
+<img src="https://raw.githubusercontent.com/KevinTrinhDev/devfoliox/main/public/images/demo_8.png" alt="DevfolioX screenshot 8" />
 </p>
 </details>
 
@@ -130,7 +130,7 @@ Click the Vercel or Netlify button above to deploy instantly.
 
 ```bash
 # Clone the repository
-git clone https://github.com/KevinTrinh1227/DevfolioX
+git clone https://github.com/KevinTrinhDev/DevfolioX
 cd devfoliox
 
 # Install dependencies
@@ -390,6 +390,6 @@ MIT License - feel free to use this for your own portfolio.
 
 <div align="center">
 
-**[Live Demo](https://devfoliox.vercel.app)** | **[Report Bug](https://github.com/KevinTrinh1227/DevfolioX/issues)** | **[Request Feature](https://github.com/KevinTrinh1227/DevfolioX/issues)**
+**[Live Demo](https://devfoliox.vercel.app)** | **[Report Bug](https://github.com/KevinTrinhDev/DevfolioX/issues)** | **[Request Feature](https://github.com/KevinTrinhDev/DevfolioX/issues)**
 
 </div>

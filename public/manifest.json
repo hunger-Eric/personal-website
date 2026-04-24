@@ -1,7 +1,7 @@
 {
-  "name": "Kevin Trinh Portfolio",
-  "short_name": "Portfolio",
-  "description": "Personal portfolio and blog",
+  "name": "Kevin Trinh — Software Developer",
+  "short_name": "Kevin Trinh",
+  "description": "Kevin Trinh's portfolio, projects, and articles — CS student at the University of Houston building full-stack apps and useful tools.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#050816",
@@ -9,16 +9,15 @@
   "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "/images/favicon-192x192.png",
-      "sizes": "192x192",
+      "src": "/images/favicon.png",
+      "sizes": "120x120",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "/images/favicon-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
+      "src": "/images/favicon.ico",
+      "sizes": "32x32",
+      "type": "image/x-icon"
     }
   ],
   "categories": ["portfolio", "blog", "technology"],

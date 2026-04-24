@@ -260,6 +260,10 @@ export function HeroShowcaseSection() {
             <div className="mt-5 flex flex-wrap gap-2 text-xs sm:text-sm">
               {SOCIALS.map((item) => {
                 const href = resolveSocialHref(item, resumeHref);
+                // Skip any social that hasn't been configured (no real href)
+                if (!href || href === "#" || href.startsWith("copy:")) {
+                  return null;
+                }
                 const external = resolveIsExternal(href);
 
                 return (
@@ -294,7 +298,7 @@ export function HeroShowcaseSection() {
               </a>
 
               <a
-                href="#contact"
+                href="mailto:kevin@kevintrinh.dev"
                 className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-slate-50 transition-colors duration-150 hover:border-accent hover:bg-white/10"
               >
                 {/* ✅ filled speech bubble */}

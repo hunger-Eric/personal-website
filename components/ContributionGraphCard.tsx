@@ -85,14 +85,16 @@ function addDays(d: Date, days: number): Date {
 
 function buildContributionMap(contributionDays?: ContributionDay[]) {
   const map = new Map<string, number>();
-  let total = 0;
   if (contributionDays && contributionDays.length > 0) {
+    // Dedupe by date key — two fetches that overlap on calendar weeks
+    // could otherwise double-count the same day.
     for (const d of contributionDays) {
       const key = d.date.slice(0, 10); // "YYYY-MM-DD"
       map.set(key, d.count);
-      total += d.count;
     }
   }
+  let total = 0;
+  for (const count of map.values()) total += count;
   return { map, total, hasData: map.size > 0 };
 }
 
@@ -114,14 +116,12 @@ function buildYearGrid(
   // Saturday on/after Dec 31 (using UTC day of week)
   const gridEnd = addDays(dec31, 6 - getUTCDayOfWeek(dec31));
 
-  const {
-    map: contribMap,
-    total,
-    hasData,
-  } = buildContributionMap(contributionDays);
+  const { map: contribMap, hasData } =
+    buildContributionMap(contributionDays);
 
   const cells: DayCell[] = [];
   let cursor = new Date(gridStart);
+  let yearTotal = 0;
 
   while (cursor <= gridEnd) {
     const d = new Date(cursor);
@@ -131,6 +131,7 @@ function buildYearGrid(
     if (inRange && hasData) {
       const key = makeDateKey(d);
       const count = contribMap.get(key) ?? 0;
+      yearTotal += count;
 
       if (count === 0) level = 0;
       else if (count < 3) level = 1;
@@ -209,7 +210,7 @@ function buildYearGrid(
     }
   }
 
-  const approxTotal = hasData ? total : 0;
+  const approxTotal = hasData ? yearTotal : 0;
   const summaryLabel =
     approxTotal > 0
       ? `${approxTotal.toLocaleString()} contributions in ${year}`
@@ -243,14 +244,12 @@ function buildRollingGrid(
   const gridStart = addDays(rangeStart, -getUTCDayOfWeek(rangeStart));
   const gridEnd = addDays(end, 6 - getUTCDayOfWeek(end));
 
-  const {
-    map: contribMap,
-    total,
-    hasData,
-  } = buildContributionMap(contributionDays);
+  const { map: contribMap, hasData } =
+    buildContributionMap(contributionDays);
 
   const cells: DayCell[] = [];
   let cursor = new Date(gridStart);
+  let windowTotal = 0;
 
   while (cursor <= gridEnd) {
     const d = new Date(cursor);
@@ -260,6 +259,7 @@ function buildRollingGrid(
     if (inRange && hasData) {
       const key = makeDateKey(d);
       const count = contribMap.get(key) ?? 0;
+      windowTotal += count;
 
       if (count === 0) level = 0;
       else if (count < 3) level = 1;
@@ -372,7 +372,7 @@ function buildRollingGrid(
     }
   }
 
-  const approxTotal = hasData ? total : 0;
+  const approxTotal = hasData ? windowTotal : 0;
   const summaryLabel =
     approxTotal > 0
       ? `${approxTotal.toLocaleString()} contributions in the last 365 days`
@@ -413,28 +413,40 @@ export function ContributionGraphCard({
   const [error, setError] = useState<string | null>(null);
   const [loadingYear, setLoadingYear] = useState<number | null>(null);
 
-  // Fetch GitHub data whenever `year` changes (only if not cached yet)
+  // In rolling mode we need data for both the current year AND the previous year,
+  // because the "last 365 days" window crosses a year boundary.
+  const useRolling = rollingCurrentYear && year === currentYear;
+  const yearsToFetch = useMemo(
+    () => (useRolling ? [year, year - 1] : [year]),
+    [year, useRolling]
+  );
+
+  // Fetch data for every year we still need.
   useEffect(() => {
     let cancelled = false;
 
-    if (Object.prototype.hasOwnProperty.call(dataByYear, year)) {
+    const missing = yearsToFetch.filter(
+      (y) => !Object.prototype.hasOwnProperty.call(dataByYear, y)
+    );
+
+    if (missing.length === 0) {
       return;
     }
 
     setLoadingYear(year);
 
-    async function load() {
+    async function loadYear(y: number) {
       try {
         const params = new URLSearchParams();
-        params.set("year", String(year));
+        params.set("year", String(y));
         if (username) params.set("username", username);
 
         const res = await fetch(
           `/api/github-contributions?${params.toString()}`,
           {
-            // Add cache headers to improve performance
             headers: {
-              'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+              "Cache-Control":
+                "public, max-age=3600, stale-while-revalidate=86400",
             },
           }
         );
@@ -444,9 +456,7 @@ export function ContributionGraphCard({
         const json = await res.json();
         const days: ContributionDay[] = json.days ?? [];
         if (!cancelled) {
-          setError(null);
-          setDataByYear((prev) => ({ ...prev, [year]: days }));
-          setLoadingYear(null);
+          setDataByYear((prev) => ({ ...prev, [y]: days }));
         }
       } catch (err) {
         console.error("Failed to fetch GitHub contributions:", err);
@@ -454,26 +464,33 @@ export function ContributionGraphCard({
           setError(
             "Could not load GitHub data. Showing an empty grid for now."
           );
-          setDataByYear((prev) => ({ ...prev, [year]: [] }));
-          setLoadingYear(null);
+          setDataByYear((prev) => ({ ...prev, [y]: [] }));
         }
       }
     }
 
-    load();
+    Promise.all(missing.map(loadYear)).then(() => {
+      if (!cancelled) {
+        setError(null);
+        setLoadingYear(null);
+      }
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [year, username, dataByYear]);
+  }, [yearsToFetch, year, username, dataByYear]);
 
   const { cells, weekCount, monthLabelByWeek, summaryLabel } = useMemo(() => {
-    const days = dataByYear[year];
-    const useRolling = rollingCurrentYear && year === currentYear;
-
-    if (useRolling) return buildRollingGrid(today, days);
-    return buildYearGrid(year, days);
-  }, [year, currentYear, rollingCurrentYear, today, dataByYear]);
+    if (useRolling) {
+      // Merge current + previous year so the rolling window has every day.
+      const thisYear = dataByYear[year] ?? [];
+      const prevYear = dataByYear[year - 1] ?? [];
+      const merged = [...prevYear, ...thisYear];
+      return buildRollingGrid(today, merged);
+    }
+    return buildYearGrid(year, dataByYear[year]);
+  }, [year, useRolling, today, dataByYear]);
 
   const cardClass =
     "rounded-2xl border border-white/10 bg-white/5 px-2 py-2 text-slate-50 shadow-[0_18px_45px_rgba(15,23,42,0.6)] sm:px-4 sm:py-3";

@@ -1,23 +1,23 @@
 {
   "github_readme_projects": [
     {
-      "repo_url": "https://github.com/KevinTrinh1227/DevfolioX",
+      "repo_url": "https://github.com/KevinTrinhDev/DevfolioX",
       "priority": 1
     },
     {
-      "repo_url": "https://github.com/KevinTrinh1227/Reactfolio",
+      "repo_url": "https://github.com/KevinTrinhDev/Reactfolio",
       "priority": 2
     },
     {
-      "repo_url": "https://github.com/KevinTrinh1227/Hycord-Client",
+      "repo_url": "https://github.com/KevinTrinhDev/McGraw-Plus",
       "priority": 3
     },
     {
-      "repo_url": "https://github.com/KevinTrinh1227/Github-Profile-Booster",
+      "repo_url": "https://github.com/KevinTrinhDev/Github-Profile-Booster",
       "priority": 4
     },
     {
-      "repo_url": "https://github.com/KevinTrinh1227/JSONSnap",
+      "repo_url": "https://github.com/KevinTrinhDev/futures-trading-bot",
       "priority": 5
     }
   ],
@@ -39,11 +39,11 @@
       "links": [
         {
           "label": "Source",
-          "href": "https://github.com/KevinTrinh1227/Prize-Picks-Predictions",
+          "href": "https://github.com/KevinTrinhDev/Prize-Picks-Predictions",
           "type": "github"
         }
       ],
-      "githubRepoUrl": "https://github.com/KevinTrinh1227/Prize-Picks-Predictions",
+      "githubRepoUrl": "https://github.com/KevinTrinhDev/Prize-Picks-Predictions",
       "stats": {
         "stars": true,
         "forks": true,
@@ -66,13 +66,8 @@
       "imageUrl": "/images/projects/leetcode-tracker.png",
       "links": [
         {
-          "label": "Live Demo",
-          "href": "https://your-leetcode-tracker-url.com",
-          "type": "live"
-        },
-        {
           "label": "Source",
-          "href": "https://github.com/yourname/leetcode-tracker",
+          "href": "https://github.com/KevinTrinhDev/leetcode-tracker",
           "type": "github"
         }
       ]
@@ -93,13 +88,8 @@
       "imageUrl": "/images/demo_6.png",
       "links": [
         {
-          "label": "Live Demo",
-          "href": "https://your-study-planner-url.com",
-          "type": "live"
-        },
-        {
           "label": "Source",
-          "href": "https://github.com/yourname/study-planner",
+          "href": "https://github.com/KevinTrinhDev/study-planner",
           "type": "github"
         }
       ]
@@ -121,12 +111,12 @@
       "links": [
         {
           "label": "Source",
-          "href": "https://github.com/yourname/notes-api",
+          "href": "https://github.com/KevinTrinhDev/notes-api",
           "type": "github"
         },
         {
           "label": "Docs",
-          "href": "https://github.com/yourname/notes-api#readme",
+          "href": "https://github.com/KevinTrinhDev/notes-api#readme",
           "type": "docs"
         }
       ]

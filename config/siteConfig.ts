@@ -277,7 +277,7 @@ export const siteConfig = {
   // Sponsor
   sponsor: data.sponsor || {
     enabled: true,
-    url: "https://github.com/sponsors/kevintrinh1227",
+    url: "https://github.com/sponsors/KevinTrinhDev",
   },
 } as const;
 
