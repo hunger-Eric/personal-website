@@ -580,39 +580,6 @@ export function AboutPage() {
             </div>
           </section>
 
-          {/* Setup */}
-          <section className="mt-12">
-            <h2 className="text-2xl font-semibold text-slate-50">
-              {setupTitle}
-            </h2>
-
-            <div className="mt-4 space-y-4 text-sm leading-7 text-slate-200/85 sm:text-base">
-              {setupParagraphs.map((para, idx) => (
-                <p key={idx}>{para}</p>
-              ))}
-            </div>
-
-            {setupImageUrl ? (
-              <div className="mt-8">
-                <div className="relative aspect-[16/9] w-full">
-                  <Image
-                    src={setupImageUrl}
-                    alt={setupImageAlt}
-                    fill
-                    className="object-cover"
-                    sizes="(min-width: 1024px) 900px, 100vw"
-                    priority={false}
-                  />
-                </div>
-
-                {setupCaption ? (
-                  <div className="mt-3 text-center text-sm text-slate-200/55">
-                    {setupCaption}
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-          </section>
         </div>
 
         {/* RIGHT */}
@@ -679,66 +646,6 @@ export function AboutPage() {
         </aside>
       </section>
 
-      {/* Inspirations */}
-      <section className="mt-12">
-        <h2 className="text-2xl font-semibold text-slate-50">
-          {inspirationsTitle}
-        </h2>
-        <p className="mt-2 text-sm leading-7 text-slate-200/85 sm:text-base">
-          {inspirationsDescription}
-        </p>
-
-        <div className="mt-6 grid grid-cols-2 gap-x-7 gap-y-5 sm:grid-cols-3 lg:grid-cols-4">
-          {inspirations.map((person, idx) => {
-            const avatarSrc = resolveInspirationAvatar(person.avatarUrl, person.href);
-            const tag = person.tag?.trim() || deriveTagFromHref(person.href);
-
-            return (
-              <a
-                key={`${person.name}-${idx}`}
-                href={person.href}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="group inline-flex items-center gap-3"
-                title={person.name}
-                aria-label={person.name}
-              >
-                <span className="relative h-10 w-10 overflow-hidden rounded-lg">
-                  <Image
-                    src={avatarSrc}
-                    alt={person.name}
-                    fill
-                    className="object-cover"
-                    sizes="40px"
-                    priority={false}
-                  />
-                </span>
-
-                <span className="min-w-0">
-                  <span className="flex items-baseline gap-2">
-                    <span
-                      className={[
-                        "relative truncate text-[15px] font-semibold text-slate-50 transition-colors",
-                        "group-hover:text-indigo-300",
-                        "after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-indigo-300 after:transition-transform after:duration-300",
-                        "group-hover:after:scale-x-100",
-                      ].join(" ")}
-                    >
-                      {person.name}
-                    </span>
-
-                    {tag ? (
-                      <span className="truncate text-[13px] text-slate-200/55">
-                        {tag}
-                      </span>
-                    ) : null}
-                  </span>
-                </span>
-              </a>
-            );
-          })}
-        </div>
-      </section>
     </main>
   );
 }
