@@ -9,7 +9,7 @@ import {
   Coffee,
   GraduationCap,
   AtSign,
-  Sparkles,
+  Hand,
   Instagram,
 } from "lucide-react";
 
@@ -23,7 +23,8 @@ type SocialItem = {
 };
 
 // Hard-coded social platforms in the order requested.
-// All point to @KevinTrinhDev on each platform.
+// All point to @KevinTrinhDev on each platform; Resume points at the
+// site's PDF route (/resume).
 const SOCIALS: SocialItem[] = [
   { key: "github", label: "GitHub" },
   { key: "linkedin", label: "LinkedIn" },
@@ -31,12 +32,12 @@ const SOCIALS: SocialItem[] = [
   { key: "tiktok", label: "TikTok" },
   { key: "youtube", label: "YouTube" },
   { key: "threads", label: "Threads" },
-  { key: "bluesky", label: "Bluesky" },
   { key: "handshake", label: "Handshake" },
   { key: "x", label: "X" },
   { key: "medium", label: "Medium" },
   { key: "devto", label: "Dev.to" },
   { key: "discord", label: "Discord Server" },
+  { key: "resume", label: "Resume", type: "resume" },
 ];
 
 function resolveSocialHref(item: SocialItem, resumeHref: string): string {
@@ -175,17 +176,6 @@ function IconChatBubbleFilled({ className = "" }: { className?: string }) {
   );
 }
 
-function IconBlueskyFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 64 57" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M13.873 3.805C21.21 9.332 29.103 20.537 32 26.55v15.882c0-.338-.13.044-.41.867-1.512 4.456-7.418 21.847-20.923 7.944-7.111-7.32-3.819-14.64 9.125-16.85-7.405 1.264-15.73-.825-18.014-9.015C1.12 23.022 0 8.51 0 6.55 0-3.268 8.579-.182 13.873 3.805ZM50.127 3.805C42.79 9.332 34.897 20.537 32 26.55v15.882c0-.338.13.044.41.867 1.512 4.456 7.418 21.847 20.923 7.944 7.111-7.32 3.819-14.64-9.125-16.85 7.405 1.264 15.73-.825 18.014-9.015C62.88 23.022 64 8.51 64 6.55 64-3.268 55.421-.182 50.127 3.805Z"
-      />
-    </svg>
-  );
-}
-
 function IconThreadsFilled({ className = "" }: { className?: string }) {
   // Simplified Threads (Meta) glyph
   return (
@@ -216,8 +206,6 @@ function SocialIcon({ item }: { item: SocialItem }) {
   if (key === "youtube") return <IconYouTubeFilled className={base} />;
   if (key === "instagram") return <Instagram className={base} />;
   if (key === "threads") return <IconThreadsFilled className={base} />;
-  if (key === "bluesky" || key === "bsky")
-    return <IconBlueskyFilled className={base} />;
   if (key === "devto" || key === "dev.to")
     return <IconDevToFilled className={base} />;
   if (key === "medium") return <IconMediumFilled className={base} />;
@@ -311,24 +299,14 @@ export function HeroShowcaseSection() {
               })}
             </div>
 
-            {/* CTAs */}
+            {/* CTA */}
             <div className="mt-7 flex flex-wrap gap-3">
               <a
                 href="/connect"
-                className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-slate-50 shadow-sm transition-colors duration-150 hover:bg-accent/90 hover:shadow-md"
+                className="group inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-slate-50 shadow-sm transition-colors duration-150 hover:bg-accent/90 hover:shadow-md"
               >
-                <Sparkles className="h-4 w-4" />
+                <Hand className="h-4 w-4 transition-transform duration-200 group-hover:-rotate-12" />
                 <span>Connect with me</span>
-              </a>
-
-              <a
-                href="/resume"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-slate-50 transition-colors duration-150 hover:border-accent hover:bg-white/10"
-              >
-                <FileText className="h-4 w-4" />
-                <span>View Resume</span>
               </a>
             </div>
           </div>

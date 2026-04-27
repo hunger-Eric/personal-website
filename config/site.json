@@ -62,14 +62,6 @@
       "showIn": { "footer": true, "about": true, "contact": true }
     },
     {
-      "key": "bluesky",
-      "label": "Bluesky",
-      "href": "https://bsky.app/profile/kevintrinhdev.bsky.social",
-      "icon": "Cloud",
-      "detail": "@kevintrinhdev",
-      "showIn": { "footer": true, "about": true, "contact": true }
-    },
-    {
       "key": "x",
       "label": "X",
       "href": "https://x.com/KevinTrinhDev",
@@ -128,9 +120,9 @@
     {
       "key": "handshake",
       "label": "Handshake",
-      "href": "https://joinhandshake.com/",
+      "href": "https://app.joinhandshake.com/profiles/kevintrinhdev",
       "icon": "GraduationCap",
-      "detail": "My Handshake profile",
+      "detail": "@kevintrinhdev",
       "showIn": { "footer": true, "about": false, "contact": false }
     }
   ],
