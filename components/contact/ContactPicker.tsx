@@ -158,7 +158,7 @@ export function ContactPicker() {
               </span>
               <span className="flex min-w-0 flex-1 flex-col">
                 <span className="truncate text-sm font-semibold text-foreground sm:text-base">
-                  <span className="relative inline-block transition-colors group-hover:text-accent after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
+                  <span className="relative inline-block after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
                     {q.label}
                   </span>
                 </span>

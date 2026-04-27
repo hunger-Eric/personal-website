@@ -14,6 +14,8 @@ import {
   X,
 } from "lucide-react";
 
+import { ShareLinks } from "./ShareLinks";
+
 export type ArticleListItem = {
   slug: string;
   title: string;
@@ -104,7 +106,7 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
   };
 
   return (
-    <div className="flex flex-col gap-12 lg:flex-row">
+    <div className="flex flex-col gap-8 lg:flex-row lg:gap-8">
       {/* Main content */}
       <div className="min-w-0 flex-1">
         {/* Search */}
@@ -203,7 +205,7 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
                   <div className="flex min-w-0 flex-1 flex-col p-5 sm:p-6">
                     <div className="mb-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                       {article.category && (
-                        <span className="flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
+                        <span className="inline-flex items-center gap-1.5 rounded-md bg-accent px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">
                           <Folder className="h-3 w-3" />
                           {article.category}
                         </span>
@@ -218,7 +220,7 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
                       </span>
                     </div>
                     <h3 className="mb-2 text-xl font-semibold">
-                      <span className="relative inline-block transition-colors group-hover:text-accent after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
+                      <span className="relative inline-block after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
                         {article.title}
                       </span>
                     </h3>
@@ -305,13 +307,13 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
                         {article.readingTime} min
                       </span>
                       {article.category && (
-                        <span className="rounded bg-white/5 px-1.5 py-0.5">
+                        <span className="inline-flex items-center rounded-md bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
                           {article.category}
                         </span>
                       )}
                     </div>
                     <h3 className="mb-1 font-medium">
-                      <span className="relative inline-block transition-colors group-hover:text-accent after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
+                      <span className="relative inline-block after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
                         {article.title}
                       </span>
                     </h3>
@@ -329,43 +331,8 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
         </section>
       </div>
 
-      {/* Sidebar — order: Tags → Categories → Recent */}
-      <aside className="w-full lg:w-64 lg:flex-shrink-0">
-        {/* Tags */}
-        {tags.length > 0 && (
-          <div className="mb-8">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              <Tag className="h-4 w-4" />
-              Tags
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {tags.map((t) => {
-                const active =
-                  activeFilter?.type === "tag" && activeFilter.value === t;
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() =>
-                      setActiveFilter(
-                        active ? null : { type: "tag", value: t }
-                      )
-                    }
-                    className={[
-                      "rounded-md px-2 py-0.5 text-xs transition-colors",
-                      active
-                        ? "bg-accent/15 text-accent"
-                        : "bg-white/5 text-muted-foreground hover:bg-white/10",
-                    ].join(" ")}
-                  >
-                    {t}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
+      {/* Sidebar — order: Categories → Recent → Tags → Share */}
+      <aside className="w-full lg:w-60 lg:flex-shrink-0">
         {/* Categories */}
         {categories.length > 0 && (
           <div className="mb-8">
@@ -404,7 +371,7 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
 
         {/* Recent — small square thumb + truncated title */}
         {recent.length > 0 && (
-          <div>
+          <div className="mb-8">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
               <Clock className="h-4 w-4" />
               Recent
@@ -429,8 +396,10 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
                       />
                     </span>
                     <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="line-clamp-2 text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-accent">
-                        {a.title}
+                      <span className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
+                        <span className="relative inline transition-[background-size] duration-300 [background-image:linear-gradient(currentColor,currentColor)] [background-position:0_100%] [background-repeat:no-repeat] [background-size:0%_2px] group-hover:[background-size:100%_2px]">
+                          {a.title}
+                        </span>
                       </span>
                       <span className="mt-0.5 text-xs text-muted-foreground">
                         {formatDate(a.date)}
@@ -442,6 +411,54 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
             </ul>
           </div>
         )}
+
+        {/* Tags */}
+        {tags.length > 0 && (
+          <div className="mb-8">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
+              <Tag className="h-4 w-4" />
+              Tags
+            </h3>
+            <div className="flex flex-wrap gap-1.5">
+              {tags.map((t) => {
+                const active =
+                  activeFilter?.type === "tag" && activeFilter.value === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() =>
+                      setActiveFilter(
+                        active ? null : { type: "tag", value: t }
+                      )
+                    }
+                    className={[
+                      "rounded-md px-2 py-0.5 text-xs transition-colors",
+                      active
+                        ? "bg-accent/15 text-accent"
+                        : "bg-white/5 text-muted-foreground hover:bg-white/10",
+                    ].join(" ")}
+                  >
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Share — share the /articles index */}
+        <div>
+          <h3 className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
+            Share
+          </h3>
+          <ShareLinks
+            url="/articles"
+            title="Kevin Trinh — Articles"
+            summary="Articles, tutorials, and writing by Kevin Trinh."
+            heading={null}
+          />
+        </div>
       </aside>
     </div>
   );

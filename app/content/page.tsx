@@ -189,7 +189,7 @@ export default function ContentPage() {
 
                 <div className="flex-1">
                   <div className="text-base font-semibold leading-snug text-foreground">
-                    <span className="relative inline-block transition-colors group-hover:text-accent after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
+                    <span className="relative inline-block after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
                       {p.name}
                     </span>
                   </div>

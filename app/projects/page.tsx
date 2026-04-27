@@ -76,7 +76,7 @@ function ProjectCard({ project }: { project: ProjectItem }) {
       <div className="flex flex-1 flex-col p-5">
         {/* Title */}
         <h3 className="mb-2 text-lg font-semibold text-foreground">
-          <span className="relative inline-block transition-colors group-hover:text-accent after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
+          <span className="relative inline-block after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
             {project.name}
           </span>
         </h3>

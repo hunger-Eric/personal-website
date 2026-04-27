@@ -14,6 +14,8 @@ type Props = {
   url: string;
   title: string;
   summary?: string;
+  /** Override the small "Share this article" header text. Set to null to hide. */
+  heading?: string | null;
 };
 
 const TWITTER_SVG_PATH =
@@ -50,7 +52,7 @@ type Btn = {
   newTab?: boolean;
 };
 
-export function ShareLinks({ url, title, summary }: Props) {
+export function ShareLinks({ url, title, summary, heading }: Props) {
   const [copied, setCopied] = useState(false);
   const [hasNativeShare, setHasNativeShare] = useState(false);
   const [absoluteUrl, setAbsoluteUrl] = useState(url);
@@ -135,11 +137,16 @@ export function ShareLinks({ url, title, summary }: Props) {
     },
   ];
 
+  const headerText =
+    heading === undefined ? "Share this article" : heading;
+
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Share2 className="h-4 w-4" /> Share this article
-      </div>
+      {headerText !== null && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Share2 className="h-4 w-4" /> {headerText}
+        </div>
+      )}
       <div className="flex flex-wrap gap-2">
         {buttons.map((b) => (
           <a
