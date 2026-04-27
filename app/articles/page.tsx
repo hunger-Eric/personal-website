@@ -3,9 +3,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { siteConfig } from "@/config/siteConfig";
 import { getArticles, getCategories, getTags } from "@/lib/mdx/mdx";
-import { JsonLd } from "@/components/JsonLd";
-import { ShareButton } from "@/components/ShareButton";
-import { generateBreadcrumbSchema } from "@/lib/structured-data";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import {
   Calendar,
   Clock,
@@ -61,21 +59,10 @@ export default async function ArticlesPage() {
 
   return (
     <>
-      <JsonLd data={generateBreadcrumbSchema(breadcrumbs)} />
-
       <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-12">
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Link href="/" className="hover:text-accent">
-                Home
-              </Link>
-              <span>/</span>
-              <span className="text-foreground">Articles</span>
-            </nav>
-            <ShareButton label="Share" />
-          </div>
+          <Breadcrumbs items={breadcrumbs} />
 
           <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
             Articles

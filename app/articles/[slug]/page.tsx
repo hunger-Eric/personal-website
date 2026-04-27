@@ -9,11 +9,8 @@ import {
   getRelatedArticles,
 } from "@/lib/mdx/mdx";
 import { JsonLd } from "@/components/JsonLd";
-import { ShareButton } from "@/components/ShareButton";
-import {
-  generateArticleSchema,
-  generateBreadcrumbSchema,
-} from "@/lib/structured-data";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { generateArticleSchema } from "@/lib/structured-data";
 import { marked } from "marked";
 import {
   Calendar,
@@ -112,37 +109,21 @@ export default async function ArticlePage({
     <>
       {/* Structured Data */}
       <JsonLd
-        data={[
-          generateBreadcrumbSchema(breadcrumbs),
-          generateArticleSchema({
-            title: article.title,
-            slug: article.slug,
-            summary: article.summary,
-            date: article.date,
-            updated: article.updated,
-            imageSrc: article.imageSrc,
-            tags: article.tags,
-            readingTime: article.readingTime,
-          }),
-        ]}
+        data={generateArticleSchema({
+          title: article.title,
+          slug: article.slug,
+          summary: article.summary,
+          date: article.date,
+          updated: article.updated,
+          imageSrc: article.imageSrc,
+          tags: article.tags,
+          readingTime: article.readingTime,
+        })}
       />
 
       <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
-        {/* Breadcrumbs + share */}
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-accent">
-              Home
-            </Link>
-            <span>/</span>
-            <Link href="/articles" className="hover:text-accent">
-              Articles
-            </Link>
-            <span>/</span>
-            <span className="truncate text-foreground">{article.title}</span>
-          </nav>
-          <ShareButton label="Share" />
-        </div>
+        <Breadcrumbs items={breadcrumbs} className="mb-6" />
+
 
         {/* Header */}
         <header className="mb-12">

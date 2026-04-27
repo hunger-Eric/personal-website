@@ -4,7 +4,9 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ChevronDown } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { ChevronDown, Home } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 
 import {
   navbarConfig,
@@ -12,6 +14,7 @@ import {
   type NavDropdownItemCfg,
   type NavDropdownFooterCfg,
 } from "../config/navbarConfig";
+import { siteConfig } from "../config/siteConfig";
 
 type NavItem = {
   key: string;
@@ -28,6 +31,9 @@ export default function NavbarCenteredMobile() {
   const [isOpen, setIsOpen] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
+
+  const pathname = usePathname();
+  const isHome = pathname === "/" || pathname === "";
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const toggleRef = useRef<HTMLButtonElement | null>(null);
@@ -84,7 +90,31 @@ export default function NavbarCenteredMobile() {
     };
   }, []);
 
-  const menuLinks = useMemo(() => items, [items]);
+  const menuLinks = useMemo<NavItem[]>(() => {
+    if (isHome) return items;
+    const homeItem: NavItem = {
+      key: "nav-home",
+      id: "home",
+      label: "Home",
+      href: "/",
+      external: false,
+      isButton: false,
+      children: [],
+      dropdownFooter: undefined,
+    };
+    return [homeItem, ...items];
+  }, [items, isHome]);
+
+  // Socials for the bottom of the drawer (footer-visible only)
+  const socialItems = useMemo(() => {
+    return (siteConfig.socialsFor?.footer ?? [])
+      .filter((s) => {
+        const href = (s.href || "").trim();
+        if (!href || href === "null") return false;
+        return true;
+      })
+      .slice(0, 8);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 6);
@@ -93,19 +123,23 @@ export default function NavbarCenteredMobile() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close on outside click + meaningful scroll (no instant close)
+  // Close on outside click + meaningful scroll (no instant close).
+  // Uses capture-phase click + preventDefault/stopPropagation so the synthesized
+  // click on touch doesn't activate links underneath the drawer (was opening
+  // pages when tapping outside to close).
   useEffect(() => {
     if (!isOpen) return;
 
     const openedAt = Date.now();
     const openedY = window.scrollY;
 
-    const onPointerDown = (e: PointerEvent) => {
+    const onClickCapture = (e: MouseEvent) => {
       const t = e.target as Node | null;
       if (!t) return;
-
       if (panelRef.current?.contains(t) || toggleRef.current?.contains(t))
         return;
+      e.preventDefault();
+      e.stopPropagation();
       setIsOpen(false);
     };
 
@@ -116,11 +150,11 @@ export default function NavbarCenteredMobile() {
       if (dy > 12) setIsOpen(false);
     };
 
-    window.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("click", onClickCapture, true);
     window.addEventListener("scroll", onScroll, { passive: true });
 
     return () => {
-      window.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("click", onClickCapture, true);
       window.removeEventListener("scroll", onScroll);
     };
   }, [isOpen]);
@@ -340,8 +374,14 @@ export default function NavbarCenteredMobile() {
                     target={contactLink.external ? "_blank" : undefined}
                     rel={contactLink.external ? "noreferrer" : undefined}
                     onClick={() => setIsOpen(false)}
-                    className="rounded-md border border-white/25 px-3 py-2 text-center text-sm font-semibold text-slate-50 transition hover:border-accent hover:bg-white/10"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-md border border-white/25 px-3 py-2 text-center text-sm font-semibold text-slate-50 transition hover:border-accent hover:bg-white/10"
                   >
+                    {(() => {
+                      const Icon = (LucideIcons as any).MessageSquare;
+                      return Icon ? (
+                        <Icon className="h-4 w-4 opacity-80" aria-hidden />
+                      ) : null;
+                    })()}
                     {contactLink.label}
                   </a>
                 )}
@@ -352,12 +392,54 @@ export default function NavbarCenteredMobile() {
                     target={primaryCta.external ? "_blank" : undefined}
                     rel={primaryCta.external ? "noreferrer" : undefined}
                     onClick={() => setIsOpen(false)}
-                    className="rounded-md border border-accent bg-accent px-3 py-2 text-center text-sm font-semibold text-slate-50 shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-md border border-accent bg-accent px-3 py-2 text-center text-sm font-semibold text-slate-50 shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md"
                   >
+                    {(() => {
+                      const Icon = (LucideIcons as any).FileText;
+                      return Icon ? (
+                        <Icon className="h-4 w-4 opacity-90" aria-hidden />
+                      ) : null;
+                    })()}
                     {primaryCta.label}
                   </a>
                 )}
               </div>
+
+              {/* Socials */}
+              {socialItems.length > 0 && (
+                <div className="mt-6">
+                  <div className="mb-2 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                    Socials
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {socialItems.map((s) => {
+                      const Icon =
+                        s.icon && (LucideIcons as any)[s.icon]
+                          ? (LucideIcons as any)[s.icon]
+                          : null;
+                      const external = isExternalHref(s.href);
+                      return (
+                        <a
+                          key={s.key}
+                          href={s.href}
+                          target={external ? "_blank" : undefined}
+                          rel={external ? "noreferrer noopener" : undefined}
+                          onClick={() => setIsOpen(false)}
+                          aria-label={s.label}
+                          title={s.label}
+                          className="flex items-center justify-center rounded-md border border-white/10 bg-white/[0.03] py-2.5 text-slate-200 transition hover:border-accent hover:bg-white/10 hover:text-white"
+                        >
+                          {Icon ? (
+                            <Icon className="h-4 w-4" aria-hidden />
+                          ) : (
+                            <span className="text-xs">{s.label?.[0]}</span>
+                          )}
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </nav>
           </div>
         </div>

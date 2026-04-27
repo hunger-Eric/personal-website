@@ -1,12 +1,9 @@
 // components/sections/Experience.tsx
 "use client";
 
-import { useEffect, useState } from "react";
-import { Download, ExternalLink, History } from "lucide-react";
+import { useState } from "react";
+import { History } from "lucide-react";
 import { experience } from "../../config/experience";
-import { Modal } from "@/components/ui/Modal";
-import PdfEmbed from "@/components/ui/PdfEmbed";
-import { useModalRoute } from "@/components/hooks/useModalRoute";
 
 export function ExperienceSection() {
   if (!experience.length) return null;
@@ -19,75 +16,8 @@ export function ExperienceSection() {
   // ✅ subtle "Apple-like" fade when switching roles
   const [detailsKey, setDetailsKey] = useState(0);
 
-  // Short flag-style URL: /current-path?resume
-  const resumeModal = useModalRoute({
-    scheme: "flag",
-    key: "resume",
-    scroll: false,
-  });
-  const [resumeOpen, setResumeOpen] = useState(false);
-
-  // Show "(Updated ...)" when the API exposes a last-modified-like header
-  const [lastUpdatedText, setLastUpdatedText] = useState<string | null>(null);
-
-  // Sync modal with URL flag
-  useEffect(() => {
-    setResumeOpen(resumeModal.isActive);
-  }, [resumeModal.isActive]);
-
-  // API route paths
-  const resumeViewHref = "/resume"; // inline view via API
-  const resumeDownloadHref = "/resume?dl=1";
-
-  // Fetch metadata for "Updated ..." text
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchMeta() {
-      try {
-        const res = await fetch(resumeViewHref, {
-          method: "HEAD",
-          cache: "no-store",
-        });
-        if (!res.ok) return;
-
-        const lm =
-          res.headers.get("Last-Modified") ||
-          res.headers.get("x-resume-updated");
-        if (!lm) return;
-
-        const d = new Date(lm);
-        if (isNaN(d.getTime())) return;
-
-        const formatted = d.toLocaleString(undefined, {
-          year: "numeric",
-          month: "short",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-
-        if (!cancelled) setLastUpdatedText(formatted);
-      } catch {
-        // ignore
-      }
-    }
-
-    fetchMeta();
-    return () => {
-      cancelled = true;
-    };
-  }, [resumeOpen]);
-
   const btnBase =
     "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-xs sm:text-sm font-medium transition border border-white/15 text-white/90 hover:text-white hover:border-accent hover:bg-white/5";
-
-  const btnAccent =
-    "inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-xs sm:text-sm font-medium border border-transparent bg-accent text-white shadow-sm transition-transform transition-colors duration-200 hover:border-accent hover:bg-accent/90 hover:shadow-md hover:-translate-y-0.5";
-
-  const modalTitle = lastUpdatedText
-    ? `My Resume (Updated ${lastUpdatedText})`
-    : "My Resume";
 
   // ✅ Left menu typography (increased)
   // ✅ Left menu typography (slightly reduced)
@@ -241,26 +171,6 @@ export function ExperienceSection() {
         </div>
       </div>
 
-      {/* Resume Modal (still supported via URL flag) */}
-      <Modal open={resumeOpen} onClose={resumeModal.close} title={modalTitle}>
-        <PdfEmbed src={resumeViewHref} />
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-          <a
-            href={resumeViewHref}
-            target="_blank"
-            rel="noreferrer"
-            className={btnBase}
-          >
-            <ExternalLink className="h-4 w-4" />
-            <span>New Tab</span>
-          </a>
-
-          <a href={resumeDownloadHref} className={btnAccent}>
-            <Download className="h-4 w-4" />
-            <span>Download</span>
-          </a>
-        </div>
-      </Modal>
     </section>
   );
 }

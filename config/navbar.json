@@ -19,33 +19,7 @@
         "id": "projects",
         "label": "Projects",
         "href": "/projects",
-        "show": true,
-        "children": [
-          {
-            "id": "projects",
-            "label": "Projects Directory",
-            "href": "/projects",
-            "description": "View all projects & archives",
-            "icon": "User",
-            "column": "left"
-          },
-          {
-            "id": "status-uptime",
-            "label": "Project Status & Uptime",
-            "href": "/status",
-            "description": "Live online status of my projects",
-            "icon": "FileText",
-            "column": "right"
-          },
-          {
-            "id": "wiki",
-            "label": "Wiki & Docs",
-            "href": "/wiki",
-            "description": "Project info & documentation",
-            "icon": "BookOpen",
-            "column": "right"
-          }
-        ]
+        "show": true
       },
 
       {

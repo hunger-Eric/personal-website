@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { aboutConfig } from "../../config/aboutConfig";
+import { Breadcrumbs } from "../Breadcrumbs";
 
 function isExternalHref(href?: string) {
   if (!href) return false;
@@ -437,6 +438,14 @@ export function AboutPage() {
 
   return (
     <main className="mx-auto w-full max-w-6xl px-4 pb-24 pt-16 sm:pt-24">
+      <Breadcrumbs
+        items={[
+          { name: "Home", url: "/" },
+          { name: "About", url: "/about" },
+        ]}
+        className="mb-8"
+      />
+
       <section className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
         {/* LEFT */}
         <div className="min-w-0">

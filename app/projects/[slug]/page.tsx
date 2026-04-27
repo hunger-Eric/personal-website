@@ -5,11 +5,8 @@ import { notFound } from "next/navigation";
 import { siteConfig } from "@/config/siteConfig";
 import { loadProjects, type ProjectItem } from "@/config/projects";
 import { JsonLd } from "@/components/JsonLd";
-import { ShareButton } from "@/components/ShareButton";
-import {
-  generateProjectSchema,
-  generateBreadcrumbSchema,
-} from "@/lib/structured-data";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { generateProjectSchema } from "@/lib/structured-data";
 import {
   Github,
   Star,
@@ -145,38 +142,22 @@ export default async function ProjectPage({
     <>
       {/* Structured Data */}
       <JsonLd
-        data={[
-          generateBreadcrumbSchema(breadcrumbs),
-          generateProjectSchema({
-            id: project.id,
-            name: project.name,
-            summary: project.summary,
-            repoUrl: project.githubRepoUrl,
-            liveUrl: project.links?.find((l) => l.type === "live")?.href,
-            imageSrc: project.imageUrl,
-            technologies: project.technologies,
-            stars: project.githubStars,
-            dateCreated: project.repoCreatedAt,
-          }),
-        ]}
+        data={generateProjectSchema({
+          id: project.id,
+          name: project.name,
+          summary: project.summary,
+          repoUrl: project.githubRepoUrl,
+          liveUrl: project.links?.find((l) => l.type === "live")?.href,
+          imageSrc: project.imageUrl,
+          technologies: project.technologies,
+          stars: project.githubStars,
+          dateCreated: project.repoCreatedAt,
+        })}
       />
 
       <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
-        {/* Breadcrumbs + share */}
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-accent">
-              Home
-            </Link>
-            <span>/</span>
-            <Link href="/projects" className="hover:text-accent">
-              Projects
-            </Link>
-            <span>/</span>
-            <span className="truncate text-foreground">{project.name}</span>
-          </nav>
-          <ShareButton label="Share" />
-        </div>
+        <Breadcrumbs items={breadcrumbs} className="mb-6" />
+
 
         {/* Header */}
         <header className="mb-8">

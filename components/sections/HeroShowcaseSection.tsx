@@ -9,10 +9,11 @@ import {
   Coffee,
   GraduationCap,
   AtSign,
+  Sparkles,
 } from "lucide-react";
 
-import { useModalRoute } from "../hooks/useModalRoute";
 import { ContributionGraphCard } from "../ContributionGraphCard";
+import { Typewriter } from "../Typewriter";
 
 type SocialItem = {
   key: string; // key to look up in siteConfig.socials if present
@@ -211,14 +212,8 @@ function SocialIcon({ item }: { item: SocialItem }) {
 }
 
 export function HeroShowcaseSection() {
-  // Short flag-style link: "/?resume"
-  const resumeModal = useModalRoute({
-    scheme: "flag",
-    key: "resume",
-    scroll: false,
-  });
-
-  const resumeHref = resumeModal.href || "/resume";
+  // Resume now opens as a real page (PDF viewer) in a new tab.
+  const resumeHref = "/resume";
 
   // Top small text
   const smallLabel = "Hello there,";
@@ -244,7 +239,17 @@ export function HeroShowcaseSection() {
 
             {/* big heading, two lines (second line slightly smaller) */}
             <h1 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-              <span className="block">{lineOne}</span>
+              <span className="block">
+                <Typewriter
+                  text={lineOne}
+                  highlightStart={lineOne.indexOf("Kevin Trinh")}
+                  highlightEnd={
+                    lineOne.indexOf("Kevin Trinh") + "Kevin Trinh".length
+                  }
+                  speedMs={45}
+                  startDelayMs={250}
+                />
+              </span>
 
               {/* ✅ Slightly darker than the main line (still very subtle) */}
               <span className="mt-1 block text-3xl text-slate-200/90 sm:text-4xl lg:text-[2.6rem]">
@@ -283,27 +288,22 @@ export function HeroShowcaseSection() {
 
             {/* CTAs */}
             <div className="mt-7 flex flex-wrap gap-3">
-              {/* Open the resume modal with a shareable SPA URL (/?resume) */}
               <a
-                href={resumeHref}
-                onClick={(e) => {
-                  e.preventDefault();
-                  resumeModal.open();
-                }}
+                href="/connect"
                 className="inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-slate-50 shadow-sm transition-colors duration-150 hover:bg-accent/90 hover:shadow-md"
-                title={`Open ${resumeHref}`}
               >
-                <FileText className="h-4 w-4" />
-                <span>View My Resume</span>
+                <Sparkles className="h-4 w-4" />
+                <span>Connect with me</span>
               </a>
 
               <a
-                href="mailto:kevin@kevintrinh.dev"
+                href="/resume"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 rounded-lg border border-white/20 px-4 py-2 text-sm font-medium text-slate-50 transition-colors duration-150 hover:border-accent hover:bg-white/10"
               >
-                {/* ✅ filled speech bubble */}
-                <IconChatBubbleFilled className="h-4 w-4" />
-                <span>Say hello to me!</span>
+                <FileText className="h-4 w-4" />
+                <span>View Résumé</span>
               </a>
             </div>
           </div>
