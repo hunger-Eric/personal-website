@@ -15,6 +15,10 @@ export type ExperienceLink = {
   label: string;
   href: string;
   type?: ExperienceLinkType;
+  /** Small thumbnail image shown on the left side of the attachment card. */
+  image?: string;
+  /** Optional subtitle below the label (e.g. "PDF · 254 KB" or domain). */
+  subtitle?: string;
 };
 
 export type ExperienceItem = {
@@ -42,6 +46,8 @@ function normalizeLinks(input: any): ExperienceLink[] | undefined {
       label,
       href,
       type: raw.type as ExperienceLinkType | undefined,
+      image: typeof raw.image === "string" ? raw.image : undefined,
+      subtitle: typeof raw.subtitle === "string" ? raw.subtitle : undefined,
     });
   }
   return out.length ? out : undefined;

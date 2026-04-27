@@ -1,5 +1,6 @@
 // app/experience/page.tsx
 import type { Metadata } from "next";
+import Image from "next/image";
 import {
   Briefcase,
   Calendar,
@@ -107,15 +108,17 @@ export default function ExperiencePage() {
                 />
 
                 <article className="rounded-xl border border-white/10 bg-white/5 p-6 transition-colors hover:border-accent/40 hover:bg-white/[0.07]">
-                  {/* Top row: role/company + dates */}
-                  <div className="mb-3 flex flex-col-reverse gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+                  {/* Top row: company / location  +  dates */}
+                  <div className="mb-2 flex flex-col-reverse gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
                     <div className="min-w-0">
                       <h2 className="text-lg font-semibold text-foreground sm:text-xl">
-                        {item.role}
-                      </h2>
-                      <p className="mt-0.5 text-sm font-medium text-indigo-300 sm:text-base">
                         {item.company}
-                      </p>
+                        {item.location && (
+                          <span className="font-normal text-muted-foreground">
+                            , {item.location}
+                          </span>
+                        )}
+                      </h2>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:justify-end sm:text-sm">
@@ -126,16 +129,19 @@ export default function ExperiencePage() {
                     </div>
                   </div>
 
-                  {/* Meta chips */}
-                  {(typeLabel || item.location) && (
-                    <div className="mb-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      {typeLabel && (
-                        <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-xs font-medium text-slate-200/80">
-                          {typeLabel}
-                        </span>
-                      )}
+                  {/* Role / program line */}
+                  <p className="mb-4 text-sm font-medium text-indigo-300 sm:text-[15px]">
+                    {item.role}
+                  </p>
+
+                  {/* Type chip — keep small + understated */}
+                  {typeLabel && (
+                    <div className="mb-4 flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-white/5 px-2.5 py-0.5 text-xs font-medium text-slate-200/80">
+                        {typeLabel}
+                      </span>
                       {item.location && (
-                        <span className="inline-flex items-center gap-1">
+                        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground sm:hidden">
                           <MapPin className="h-3.5 w-3.5" aria-hidden />
                           {item.location}
                         </span>
@@ -172,34 +178,73 @@ export default function ExperiencePage() {
                     </div>
                   )}
 
-                  {/* Media / publication links */}
+                  {/* Attachments — LinkedIn-style media cards */}
                   {item.links && item.links.length > 0 && (
-                    <div className="mt-5 flex flex-wrap gap-2">
-                      {item.links.map((link: ExperienceLink) => {
-                        const Icon = iconForExperienceLink(link.type);
-                        const external = isExternalHref(link.href);
-                        return (
-                          <a
-                            key={link.href}
-                            href={link.href}
-                            target="_blank"
-                            rel={
-                              external ? "noreferrer noopener" : undefined
-                            }
-                            className="group inline-flex items-center gap-2 rounded-md border border-white/15 bg-white/[0.04] px-3 py-1.5 text-xs font-medium text-slate-100 transition-colors hover:border-accent hover:bg-white/10 hover:text-white sm:text-sm"
-                          >
-                            <Icon
-                              className="h-3.5 w-3.5 text-muted-foreground transition-colors group-hover:text-accent"
-                              aria-hidden
-                            />
-                            <span>{link.label}</span>
-                            <ExternalLink
-                              className="h-3 w-3 text-muted-foreground/60 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
-                              aria-hidden
-                            />
-                          </a>
-                        );
-                      })}
+                    <div className="mt-6">
+                      <div className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                        Attachments
+                      </div>
+                      <ul className="grid gap-3 sm:grid-cols-2">
+                        {item.links.map((link: ExperienceLink) => {
+                          const Icon = iconForExperienceLink(link.type);
+                          const external = isExternalHref(link.href);
+                          const showThumb = !!link.image;
+                          return (
+                            <li key={link.href}>
+                              <a
+                                href={link.href}
+                                target="_blank"
+                                rel={
+                                  external ? "noreferrer noopener" : undefined
+                                }
+                                className="group flex h-full overflow-hidden rounded-lg border border-white/10 bg-white/[0.03] transition-all hover:-translate-y-0.5 hover:border-accent/60 hover:bg-white/[0.06] hover:shadow-[0_8px_24px_-12px_rgba(99,102,241,0.4)]"
+                              >
+                                {/* Thumbnail */}
+                                <div className="relative aspect-[3/4] w-24 flex-none overflow-hidden bg-white/5 sm:w-28">
+                                  {showThumb ? (
+                                    <Image
+                                      src={link.image as string}
+                                      alt=""
+                                      fill
+                                      sizes="112px"
+                                      className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.04]"
+                                    />
+                                  ) : (
+                                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/60">
+                                      <Icon className="h-7 w-7" aria-hidden />
+                                    </div>
+                                  )}
+                                  {/* Type badge in corner */}
+                                  <span className="absolute left-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-slate-950/75 text-slate-100 backdrop-blur-sm">
+                                    <Icon className="h-3.5 w-3.5" aria-hidden />
+                                  </span>
+                                </div>
+
+                                {/* Body */}
+                                <div className="flex min-w-0 flex-1 flex-col justify-between p-3.5">
+                                  <div>
+                                    <div className="line-clamp-2 text-sm font-semibold leading-snug text-foreground transition-colors group-hover:text-accent">
+                                      {link.label}
+                                    </div>
+                                    {link.subtitle && (
+                                      <div className="mt-1 line-clamp-1 text-xs text-muted-foreground">
+                                        {link.subtitle}
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground/80">
+                                    <ExternalLink
+                                      className="h-3 w-3 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
+                                      aria-hidden
+                                    />
+                                    Open
+                                  </div>
+                                </div>
+                              </a>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </div>
                   )}
                 </article>

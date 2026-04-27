@@ -26,40 +26,46 @@
     ]
   },
   {
-    "id": "research-intern-mcnair",
-    "role": "Research Intern",
-    "company": "STMU McNair",
+    "id": "mcnair-research-fellow",
+    "role": "Undergraduate Research Fellow, McNair Scholars Program",
+    "company": "St. Mary's University",
     "location": "San Antonio, TX",
     "type": "internship",
-    "start": "Jun 2024",
-    "end": "Aug 2024",
+    "start": "May 2023",
+    "end": "Aug 2023",
     "description": [
-      "Conducted thorough undergraduate research on compiler design and high-level to low-level language translation.",
-      "Collaborated closely with mentors to refine development skills and deepen understanding of language design principles and compiler design methodologies.",
-      "Presented research and project outcomes at multiple universities, demonstrating language processing and compiler design expertise."
+      "Designed a custom programming language in Python with a complete compiler pipeline including lexer, parser, and AST generator.",
+      "Engineered tokenization, syntax analysis, and semantic evaluation stages from scratch.",
+      "Presented research findings at 3 universities as part of a competitive federally funded fellowship for first-generation and underrepresented students.",
+      "Authored a peer-reviewed paper accepted into Volume 7 of the McNair Scholars Research Journal, indexed alongside scholars from across the U.S."
     ],
     "technologies": [
-      "Next.js",
-      "TypeScript",
-      "Node.js",
-      "PostgreSQL",
-      "REST APIs"
+      "Python",
+      "Compilers",
+      "Lexer / Parser",
+      "AST"
     ],
     "links": [
       {
-        "label": "Read the paper (PDF)",
+        "label": "Read the paper",
+        "subtitle": "PDF · 5 pages",
         "href": "/files/mcnair-research-paper.pdf",
-        "type": "pdf"
+        "type": "pdf",
+        "image": "/images/experience/mcnair-page-1.jpg"
       },
       {
         "label": "Published in McNair Scholars Research Journal",
+        "subtitle": "commons.stmarytx.edu · page 153",
         "href": "https://commons.stmarytx.edu/cgi/viewcontent.cgi?article=1015&context=msrj#page=153",
-        "type": "publication"
+        "type": "publication",
+        "image": "/images/experience/mcnair-page-2.jpg"
       },
       {
-        "label": "Abstract on stmarytx.edu",
+        "label": "Abstract & journal entry",
+        "subtitle": "commons.stmarytx.edu · msrjs/7",
         "href": "https://commons.stmarytx.edu/msrjs/7/",
-        "type": "abstract"
+        "type": "abstract",
+        "image": "/images/experience/mcnair-page-3.jpg"
       }
     ]
   }
