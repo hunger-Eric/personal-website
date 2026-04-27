@@ -163,6 +163,20 @@ export default function RootLayout({
         {/* Theme script - prevents flash of wrong theme */}
         <ThemeScript />
 
+        {/*
+          Disable native browser scroll restoration BEFORE the browser tries to
+          jump back to the previously-saved scroll position on refresh. Without
+          this, refreshing a long page (e.g. /) made the screen flash to where
+          the user was scrolled, then JS would snap back to the top — visually
+          a jarring jump. Setting this to "manual" makes refreshes always land
+          at the top, no flicker.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if('scrollRestoration' in history){history.scrollRestoration='manual';}}catch(e){}`,
+          }}
+        />
+
         {/* Preconnect to external domains for faster loading */}
         <link rel="preconnect" href="https://api.github.com" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

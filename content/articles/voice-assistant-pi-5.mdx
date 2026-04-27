@@ -1,0 +1,55 @@
+---
+title: "Building a private voice assistant on a Raspberry Pi 5"
+slug: "voice-assistant-raspberry-pi-5"
+summary: "Wake-word detection, speech-to-text, an LLM, and text-to-speech — all running on an 8GB Pi for under 2 seconds end-to-end. Here's the stack."
+date: "2026-03-30"
+category: "Hardware"
+tags: ["Raspberry Pi", "AI", "Voice", "Python"]
+featured: false
+author: "Kevin Trinh"
+imageSrc: "/images/demo_2.png"
+imageAlt: "Raspberry Pi 5 with microphone and speaker"
+---
+
+I wanted a voice assistant that didn't phone home for everything. The compromise: keep wake-word, STT, and TTS local; let an LLM handle the actual reasoning over a cheap API.
+
+## The pipeline
+
+| Stage | Tool | Latency |
+| --- | --- | --- |
+| Wake word | OpenWakeWord | ~100 ms |
+| STT | faster-whisper (small.en) | 600–800 ms |
+| LLM | Groq (Llama 3.3 70B) | 300–500 ms |
+| TTS | Piper (lessac voice) | 200–300 ms |
+| **Total** | | **~1.2–1.8 s** |
+
+<Callout kind="tip" title="Why these tools">
+faster-whisper is CTranslate2-backed and runs ~3x quicker than OpenAI's whisper. Piper is laughably small (one binary, no GPU needed) and the lessac voice doesn't sound like a robot. Groq's free tier is generous and the inference is genuinely fast.
+</Callout>
+
+## Wake word, in 30 lines
+
+```python
+from openwakeword.model import Model
+
+model = Model(wakeword_models=["hey_eddy.tflite"])
+
+def on_audio_chunk(chunk):
+    pred = model.predict(chunk)
+    if pred["hey_eddy"] > 0.55:
+        trigger_listen()
+```
+
+The threshold matters. Too high and it misses you. Too low and your dishwasher wakes it up. 0.55 has been the sweet spot for me in a noisy room.
+
+## Barge-in is the killer feature
+
+Letting the user *interrupt* the TTS mid-sentence is what makes it feel natural. The trick: keep the mic open during playback and watch the wake-word detector at a lower threshold. When it fires, kill audio output and start listening immediately.
+
+## What I'd do differently
+
+- Skip OpenWakeWord and use Picovoice Porcupine. The accuracy difference is real, even if it costs.
+- Cache common LLM responses locally with a 24h TTL. "What time is it" shouldn't hit the API.
+- Add a hardware mute switch. When friends are over, I want a one-touch off.
+
+The Pi 5 with 8GB has enough headroom that you don't really feel the load. CPU usage hovers around 25% during a conversation.

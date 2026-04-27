@@ -293,7 +293,7 @@ export default function NavbarCenteredMobile() {
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-4">
-            <nav className="flex flex-col gap-1">
+            <nav className="flex min-h-full flex-col gap-1">
               {menuLinks.map((item) => {
                 const hasChildren = !!(
                   item.children && item.children.length > 0
@@ -364,10 +364,49 @@ export default function NavbarCenteredMobile() {
                 );
               })}
 
-              <div className="mt-2 h-px bg-white/10" />
+              {/* Push socials + CTAs to the bottom of the drawer */}
+              <div className="flex-1" />
 
-              {/* CTAs */}
-              <div className="mt-2 grid grid-cols-2 gap-2">
+              {/* Socials — sit just above the CTAs at the bottom */}
+              {socialItems.length > 0 && (
+                <div className="mt-6">
+                  <div className="mb-2 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                    Socials
+                  </div>
+                  <div className="grid grid-cols-4 gap-2">
+                    {socialItems.map((s) => {
+                      const Icon =
+                        s.icon && (LucideIcons as any)[s.icon]
+                          ? (LucideIcons as any)[s.icon]
+                          : null;
+                      const external = isExternalHref(s.href);
+                      return (
+                        <a
+                          key={s.key}
+                          href={s.href}
+                          target={external ? "_blank" : undefined}
+                          rel={external ? "noreferrer noopener" : undefined}
+                          onClick={() => setIsOpen(false)}
+                          aria-label={s.label}
+                          title={s.label}
+                          className="flex items-center justify-center rounded-md border border-white/10 bg-white/[0.03] py-2.5 text-slate-200 transition hover:border-accent hover:bg-white/10 hover:text-white"
+                        >
+                          {Icon ? (
+                            <Icon className="h-4 w-4" aria-hidden />
+                          ) : (
+                            <span className="text-xs">{s.label?.[0]}</span>
+                          )}
+                        </a>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-4 h-px bg-white/10" />
+
+              {/* CTAs — at the very bottom */}
+              <div className="mt-3 grid grid-cols-2 gap-2">
                 {navbarConfig.cta.contact.show !== false && (
                   <a
                     href={contactLink.href}
@@ -404,42 +443,6 @@ export default function NavbarCenteredMobile() {
                   </a>
                 )}
               </div>
-
-              {/* Socials */}
-              {socialItems.length > 0 && (
-                <div className="mt-6">
-                  <div className="mb-2 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                    Socials
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    {socialItems.map((s) => {
-                      const Icon =
-                        s.icon && (LucideIcons as any)[s.icon]
-                          ? (LucideIcons as any)[s.icon]
-                          : null;
-                      const external = isExternalHref(s.href);
-                      return (
-                        <a
-                          key={s.key}
-                          href={s.href}
-                          target={external ? "_blank" : undefined}
-                          rel={external ? "noreferrer noopener" : undefined}
-                          onClick={() => setIsOpen(false)}
-                          aria-label={s.label}
-                          title={s.label}
-                          className="flex items-center justify-center rounded-md border border-white/10 bg-white/[0.03] py-2.5 text-slate-200 transition hover:border-accent hover:bg-white/10 hover:text-white"
-                        >
-                          {Icon ? (
-                            <Icon className="h-4 w-4" aria-hidden />
-                          ) : (
-                            <span className="text-xs">{s.label?.[0]}</span>
-                          )}
-                        </a>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
             </nav>
           </div>
         </div>

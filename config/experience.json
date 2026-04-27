@@ -1,5 +1,31 @@
 [
   {
+    "id": "founder-visibleseed",
+    "role": "Founder & Software Engineer",
+    "company": "VisibleSeed LLC",
+    "location": "Houston, TX",
+    "type": "full-time",
+    "start": "Aug 2025",
+    "end": "Present",
+    "description": [
+      "Founded VisibleSeed, a small studio building fast modern websites and automation systems for local businesses and student organizations.",
+      "Designed and shipped full-stack web apps end-to-end — UX, frontend, backend, infra, and ongoing support — with a focus on clean UI, performance, and reliability.",
+      "Built and maintain shared infrastructure on Cloudflare and Oracle Cloud (Workers, Pages, D1, R2, KV, Docker on Ubuntu) including a public status dashboard and an internal admin panel.",
+      "Set up the operations side too: branding, client onboarding, billing, and a lightweight runbook so each project stays maintainable after launch."
+    ],
+    "technologies": [
+      "Next.js",
+      "React",
+      "TypeScript",
+      "Tailwind CSS",
+      "Cloudflare Workers",
+      "Supabase",
+      "PostgreSQL",
+      "Docker",
+      "Stripe"
+    ]
+  },
+  {
     "id": "research-intern-mcnair",
     "role": "Research Intern",
     "company": "STMU McNair",

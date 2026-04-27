@@ -1,12 +1,11 @@
 // app/projects/page.tsx
 import { Metadata } from "next";
-import Link from "next/link";
 import Image from "next/image";
 
 import { siteConfig } from "@/config/siteConfig";
 import { loadProjects, type ProjectItem } from "@/config/projects";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { ProjectsCarousel } from "@/components/projects/ProjectsCarousel";
+import { FeaturedProjectsCarousel } from "@/components/projects/FeaturedProjectsTicker";
 import {
   Github,
   Star,
@@ -15,7 +14,6 @@ import {
   ArrowRight,
   Calendar,
   Folder,
-  FolderGit2,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -40,8 +38,10 @@ function ProjectCard({ project }: { project: ProjectItem }) {
   const img = project.imageUrl || FALLBACK_IMG;
 
   return (
-    <Link
+    <a
       href={`/projects/${project.id}`}
+      target="_blank"
+      rel="noreferrer noopener"
       className="group relative flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-all hover:-translate-y-0.5 hover:border-accent/50 hover:bg-white/[0.07] hover:shadow-[0_8px_30px_-12px_rgba(99,102,241,0.45)]"
     >
       {/* Image */}
@@ -138,31 +138,7 @@ function ProjectCard({ project }: { project: ProjectItem }) {
           <ArrowRight className="h-4 w-4 opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
         </div>
       </div>
-    </Link>
-  );
-}
-
-function StatCard({
-  Icon,
-  label,
-  value,
-}: {
-  Icon: typeof Star;
-  label: string;
-  value: number | string;
-}) {
-  return (
-    <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3.5">
-      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-lg bg-accent/10 text-accent">
-        <Icon className="h-4 w-4" />
-      </span>
-      <div className="min-w-0">
-        <div className="text-lg font-semibold leading-tight text-foreground">
-          {value}
-        </div>
-        <div className="text-xs text-muted-foreground">{label}</div>
-      </div>
-    </div>
+    </a>
   );
 }
 
@@ -173,25 +149,10 @@ export default async function ProjectsPage() {
   const featuredProjects = projects.filter((p) => p.featured);
   const regularProjects = projects.filter((p) => !p.featured);
 
-  // Carousel uses up to the first 5 featured (or the first 5 overall if no
-  // featured exist). Each must have an image to look right.
+  // Carousel uses up to the first 8 featured (matches home).
   const carouselSource = (
     featuredProjects.length > 0 ? featuredProjects : projects
-  ).slice(0, 5);
-
-  // Aggregate stats across ALL projects.
-  const totalStars = projects.reduce(
-    (sum, p) => sum + (p.githubStars ?? 0),
-    0
-  );
-  const totalForks = projects.reduce(
-    (sum, p) => sum + (p.githubForks ?? 0),
-    0
-  );
-  const totalDownloads = projects.reduce(
-    (sum, p) => sum + (p.downloads ?? 0),
-    0
-  );
+  ).slice(0, 8);
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
@@ -212,36 +173,10 @@ export default async function ProjectsPage() {
         </p>
       </div>
 
-      {/* Carousel */}
+      {/* Featured carousel — same component as the home page for visual consistency */}
       {carouselSource.length > 0 && (
-        <section className="mb-8">
-          <ProjectsCarousel projects={carouselSource} />
-        </section>
-      )}
-
-      {/* Stats */}
-      {projects.length > 0 && (
-        <section className="mb-12 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard
-            Icon={FolderGit2}
-            label="Projects"
-            value={projects.length}
-          />
-          <StatCard
-            Icon={Star}
-            label="GitHub stars"
-            value={totalStars.toLocaleString()}
-          />
-          <StatCard
-            Icon={GitFork}
-            label="Forks"
-            value={totalForks.toLocaleString()}
-          />
-          <StatCard
-            Icon={Download}
-            label="Downloads"
-            value={totalDownloads.toLocaleString()}
-          />
+        <section className="mb-12">
+          <FeaturedProjectsCarousel projects={carouselSource} />
         </section>
       )}
 
