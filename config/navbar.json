@@ -38,9 +38,9 @@
   },
 
   "cta": {
-    "contact": { "label": "Contact Me", "href": "/contact", "show": true },
+    "contact": { "label": "Contact", "href": "/contact", "show": true },
     "primary": {
-      "label": "View My Resume",
+      "label": "View Resume",
       "href": "/resume",
       "external": true,
       "show": true

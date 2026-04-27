@@ -1,41 +1,71 @@
 // app/not-found.tsx
 import Link from "next/link";
-import { Home, Mail } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowUpRight,
+  FolderGit2,
+  Newspaper,
+  User,
+  Mail,
+} from "lucide-react";
 
 export default function NotFound() {
+  const suggestions: {
+    label: string;
+    href: string;
+    Icon: typeof FolderGit2;
+  }[] = [
+    { label: "About me", href: "/about", Icon: User },
+    { label: "Projects", href: "/projects", Icon: FolderGit2 },
+    { label: "Articles", href: "/articles", Icon: Newspaper },
+    { label: "Contact", href: "/contact", Icon: Mail },
+  ];
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="mx-auto flex w-full max-w-md flex-col items-center text-center text-foreground">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          ~/404
-        </p>
+    <main className="mx-auto flex min-h-[calc(100dvh-160px)] w-full max-w-2xl flex-col items-center justify-center px-4 pb-16 pt-12 text-center sm:pt-20">
+      {/* Big numeric 404 — quiet */}
+      <div className="select-none font-mono text-[7rem] font-bold leading-none text-white/[0.04] sm:text-[10rem]">
+        404
+      </div>
 
-        <h1 className="mt-3 text-4xl font-semibold sm:text-5xl">
-          Page not found
-        </h1>
+      <p className="-mt-6 text-xs font-semibold uppercase tracking-[0.24em] text-accent sm:-mt-8">
+        Page not found
+      </p>
 
-        <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-          The page you&apos;re looking for doesn&apos;t exist or may have been
-          moved.
-        </p>
+      <h1 className="mt-4 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
+        We couldn&apos;t find that page.
+      </h1>
 
-        <div className="mt-6 flex flex-wrap justify-center gap-3">
+      <p className="mt-4 max-w-md text-balance text-sm text-muted-foreground sm:text-base">
+        The link might be broken, or the page may have been moved or renamed.
+        Try one of these instead.
+      </p>
+
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-accent/90"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to home
+        </Link>
+      </div>
+
+      {/* Suggestions */}
+      <div className="mt-10 grid w-full max-w-md grid-cols-2 gap-2 sm:grid-cols-4">
+        {suggestions.map((s) => (
           <Link
-            href="/"
-            className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-transform transition-colors hover:-translate-y-[1px] hover:bg-accent/90"
+            key={s.href}
+            href={s.href}
+            className="group flex flex-col items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs font-medium text-foreground transition-colors hover:border-accent/50 hover:bg-white/[0.07]"
           >
-            <Home className="h-4 w-4" />
-            <span>Back to home</span>
+            <s.Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-accent" />
+            <span className="inline-flex items-center gap-1">
+              {s.label}
+              <ArrowUpRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-70" />
+            </span>
           </Link>
-
-          <a
-            href="#contact"
-            className="inline-flex items-center gap-2 rounded-md border border-white/15 px-4 py-2 text-sm text-foreground transition-transform transition-colors hover:-translate-y-[1px] hover:border-accent hover:bg-white/5"
-          >
-            <Mail className="h-4 w-4" />
-            <span>Contact me</span>
-          </a>
-        </div>
+        ))}
       </div>
     </main>
   );

@@ -186,9 +186,10 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
                   href={`/articles/${article.slug}`}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="group block overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-all hover:border-accent/50 hover:bg-white/[0.07]"
+                  className="group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-colors duration-200 hover:border-accent/50 hover:bg-white/[0.07] sm:flex-row"
                 >
-                  <div className="relative aspect-[21/9] w-full overflow-hidden bg-white/5">
+                  {/* Image — left side on sm+ */}
+                  <div className="relative aspect-[16/10] w-full flex-none overflow-hidden bg-white/5 sm:aspect-auto sm:w-64 md:w-72">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={articleImage(article)}
@@ -197,7 +198,9 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
                       loading="lazy"
                     />
                   </div>
-                  <div className="p-6">
+
+                  {/* Content — right side on sm+ */}
+                  <div className="flex min-w-0 flex-1 flex-col p-5 sm:p-6">
                     <div className="mb-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                       {article.category && (
                         <span className="flex items-center gap-1.5 rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
@@ -225,7 +228,7 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
                       </p>
                     )}
                     {article.tags && article.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1.5">
+                      <div className="mt-auto flex flex-wrap gap-1.5">
                         {article.tags.slice(0, 4).map((t) => (
                           <span
                             key={t}
@@ -254,7 +257,7 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
           </h2>
 
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-white/10 py-16 text-center">
+            <div className="flex flex-col items-center justify-center py-16 text-center">
               <FileText className="mb-4 h-12 w-12 text-muted-foreground/50" />
               <h3 className="mb-1 text-lg font-semibold">No articles found</h3>
               <p className="text-sm text-muted-foreground">
@@ -326,34 +329,40 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
         </section>
       </div>
 
-      {/* Sidebar */}
+      {/* Sidebar — order: Tags → Categories → Recent */}
       <aside className="w-full lg:w-64 lg:flex-shrink-0">
-        {/* Recent */}
-        {recent.length > 0 && (
+        {/* Tags */}
+        {tags.length > 0 && (
           <div className="mb-8">
             <h3 className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              Recent
+              <Tag className="h-4 w-4" />
+              Tags
             </h3>
-            <ul className="space-y-3">
-              {recent.map((a) => (
-                <li key={a.slug}>
-                  <Link
-                    href={`/articles/${a.slug}`}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="group block"
+            <div className="flex flex-wrap gap-1.5">
+              {tags.map((t) => {
+                const active =
+                  activeFilter?.type === "tag" && activeFilter.value === t;
+                return (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() =>
+                      setActiveFilter(
+                        active ? null : { type: "tag", value: t }
+                      )
+                    }
+                    className={[
+                      "rounded-md px-2 py-0.5 text-xs transition-colors",
+                      active
+                        ? "bg-accent/15 text-accent"
+                        : "bg-white/5 text-muted-foreground hover:bg-white/10",
+                    ].join(" ")}
                   >
-                    <div className="text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-accent">
-                      {a.title}
-                    </div>
-                    <div className="mt-0.5 text-xs text-muted-foreground">
-                      {formatDate(a.date)}
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+                    {t}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
 
@@ -393,38 +402,44 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
           </div>
         )}
 
-        {/* Tags */}
-        {tags.length > 0 && (
+        {/* Recent — small square thumb + truncated title */}
+        {recent.length > 0 && (
           <div>
             <h3 className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              <Tag className="h-4 w-4" />
-              Tags
+              <Clock className="h-4 w-4" />
+              Recent
             </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {tags.map((t) => {
-                const active =
-                  activeFilter?.type === "tag" && activeFilter.value === t;
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() =>
-                      setActiveFilter(
-                        active ? null : { type: "tag", value: t }
-                      )
-                    }
-                    className={[
-                      "rounded-md px-2 py-0.5 text-xs transition-colors",
-                      active
-                        ? "bg-accent/15 text-accent"
-                        : "bg-white/5 text-muted-foreground hover:bg-white/10",
-                    ].join(" ")}
+            <ul className="space-y-3">
+              {recent.map((a) => (
+                <li key={a.slug}>
+                  <Link
+                    href={`/articles/${a.slug}`}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="group flex items-start gap-3"
                   >
-                    {t}
-                  </button>
-                );
-              })}
-            </div>
+                    {/* Square thumb */}
+                    <span className="relative h-12 w-12 flex-none overflow-hidden rounded-md bg-white/5">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={articleImage(a)}
+                        alt=""
+                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.06]"
+                        loading="lazy"
+                      />
+                    </span>
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="line-clamp-2 text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-accent">
+                        {a.title}
+                      </span>
+                      <span className="mt-0.5 text-xs text-muted-foreground">
+                        {formatDate(a.date)}
+                      </span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </aside>
