@@ -57,19 +57,20 @@ function badgeStylesForLink(type?: string): string {
   }
 }
 
-/** Tailwind classes for the role-type chip (Internship / Full-time / etc). */
+/** Tailwind classes for the role-type chip (Internship / Full-time / etc).
+ *  Solid colors, sharp corners. */
 function chipStylesForType(type?: string): string {
   switch (type) {
     case "internship":
-      return "border-sky-400/40 bg-sky-500/15 text-sky-200";
+      return "bg-sky-600 text-white";
     case "full-time":
-      return "border-emerald-400/40 bg-emerald-500/15 text-emerald-200";
+      return "bg-emerald-600 text-white";
     case "part-time":
-      return "border-amber-400/40 bg-amber-500/15 text-amber-200";
+      return "bg-amber-600 text-white";
     case "contract":
-      return "border-violet-400/40 bg-violet-500/15 text-violet-200";
+      return "bg-violet-600 text-white";
     default:
-      return "border-white/10 bg-white/5 text-slate-200/80";
+      return "bg-slate-700 text-white";
   }
 }
 
@@ -121,6 +122,24 @@ export default function ExperiencePage() {
         <p className="max-w-2xl text-lg text-muted-foreground">
           Roles I&apos;ve held — internships, research, and applied work.
         </p>
+
+        {/* Document downloads — resume + CV summarize this page */}
+        <div className="mt-5 flex flex-wrap gap-2">
+          <a
+            href="/resume"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:border-accent hover:bg-white/10 hover:text-white"
+          >
+            <FileText className="h-4 w-4" aria-hidden /> View Resume (PDF)
+          </a>
+          <a
+            href="/resume?dl=1"
+            className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-foreground transition-colors hover:border-accent hover:bg-white/10 hover:text-white"
+          >
+            <FileText className="h-4 w-4" aria-hidden /> Download Resume
+          </a>
+        </div>
       </div>
 
       {items.length === 0 ? (
@@ -162,7 +181,7 @@ export default function ExperiencePage() {
                     <div className="mt-3 flex flex-wrap items-center gap-2">
                       <span
                         className={[
-                          "rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+                          "inline-flex items-center px-2 py-1 text-[11px] font-bold uppercase tracking-wider",
                           chipStylesForType(item.type),
                         ].join(" ")}
                       >

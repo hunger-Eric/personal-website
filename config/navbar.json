@@ -27,6 +27,12 @@
         "label": "Articles",
         "href": "/articles",
         "show": true
+      },
+      {
+        "id": "content",
+        "label": "Content",
+        "href": "/content",
+        "show": true
       }
     ]
   },

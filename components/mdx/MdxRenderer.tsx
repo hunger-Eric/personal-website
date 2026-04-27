@@ -3,6 +3,7 @@
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import rehypePrettyCode from "rehype-pretty-code";
+import rehypeSlug from "rehype-slug";
 
 import { mdxComponents } from "./MdxComponents";
 
@@ -48,7 +49,10 @@ export async function MdxRenderer({ source }: { source: string }) {
           parseFrontmatter: false,
           mdxOptions: {
             remarkPlugins: [remarkGfm],
-            rehypePlugins: [[rehypePrettyCode, prettyCodeOptions]],
+            rehypePlugins: [
+              rehypeSlug,
+              [rehypePrettyCode, prettyCodeOptions],
+            ],
           },
         }}
       />

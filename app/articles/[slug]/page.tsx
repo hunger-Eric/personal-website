@@ -12,16 +12,10 @@ import { JsonLd } from "@/components/JsonLd";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { generateArticleSchema } from "@/lib/structured-data";
 import { MdxRenderer } from "@/components/mdx/MdxRenderer";
-import {
-  Calendar,
-  Clock,
-  Tag,
-  Folder,
-  ArrowLeft,
-  ArrowRight,
-  Share2,
-  BookOpen,
-} from "lucide-react";
+import { extractToc } from "@/lib/mdx/toc";
+import { TableOfContents } from "@/components/articles/TableOfContents";
+import { ShareLinks } from "@/components/articles/ShareLinks";
+import { Calendar, ArrowLeft } from "lucide-react";
 
 // Fully static — MDX is bundled at build time; fs access at runtime is not
 // available on Cloudflare Workers so we skip revalidation entirely.
@@ -74,7 +68,7 @@ function formatDate(dateStr: string): string {
     const date = new Date(dateStr);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
-      month: "long",
+      month: "short",
       day: "numeric",
     });
   } catch {
@@ -95,12 +89,16 @@ export default async function ArticlePage({
   }
 
   const relatedArticles = await getRelatedArticles(slug, 3);
+  const toc = extractToc(article.content);
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
     { name: "Articles", url: "/articles" },
     { name: article.title, url: `/articles/${article.slug}` },
   ];
+
+  const author = article.author || siteConfig.name;
+  const articleUrl = `/articles/${article.slug}`;
 
   return (
     <>
@@ -118,52 +116,51 @@ export default async function ArticlePage({
         })}
       />
 
-      <article className="mx-auto max-w-4xl px-4 py-16 sm:px-6 lg:px-8">
-        <Breadcrumbs items={breadcrumbs} className="mb-6" />
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+        <Breadcrumbs items={breadcrumbs} className="mb-8" />
 
-
-        {/* Header */}
-        <header className="mb-12">
-          {/* Category and metadata */}
-          <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            {article.category && (
-              <span className="flex items-center gap-1.5 rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
-                <Folder className="h-3.5 w-3.5" />
-                {article.category}
-              </span>
-            )}
-            <span className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4" />
-              {formatDate(article.date)}
+        {/* Centered article header */}
+        <header className="mx-auto mb-10 max-w-3xl text-center">
+          {/* Published · By line */}
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <Calendar className="h-3.5 w-3.5" aria-hidden />
+              Published {formatDate(article.date)}
             </span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="h-4 w-4" />
-              {article.readingTime} min read
+            <span aria-hidden>•</span>
+            <span>
+              By: <span className="font-medium text-foreground">{author}</span>
             </span>
-            <span className="flex items-center gap-1.5">
-              <BookOpen className="h-4 w-4" />
-              {article.wordCount.toLocaleString()} words
-            </span>
+            <span aria-hidden>•</span>
+            <span>{article.readingTime} min read</span>
           </div>
 
           {/* Title */}
-          <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+          <h1 className="mt-5 text-balance text-4xl font-bold tracking-tight sm:text-5xl">
             {article.title}
           </h1>
 
-          {/* Summary */}
-          <p className="text-xl text-muted-foreground">{article.summary}</p>
+          {/* Description */}
+          {article.summary && (
+            <p className="mt-5 text-balance text-base leading-relaxed text-muted-foreground sm:text-lg">
+              {article.summary}
+            </p>
+          )}
 
-          {/* Tags */}
+          {/* Tag badges */}
           {article.tags && article.tags.length > 0 && (
-            <div className="mt-6 flex flex-wrap items-center gap-2">
-              <Tag className="h-4 w-4 text-muted-foreground" />
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-1.5">
+              {article.category && (
+                <span className="rounded-full bg-accent/15 px-3 py-1 text-xs font-semibold text-accent">
+                  {article.category}
+                </span>
+              )}
               {article.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-lg bg-white/5 px-3 py-1 text-sm text-muted-foreground"
+                  className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-xs text-muted-foreground"
                 >
-                  {tag}
+                  #{tag}
                 </span>
               ))}
             </div>
@@ -171,15 +168,16 @@ export default async function ArticlePage({
 
           {/* Updated notice */}
           {article.updated && article.updated !== article.date && (
-            <p className="mt-4 text-sm text-muted-foreground/80">
+            <p className="mt-4 text-xs text-muted-foreground/80">
               Last updated on {formatDate(article.updated)}
             </p>
           )}
         </header>
 
-        {/* Cover image */}
+        {/* Cover image (centered) */}
         {article.imageSrc && (
-          <figure className="mb-12">
+          <figure className="mx-auto mb-12 max-w-4xl">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={article.imageSrc}
               alt={article.imageAlt || article.title}
@@ -193,75 +191,69 @@ export default async function ArticlePage({
           </figure>
         )}
 
-        {/* Article content */}
-        <MdxRenderer source={article.content} />
+        {/* Article body + TOC sidebar */}
+        <div className="lg:grid lg:grid-cols-[1fr_240px] lg:gap-x-12">
+          <article className="min-w-0">
+            <MdxRenderer source={article.content} />
 
-        {/* Share */}
-        <div className="mt-12 flex items-center justify-between border-t border-white/10 pt-8">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Share2 className="h-4 w-4" />
-            <span>Share this article</span>
-          </div>
-          <div className="flex gap-2">
-            <a
-              href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(article.title)}&url=${encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/articles/${article.slug}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-white/10 p-2 text-muted-foreground transition-colors hover:border-accent hover:text-accent"
-              aria-label="Share on Twitter"
-            >
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-            </a>
-            <a
-              href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${process.env.NEXT_PUBLIC_BASE_URL || ""}/articles/${article.slug}`)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg border border-white/10 p-2 text-muted-foreground transition-colors hover:border-accent hover:text-accent"
-              aria-label="Share on LinkedIn"
-            >
-              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-              </svg>
-            </a>
-          </div>
-        </div>
-
-        {/* Related articles */}
-        {relatedArticles.length > 0 && (
-          <section className="mt-12">
-            <h2 className="mb-6 text-xl font-semibold">Related Articles</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {relatedArticles.map((related) => (
-                <Link
-                  key={related.slug}
-                  href={`/articles/${related.slug}`}
-                  className="group rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-accent/50 hover:bg-white/[0.07]"
-                >
-                  <p className="mb-1 text-xs text-muted-foreground">
-                    {formatDate(related.date)}
-                  </p>
-                  <h3 className="line-clamp-2 font-medium group-hover:text-accent">
-                    {related.title}
-                  </h3>
-                </Link>
-              ))}
+            {/* Share section */}
+            <div className="mt-12 border-t border-white/10 pt-8">
+              <ShareLinks
+                url={articleUrl}
+                title={article.title}
+                summary={article.summary}
+              />
             </div>
-          </section>
-        )}
 
-        {/* Navigation */}
-        <nav className="mt-12 flex items-center justify-between border-t border-white/10 pt-8">
-          <Link
-            href="/articles"
-            className="flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-accent"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Articles
-          </Link>
-        </nav>
-      </article>
+            {/* Related articles */}
+            {relatedArticles.length > 0 && (
+              <section className="mt-12">
+                <h2 className="mb-6 text-xl font-semibold">Related Articles</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {relatedArticles.map((related) => (
+                    <Link
+                      key={related.slug}
+                      href={`/articles/${related.slug}`}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="group rounded-xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-accent/50 hover:bg-white/[0.07]"
+                    >
+                      <p className="mb-1 text-xs text-muted-foreground">
+                        {formatDate(related.date)}
+                      </p>
+                      <h3 className="line-clamp-2 font-medium">
+                        <span className="relative inline-block transition-colors group-hover:text-accent after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
+                          {related.title}
+                        </span>
+                      </h3>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Navigation */}
+            <nav className="mt-12 flex items-center justify-between border-t border-white/10 pt-8">
+              <Link
+                href="/articles"
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-accent"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Articles
+              </Link>
+            </nav>
+          </article>
+
+          {/* TOC sidebar — desktop only, sticky */}
+          {toc.length > 0 && (
+            <aside className="hidden lg:block">
+              <div className="sticky top-24">
+                <TableOfContents entries={toc} />
+              </div>
+            </aside>
+          )}
+        </div>
+      </div>
     </>
   );
 }
