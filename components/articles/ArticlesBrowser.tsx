@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 import {
   Tag,
   Folder,
@@ -77,15 +76,13 @@ function pageNumbers(current: number, total: number): (number | "…")[] {
 }
 
 export function ArticlesBrowser({ articles, categories, tags }: Props) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<{
     type: "category" | "tag";
     value: string;
   } | null>(null);
+  const [page, setPage] = useState(1);
 
   // Debounce search input — 150ms is fast enough to feel live but cheap.
   useEffect(() => {
@@ -93,23 +90,9 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
     return () => window.clearTimeout(t);
   }, [query]);
 
-  // Page is URL-driven (?page=N). Defaults to 1.
-  const pageFromUrl = Math.max(
-    1,
-    Number.parseInt(searchParams.get("page") || "1", 10) || 1
-  );
-
-  const setPage = (n: number) => {
-    const sp = new URLSearchParams(searchParams.toString());
-    if (n <= 1) sp.delete("page");
-    else sp.set("page", String(n));
-    router.replace(`?${sp.toString()}`, { scroll: false });
-  };
-
   // Reset to page 1 when search/filter changes.
   useEffect(() => {
-    if (pageFromUrl !== 1) setPage(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setPage(1);
   }, [debouncedQuery, activeFilter]);
 
   const featured = useMemo(() => articles.filter((a) => a.featured), [articles]);
@@ -154,7 +137,7 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(pageFromUrl, totalPages);
+  const safePage = Math.min(page, totalPages);
   const pageStart = (safePage - 1) * PAGE_SIZE;
   const pageItems = filtered.slice(pageStart, pageStart + PAGE_SIZE);
 

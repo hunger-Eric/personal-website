@@ -14,11 +14,17 @@ export default function NotFound() {
     label: string;
     href: string;
     Icon: typeof FolderGit2;
+    external?: boolean;
   }[] = [
     { label: "About me", href: "/about", Icon: User },
     { label: "Projects", href: "/projects", Icon: FolderGit2 },
     { label: "Articles", href: "/articles", Icon: Newspaper },
-    { label: "Contact", href: "/contact", Icon: Mail },
+    {
+      label: "Email me",
+      href: "mailto:contact@kevintrinh.dev",
+      Icon: Mail,
+      external: true,
+    },
   ];
 
   return (
@@ -53,19 +59,31 @@ export default function NotFound() {
 
       {/* Suggestions */}
       <div className="mt-10 grid w-full max-w-md grid-cols-2 gap-2 sm:grid-cols-4">
-        {suggestions.map((s) => (
-          <Link
-            key={s.href}
-            href={s.href}
-            className="group flex flex-col items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs font-medium text-foreground transition-colors hover:border-accent/50 hover:bg-white/[0.07]"
-          >
-            <s.Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-accent" />
-            <span className="inline-flex items-center gap-1">
-              {s.label}
-              <ArrowUpRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-70" />
-            </span>
-          </Link>
-        ))}
+        {suggestions.map((s) => {
+          const className =
+            "group flex flex-col items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs font-medium text-foreground transition-colors hover:border-accent/50 hover:bg-white/[0.07]";
+          const inner = (
+            <>
+              <s.Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-accent" />
+              <span className="inline-flex items-center gap-1">
+                {s.label}
+                <ArrowUpRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-70" />
+              </span>
+            </>
+          );
+          if (s.external) {
+            return (
+              <a key={s.href} href={s.href} className={className}>
+                {inner}
+              </a>
+            );
+          }
+          return (
+            <Link key={s.href} href={s.href} className={className}>
+              {inner}
+            </Link>
+          );
+        })}
       </div>
     </main>
   );

@@ -38,7 +38,7 @@
   },
 
   "cta": {
-    "contact": { "label": "Contact", "href": "/contact", "show": true },
+    "contact": { "label": "Contact", "href": "mailto:contact@kevintrinh.dev", "external": true, "show": true },
     "primary": {
       "label": "View Resume",
       "href": "/resume",

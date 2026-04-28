@@ -201,7 +201,23 @@ export default function NavbarCenteredMobile() {
           <Link
             href={logo.href}
             className="group flex flex-1 items-center gap-2 transition active:scale-95"
-            onClick={() => setIsOpen(false)}
+            onClick={(e) => {
+              setIsOpen(false);
+              // Already on home → scroll to top instead of being a no-op.
+              if (
+                typeof window !== "undefined" &&
+                window.location.pathname === "/" &&
+                logo.href === "/"
+              ) {
+                e.preventDefault();
+                window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+                try {
+                  history.replaceState(null, "", "/");
+                } catch {
+                  // ignore
+                }
+              }
+            }}
           >
             <Image
               src={logo.imageSrc}

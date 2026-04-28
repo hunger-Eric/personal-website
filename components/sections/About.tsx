@@ -284,19 +284,22 @@ export function AboutSection() {
         </h3>
 
         <div className="mt-8 grid gap-5 lg:grid-cols-[290px_1fr] lg:gap-6">
-          {/* LEFT — portrait on the left, stats on the right of it */}
+          {/* LEFT — mobile = portrait + stats side-by-side; desktop = full-width portrait then stats stacked below */}
           <aside className="space-y-5">
-            <div className="flex items-start gap-4 sm:gap-5">
-              {/* Smaller portrait — frees up the right side for stats */}
-              <div className="group relative h-32 w-32 flex-none overflow-hidden rounded-xl border border-white/10 sm:h-36 sm:w-36">
-                <div className="relative h-full w-full">
+            {/* Portrait + stats container.
+                Mobile (default): horizontal — portrait LEFT, stats RIGHT.
+                sm+:               vertical — full-width portrait above stats. */}
+            <div className="flex flex-row items-start gap-4 sm:flex-col sm:gap-5">
+              {/* Portrait — small on mobile, full-width square on sm+ */}
+              <div className="group relative h-32 w-32 flex-none overflow-hidden rounded-xl border border-white/10 sm:h-auto sm:w-full">
+                <div className="relative aspect-square h-full w-full sm:h-auto">
                   {a.avatarUrl ? (
                     <Image
                       src={a.avatarUrl}
                       alt={a.displayName || siteConfig.name}
                       fill
                       className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.06]"
-                      sizes="144px"
+                      sizes="(min-width: 1024px) 290px, (min-width: 640px) 100vw, 128px"
                       priority={false}
                     />
                   ) : null}
@@ -304,7 +307,7 @@ export function AboutSection() {
               </div>
 
               {/* Stats stack — UH, email, LinkedIn, etc. */}
-              <div className="min-w-0 flex-1 space-y-2 text-sm">
+              <div className="min-w-0 flex-1 space-y-2 text-sm sm:flex-none sm:space-y-3">
                 {leftLinks.map((item: any) => {
                   const type = String(item.type || "");
                   const Icon = iconForProfileLink(type);
@@ -344,7 +347,7 @@ export function AboutSection() {
               </div>
             </div>
 
-            {/* Read more CTA — full width below the portrait/stats row */}
+            {/* Read more CTA */}
             <div className="pt-0">
               <a
                 href={a.cta.secondary.href}

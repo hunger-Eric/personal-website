@@ -281,7 +281,24 @@ export function NavbarCentered() {
                   cancelCloseDesktop();
                   setOpenDropdownKey(null);
                 }}
-                onClick={() => setOpenDropdownKey(null)}
+                onClick={(e) => {
+                  setOpenDropdownKey(null);
+                  // If we're already on /, the Next link is a no-op — manually
+                  // scroll to top so the logo always feels responsive.
+                  if (
+                    typeof window !== "undefined" &&
+                    window.location.pathname === "/" &&
+                    logo.href === "/"
+                  ) {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+                    try {
+                      history.replaceState(null, "", "/");
+                    } catch {
+                      // ignore
+                    }
+                  }
+                }}
               >
                 <Image
                   src={logo.imageSrc}
@@ -444,7 +461,7 @@ export function NavbarCentered() {
 
           {/* Right CTAs */}
           <div className="flex flex-1 items-center justify-end gap-3">
-            {/* Contact CTA — always opens /contact in a new tab */}
+            {/* Contact CTA — opens the user's default mail client (mailto:) */}
             {contactCta.show !== false && (
               <a
                 href={contactCta.href}
