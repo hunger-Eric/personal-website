@@ -43,8 +43,6 @@ export function ArticleCard({
   return (
     <Link
       href={`/articles/${article.slug}`}
-      target="_blank"
-      rel="noreferrer noopener"
       className="group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-colors duration-200 hover:border-accent/50 hover:bg-white/[0.07] sm:flex-row"
     >
       {/* Image — left on sm+ */}
@@ -63,20 +61,24 @@ export function ArticleCard({
         />
       </div>
 
-      {/* Content — right on sm+ */}
+      {/* Content — right on sm+. Stacked vertically so each piece of meta gets
+          its own line: category → date+read → title → summary → tags. */}
       <div className="flex min-w-0 flex-1 flex-col p-5 sm:p-6">
-        <div className="mb-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-          {article.category && (
+        {article.category && (
+          <div className="mb-2">
             <span className="inline-flex items-center gap-1.5 rounded-md bg-accent px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-white">
               <Folder className="h-3 w-3" />
               {article.category}
             </span>
-          )}
-          <span className="flex items-center gap-1.5">
+          </div>
+        )}
+
+        <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground sm:text-sm">
+          <span className="inline-flex items-center gap-1.5">
             <Calendar className="h-3.5 w-3.5" />
             {formatDate(article.date)}
           </span>
-          <span className="flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5" />
             {article.readingTime} min read
           </span>

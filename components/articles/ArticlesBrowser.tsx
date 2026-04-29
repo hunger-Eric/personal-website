@@ -55,6 +55,8 @@ function pageNumbers(current: number, total: number): (number | "…")[] {
   return out;
 }
 
+const TAG_VISIBLE_LIMIT = 12;
+
 export function ArticlesBrowser({ articles, categories, tags }: Props) {
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -63,6 +65,7 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
     value: string;
   } | null>(null);
   const [page, setPage] = useState(1);
+  const [showAllTags, setShowAllTags] = useState(false);
 
   // Debounce search input — 150ms is fast enough to feel live but cheap.
   useEffect(() => {
@@ -120,8 +123,10 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* Featured carousel — full width, sits ABOVE the sidebar + list */}
-      {featured.length > 0 && !hasFilter && (
+      {/* Featured carousel — full width, sits ABOVE the sidebar + list. Stays
+          visible while searching/filtering so the page doesn't reflow under
+          the user as they type. */}
+      {featured.length > 0 && (
         <FeaturedArticlesCarousel articles={featured} />
       )}
 
@@ -325,40 +330,62 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
           </div>
         )}
 
-        {/* Tags */}
-        {tags.length > 0 && (
-          <div>
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              <Tag className="h-4 w-4" />
-              Tags
-            </h3>
-            <div className="flex flex-wrap gap-1.5">
-              {tags.map((t) => {
-                const active =
-                  activeFilter?.type === "tag" && activeFilter.value === t;
-                return (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() =>
-                      setActiveFilter(
-                        active ? null : { type: "tag", value: t }
-                      )
-                    }
-                    className={[
-                      "rounded-md px-2 py-1 text-xs transition-colors",
-                      active
-                        ? "bg-accent/15 text-accent"
-                        : "bg-white/5 text-muted-foreground hover:bg-white/10",
-                    ].join(" ")}
-                  >
-                    {t}
-                  </button>
-                );
-              })}
+        {/* Tags — capped at TAG_VISIBLE_LIMIT with a Show all/less toggle.
+            If the active tag is hidden by the cap we expand automatically so
+            the chip remains visible. */}
+        {tags.length > 0 && (() => {
+          const activeTag =
+            activeFilter?.type === "tag" ? activeFilter.value : null;
+          const overflow = tags.length > TAG_VISIBLE_LIMIT;
+          const hiddenIdx = activeTag ? tags.indexOf(activeTag) : -1;
+          const forceExpand = hiddenIdx >= TAG_VISIBLE_LIMIT;
+          const expanded = showAllTags || forceExpand;
+          const visible =
+            expanded || !overflow ? tags : tags.slice(0, TAG_VISIBLE_LIMIT);
+          return (
+            <div>
+              <h3 className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
+                <Tag className="h-4 w-4" />
+                Tags
+              </h3>
+              <div className="flex flex-wrap gap-1.5">
+                {visible.map((t) => {
+                  const active = activeTag === t;
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() =>
+                        setActiveFilter(
+                          active ? null : { type: "tag", value: t }
+                        )
+                      }
+                      className={[
+                        "rounded-md px-2 py-1 text-xs transition-colors",
+                        active
+                          ? "bg-accent/15 text-accent"
+                          : "bg-white/5 text-muted-foreground hover:bg-white/10",
+                      ].join(" ")}
+                    >
+                      {t}
+                    </button>
+                  );
+                })}
+              </div>
+              {overflow && !forceExpand && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllTags((v) => !v)}
+                  className="mt-2 text-xs font-medium text-accent transition-colors hover:underline"
+                >
+                  {expanded
+                    ? "Show fewer"
+                    : `Show all (${tags.length - TAG_VISIBLE_LIMIT} more)`}
+                </button>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
       </aside>
       </div>
     </div>

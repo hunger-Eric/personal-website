@@ -142,7 +142,7 @@ textarea {
 }
 
 .animate-page-fade {
-  animation: page-fade-in 0.28s ease-out;
+  animation: page-fade-in 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @media (prefers-reduced-motion: reduce) {

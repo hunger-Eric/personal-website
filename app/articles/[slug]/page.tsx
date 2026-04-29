@@ -14,7 +14,6 @@ import { generateArticleSchema } from "@/lib/structured-data";
 import { MdxRenderer } from "@/components/mdx/MdxRenderer";
 import { extractToc } from "@/lib/mdx/toc";
 import { TableOfContents } from "@/components/articles/TableOfContents";
-import { ShareLinks } from "@/components/articles/ShareLinks";
 import { ArticleViews } from "@/components/articles/ArticleViews";
 import { Calendar, ArrowLeft } from "lucide-react";
 
@@ -107,7 +106,6 @@ export default async function ArticlePage({
   ];
 
   const author = article.author || siteConfig.name;
-  const articleUrl = `/articles/${article.slug}`;
 
   return (
     <>
@@ -125,7 +123,7 @@ export default async function ArticlePage({
         })}
       />
 
-      <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+      <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
         <Breadcrumbs
           items={breadcrumbs}
           truncateLastAt={32}
@@ -222,7 +220,9 @@ export default async function ArticlePage({
           <article className="mx-auto min-w-0 max-w-[70ch] lg:mx-0">
             <MdxRenderer source={article.content} />
 
-            {/* Related articles */}
+            {/* Related articles — image on top, then date and title. Internal
+                links so the page transition fade kicks in instead of a full
+                tab reload. */}
             {relatedArticles.length > 0 && (
               <section className="mt-16">
                 <h2 className="mb-6 text-xl font-semibold">Related Articles</h2>
@@ -231,18 +231,27 @@ export default async function ArticlePage({
                     <Link
                       key={related.slug}
                       href={`/articles/${related.slug}`}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className="group rounded-xl border border-white/10 bg-white/5 p-4 transition-colors hover:border-accent/50 hover:bg-white/[0.07]"
+                      className="group flex flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-colors hover:border-accent/50 hover:bg-white/[0.07]"
                     >
-                      <p className="mb-1 text-xs text-muted-foreground">
-                        {formatDate(related.date)}
-                      </p>
-                      <h3 className="line-clamp-2 font-medium">
-                        <span className="relative inline-block after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
-                          {related.title}
-                        </span>
-                      </h3>
+                      <div className="relative aspect-[16/10] w-full overflow-hidden bg-white/5">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={related.imageSrc || "/images/demo_1.png"}
+                          alt={related.imageAlt || related.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                          loading="lazy"
+                        />
+                      </div>
+                      <div className="flex flex-1 flex-col p-4">
+                        <p className="mb-1 text-xs text-muted-foreground">
+                          {formatDate(related.date)}
+                        </p>
+                        <h3 className="line-clamp-2 font-medium">
+                          <span className="relative inline-block after:absolute after:left-0 after:-bottom-0.5 after:h-[2px] after:w-full after:origin-left after:scale-x-0 after:bg-accent after:transition-transform after:duration-300 group-hover:after:scale-x-100">
+                            {related.title}
+                          </span>
+                        </h3>
+                      </div>
                     </Link>
                   ))}
                 </div>
@@ -261,23 +270,15 @@ export default async function ArticlePage({
             </nav>
           </article>
 
-          {/* Sidebar — desktop only, sticky. TOC + Share */}
-          <aside className="hidden lg:block">
-            <div className="sticky top-24 flex flex-col gap-8">
-              {toc.length > 0 && <TableOfContents entries={toc} />}
-              <div>
-                <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  Share
-                </h3>
-                <ShareLinks
-                  url={articleUrl}
-                  title={article.title}
-                  summary={article.summary}
-                  heading={null}
-                />
+          {/* Sidebar — desktop only, sticky. TOC only; share is reachable
+              via the breadcrumb / page chrome elsewhere. */}
+          {toc.length > 0 && (
+            <aside className="hidden lg:block">
+              <div className="sticky top-24">
+                <TableOfContents entries={toc} />
               </div>
-            </div>
-          </aside>
+            </aside>
+          )}
         </div>
       </div>
     </>
