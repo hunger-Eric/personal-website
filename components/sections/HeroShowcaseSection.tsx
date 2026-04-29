@@ -311,6 +311,8 @@ export function HeroShowcaseSection() {
             <div className="mt-7 flex flex-wrap gap-3">
               <a
                 href="/connect"
+                target="_blank"
+                rel="noreferrer noopener"
                 className="group inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-slate-50 shadow-sm transition-colors duration-150 hover:bg-accent/90 hover:shadow-md"
               >
                 <Hand className="h-4 w-4 transition-transform duration-200 group-hover:-rotate-12" />
