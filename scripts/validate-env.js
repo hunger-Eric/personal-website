@@ -91,6 +91,12 @@ const ENV_VARS = [
     usedBy: ["YouTube Videos"],
     requiredIf: "youtube section is enabled",
   },
+  {
+    name: "NEXT_PUBLIC_CF_ANALYTICS_TOKEN",
+    required: false,
+    description: "Cloudflare Web Analytics site token (privacy-friendly, no cookies)",
+    usedBy: ["Analytics"],
+  },
 ];
 
 function validateEnv() {

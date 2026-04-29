@@ -96,7 +96,7 @@ export function ArticleCard({
 
         {article.tags && article.tags.length > 0 && (
           <div className="mt-auto flex flex-wrap gap-1.5">
-            {article.tags.slice(0, 4).map((t) => (
+            {article.tags.slice(0, 3).map((t) => (
               <span
                 key={t}
                 className="rounded-md bg-white/5 px-2 py-0.5 text-xs text-muted-foreground"

@@ -165,7 +165,7 @@ export function ShareLinks({ url, title, summary, heading }: Props) {
             aria-label={`Share on ${b.label}`}
             title={`Share on ${b.label}`}
             className={[
-              "group inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-muted-foreground transition-colors hover:border-white/30 hover:bg-white/10",
+              "group inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-muted-foreground transition-colors hover:border-white/30 hover:bg-white/10",
               b.hoverColor,
             ].join(" ")}
           >
@@ -179,7 +179,7 @@ export function ShareLinks({ url, title, summary, heading }: Props) {
           aria-label={copied ? "Link copied" : "Copy link"}
           title={copied ? "Link copied" : "Copy link"}
           className={[
-            "inline-flex h-9 w-9 items-center justify-center rounded-lg border transition-colors",
+            "inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-colors",
             copied
               ? "border-emerald-400 bg-emerald-500/15 text-emerald-300"
               : "border-white/10 bg-white/[0.03] text-muted-foreground hover:border-accent hover:bg-white/10 hover:text-foreground",
@@ -194,7 +194,7 @@ export function ShareLinks({ url, title, summary, heading }: Props) {
             onClick={share}
             aria-label="Share via your device"
             title="Share via your device"
-            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm font-medium text-muted-foreground transition-colors hover:border-accent hover:bg-white/10 hover:text-foreground"
+            className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm font-medium text-muted-foreground transition-colors hover:border-accent hover:bg-white/10 hover:text-foreground"
           >
             <Share2 className="h-4 w-4" /> More
           </button>

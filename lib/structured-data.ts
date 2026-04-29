@@ -118,7 +118,9 @@ export function generateProjectSchema(project: {
 }
 
 /**
- * Article schema - for blog posts
+ * BlogPosting schema - for blog posts.
+ * Google specifically prefers BlogPosting over the more generic Article for
+ * articles published on a blog; mainEntityOfPage anchors the canonical URL.
  */
 export function generateArticleSchema(article: {
   title: string;
@@ -130,14 +132,16 @@ export function generateArticleSchema(article: {
   tags?: string[];
   readingTime?: number;
 }) {
+  const url = `${BASE_URL}/articles/${article.slug}`;
   return {
     "@context": "https://schema.org",
-    "@type": "Article",
+    "@type": "BlogPosting",
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
     headline: article.title,
     description: article.summary,
-    url: `${BASE_URL}/articles/${article.slug}`,
+    url,
     datePublished: article.date,
-    ...(article.updated && { dateModified: article.updated }),
+    dateModified: article.updated || article.date,
     ...(article.imageSrc && {
       image: article.imageSrc.startsWith("http")
         ? article.imageSrc

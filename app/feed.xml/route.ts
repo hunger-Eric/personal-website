@@ -5,7 +5,7 @@ import { siteConfig } from "@/config/siteConfig";
 
 export const runtime = "nodejs";
 export const dynamic = "force-static";
-export const revalidate = 3600; // 1h
+export const revalidate = 21600; // 6h — articles are static, no need to be hot
 
 const BASE_URL = (
   process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev"
@@ -81,7 +81,7 @@ ${items}
     status: 200,
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      "Cache-Control": "public, max-age=21600, s-maxage=21600",
     },
   });
 }

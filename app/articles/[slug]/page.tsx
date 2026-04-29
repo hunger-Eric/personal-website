@@ -42,24 +42,32 @@ export async function generateMetadata({
     return { title: "Article Not Found" };
   }
 
+  const canonical = `/articles/${article.slug}`;
+  const ogImages = article.imageSrc
+    ? [{ url: article.imageSrc, alt: article.imageAlt || article.title }]
+    : undefined;
+
   return {
     title: article.title,
     description: article.summary,
     authors: [{ name: article.author || siteConfig.name }],
+    alternates: { canonical },
     openGraph: {
       type: "article",
+      url: canonical,
       title: article.title,
       description: article.summary,
       publishedTime: article.date,
       modifiedTime: article.updated || article.date,
       authors: [article.author || siteConfig.name],
       tags: article.tags,
-      images: article.imageSrc ? [{ url: article.imageSrc }] : undefined,
+      images: ogImages,
     },
     twitter: {
       card: "summary_large_image",
       title: article.title,
       description: article.summary,
+      images: article.imageSrc ? [article.imageSrc] : undefined,
     },
   };
 }
@@ -126,15 +134,15 @@ export default async function ArticlePage({
 
         {/* Centered article header */}
         <header className="mx-auto mb-12 max-w-3xl text-center">
-          {/* Published · By · Read · Views line */}
-          <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm text-muted-foreground">
+          {/* Meta line — no inline bullets so it wraps cleanly on narrow widths.
+              The flex gap takes care of separation visually. */}
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
               <Calendar className="h-3.5 w-3.5" aria-hidden />
-              Published {formatDate(article.date)}
+              {formatDate(article.date)}
             </span>
-            <span aria-hidden>•</span>
             <span>
-              By:{" "}
+              By{" "}
               <a
                 href="/connect"
                 target="_blank"
@@ -146,9 +154,7 @@ export default async function ArticlePage({
                 </span>
               </a>
             </span>
-            <span aria-hidden>•</span>
             <span>{article.readingTime} min read</span>
-            <span aria-hidden>•</span>
             <ArticleViews slug={article.slug} />
           </div>
 
@@ -209,9 +215,11 @@ export default async function ArticlePage({
           </figure>
         )}
 
-        {/* Article body + sticky sidebar (TOC + Share) */}
-        <div className="lg:grid lg:grid-cols-[1fr_260px] lg:gap-x-14">
-          <article className="min-w-0">
+        {/* Article body + sticky sidebar (TOC + Share). Prose is constrained
+            to ~70ch for readability; grid is centered in the container so the
+            negative space sits evenly on both sides on wide screens. */}
+        <div className="lg:grid lg:grid-cols-[minmax(0,70ch)_260px] lg:justify-center lg:gap-x-14">
+          <article className="mx-auto min-w-0 max-w-[70ch] lg:mx-0">
             <MdxRenderer source={article.content} />
 
             {/* Related articles */}

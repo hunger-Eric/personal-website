@@ -3,6 +3,7 @@
 import { MDXRemote } from "next-mdx-remote/rsc";
 import remarkGfm from "remark-gfm";
 import rehypePrettyCode from "rehype-pretty-code";
+import rehypeSanitize from "rehype-sanitize";
 import rehypeSlug from "rehype-slug";
 
 import { mdxComponents } from "./MdxComponents";
@@ -49,7 +50,13 @@ export async function MdxRenderer({ source }: { source: string }) {
           parseFrontmatter: false,
           mdxOptions: {
             remarkPlugins: [remarkGfm],
+            // Order matters: sanitize runs FIRST so any raw HTML embedded in
+            // an article is cleaned, but rehype-slug and rehype-pretty-code
+            // add their (trusted) attributes AFTERWARDS so syntax-highlighting
+            // styles and heading IDs aren't stripped. JSX components from MDX
+            // are not part of the HAST tree sanitize sees.
             rehypePlugins: [
+              rehypeSanitize,
               rehypeSlug,
               [rehypePrettyCode, prettyCodeOptions],
             ],

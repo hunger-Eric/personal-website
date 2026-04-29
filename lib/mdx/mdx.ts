@@ -3,8 +3,38 @@
 import fs from "fs";
 import path from "path";
 import matter from "gray-matter";
+import { z } from "zod";
 
 const CONTENT_DIR = path.join(process.cwd(), "content/articles");
+
+// Slug must be kebab-style: starts with alphanum, then alphanum/hyphen, max 80 chars.
+// Mirrors the regex used in app/api/views/[slug]/route.ts for KV key safety.
+const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{0,80}$/i;
+
+// A "parseable date" — anything new Date() can interpret (ISO, YYYY-MM-DD, etc).
+const parseableDate = z
+  .string()
+  .min(1)
+  .refine((v) => !Number.isNaN(new Date(v).getTime()), {
+    message: "must be a parseable date (ISO 8601 or YYYY-MM-DD)",
+  });
+
+// Exported so unit tests can validate raw frontmatter without going through the
+// fs / gray-matter pipeline.
+export const FrontmatterSchema = z.object({
+  title: z.string().min(1, "title is required"),
+  slug: z.string().regex(SLUG_REGEX, "slug must be kebab-style").optional(),
+  summary: z.string().optional().default(""),
+  date: parseableDate,
+  updated: parseableDate.optional(),
+  category: z.string().optional(),
+  tags: z.array(z.string()).optional().default([]),
+  featured: z.boolean().optional().default(false),
+  draft: z.boolean().optional().default(false),
+  imageSrc: z.string().optional(),
+  imageAlt: z.string().optional(),
+  author: z.string().optional(),
+});
 
 export interface ArticleFrontmatter {
   title: string;
@@ -32,9 +62,11 @@ export interface ArticlePreview extends ArticleFrontmatter {
 }
 
 /**
- * Calculate reading time from content
+ * Calculate reading time from content. Exported for testing.
  */
-function calculateReadingTime(content: string): { time: number; words: number } {
+export function calculateReadingTime(
+  content: string
+): { time: number; words: number } {
   const wordsPerMinute = 200;
   const words = content.trim().split(/\s+/).length;
   const time = Math.ceil(words / wordsPerMinute);
@@ -58,45 +90,52 @@ function getArticleFiles(): string[] {
 }
 
 /**
- * Parse article file and extract frontmatter + content
+ * Parse article file and extract frontmatter + content. Validates frontmatter
+ * against a Zod schema so a malformed article cannot poison the feed/sitemap;
+ * invalid articles are skipped with a clear console error.
  */
 function parseArticleFile(
   filePath: string
 ): { frontmatter: ArticleFrontmatter; content: string } | null {
+  let raw: string;
   try {
-    const fileContent = fs.readFileSync(filePath, "utf-8");
-    const { data, content } = matter(fileContent);
-
-    // Extract slug from filename if not in frontmatter
-    const filename = path.basename(filePath, path.extname(filePath));
-    const slug = data.slug || filename;
-
-    // Validate required fields
-    if (!data.title || !data.date) {
-      console.warn(`Article ${filename} is missing required fields (title, date)`);
-      return null;
-    }
-
-    const frontmatter: ArticleFrontmatter = {
-      title: data.title,
-      slug,
-      summary: data.summary || "",
-      date: data.date,
-      updated: data.updated,
-      category: data.category,
-      tags: data.tags || [],
-      featured: data.featured || false,
-      draft: data.draft || false,
-      imageSrc: data.imageSrc,
-      imageAlt: data.imageAlt,
-      author: data.author,
-    };
-
-    return { frontmatter, content };
+    raw = fs.readFileSync(filePath, "utf-8");
   } catch (error) {
-    console.error(`Error parsing article file ${filePath}:`, error);
+    console.error(`Error reading article file ${filePath}:`, error);
     return null;
   }
+
+  const filename = path.basename(filePath, path.extname(filePath));
+  const { data, content } = matter(raw);
+
+  const result = FrontmatterSchema.safeParse(data);
+  if (!result.success) {
+    const issues = result.error.issues
+      .map((i) => `  - ${i.path.join(".") || "(root)"}: ${i.message}`)
+      .join("\n");
+    console.warn(
+      `[articles] Skipping ${filename}.mdx — invalid frontmatter:\n${issues}`
+    );
+    return null;
+  }
+
+  const fm = result.data;
+  const frontmatter: ArticleFrontmatter = {
+    title: fm.title,
+    slug: fm.slug || filename,
+    summary: fm.summary,
+    date: fm.date,
+    updated: fm.updated,
+    category: fm.category,
+    tags: fm.tags,
+    featured: fm.featured,
+    draft: fm.draft,
+    imageSrc: fm.imageSrc,
+    imageAlt: fm.imageAlt,
+    author: fm.author,
+  };
+
+  return { frontmatter, content };
 }
 
 /**

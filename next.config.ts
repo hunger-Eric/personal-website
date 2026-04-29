@@ -60,8 +60,8 @@ const nextConfig: NextConfig = {
 
   // Experimental features
   experimental: {
-    // Optimize imports for commonly used packages
-    optimizePackageImports: ["lucide-react"],
+    // Tree-shake commonly used packages so we only ship what's actually used.
+    optimizePackageImports: ["lucide-react", "fuse.js", "sanitize-html"],
   },
 
   // Security and caching headers

@@ -30,8 +30,42 @@ const BOT_REGEX =
 // need to depend on @cloudflare/workers-types just for this file.
 type ViewsKv = {
   get(key: string): Promise<string | null>;
-  put(key: string, value: string): Promise<void>;
+  put(
+    key: string,
+    value: string,
+    options?: { expirationTtl?: number }
+  ): Promise<void>;
 };
+
+// Best-effort per-IP throttle. The cookie dedupe is the primary defense; this
+// belt-and-suspenders limit guards against cookie-clearers and casual scripts.
+// 60s TTL keeps KV usage tiny.
+const IP_RATE_LIMIT_TTL_S = 60;
+
+function getClientIp(req: NextRequest): string | null {
+  // CF-Connecting-IP is set by Cloudflare on every Worker request.
+  const cf = req.headers.get("cf-connecting-ip");
+  if (cf) return cf;
+  const xff = req.headers.get("x-forwarded-for");
+  if (xff) return xff.split(",")[0].trim();
+  return null;
+}
+
+async function isIpThrottled(
+  kv: ViewsKv | null,
+  ip: string | null,
+  slug: string
+): Promise<boolean> {
+  if (!kv || !ip) return false;
+  const key = `rl:${ip}:${slug}`;
+  const seen = await kv.get(key);
+  if (seen) return true;
+  // Note: KV writes are eventually consistent, so two near-simultaneous
+  // requests can both pass this check. Combined with the cookie dedupe and
+  // bot filter that's acceptable for a personal blog view counter.
+  await kv.put(key, "1", { expirationTtl: IP_RATE_LIMIT_TTL_S });
+  return false;
+}
 
 function getKv(): ViewsKv | null {
   try {
@@ -120,8 +154,11 @@ export async function POST(
   let views = await readViews(kv, slug);
 
   if (!alreadyCounted && honorsTracking(req)) {
-    views += 1;
-    await writeViews(kv, slug, views);
+    const throttled = await isIpThrottled(kv, getClientIp(req), slug);
+    if (!throttled) {
+      views += 1;
+      await writeViews(kv, slug, views);
+    }
   }
 
   const res = NextResponse.json(

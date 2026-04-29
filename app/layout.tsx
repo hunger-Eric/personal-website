@@ -1,10 +1,10 @@
 // app/layout.tsx
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 import { siteConfig } from "@/config/siteConfig";
-import { Analytics } from "@vercel/analytics/next";
 
 import { NavbarCentered } from "@/components/NavbarCenteredDesktop";
 import NavbarCenteredMobile from "@/components/NavbarCenteredMobile";
@@ -34,6 +34,11 @@ const jetbrainsMono = JetBrains_Mono({
 
 // Base URL for canonical URLs and OG images
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev";
+
+// Cloudflare Web Analytics token (privacy-friendly, no cookies). Optional —
+// the beacon is only injected when the env var is present so previews and
+// local dev stay quiet.
+const CF_ANALYTICS_TOKEN = process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN;
 
 // Viewport configuration
 export const viewport: Viewport = {
@@ -201,7 +206,16 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <ThemeProvider>
-          <Analytics />
+          {/* Cloudflare Web Analytics — privacy-friendly, no cookies. Replaces
+              @vercel/analytics, whose beacon doesn't reliably reach Vercel from
+              Cloudflare Workers. */}
+          {CF_ANALYTICS_TOKEN && (
+            <Script
+              src="https://static.cloudflareinsights.com/beacon.min.js"
+              data-cf-beacon={`{"token":"${CF_ANALYTICS_TOKEN}"}`}
+              strategy="afterInteractive"
+            />
+          )}
 
           {/* Skip to content link for accessibility */}
           <a

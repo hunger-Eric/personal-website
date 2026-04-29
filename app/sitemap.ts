@@ -2,15 +2,13 @@
 import { MetadataRoute } from "next";
 import { siteConfig } from "@/config/siteConfig";
 import { loadProjects } from "@/config/projects";
-import { blogPosts } from "@/config/articles";
+import { getArticles } from "@/lib/mdx/mdx";
 
-// Base URL - should be configured in site.json or environment
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
-  // Core pages - always included
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: BASE_URL,
@@ -32,7 +30,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Add projects listing page
   if (siteConfig.sections?.projects) {
     staticPages.push({
       url: `${BASE_URL}/projects`,
@@ -42,7 +39,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  // Add articles listing page
   if (siteConfig.sections?.articles) {
     staticPages.push({
       url: `${BASE_URL}/articles`,
@@ -52,7 +48,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  // Generate project pages
   let projectPages: MetadataRoute.Sitemap = [];
   try {
     const projects = await loadProjects();
@@ -63,18 +58,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
   } catch (error) {
-    console.warn("Failed to load projects for sitemap:", error);
+    console.warn("[sitemap] Failed to load projects:", error);
   }
 
-  // Article pages
-  const articlePages: MetadataRoute.Sitemap = siteConfig.sections?.articles
-    ? blogPosts.map((article) => ({
-        url: `${BASE_URL}/articles/${article.slug}`,
-        lastModified: article.date ? new Date(article.date) : now,
-        changeFrequency: "monthly" as const,
-        priority: 0.6,
-      }))
-    : [];
+  // Articles are sourced from the MDX loader so the sitemap stays in lockstep
+  // with content/articles/*.mdx — never the legacy config/articles.json.
+  let articlePages: MetadataRoute.Sitemap = [];
+  if (siteConfig.sections?.articles) {
+    try {
+      const articles = await getArticles();
+      articlePages = articles.map((article) => {
+        const lastModSource = article.updated || article.date;
+        const parsed = new Date(lastModSource);
+        return {
+          url: `${BASE_URL}/articles/${article.slug}`,
+          lastModified: Number.isNaN(parsed.getTime()) ? now : parsed,
+          changeFrequency: "monthly" as const,
+          priority: 0.6,
+        };
+      });
+    } catch (error) {
+      console.warn("[sitemap] Failed to load articles:", error);
+    }
+  }
 
   return [...staticPages, ...projectPages, ...articlePages];
 }

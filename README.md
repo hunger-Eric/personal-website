@@ -83,8 +83,10 @@ A minimal, config-driven developer portfolio template built with **Next.js 16**,
 - [Blog System](#blog-system)
 - [Theme Customization](#theme-customization)
 - [SEO](#seo)
+- [Analytics](#analytics)
 - [Deployment](#deployment)
 - [Environment Variables](#environment-variables)
+- [Testing](#testing)
 
 ---
 
@@ -211,38 +213,88 @@ Add a hidden metadata block to your GitHub README for rich project data:
 
 ## Blog System
 
-DevfolioX includes a full MDX-based blog system.
+DevfolioX ships a full MDX-based blog at `/articles`. Articles are validated
+with Zod at parse time, fully pre-rendered at build, and served from
+Cloudflare Workers.
 
-### Creating Articles
+### What you get out of the box
 
-Add `.mdx` files to `content/articles/`:
+- **MDX articles** with front-matter, custom components, and GFM
+- **Search + tag/category filters** (client-side, debounced)
+- **Featured carousel** + paginated list
+- **Per-article view counter** backed by Cloudflare KV (`ARTICLE_VIEWS`)
+  with cookie + IP rate limiting
+- **Table of contents** with scroll-spy
+- **Related articles** scored by shared tags
+- **Reading time** auto-calculated
+- **Share links** (X, LinkedIn, Reddit, Facebook, email, SMS, copy, native share)
+- **RSS 2.0 feed** at `/feed.xml`
+- **JSON Feed 1.1** at `/feed.json`
+- **Sitemap** at `/sitemap.xml` (sourced from MDX, not the legacy config)
+- **Robots** at `/robots.txt` (blocks AI crawlers by default)
+- **JSON-LD `BlogPosting` schema** + canonical URLs per article
+- **OpenGraph + Twitter cards** including image alt text from frontmatter
+
+### Creating articles
+
+Add a `.mdx` file to `content/articles/`. Frontmatter is validated against a
+Zod schema — invalid articles are skipped at build with a clear error.
 
 ```markdown
 ---
-title: "My First Article"
-slug: "my-first-article"
-summary: "An introduction to my blog"
-date: "2026-01-25"
-category: "Tutorial"
-tags: ["Next.js", "React"]
-featured: true
+title: "Deploying Next.js to Cloudflare Workers"
+slug: "cloudflare-workers-opennext"     # optional; defaults to filename
+summary: "What I learned moving off Vercel."
+date: "2026-04-22"                      # required, must be parseable
+updated: "2026-04-26"                   # optional
+category: "Infrastructure"              # optional, single value
+tags: ["Cloudflare", "Next.js"]         # optional array
+featured: true                          # optional
+draft: false                            # excluded in production when true
+imageSrc: "/images/cover.png"           # optional, relative to public/
+imageAlt: "Cloudflare dashboard"        # optional, shown on cover + OG
+author: "Kevin Trinh"                   # optional, defaults to siteConfig.name
 ---
 
-Your article content here...
+Article body in Markdown / MDX...
 ```
 
-### MDX Components
+**Frontmatter rules:**
+- `title` and `date` are required.
+- `slug` must be kebab-case (`^[a-z0-9][a-z0-9-]{0,80}$`); the filename is used as a fallback.
+- `date` / `updated` must parse via `new Date(...)` — `"2026-04-22"` and ISO 8601 both work.
+- `tags` must be a string array.
 
-Use custom components in your articles:
+### MDX components
+
+The following components are available inside any `.mdx` article:
 
 ```mdx
-<Callout type="info">
-  This is an informational callout.
-</Callout>
+<Callout kind="info">       Info box (also: warning, success, danger, tip) </Callout>
+<YouTube id="dQw4w9WgXcQ" />              {/* nocookie embed */}
+<Tweet url="https://twitter.com/.../1234" />
+<Figure src="/images/x.png" alt="..." caption="..." />
+Press <Kbd>Ctrl</Kbd>+<Kbd>K</Kbd>
+```
 
-<Callout type="warning">
-  This is a warning.
-</Callout>
+### View counter
+
+`/api/views/<slug>` (GET returns count, POST increments). Uses
+`ARTICLE_VIEWS` KV with three layers of abuse prevention:
+1. Slug allow-list (only published article slugs accepted)
+2. Cookie dedupe per visitor (24h)
+3. Per-IP throttle via KV (60s window)
+
+Honors `DNT: 1` and `Sec-GPC: 1`, and skips obvious crawlers via UA regex.
+
+### Verifying articles after deploy
+
+```bash
+curl -sI https://kevintrinh.dev/articles | head -1
+curl -s   https://kevintrinh.dev/feed.xml   | head -20
+curl -s   https://kevintrinh.dev/feed.json  | jq '.version, (.items | length)'
+curl -s   https://kevintrinh.dev/sitemap.xml | head -10
+curl -s   https://kevintrinh.dev/articles/<slug> | grep -o '"@type":"BlogPosting"'
 ```
 
 ---
@@ -296,31 +348,62 @@ Each page has optimized metadata. Customize in `app/layout.tsx` or per-page with
 
 ---
 
+## Analytics
+
+DevfolioX integrates with **Cloudflare Web Analytics** — privacy-friendly,
+no cookies, free, and works natively from Cloudflare Workers (Vercel
+Analytics' beacon doesn't reliably reach Vercel from a CF Worker).
+
+### Setup
+
+1. Open the [Cloudflare Web Analytics dashboard](https://dash.cloudflare.com/?to=/:account/web-analytics).
+2. Add a site for your domain.
+3. Copy the **site token** (a hex string).
+4. Set it as `NEXT_PUBLIC_CF_ANALYTICS_TOKEN` in your environment (Cloudflare Workers env or `.env.local`).
+
+The beacon is only injected when the env var is present, so previews and
+local dev stay quiet.
+
+---
+
 ## Deployment
 
-### Vercel (Recommended)
+This repo ships to **Cloudflare Workers** via OpenNext. Vercel/Netlify still
+work but require dropping the OpenNext-specific bits in `wrangler.jsonc`
+and `open-next.config.ts`.
+
+### Cloudflare Workers (current setup)
+
+```bash
+npm run cf:build      # OpenNext compile
+npm run cf:preview    # local Worker preview
+npm run cf:deploy     # deploy to production
+```
+
+KV bindings (already wired in `wrangler.jsonc`):
+- `NEXT_INC_CACHE_KV` — Next.js ISR cache
+- `ARTICLE_VIEWS` — per-article view counts + IP rate-limit keys
+
+### Rollback
+
+If a deploy breaks production:
+
+```bash
+# List recent versions
+npx wrangler deployments list
+
+# Roll back to the previous one
+npx wrangler rollback
+```
+
+Worker rollbacks are near-instant and don't require a rebuild.
+
+### Vercel / Netlify (alternative)
 
 1. Push your code to GitHub
-2. Import project on [vercel.com](https://vercel.com)
-3. Add environment variables
+2. Import on Vercel or Netlify; framework auto-detects as Next.js
+3. Set `NEXT_PUBLIC_BASE_URL` and any other env vars from `.env.example`
 4. Deploy
-
-### Netlify
-
-1. Push your code to GitHub
-2. Import project on [netlify.com](https://netlify.com)
-3. Build command: `npm run build`
-4. Publish directory: `.next`
-5. Add environment variables
-6. Deploy
-
-### Cloudflare Pages
-
-1. Push your code to GitHub
-2. Create project on Cloudflare Pages
-3. Framework preset: Next.js
-4. Add environment variables
-5. Deploy
 
 ---
 
@@ -347,13 +430,30 @@ NEXT_PUBLIC_GA_ID=G-XXXXXX
 
 | Variable | Required | Purpose |
 |----------|----------|---------|
+| `NEXT_PUBLIC_BASE_URL` | For SEO | Your deployed URL (used by sitemap, feeds, OG, JSON-LD) |
+| `NEXT_PUBLIC_CF_ANALYTICS_TOKEN` | Optional | Cloudflare Web Analytics site token |
 | `RESEND_API_KEY` | For contact | Send emails via Resend |
 | `CONTACT_TO_EMAIL` | For contact | Email recipient |
-| `GITHUB_TOKEN` | For GitHub | API access for stats |
+| `GITHUB_TOKEN` | Optional | Higher GitHub API limits for contributions graph |
+| `GITHUB_USERNAME` | Optional | Default GitHub user for stats |
 | `YOUTUBE_API_KEY` | For YouTube | Fetch channel videos |
-| `NEXT_PUBLIC_BASE_URL` | For SEO | Your deployed URL |
 
 Run `npm run validate-env` to check your configuration.
+
+---
+
+## Testing
+
+```bash
+npm run test          # one-shot
+npm run test:watch    # rerun on save
+```
+
+The Vitest suite covers:
+- Frontmatter Zod schema (valid + invalid cases)
+- Reading-time math
+- The MDX loader against the real `content/articles/` directory
+- RSS 2.0 + JSON Feed 1.1 route handlers (shape, item count, XML escaping)
 
 ---
 
@@ -367,6 +467,10 @@ Run `npm run validate-env` to check your configuration.
 | `npm run setup` | Interactive setup wizard |
 | `npm run validate-env` | Validate environment variables |
 | `npm run lint` | Run ESLint |
+| `npm run test` | Run Vitest unit tests |
+| `npm run cf:build` | OpenNext build for Cloudflare Workers |
+| `npm run cf:preview` | Preview the Worker locally |
+| `npm run cf:deploy` | Deploy to Cloudflare Workers |
 
 ---
 

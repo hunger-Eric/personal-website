@@ -81,7 +81,7 @@ export function TableOfContents({ entries }: Props) {
         <ListTree className="h-4 w-4" aria-hidden />
         On this page
       </div>
-      <ul className="space-y-1.5 border-l border-white/10">
+      <ul className="border-l border-white/10">
         {entries.map((e) => {
           const isActive = e.id === activeId;
           return (
@@ -90,7 +90,7 @@ export function TableOfContents({ entries }: Props) {
                 href={`#${e.id}`}
                 onClick={(ev) => handleClick(ev, e.id)}
                 className={[
-                  "block border-l-2 -ml-px py-1 pr-2 transition-colors",
+                  "block border-l-2 -ml-px py-2 pr-2 leading-snug transition-colors",
                   e.level === 3 ? "pl-7" : "pl-3",
                   isActive
                     ? "border-accent text-foreground"

@@ -1,19 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import {
   Tag,
   Folder,
   FileText,
   Search,
   X,
-  Clock,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 
-import { ShareLinks } from "./ShareLinks";
 import { ArticleCard } from "./ArticleCard";
 import { FeaturedArticlesCarousel } from "./FeaturedArticlesCarousel";
 
@@ -37,24 +34,6 @@ type Props = {
 };
 
 const PAGE_SIZE = 6;
-
-function formatDate(dateStr: string): string {
-  try {
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return dateStr;
-    return d.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  } catch {
-    return dateStr;
-  }
-}
-
-function articleImage(a: { imageSrc?: string }): string {
-  return a.imageSrc || "/images/demo_1.png";
-}
 
 /**
  * Build the visible page-number row with ellipses.
@@ -97,14 +76,6 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
   }, [debouncedQuery, activeFilter]);
 
   const featured = useMemo(() => articles.filter((a) => a.featured), [articles]);
-
-  const recent = useMemo(() => {
-    return [...articles]
-      .sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      )
-      .slice(0, 5);
-  }, [articles]);
 
   // Filter pipeline: chip filter first, then text search.
   const filtered = useMemo(() => {
@@ -354,51 +325,9 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
           </div>
         )}
 
-        {/* Recent */}
-        {recent.length > 0 && (
-          <div className="mb-8">
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
-              <Clock className="h-4 w-4" />
-              Recent
-            </h3>
-            <ul className="space-y-3">
-              {recent.map((a) => (
-                <li key={a.slug}>
-                  <Link
-                    href={`/articles/${a.slug}`}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="group flex items-start gap-3"
-                  >
-                    <span className="relative h-12 w-12 flex-none overflow-hidden rounded-md bg-white/5">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={articleImage(a)}
-                        alt=""
-                        className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.06]"
-                        loading="lazy"
-                      />
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="line-clamp-2 text-sm font-medium leading-snug text-foreground">
-                        <span className="relative inline transition-[background-size] duration-300 [background-image:linear-gradient(currentColor,currentColor)] [background-position:0_100%] [background-repeat:no-repeat] [background-size:0%_2px] group-hover:[background-size:100%_2px]">
-                          {a.title}
-                        </span>
-                      </span>
-                      <span className="mt-0.5 text-xs text-muted-foreground">
-                        {formatDate(a.date)}
-                      </span>
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
         {/* Tags */}
         {tags.length > 0 && (
-          <div className="mb-8">
+          <div>
             <h3 className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
               <Tag className="h-4 w-4" />
               Tags
@@ -417,7 +346,7 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
                       )
                     }
                     className={[
-                      "rounded-md px-2 py-0.5 text-xs transition-colors",
+                      "rounded-md px-2 py-1 text-xs transition-colors",
                       active
                         ? "bg-accent/15 text-accent"
                         : "bg-white/5 text-muted-foreground hover:bg-white/10",
@@ -430,19 +359,6 @@ export function ArticlesBrowser({ articles, categories, tags }: Props) {
             </div>
           </div>
         )}
-
-        {/* Share */}
-        <div>
-          <h3 className="mb-3 flex items-center gap-2 text-sm font-medium uppercase tracking-wider text-muted-foreground">
-            Share
-          </h3>
-          <ShareLinks
-            url="/articles"
-            title="Kevin Trinh — Articles"
-            summary="Articles, tutorials, and writing by Kevin Trinh."
-            heading={null}
-          />
-        </div>
       </aside>
       </div>
     </div>

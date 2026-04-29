@@ -5,7 +5,7 @@ import { siteConfig } from "@/config/siteConfig";
 
 export const runtime = "nodejs";
 export const dynamic = "force-static";
-export const revalidate = 3600;
+export const revalidate = 21600; // 6h
 
 const BASE_URL = (
   process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev"
@@ -47,7 +47,7 @@ export async function GET() {
   return NextResponse.json(feed, {
     headers: {
       "Content-Type": "application/feed+json; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      "Cache-Control": "public, max-age=21600, s-maxage=21600",
     },
   });
 }
