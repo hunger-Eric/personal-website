@@ -562,13 +562,13 @@ export function ContributionGraphCard({
               ) : (
                 <div className="inline-block pt-1">
                   {/* Month labels row – aligned to the chosen week column */}
-                  <div className="flex justify-start gap-[3.5px] text-[0.8rem] leading-tight text-muted-foreground/70 sm:text-[0.85rem]">
+                  <div className="flex justify-start gap-[2px] text-[0.65rem] leading-tight text-muted-foreground/70 sm:gap-[3.5px] sm:text-[0.85rem]">
                     {Array.from({ length: weekCount }).map((_, weekIndex) => {
                       const label = monthLabelByWeek[weekIndex] ?? "";
                       return (
                         <div
                           key={`month-${weekIndex}`}
-                          className="flex min-h-[1.35rem] w-[12px] items-end justify-start pb-0.5"
+                          className="flex min-h-[1.1rem] w-[8px] items-end justify-start pb-0.5 sm:min-h-[1.35rem] sm:w-[12px]"
                         >
                           {label && (
                             <span className="translate-x-[1px]">{label}</span>
@@ -579,11 +579,11 @@ export function ContributionGraphCard({
                   </div>
 
                   {/* Heatmap: weeks (columns) × 7 days (rows) */}
-                  <div className="mt-1 flex gap-[3.5px]">
+                  <div className="mt-1 flex gap-[2px] sm:gap-[3.5px]">
                     {Array.from({ length: weekCount }).map((_, weekIndex) => (
                       <div
                         key={`week-${weekIndex}`}
-                        className="flex flex-col gap-[3.5px]"
+                        className="flex flex-col gap-[2px] sm:gap-[3.5px]"
                       >
                         {Array.from({ length: 7 }).map((_, dayIndex) => {
                           const idx = weekIndex * 7 + dayIndex;
@@ -594,7 +594,7 @@ export function ContributionGraphCard({
                             return (
                               <div
                                 key={`cell-${weekIndex}-${dayIndex}`}
-                                className="h-[12px] w-[12px] rounded-[3px] bg-slate-900/20"
+                                className="h-[8px] w-[8px] rounded-[2px] bg-slate-900/20 sm:h-[12px] sm:w-[12px] sm:rounded-[3px]"
                               />
                             );
                           }
@@ -610,7 +610,7 @@ export function ContributionGraphCard({
                           return (
                             <div
                               key={`cell-${weekIndex}-${dayIndex}`}
-                              className={`h-[12px] w-[12px] rounded-[3px] ${color}`}
+                              className={`h-[8px] w-[8px] rounded-[2px] sm:h-[12px] sm:w-[12px] sm:rounded-[3px] ${color}`}
                             />
                           );
                         })}
@@ -621,12 +621,12 @@ export function ContributionGraphCard({
               )}
             </div>
 
-            {/* Summary + legend */}
-            <div className="mt-2 flex flex-col items-center gap-2 text-[0.85rem] text-muted-foreground/70 sm:flex-row sm:items-center sm:justify-between sm:text-sm">
+            {/* Summary + legend (legend hidden on mobile, summary muted) */}
+            <div className="mt-2 flex flex-col items-center gap-2 text-[0.75rem] text-muted-foreground/60 sm:flex-row sm:items-center sm:justify-between sm:text-sm">
               {isLoading ? (
                 <>
                   <div className="skeleton h-4 w-48 rounded-md" />
-                  <div className="flex items-center gap-2">
+                  <div className="hidden items-center gap-2 sm:flex">
                     <span>Less</span>
                     <div className="flex items-center gap-[3.5px]">
                       <span className="h-[12px] w-[12px] rounded-[3px] bg-slate-800" />
@@ -641,7 +641,7 @@ export function ContributionGraphCard({
               ) : (
                 <>
                   <span>{summaryLabel}</span>
-                  <div className="flex items-center gap-2">
+                  <div className="hidden items-center gap-2 sm:flex">
                     <span>Less</span>
                     <div className="flex items-center gap-[3.5px]">
                       <span className="h-[12px] w-[12px] rounded-[3px] bg-slate-800" />

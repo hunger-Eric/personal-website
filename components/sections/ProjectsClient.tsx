@@ -93,38 +93,52 @@ export function ProjectsSectionClient({
     <section id="projects" className="py-16 scroll-mt-12 lg:py-24 overflow-x-hidden">
       {/* Heading container */}
       <div className="mx-auto w-full max-w-6xl px-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex flex-1 items-center gap-4">
-            <h2 className="font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
-              ~/Projects
-            </h2>
-            <div className="hidden h-px w-40 bg-white/15 sm:block sm:w-72" aria-hidden />
-          </div>
-
-          <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center">
-            <a
-              href="https://github.com/KevinTrinhDev"
-              target="_blank"
-              rel="noreferrer noopener"
-              className="group inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:w-auto sm:justify-start"
-            >
-              <span>View all Projects</span>
-              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-            </a>
-          </div>
+        <div className="flex items-center gap-4">
+          <h2 className="font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
+            ~/Projects
+          </h2>
+          <div
+            className="hidden h-px w-40 bg-white/15 sm:block sm:w-72"
+            aria-hidden
+          />
+          <div className="flex-1" />
+          <a
+            href="https://github.com/KevinTrinhDev"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="group inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:px-3.5 sm:py-2 sm:text-sm"
+          >
+            <span className="sm:hidden">All Projects</span>
+            <span className="hidden sm:inline">View all Projects</span>
+            <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
+          </a>
         </div>
       </div>
 
-      {/* Featured projects carousel (kept aligned to section container like your other sections) */}
+      {/* Featured projects: carousel on md+, full project cards (with images)
+          stacked on mobile so users get a more typical card flow */}
       {featuredCarouselProjects.length > 0 && (
         <div className="mx-auto mt-8 w-full max-w-6xl px-4">
-          <FeaturedProjectsCarousel projects={featuredCarouselProjects} />
+          <div className="hidden md:block">
+            <FeaturedProjectsCarousel projects={featuredCarouselProjects} />
+          </div>
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {featuredCarouselProjects.slice(0, 3).map((project) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                onOpenDetails={openProject}
+                iconFor={iconFor}
+              />
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Regular project cards grid back inside container */}
-      <div className="mx-auto mt-8 w-full max-w-6xl px-4">
-        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Compact 3-column grid (no images) — desktop/tablet only; mobile is
+          covered by the featured cards above so we don't show duplicates */}
+      <div className="mx-auto mt-8 hidden w-full max-w-6xl px-4 md:block">
+        <div className="grid auto-rows-fr gap-4 md:grid-cols-2 lg:grid-cols-3">
           {visibleProjects.map((project) => (
             <div key={project.id} className="opacity-100 translate-y-0">
               <ProjectCard
@@ -136,7 +150,6 @@ export function ProjectsSectionClient({
             </div>
           ))}
         </div>
-
       </div>
 
       {/* Info Modal – cached data only */}

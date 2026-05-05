@@ -64,24 +64,19 @@ export function AboutSection() {
             {/* Portrait + stats container.
                 Mobile (default): horizontal — portrait LEFT, stats RIGHT.
                 sm+:               vertical — full-width portrait above stats. */}
-            <div className="flex flex-row items-start gap-4 sm:flex-col sm:gap-5">
-              {/* Portrait — small on mobile, full-width square on sm+ */}
-              <div className="group relative h-32 w-32 flex-none overflow-hidden rounded-xl border border-white/10 sm:h-auto sm:w-full">
-                <div className="relative aspect-square h-full w-full sm:h-auto">
-                  {a.avatarUrl ? (
-                    <Image
-                      src={a.avatarUrl}
-                      alt={a.displayName || siteConfig.name}
-                      fill
-                      className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.06]"
-                      sizes="(min-width: 1024px) 290px, (min-width: 640px) 100vw, 128px"
-                      priority={false}
-                    />
-                  ) : null}
-                </div>
+            {/* Portrait — full-width square on every breakpoint */}
+            {a.avatarUrl ? (
+              <div className="group relative mx-auto aspect-square w-40 overflow-hidden rounded-xl border border-white/10 sm:w-full">
+                <Image
+                  src={a.avatarUrl}
+                  alt={a.displayName || siteConfig.name}
+                  fill
+                  className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.06]"
+                  sizes="(min-width: 1024px) 290px, (min-width: 640px) 100vw, 160px"
+                  priority={false}
+                />
               </div>
-
-            </div>
+            ) : null}
 
             {/* Action button — email only */}
             {emailHref ? (

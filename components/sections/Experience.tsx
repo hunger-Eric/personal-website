@@ -59,12 +59,11 @@ export function ExperienceSection() {
   // ✅ subtle "Apple-like" fade when switching roles
   const [detailsKey, setDetailsKey] = useState(0);
 
-  // ✅ Left menu typography (increased)
-  // ✅ Left menu typography (slightly reduced)
-  const roleCompanyClass = "text-lg font-semibold";
+  // ✅ Left menu typography — smaller on mobile
+  const roleCompanyClass = "text-sm font-semibold sm:text-lg";
 
-  // ✅ Details typography (slightly reduced)
-  const detailsTitleClass = "text-xl font-semibold sm:text-2xl";
+  // ✅ Details typography — smaller on mobile
+  const detailsTitleClass = "text-base font-semibold sm:text-2xl";
 
   const detailsMetaClass = "mt-1 text-[15px] sm:text-[16px]";
 
