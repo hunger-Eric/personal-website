@@ -61,6 +61,17 @@ export function InstagramGlyph({ className = "" }: { className?: string }) {
   );
 }
 
+export function MediumGlyph({ className = "" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
+      <rect width="24" height="24" rx="5" fill="#000000" />
+      <ellipse cx="7" cy="12" rx="3.4" ry="4.6" fill="#ffffff" />
+      <ellipse cx="14.6" cy="12" rx="1.6" ry="4.6" fill="#ffffff" />
+      <ellipse cx="18.6" cy="12" rx="0.7" ry="4.4" fill="#ffffff" />
+    </svg>
+  );
+}
+
 export function TikTokGlyph({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>

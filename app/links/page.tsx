@@ -1,13 +1,7 @@
 // app/links/page.tsx
 import type { Metadata } from "next";
 import Image from "next/image";
-import {
-  ArrowUpRight,
-  Folder,
-  Globe,
-  Mail,
-  Newspaper,
-} from "lucide-react";
+import { ArrowUpRight, Mail } from "lucide-react";
 
 import { siteConfig } from "@/config/siteConfig";
 import { ShareButton } from "@/components/ShareButton";
@@ -19,6 +13,7 @@ import {
   YoutubeGlyph,
   InstagramGlyph,
   TikTokGlyph,
+  MediumGlyph,
 } from "@/components/BrandGlyphs";
 
 const BASE_URL = (
@@ -112,36 +107,36 @@ export default function LinksPage() {
     label: string;
     description: string;
     href: string;
-    Icon: typeof Globe;
-    iconBg: string;
-    iconColor: string;
+    icon: React.ReactNode;
   }> = [
     {
       key: "portfolio",
       label: "Portfolio Website",
       description: "My main personal site",
       href: `${BASE_URL}/`,
-      Icon: Globe,
-      iconBg: "bg-indigo-500/15",
-      iconColor: "text-indigo-300",
+      icon: (
+        <Image
+          src="/images/favicon.png"
+          alt=""
+          width={28}
+          height={28}
+          className="h-7 w-7 rounded-md object-contain"
+        />
+      ),
     },
     {
       key: "projects",
       label: "Projects",
       description: "Builds & open source on GitHub",
       href: "https://github.com/KevinTrinhDev",
-      Icon: Folder,
-      iconBg: "bg-emerald-500/15",
-      iconColor: "text-emerald-300",
+      icon: <GithubGlyph className="h-7 w-7" />,
     },
     {
       key: "articles",
       label: "Articles",
       description: "Writing, deep dives, and dev notes",
       href: `${BASE_URL}/articles`,
-      Icon: Newspaper,
-      iconBg: "bg-amber-500/15",
-      iconColor: "text-amber-300",
+      icon: <MediumGlyph className="h-7 w-7" />,
     },
   ];
 
@@ -230,20 +225,20 @@ export default function LinksPage() {
         <span>{siteConfig.location || "Houston, TX"}</span>
       </div>
 
-      {/* Description — keyword pipes */}
+      {/* Description — keyword pipes, all the same color */}
       <p className="z-10 mt-3 max-w-xs text-center text-[13px] font-medium tracking-wide text-slate-200/85 sm:text-sm">
-        <span className="text-indigo-300">Full-stack</span>
+        <span>Software</span>
         <span className="mx-2 text-muted-foreground">|</span>
-        <span>ML</span>
+        <span>Tech</span>
         <span className="mx-2 text-muted-foreground">|</span>
-        <span>Cloud</span>
+        <span>Builder</span>
         <span className="mx-2 text-muted-foreground">|</span>
         <span>CS @ UH</span>
       </p>
 
       {/* Social glyphs row — branded tiles, uniform size, no outline wrapper */}
       {socials.length > 0 && (
-        <div className="z-10 mt-7 flex flex-wrap items-center justify-center gap-3">
+        <div className="z-10 mt-7 flex flex-wrap items-center justify-center gap-4">
           {socials.map(({ key, label, href, Glyph }) => (
             <a
               key={key}
@@ -262,37 +257,33 @@ export default function LinksPage() {
 
       {/* Big buttons */}
       <div className="z-10 mt-7 flex w-full flex-col gap-3">
-        {bigButtons.map(
-          ({ key, label, description, href, Icon, iconBg, iconColor }) => (
-            <a
-              key={key}
-              href={href}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="group inline-flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-semibold text-slate-50 transition-all duration-150 hover:-translate-y-0.5 hover:border-accent/60 hover:bg-white/[0.08] hover:shadow-[0_4px_24px_-12px_rgba(99,102,241,0.5)]"
-            >
-              <span className="inline-flex min-w-0 items-center gap-3">
-                <span
-                  className={`flex h-10 w-10 flex-none items-center justify-center rounded-lg ${iconBg} ${iconColor} transition-colors`}
-                >
-                  <Icon className="h-[18px] w-[18px]" aria-hidden />
+        {bigButtons.map(({ key, label, description, href, icon }) => (
+          <a
+            key={key}
+            href={href}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="group inline-flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-semibold text-slate-50 transition-all duration-150 hover:-translate-y-0.5 hover:border-accent/60 hover:bg-white/[0.08] hover:shadow-[0_4px_24px_-12px_rgba(99,102,241,0.5)]"
+          >
+            <span className="inline-flex min-w-0 items-center gap-3">
+              <span className="flex h-10 w-10 flex-none items-center justify-center">
+                {icon}
+              </span>
+              <span className="flex min-w-0 flex-col text-left">
+                <span className="text-sm font-semibold leading-tight text-slate-50">
+                  {label}
                 </span>
-                <span className="flex min-w-0 flex-col text-left">
-                  <span className="text-sm font-semibold leading-tight text-slate-50">
-                    {label}
-                  </span>
-                  <span className="text-[12px] font-normal leading-snug text-muted-foreground">
-                    {description}
-                  </span>
+                <span className="text-[12px] font-normal leading-snug text-muted-foreground">
+                  {description}
                 </span>
               </span>
-              <ArrowUpRight
-                className="h-4 w-4 flex-none text-muted-foreground transition-all duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
-                aria-hidden
-              />
-            </a>
-          )
-        )}
+            </span>
+            <ArrowUpRight
+              className="h-4 w-4 flex-none text-muted-foreground transition-all duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
+              aria-hidden
+            />
+          </a>
+        ))}
       </div>
 
       {/* Latest TikTok — placeholder for now */}

@@ -126,11 +126,9 @@ export function NavbarCentered() {
 
     const el = document.getElementById(id);
 
-    // If section exists on this page (home), jump now (no routing).
+    // If section exists on this page (home), just scroll — don't change the
+    // URL hash so refresh always lands at the top.
     if (el) {
-      try {
-        history.replaceState(null, "", `#${encodeURIComponent(id)}`);
-      } catch {}
       jumpToIdWithRetry(id);
       setOpenDropdownKey(null);
       return;
@@ -143,31 +141,35 @@ export function NavbarCentered() {
     router.push("/", { scroll: false });
   };
 
-  // ✅ Handle pending jump BEFORE paint to prevent "flash to old section"
+  // ✅ Handle pending jump BEFORE paint to prevent "flash to old section".
+  // Also: aggressively clear any stale URL hash so refresh always starts at
+  // top — previously the hash from a section nav-click persisted and made the
+  // browser snap to that section on every refresh.
   useLayoutEffect(() => {
     if (pathname !== "/") return;
 
     const pending = popPendingSection();
     if (pending) {
-      // Ensure we start at true top before paint
       try {
         history.replaceState(null, "", "/");
       } catch {}
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-
-      // Now set hash + jump
-      try {
-        history.replaceState(null, "", `#${encodeURIComponent(pending)}`);
-      } catch {}
       jumpToIdWithRetry(pending);
       return;
     }
 
-    // Support direct loads to "/#section"
+    // Direct load — honor an inbound hash (e.g. bookmark to /#about) once,
+    // then strip it from the URL so a refresh after that lands at top.
     const hash = window.location.hash || "";
     if (hash.startsWith("#")) {
       const id = decodeURIComponent(hash.slice(1));
       if (id) jumpToIdWithRetry(id);
+      try {
+        history.replaceState(null, "", "/");
+      } catch {}
+    } else {
+      // No hash, no pending → force top to defeat any stray scroll restoration.
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     }
   }, [pathname]);
 

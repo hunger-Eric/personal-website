@@ -382,64 +382,26 @@ export default function NavbarCenteredMobile() {
                 );
               })}
 
-              {/* Push socials + CTAs to the bottom of the drawer */}
+              {/* Push CTAs to the bottom of the drawer */}
               <div className="flex-1" />
 
-              {/* Socials — sit just above the CTAs at the bottom */}
-              {socialItems.length > 0 && (
-                <div className="mt-6">
-                  <div className="mb-2 text-[0.7rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-                    Socials
-                  </div>
-                  <div className="grid grid-cols-4 gap-2">
-                    {socialItems.map((s) => {
-                      const Icon =
-                        s.icon && (LucideIcons as any)[s.icon]
-                          ? (LucideIcons as any)[s.icon]
-                          : null;
-                      const external = isExternalHref(s.href);
-                      return (
-                        <a
-                          key={s.key}
-                          href={s.href}
-                          target={external ? "_blank" : undefined}
-                          rel={external ? "noreferrer noopener" : undefined}
-                          onClick={() => setIsOpen(false)}
-                          aria-label={s.label}
-                          title={s.label}
-                          className="flex items-center justify-center rounded-md border border-white/10 bg-white/[0.03] py-2.5 text-slate-200 transition hover:border-accent hover:bg-white/10 hover:text-white"
-                        >
-                          {Icon ? (
-                            <Icon className="h-4 w-4" aria-hidden />
-                          ) : (
-                            <span className="text-xs">{s.label?.[0]}</span>
-                          )}
-                        </a>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              <div className="mt-4 h-px bg-white/10" />
-
               {/* CTAs — at the very bottom */}
-              <div className="mt-3 grid grid-cols-2 gap-2">
+              <div className="mt-6 flex flex-col gap-2">
                 {navbarConfig.cta.contact.show !== false && (
                   <a
                     href={contactLink.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    target={contactLink.external ? "_blank" : undefined}
+                    rel={contactLink.external ? "noreferrer noopener" : undefined}
                     onClick={() => setIsOpen(false)}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-md border border-white/25 px-3 py-2 text-center text-sm font-semibold text-slate-50 transition hover:border-accent hover:bg-white/10"
+                    className="inline-flex items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-50 transition hover:border-accent hover:bg-white/10"
                   >
                     {(() => {
-                      const Icon = (LucideIcons as any).MessageSquare;
+                      const Icon = (LucideIcons as any).Mail;
                       return Icon ? (
                         <Icon className="h-4 w-4 opacity-80" aria-hidden />
                       ) : null;
                     })()}
-                    {contactLink.label}
+                    <span>{contactLink.label}</span>
                   </a>
                 )}
 
@@ -449,15 +411,12 @@ export default function NavbarCenteredMobile() {
                     target={primaryCta.external ? "_blank" : undefined}
                     rel={primaryCta.external ? "noreferrer" : undefined}
                     onClick={() => setIsOpen(false)}
-                    className="inline-flex items-center justify-center gap-1.5 rounded-md border border-accent bg-accent px-3 py-2 text-center text-sm font-semibold text-slate-50 shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md"
+                    className="inline-flex items-center justify-center gap-2 rounded-md border border-accent bg-accent px-4 py-2.5 text-sm font-semibold text-slate-50 shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md"
                   >
                     {(() => {
                       const Icon = (LucideIcons as any).Sparkles;
                       return Icon ? (
-                        <Icon
-                          className="h-3.5 w-3.5 fill-current"
-                          aria-hidden
-                        />
+                        <Icon className="h-4 w-4 fill-current" aria-hidden />
                       ) : null;
                     })()}
                     <span>{primaryCta.label}</span>

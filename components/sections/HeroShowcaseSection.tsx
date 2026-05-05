@@ -253,7 +253,7 @@ export function HeroShowcaseSection() {
         {/* Top hero row (right side left blank for now) */}
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           {/* Left: intro + socials + CTAs */}
-          <div>
+          <div className="text-center sm:text-left">
             {/* big heading */}
             <h1 className="text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
               <span className="block">
@@ -270,12 +270,12 @@ export function HeroShowcaseSection() {
               </span>
             </h1>
 
-            <p className="mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
+            <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:mx-0 sm:text-base">
               {description}
             </p>
 
             {/* Social links row */}
-            <div className="mt-5 flex flex-wrap gap-2 text-xs sm:text-sm">
+            <div className="mt-5 flex flex-wrap justify-center gap-2 text-xs sm:justify-start sm:text-sm">
               {SOCIALS.map((item) => {
                 const href = resolveSocialHref(item, resumeHref);
                 // Skip any social that hasn't been configured (no real href)
@@ -308,7 +308,7 @@ export function HeroShowcaseSection() {
             </div>
 
             {/* CTA — opens the hub page in a new tab */}
-            <div className="mt-7 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-wrap justify-center gap-3 sm:justify-start">
               <a
                 href="/links"
                 target="_blank"

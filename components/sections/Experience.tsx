@@ -84,10 +84,10 @@ export function ExperienceSection() {
     <section id="experience" className="py-16 scroll-mt-12 lg:py-24">
       <div className="mx-auto w-full max-w-6xl px-4">
         <div className="flex items-center gap-4">
-          <h2 className="font-mono text-base font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
+          <h2 className="font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
             ~/Experience
           </h2>
-          <div className="h-px w-40 bg-white/15 sm:w-72" aria-hidden />
+          <div className="hidden h-px w-40 bg-white/15 sm:block sm:w-72" aria-hidden />
         </div>
 
         <div className="mt-8 flex flex-col gap-4 md:flex-row md:items-start">

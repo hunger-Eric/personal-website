@@ -101,8 +101,8 @@ export function Typewriter({
           className={[
             "ml-0.5 inline-block w-[4px] -translate-y-[2px] align-middle",
             done ? "opacity-0" : "opacity-100",
-            "h-[0.9em] bg-accent",
-            "animate-pulse",
+            "h-[0.9em] bg-indigo-400",
+            "animate-caret-blink",
           ].join(" ")}
         />
       )}

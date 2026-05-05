@@ -145,6 +145,17 @@ textarea {
   animation: page-fade-in 0.32s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Hard on/off blink for the typewriter caret — closer to a real text cursor
+   than `animate-pulse`, which is a soft opacity fade. */
+@keyframes caret-blink {
+  0%, 49.999% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.animate-caret-blink {
+  animation: caret-blink 1.06s steps(2) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-page-fade {
     animation: none;
