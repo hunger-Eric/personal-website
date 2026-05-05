@@ -143,10 +143,10 @@ export function FeaturedProjectsCarousel({
   };
 
   const navBtnClass =
-    "inline-flex items-center justify-center rounded-full border border-white/15 bg-black/40 p-2 text-slate-50/95 backdrop-blur-md transition-all duration-200 hover:bg-black/55 hover:border-white/30 active:scale-95";
+    "inline-flex items-center justify-center rounded-md border border-white/15 bg-black/40 p-2.5 text-slate-50/95 backdrop-blur-md transition-all duration-200 hover:bg-black/55 hover:border-white/30 active:scale-95";
 
   const actionBtnClass =
-    "inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-black/30 px-3 py-1.5 text-[12px] font-medium text-slate-50 backdrop-blur-md transition-all duration-200 hover:border-white/40 hover:bg-black/50";
+    "inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-black/30 px-3.5 py-2 text-[13px] font-medium text-slate-50 backdrop-blur-md transition-all duration-200 hover:border-white/40 hover:bg-black/50 sm:text-sm";
 
   return (
     <div
@@ -164,7 +164,7 @@ export function FeaturedProjectsCarousel({
         aria-label="Featured projects carousel"
       >
         {/* Fixed, modest height so the carousel stays compact */}
-        <div className="relative h-[260px] w-full sm:h-[300px] md:h-[340px]">
+        <div className="relative h-[300px] w-full sm:h-[360px] md:h-[420px]">
           {/* Image stack — full bleed, crossfade */}
           <div className="absolute inset-0">
             {slides.map((project, idx) => {
@@ -203,23 +203,23 @@ export function FeaturedProjectsCarousel({
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
 
           {/* Centered content */}
-          <div className="relative z-10 flex h-full w-full items-center justify-center px-6 py-6 sm:px-10">
+          <div className="relative z-10 flex h-full w-full items-center justify-center px-6 py-8 sm:px-10">
             <div className="w-full max-w-2xl text-center">
-              <h4 className="text-xl font-semibold leading-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)] sm:text-2xl md:text-[1.75rem]">
+              <h4 className="text-2xl font-semibold leading-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)] sm:text-3xl md:text-4xl">
                 {current.name}
               </h4>
 
-              <p className="mx-auto mt-2 max-w-xl text-[13px] leading-6 text-slate-50/95 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:text-sm md:text-[14px] md:leading-6 line-clamp-2">
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-50/95 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:text-[15px] sm:leading-7 md:text-base md:leading-7 line-clamp-3">
                 {blurb}
               </p>
 
               {tools.length ? (
-                <p className="mt-2 text-[12px] font-medium text-indigo-200 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:text-[13px]">
+                <p className="mt-3 text-[13px] font-medium text-indigo-200 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:text-sm">
                   {tools.join(", ")}
                 </p>
               ) : null}
 
-              <div className="mt-4 flex flex-wrap justify-center gap-2">
+              <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {primary?.href ? (
                   <button
                     type="button"
