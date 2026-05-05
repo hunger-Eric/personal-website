@@ -56,7 +56,7 @@ export function ArticleSection() {
             <h2 className="font-mono text-base font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
               ~/Articles
             </h2>
-            <div className="h-px flex-1 bg-white/10" aria-hidden />
+            <div className="h-px w-24 bg-white/5 sm:w-32" aria-hidden />
           </div>
 
           {/* ✅ Moved CTA here (replaces dropdown entirely) */}

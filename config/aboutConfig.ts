@@ -52,6 +52,7 @@ export type AboutConfig = {
   readme: {
     fileLabel: string;
     paragraphs: string[];
+    afterTechParagraph?: string;
   };
 
   techUsed: string[];

@@ -10,7 +10,7 @@ import {
   Download,
   PlayCircle,
   ExternalLink,
-  FolderGit2,
+  ArrowRight,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ProjectItem } from "../../config/projects";
@@ -98,16 +98,16 @@ export function ProjectsSectionClient({
             <h2 className="font-mono text-base font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
               ~/Projects
             </h2>
-            <div className="h-px flex-1 bg-white/10" aria-hidden />
+            <div className="h-px w-24 bg-white/5 sm:w-32" aria-hidden />
           </div>
 
           <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center">
             <Link
               href="/projects"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:w-auto sm:justify-start"
+              className="group inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:w-auto sm:justify-start"
             >
-              <FolderGit2 className="h-4 w-4" />
-              <span>Projects directory</span>
+              <span>View all Projects</span>
+              <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           </div>
         </div>

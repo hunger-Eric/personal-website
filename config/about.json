@@ -44,7 +44,8 @@
     "paragraphs": [
       "I'm a Computer Science student at the University of Houston building full-stack apps with a focus on clean UI and maintainable architecture. Most recently I shipped a degree-planning tool used by 100+ UH students.",
       "Outside of code I'm into machine learning, desk setups and PCs, chess, thrifting, and gaming."
-    ]
+    ],
+    "afterTechParagraph": "Right now I'm focused on shipping production-grade tools for students and small businesses — full-stack apps with thoughtful UI, reliable data layers, and infrastructure that scales without surprises."
   },
 
   "techUsed": [

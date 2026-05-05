@@ -55,7 +55,7 @@ export function ExperienceSection() {
           <h2 className="font-mono text-base font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
             ~/Experience
           </h2>
-          <div className="h-px flex-1 bg-white/10" aria-hidden />
+          <div className="h-px w-24 bg-white/5 sm:w-32" aria-hidden />
         </div>
 
         <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">

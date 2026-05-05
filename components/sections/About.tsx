@@ -36,16 +36,7 @@ export function AboutSection() {
 
   // ✅ exact list/order requested (ignores config)
   const techList = useMemo(
-    () => [
-      "Next.js",
-      "Tailwind CSS",
-      "PostgresSQL",
-      "Git",
-      "Python",
-      "C++",
-      "Cloudflare",
-      "Google Cloud",
-    ],
+    () => ["Python", "React.js", "C#", "TypeScript", "PostgreSQL"],
     []
   );
 
@@ -56,7 +47,17 @@ export function AboutSection() {
           <h2 className="font-mono text-base font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
             ~/About Me
           </h2>
-          <div className="h-px flex-1 bg-white/10" aria-hidden />
+          <div className="h-px w-24 bg-white/5 sm:w-32" aria-hidden />
+          <div className="flex-1" />
+          <a
+            href="/about"
+            target="_blank"
+            rel="noreferrer"
+            className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <span>About me</span>
+            <SquareArrowOutUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </a>
         </div>
 
         <div className="mt-8 grid gap-5 lg:grid-cols-[290px_1fr] lg:gap-6">
@@ -92,7 +93,7 @@ export function AboutSection() {
                   className="group inline-flex w-full items-center justify-center gap-2 rounded-md border border-white/15 px-3.5 py-2 text-sm font-semibold text-slate-200/80 transition-colors duration-150 hover:border-indigo-400 hover:bg-white/10 hover:text-slate-50"
                 >
                   <Mail className="h-4 w-4 opacity-80" />
-                  Contact
+                  My Email
                 </a>
               ) : null}
 
@@ -101,17 +102,7 @@ export function AboutSection() {
                 className="group inline-flex w-full items-center justify-center gap-2 rounded-md border border-white/15 px-3.5 py-2 text-sm font-semibold text-slate-200/80 transition-colors duration-150 hover:border-indigo-400 hover:bg-white/10 hover:text-slate-50"
               >
                 <Handshake className="h-4 w-4 opacity-80" />
-                Connect
-              </a>
-
-              <a
-                href={a.cta.secondary.href}
-                target={a.cta.secondary.external ? "_blank" : undefined}
-                rel={a.cta.secondary.external ? "noreferrer" : undefined}
-                className="group inline-flex w-full items-center justify-center gap-2 rounded-md border border-white/15 px-3.5 py-2 text-sm font-semibold text-slate-200/80 transition-colors duration-150 hover:border-indigo-400 hover:bg-white/10 hover:text-slate-50"
-              >
-                <SquareArrowOutUpRight className="h-4 w-4 opacity-80" />
-                About me
+                My Socials
               </a>
             </div>
           </aside>
@@ -139,25 +130,25 @@ export function AboutSection() {
                 </a>
               </div>
 
-              <div className="px-4 py-5 sm:px-6">
-                <div className="space-y-4 text-sm leading-7 text-slate-200/90 sm:text-base">
-                  {(a.readme?.paragraphs || []).slice(0, 2).map((p, idx) => (
-                    <p key={idx}>{p}</p>
-                  ))}
-                </div>
+              <div className="space-y-4 px-4 py-5 text-sm leading-7 text-slate-200/90 sm:px-6 sm:text-base">
+                {(a.readme?.paragraphs || []).slice(0, 2).map((p, idx) => (
+                  <p key={idx}>{p}</p>
+                ))}
 
                 {techList.length ? (
-                  <div className="mt-6">
-                    <div className="mb-3 text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                      Recent technologies I&apos;ve worked with
-                    </div>
+                  <>
+                    <p>Some of the technologies I work with most often:</p>
 
-                    <ul className="grid list-disc grid-cols-2 gap-x-6 gap-y-1.5 pl-5 text-[14px] text-slate-200/85 marker:text-indigo-400/70 sm:grid-cols-3">
+                    <ul className="grid list-disc grid-cols-2 gap-x-6 gap-y-1.5 pl-5 marker:text-indigo-400/70 sm:grid-cols-3">
                       {techList.map((t) => (
                         <li key={t}>{t}</li>
                       ))}
                     </ul>
-                  </div>
+                  </>
+                ) : null}
+
+                {a.readme?.afterTechParagraph ? (
+                  <p>{a.readme.afterTechParagraph}</p>
                 ) : null}
               </div>
             </div>

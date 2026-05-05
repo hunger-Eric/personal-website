@@ -3,7 +3,7 @@
 
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { FolderGit2, Star, GitFork, Download } from "lucide-react";
+import { Folder, Star, GitFork, Download } from "lucide-react";
 import type { ProjectItem, ProjectLink } from "../../config/projects";
 
 interface ProjectCardProps {
@@ -89,7 +89,7 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
             aria-hidden="true"
             title="Project"
           >
-            <FolderGit2 className="h-7 w-7" />
+            <Folder className="h-7 w-7" />
           </span>
 
           {hasStats ? (
