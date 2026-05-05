@@ -49,7 +49,7 @@ export function Footer() {
   const name = siteConfig.name || "Kevin Trinh";
 
   return (
-    <footer className="mt-12 border-t border-white/10 bg-transparent">
+    <footer className="mt-12 bg-transparent">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4 px-4 py-8 text-center">
         {socials.length ? (
           <div className="flex items-center gap-1">

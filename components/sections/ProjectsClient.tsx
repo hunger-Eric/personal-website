@@ -94,11 +94,11 @@ export function ProjectsSectionClient({
       {/* Heading container */}
       <div className="mx-auto w-full max-w-6xl px-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h2 className="font-mono text-[13px] font-semibold uppercase tracking-[0.18em] sm:text-sm">
-              <span className="text-indigo-400">~/</span>
-              <span className="text-foreground">Projects</span>
+          <div className="flex flex-1 items-center gap-4">
+            <h2 className="font-mono text-base font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
+              ~/Projects
             </h2>
+            <div className="h-px flex-1 bg-white/10" aria-hidden />
           </div>
 
           <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center">

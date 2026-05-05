@@ -224,7 +224,7 @@ export function HeroShowcaseSection() {
   const lineOne = "Hi, Kevin here.";
 
   const description =
-    "I'm currently pursuing a B.S. in Computer Science at the University of Houston. I have a profound interest in machine learning, databases, full-stack apps, and everything in between.";
+    "Computer Science student at the University of Houston building full-stack web apps and developer tools that ship to real users — with a focus on clean UI, scalable backends, and practical machine learning.";
 
   return (
     // ✅ less top padding on mobile, unchanged on desktop
@@ -250,7 +250,7 @@ export function HeroShowcaseSection() {
               </span>
             </h1>
 
-            <p className="mt-4 max-w-2xl text-sm text-muted-foreground sm:text-base">
+            <p className="mt-4 max-w-xl text-sm text-muted-foreground sm:text-base">
               {description}
             </p>
 

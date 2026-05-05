@@ -32,6 +32,15 @@ type GridResult = {
   summaryLabel: string;
 };
 
+function formatCompact(n: number): string {
+  return new Intl.NumberFormat("en-US", {
+    notation: "compact",
+    maximumFractionDigits: 1,
+  })
+    .format(n)
+    .toLowerCase();
+}
+
 const MONTH_LABELS = [
   "Jan",
   "Feb",
@@ -213,7 +222,7 @@ function buildYearGrid(
   const approxTotal = hasData ? yearTotal : 0;
   const summaryLabel =
     approxTotal > 0
-      ? `${approxTotal.toLocaleString()} contributions in ${year}`
+      ? `${formatCompact(approxTotal)} contributions in ${year}`
       : `No contributions recorded in ${year}`;
 
   return { cells, weekCount, monthLabelByWeek, approxTotal, summaryLabel };
@@ -375,8 +384,8 @@ function buildRollingGrid(
   const approxTotal = hasData ? windowTotal : 0;
   const summaryLabel =
     approxTotal > 0
-      ? `${approxTotal.toLocaleString()} contributions in the last 365 days`
-      : "No contributions recorded in the last 365 days";
+      ? `${formatCompact(approxTotal)} contributions in the last year`
+      : "No contributions recorded in the last year";
 
   return { cells, weekCount, monthLabelByWeek, approxTotal, summaryLabel };
 }
@@ -534,10 +543,12 @@ export function ContributionGraphCard({
 
   return (
     <section className={`mt-10 ${className ?? ""}`}>
-      <h2 className="font-mono text-[13px] font-semibold uppercase tracking-[0.18em] sm:text-sm">
-        <span className="text-indigo-400">~/</span>
-        <span className="text-foreground">{title}</span>
-      </h2>
+      <div className="flex items-center gap-4">
+        <h2 className="font-mono text-base font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
+          ~/{title}
+        </h2>
+        <div className="h-px flex-1 bg-white/10" aria-hidden />
+      </div>
 
       {/* Graph + year buttons */}
       <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-stretch md:gap-8">
@@ -551,7 +562,7 @@ export function ContributionGraphCard({
               ) : (
                 <div className="inline-block pt-1">
                   {/* Month labels row – aligned to the chosen week column */}
-                  <div className="flex justify-start gap-[3.5px] text-[0.8rem] leading-tight text-slate-300 sm:text-[0.85rem]">
+                  <div className="flex justify-start gap-[3.5px] text-[0.8rem] leading-tight text-muted-foreground/70 sm:text-[0.85rem]">
                     {Array.from({ length: weekCount }).map((_, weekIndex) => {
                       const label = monthLabelByWeek[weekIndex] ?? "";
                       return (
@@ -611,7 +622,7 @@ export function ContributionGraphCard({
             </div>
 
             {/* Summary + legend */}
-            <div className="mt-2 flex flex-col items-center gap-2 text-[0.85rem] text-slate-50 sm:flex-row sm:items-center sm:justify-between sm:text-sm">
+            <div className="mt-2 flex flex-col items-center gap-2 text-[0.85rem] text-muted-foreground/70 sm:flex-row sm:items-center sm:justify-between sm:text-sm">
               {isLoading ? (
                 <>
                   <div className="skeleton h-4 w-48 rounded-md" />
@@ -629,7 +640,7 @@ export function ContributionGraphCard({
                 </>
               ) : (
                 <>
-                  <span className="font-medium">{summaryLabel}</span>
+                  <span>{summaryLabel}</span>
                   <div className="flex items-center gap-2">
                     <span>Less</span>
                     <div className="flex items-center gap-[3.5px]">

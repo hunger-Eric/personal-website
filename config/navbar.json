@@ -32,7 +32,7 @@
   },
 
   "cta": {
-    "contact": { "label": "Resume", "href": "/resume", "external": false, "show": true },
+    "contact": { "label": "View Resume", "href": "/resume", "external": false, "show": true },
     "primary": {
       "label": "Connect with me",
       "href": "/connect",
