@@ -98,10 +98,6 @@ export function ProjectsSectionClient({
             <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               ~/Projects
             </h2>
-
-            <h3 className="mt-3 text-2xl font-semibold sm:text-3xl">
-              Some things I&apos;ve been working on.
-            </h3>
           </div>
 
           <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center">

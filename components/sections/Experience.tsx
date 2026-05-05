@@ -5,6 +5,14 @@ import { useState } from "react";
 import { History } from "lucide-react";
 import { experience } from "../../config/experience";
 
+function formatCompany(name: string): string {
+  // "VisibleSeed LLC" -> "VisibleSeed, LLC"; same for Inc, Inc., Co., Corp., Ltd.
+  return name.replace(
+    /\s+(LLC|L\.L\.C\.|Inc\.?|Co\.?|Corp\.?|Ltd\.?)$/i,
+    ", $1"
+  );
+}
+
 export function ExperienceSection() {
   if (!experience.length) return null;
 
@@ -22,8 +30,6 @@ export function ExperienceSection() {
   // ✅ Left menu typography (increased)
   // ✅ Left menu typography (slightly reduced)
   const roleCompanyClass = "text-lg font-semibold";
-
-  const roleMetaClass = "text-[15px]"; // was text-[14px]
 
   // ✅ Details typography (slightly reduced)
   const detailsTitleClass = "text-xl font-semibold sm:text-2xl";
@@ -49,11 +55,7 @@ export function ExperienceSection() {
           ~/Experience
         </h2>
 
-        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-2xl font-semibold sm:text-3xl">
-            Relevant work experience.
-          </h3>
-
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
           {/* stacked on mobile, inline on sm+ */}
           <div className="grid grid-cols-1 gap-2 text-xs sm:flex sm:flex-wrap sm:gap-3 sm:text-sm">
             {/* All Experience (dedicated page) */}
@@ -89,12 +91,7 @@ export function ExperienceSection() {
                                 : `${roleCompanyClass} text-foreground group-hover:text-accent/60`
                             }
                           >
-                            {item.company}
-                          </p>
-                          <p
-                            className={`${roleMetaClass} text-muted-foreground`}
-                          >
-                            {item.role}
+                            {formatCompany(item.company)}
                           </p>
                         </div>
 
@@ -131,7 +128,7 @@ export function ExperienceSection() {
               <div className="flex flex-col justify-between gap-2 sm:flex-row">
                 <div>
                   <h4 className={`${detailsTitleClass} text-foreground`}>
-                    {activeItem.role} @ {activeItem.company}
+                    {activeItem.role} @ {formatCompany(activeItem.company)}
                   </h4>
 
                   {/* ✅ Removed city/location + removed job type */}

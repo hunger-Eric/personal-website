@@ -539,7 +539,7 @@ export function ContributionGraphCard({
       </h2>
 
       {/* Graph + year buttons */}
-      <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-stretch">
+      <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-stretch md:gap-8">
         {/* Graph */}
         <div className={cardClass}>
           <div>

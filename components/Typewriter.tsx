@@ -99,7 +99,7 @@ export function Typewriter({
         <span
           aria-hidden
           className={[
-            "ml-0.5 inline-block w-[2px] -translate-y-[2px] align-middle",
+            "ml-0.5 inline-block w-[4px] -translate-y-[2px] align-middle",
             done ? "opacity-0" : "opacity-100",
             "h-[0.9em] bg-accent",
             "animate-pulse",

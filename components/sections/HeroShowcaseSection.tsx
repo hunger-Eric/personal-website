@@ -9,7 +9,7 @@ import {
   Coffee,
   GraduationCap,
   AtSign,
-  Hand,
+  Handshake,
   Instagram,
 } from "lucide-react";
 
@@ -30,16 +30,9 @@ type SocialItem = {
 const SOCIALS: SocialItem[] = [
   { key: "github", label: "GitHub" },
   { key: "linkedin", label: "LinkedIn" },
-  { key: "instagram", label: "Instagram" },
   { key: "tiktok", label: "TikTok" },
   { key: "youtube", label: "YouTube" },
-  { key: "threads", label: "Threads", mobileHidden: true },
-  { key: "handshake", label: "Handshake" },
-  { key: "x", label: "X", mobileHidden: true },
-  { key: "medium", label: "Medium" },
-  { key: "devto", label: "Dev.to" },
-  { key: "discord", label: "Discord Server" },
-  { key: "resume", label: "Resume", type: "resume" },
+  { key: "instagram", label: "Instagram" },
 ];
 
 function resolveSocialHref(item: SocialItem, resumeHref: string): string {
@@ -227,11 +220,8 @@ export function HeroShowcaseSection() {
   // Resume now opens as a real page (PDF viewer) in a new tab.
   const resumeHref = "/resume";
 
-  // Top small text
-  const smallLabel = "Hi there,";
-
   // Big heading line
-  const lineOne = "Kevin Trinh here";
+  const lineOne = "Hi, Kevin here.";
 
   const description =
     "I'm currently pursuing a B.S. in Computer Science at the University of Houston. I have a profound interest in machine learning, databases, full-stack apps, and everything in between.";
@@ -244,18 +234,14 @@ export function HeroShowcaseSection() {
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           {/* Left: intro + socials + CTAs */}
           <div>
-            <p className="text-sm font-medium text-muted-foreground sm:text-base">
-              {smallLabel}
-            </p>
-
             {/* big heading */}
-            <h1 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
               <span className="block">
                 <Typewriter
                   text={lineOne}
-                  highlightStart={lineOne.indexOf("Kevin Trinh")}
+                  highlightStart={lineOne.indexOf("Kevin")}
                   highlightEnd={
-                    lineOne.indexOf("Kevin Trinh") + "Kevin Trinh".length
+                    lineOne.indexOf("Kevin") + "Kevin".length
                   }
                   speedMs={45}
                   startDelayMs={250}
@@ -309,7 +295,7 @@ export function HeroShowcaseSection() {
                 rel="noreferrer noopener"
                 className="group inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-slate-50 shadow-sm transition-colors duration-150 hover:bg-accent/90 hover:shadow-md"
               >
-                <Hand className="h-4 w-4 transition-transform duration-200 group-hover:-rotate-12" />
+                <Handshake className="h-4 w-4 transition-transform duration-200 group-hover:-rotate-6" />
                 <span>Connect with me</span>
               </a>
             </div>

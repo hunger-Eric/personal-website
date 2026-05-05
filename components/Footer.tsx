@@ -1,165 +1,117 @@
 // components/Footer.tsx
+import Link from "next/link";
+import { Github, Linkedin, Instagram, Youtube, Music2 } from "lucide-react";
+
 import { siteConfig } from "../config/siteConfig";
 
-// ---- helpers ----
-function formatUpdatedDate(input?: string): string | null {
-  if (!input) return null;
-  const d = new Date(input);
-  if (isNaN(d.getTime())) return null;
-  return d.toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-  });
-}
+type SocialEntry = {
+  key: string;
+  label: string;
+  href: string;
+};
 
-function parseOwnerRepo(): { owner: string | null; repo: string | null } {
-  const repoCfg: any = (siteConfig as any).repo ?? {};
-  if (repoCfg.owner && repoCfg.name) {
-    return { owner: String(repoCfg.owner), repo: String(repoCfg.name) };
+const SOCIAL_ORDER = ["github", "linkedin", "tiktok", "youtube", "instagram"];
+
+function getSocials(): SocialEntry[] {
+  const list: any[] = (siteConfig as any).socialsList ?? [];
+  const byKey = new Map<string, any>();
+  for (const item of list) {
+    if (item?.key && item?.href) byKey.set(String(item.key), item);
   }
-  const url: string | undefined = repoCfg.url;
-  if (!url) return { owner: null, repo: null };
-  const m = url.match(/github\.com\/([^/]+)\/([^/?#]+)/i);
-  return m
-    ? { owner: m[1], repo: m[2].replace(/\.git$/, "") }
-    : { owner: null, repo: null };
+  return SOCIAL_ORDER.map((key) => byKey.get(key))
+    .filter(Boolean)
+    .map((item) => ({
+      key: String(item.key),
+      label: String(item.label || item.key),
+      href: String(item.href),
+    }));
 }
 
-function isHexSha(s?: string): s is string {
-  return !!s && /^[0-9a-f]{7,40}$/i.test(s);
-}
-
-function commitUrlFor(owner: string, repo: string, sha: string) {
-  return `https://github.com/${owner}/${repo}/commit/${sha}`;
-}
-
-// ---- server fetch for latest push across ANY branch ----
-async function fetchLatestPush(
-  owner: string,
-  repo: string
-): Promise<{ sha: string; dateISO: string } | null> {
-  try {
-    const headers: Record<string, string> = {
-      "User-Agent": "devfoliox-footer",
-      Accept: "application/vnd.github+json",
-    };
-    if (process.env.GITHUB_TOKEN) {
-      headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
-    }
-
-    const res = await fetch(
-      `https://api.github.com/repos/${owner}/${repo}/events?per_page=30`,
-      {
-        headers,
-        next: { revalidate: 86400 }, // 1 day
-      }
-    );
-
-    if (!res.ok) return null;
-
-    const events = (await res.json()) as any[];
-    const push = events.find(
-      (e) => e?.type === "PushEvent" && e?.payload?.head
-    );
-    if (!push) return null;
-
-    const sha: string = push.payload.head;
-    const dateISO: string = push.created_at;
-    if (!isHexSha(sha)) return null;
-
-    return { sha, dateISO };
-  } catch {
-    return null;
+function iconFor(key: string) {
+  switch (key) {
+    case "github":
+      return Github;
+    case "linkedin":
+      return Linkedin;
+    case "tiktok":
+      return Music2;
+    case "youtube":
+      return Youtube;
+    case "instagram":
+      return Instagram;
+    default:
+      return Github;
   }
 }
 
-export async function Footer() {
+const NAV_LINKS: { label: string; href: string }[] = [
+  { label: "About", href: "/about" },
+  { label: "Experience", href: "/experience" },
+  { label: "Projects", href: "/projects" },
+  { label: "Articles", href: "/articles" },
+  { label: "Connect", href: "/connect" },
+];
+
+export function Footer() {
   const year = new Date().getFullYear();
-  const repoCfg: any = (siteConfig as any).repo ?? {};
-
-  const { owner, repo } = parseOwnerRepo();
-
-  let live: { sha: string; dateISO: string } | null = null;
-  if (owner && repo) live = await fetchLatestPush(owner, repo);
-
-  const cfgSha: string | undefined =
-    repoCfg.lastCommitSha ||
-    repoCfg.latestCommit?.sha ||
-    (isHexSha(repoCfg.lastCommit) ? repoCfg.lastCommit : undefined);
-
-  const cfgDateISO: string | undefined =
-    repoCfg.lastCommitDateISO ||
-    repoCfg.lastUpdatedISO ||
-    repoCfg.latestCommit?.date;
-
-  const finalSha = (live?.sha ?? cfgSha) || null;
-  const finalDateISO = (live?.dateISO ?? cfgDateISO) || null;
-
-  const formattedUpdated = formatUpdatedDate(finalDateISO || undefined);
-  const shortSha = finalSha ? finalSha.slice(0, 7) : null;
-
-  const repoUrl: string | undefined = repoCfg.url;
-  const cleanRepoUrl = repoUrl ? repoUrl.replace(/\/+$/, "") : undefined;
-
-  const finalCommitUrl =
-    owner && repo && finalSha
-      ? commitUrlFor(owner, repo, finalSha)
-      : finalSha && cleanRepoUrl
-      ? `${cleanRepoUrl}/commit/${finalSha}`
-      : undefined;
+  const socials = getSocials();
+  const name = siteConfig.name || "Kevin Trinh";
 
   return (
-    <footer className="mt-2 bg-transparent">
-      <div className="mx-auto w-full max-w-6xl px-4 py-10 text-center text-sm text-muted-foreground sm:text-base">
-        {(formattedUpdated || shortSha) && (
-          <p className="text-muted-foreground">
-            Updated {formattedUpdated || "Recently"}
-            {shortSha ? (
-              <>
-                {" "}
-                ·{" "}
-                {finalCommitUrl ? (
+    <footer className="mt-12 border-t border-white/10 bg-transparent">
+      <div className="mx-auto w-full max-w-6xl px-4 py-10">
+        {/* Top row: brand on the left, socials on the right */}
+        <div className="flex flex-col items-center gap-6 text-center sm:flex-row sm:items-start sm:justify-between sm:text-left">
+          <div>
+            <p className="text-base font-semibold text-foreground">{name}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              CS @ University of Houston · Houston, TX
+            </p>
+          </div>
+
+          {socials.length ? (
+            <div className="flex items-center gap-1">
+              {socials.map(({ key, label, href }) => {
+                const Icon = iconFor(key);
+                return (
                   <a
-                    href={finalCommitUrl}
+                    key={key}
+                    href={href}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-mono text-accent transition-colors hover:underline"
+                    aria-label={label}
+                    title={label}
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
                   >
-                    {shortSha}
+                    <Icon className="h-[18px] w-[18px]" />
                   </a>
-                ) : (
-                  <span className="font-mono text-accent">{shortSha}</span>
-                )}
-              </>
-            ) : null}
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+
+        {/* Divider */}
+        <div className="mt-8 border-t border-white/5" />
+
+        {/* Bottom row: copyright + nav links */}
+        <div className="mt-6 flex flex-col items-center gap-4 text-center text-xs text-muted-foreground sm:flex-row sm:justify-between sm:text-left sm:text-sm">
+          <p>
+            © {year} {name}. All rights reserved.
           </p>
-        )}
 
-        <p className="mt-2 text-muted-foreground">
-          Powered by{" "}
-          <a
-            href={(repoCfg.url as string) ?? "#"}
-            target="_blank"
-            rel="noreferrer"
-            className="font-semibold text-muted-foreground transition-colors hover:text-foreground"
-          >
-            DevfolioX
-          </a>{" "}
-          · Built by{" "}
-          <a
-            href="https://kevintrinh.dev"
-            target="_blank"
-            rel="noreferrer"
-            className="font-semibold text-muted-foreground transition-colors hover:text-foreground"
-          >
-            {siteConfig.name}
-          </a>
-        </p>
-
-        <p className="mt-2 text-xs text-muted-foreground sm:text-sm">
-          All rights reserved. © {year}
-        </p>
+          <nav className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="transition-colors hover:text-foreground"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </div>
     </footer>
   );

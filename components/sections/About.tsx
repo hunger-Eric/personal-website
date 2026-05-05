@@ -208,12 +208,8 @@ export function AboutSection() {
     <section id="about" className="py-16 scroll-mt-12">
       <div className="mx-auto w-full max-w-6xl px-4">
         <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          ~/About
+          ~/About Me
         </h2>
-
-        <h3 className="mt-3 text-2xl font-semibold sm:text-3xl">
-          An overview of who I am.
-        </h3>
 
         <div className="mt-8 grid gap-5 lg:grid-cols-[290px_1fr] lg:gap-6">
           {/* LEFT — mobile = portrait + stats side-by-side; desktop = full-width portrait then stats stacked below */}

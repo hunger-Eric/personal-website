@@ -56,9 +56,6 @@ export function ArticleSection() {
             <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               ~/Articles
             </h2>
-            <h3 className="mt-3 text-2xl font-semibold sm:text-3xl">
-              Writing, deep dives, and dev notes.
-            </h3>
           </div>
 
           {/* ✅ Moved CTA here (replaces dropdown entirely) */}
