@@ -174,36 +174,30 @@ export default function LinksPage() {
   };
 
   return (
-    <main className="relative mx-auto flex min-h-[100dvh] w-full max-w-md flex-col items-center px-5 pb-10 pt-16 sm:pt-20">
+    <main className="relative mx-auto flex min-h-[100dvh] w-full max-w-md flex-col items-center bg-white px-5 pb-10 pt-16 text-slate-900 sm:pt-20">
       <JsonLd data={profileJsonLd} />
 
-      {/* Soft ambient glow behind the avatar */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-500/15 blur-3xl"
-      />
-
-      {/* Top-left: Email — circle */}
+      {/* Top-left: Email */}
       <a
         href={emailHref}
         aria-label={`Email ${siteConfig.name}`}
         title={`Email ${siteConfig.name}`}
-        className="absolute left-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-indigo-400/40 bg-indigo-500/15 text-indigo-200 transition-colors hover:border-indigo-300 hover:bg-indigo-500/25 hover:text-white sm:left-5 sm:top-5"
+        className="absolute left-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 sm:left-5 sm:top-5"
       >
         <Mail className="h-4 w-4" aria-hidden />
       </a>
 
-      {/* Top-right: Share — circle */}
+      {/* Top-right: Share */}
       <div className="absolute right-4 top-4 flex items-center gap-2 sm:right-5 sm:top-5">
         <ShareButton
           label="Share"
           showLabel={false}
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-slate-200 transition-colors hover:border-accent hover:bg-white/10 hover:text-white"
+          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100"
         />
       </div>
 
       {/* Avatar */}
-      <div className="relative z-10 mb-5 h-28 w-28 overflow-hidden rounded-full ring-2 ring-indigo-400/30 sm:h-32 sm:w-32">
+      <div className="mb-5 h-28 w-28 overflow-hidden rounded-full ring-1 ring-slate-200 sm:h-32 sm:w-32">
         <Image
           src="/images/avatar.jpg"
           alt={siteConfig.name}
@@ -215,30 +209,30 @@ export default function LinksPage() {
       </div>
 
       {/* Name */}
-      <h1 className="z-10 text-center text-2xl font-semibold tracking-tight text-slate-50 sm:text-3xl">
+      <h1 className="text-center text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
         {siteConfig.name}
       </h1>
 
       {/* Location */}
-      <div className="z-10 mt-1.5 inline-flex items-center gap-1.5 text-sm text-muted-foreground">
-        <FilledMapPin className="h-4 w-4 text-slate-200/70" />
+      <div className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-slate-500">
+        <FilledMapPin className="h-4 w-4 text-slate-400" />
         <span>{siteConfig.location || "Houston, TX"}</span>
       </div>
 
-      {/* Description — keyword pipes, all the same color */}
-      <p className="z-10 mt-3 max-w-xs text-center text-[13px] font-medium tracking-wide text-slate-200/85 sm:text-sm">
+      {/* Description — same-color keyword pipes */}
+      <p className="mt-3 max-w-xs text-center text-[13px] font-medium tracking-wide text-slate-700 sm:text-sm">
         <span>Software</span>
-        <span className="mx-2 text-muted-foreground">|</span>
+        <span className="mx-2 text-slate-300">|</span>
         <span>Tech</span>
-        <span className="mx-2 text-muted-foreground">|</span>
+        <span className="mx-2 text-slate-300">|</span>
         <span>Builder</span>
-        <span className="mx-2 text-muted-foreground">|</span>
+        <span className="mx-2 text-slate-300">|</span>
         <span>CS @ UH</span>
       </p>
 
-      {/* Social glyphs row — branded tiles, uniform size, no outline wrapper */}
+      {/* Social glyphs */}
       {socials.length > 0 && (
-        <div className="z-10 mt-7 flex flex-wrap items-center justify-center gap-4">
+        <div className="mt-7 flex flex-wrap items-center justify-center gap-4">
           {socials.map(({ key, label, href, Glyph }) => (
             <a
               key={key}
@@ -256,60 +250,60 @@ export default function LinksPage() {
       )}
 
       {/* Big buttons */}
-      <div className="z-10 mt-7 flex w-full flex-col gap-3">
+      <div className="mt-7 flex w-full flex-col gap-3">
         {bigButtons.map(({ key, label, description, href, icon }) => (
           <a
             key={key}
             href={href}
             target="_blank"
             rel="noreferrer noopener"
-            className="group inline-flex w-full items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-5 py-3.5 text-sm font-semibold text-slate-50 transition-all duration-150 hover:-translate-y-0.5 hover:border-accent/60 hover:bg-white/[0.08] hover:shadow-[0_4px_24px_-12px_rgba(99,102,241,0.5)]"
+            className="group inline-flex w-full items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-semibold text-slate-900 transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50"
           >
             <span className="inline-flex min-w-0 items-center gap-3">
               <span className="flex h-10 w-10 flex-none items-center justify-center">
                 {icon}
               </span>
               <span className="flex min-w-0 flex-col text-left">
-                <span className="text-sm font-semibold leading-tight text-slate-50">
+                <span className="text-sm font-semibold leading-tight text-slate-900">
                   {label}
                 </span>
-                <span className="text-[12px] font-normal leading-snug text-muted-foreground">
+                <span className="text-[12px] font-normal leading-snug text-slate-500">
                   {description}
                 </span>
               </span>
             </span>
             <ArrowUpRight
-              className="h-4 w-4 flex-none text-muted-foreground transition-all duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent"
+              className="h-4 w-4 flex-none text-slate-400 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-700"
               aria-hidden
             />
           </a>
         ))}
       </div>
 
-      {/* Latest TikTok — placeholder for now */}
+      {/* Latest TikTok — clean light card, no gradient */}
       <a
         href={tiktokHref}
         target="_blank"
         rel="noreferrer noopener"
-        className="group z-10 mt-4 block w-full overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-all duration-150 hover:-translate-y-0.5 hover:border-fuchsia-500/40 hover:shadow-[0_4px_24px_-12px_rgba(232,121,249,0.45)]"
+        className="group mt-4 block w-full overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50"
       >
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-fuchsia-600/45 via-pink-600/35 to-cyan-500/35">
+        <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
           <div className="absolute inset-0 flex items-center justify-center">
-            <TikTokGlyph className="h-16 w-16 transition-transform duration-200 group-hover:scale-110" />
+            <TikTokGlyph className="h-14 w-14 transition-transform duration-200 group-hover:scale-110" />
           </div>
         </div>
         <div className="flex items-center gap-3 px-4 py-3">
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-fuchsia-500/30 bg-fuchsia-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-fuchsia-200">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
             TikTok
           </span>
-          <span className="line-clamp-1 text-sm font-medium text-slate-100">
+          <span className="line-clamp-1 text-sm font-medium text-slate-700">
             Latest TikTok — placeholder
           </span>
         </div>
       </a>
 
       {/* Copyright */}
-      <div className="z-10 mt-auto pt-10 text-center text-xs leading-relaxed text-muted-foreground/70">
+      <div className="mt-auto pt-10 text-center text-xs leading-relaxed text-slate-400">
         <div>Built by Kevin Trinh</div>
         <div>© {year} All rights reserved</div>
       </div>

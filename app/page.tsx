@@ -56,17 +56,20 @@ export default async function Page({ searchParams }: PageProps) {
 
   return (
     <main className="min-h-screen bg-background text-foreground">
-      {/* Any section that (directly or via hooks) uses useSearchParams/usePathname/useRouter
-          should live inside a Suspense boundary. */}
+      {/* Hero/About/Education/Experience render server-side normally — only
+          ProjectsSection needs a Suspense boundary because ProjectsClient
+          uses useSearchParams. Wrapping the whole stack used to bail every
+          section out to client-side rendering, which made fresh loads briefly
+          show only the Content section before snapping back to the top. */}
+      {sections.hero && <HeroShowcaseSection />}
+      {sections.about && <AboutSection />}
+      {sections.education && <EducationSection />}
+      {sections.experience && <ExperienceSection />}
+
       <Suspense fallback={null}>
-        {sections.hero && <HeroShowcaseSection />}
-        {sections.about && <AboutSection />}
-        {sections.education && <EducationSection />}
-        {sections.experience && <ExperienceSection />}
         {sections.projects && <ProjectsSection />}
       </Suspense>
 
-      {/* Content (media wall): articles + YouTube */}
       <ContentMediaSection />
 
       {sections.youtube && <YouTubeSection />}

@@ -41,6 +41,13 @@
 html {
   /* Keep this so hash targets don’t hide under sticky nav */
   scroll-padding-top: 84px;
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 /* Mobile navbar is usually a bit taller */

@@ -102,13 +102,15 @@ export function ProjectsSectionClient({
           </div>
 
           <div className="grid grid-cols-1 gap-2 sm:flex sm:items-center">
-            <Link
-              href="/projects"
+            <a
+              href="https://github.com/KevinTrinhDev"
+              target="_blank"
+              rel="noreferrer noopener"
               className="group inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/15 bg-white/5 px-3.5 py-2 text-sm font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:w-auto sm:justify-start"
             >
               <span>View all Projects</span>
               <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-            </Link>
+            </a>
           </div>
         </div>
       </div>

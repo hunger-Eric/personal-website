@@ -18,15 +18,14 @@
       {
         "id": "projects",
         "label": "Projects",
-        "href": "https://github.com/KevinTrinhDev",
-        "external": true,
+        "href": "/#projects",
         "show": true
       },
 
       {
-        "id": "articles",
-        "label": "Articles",
-        "href": "/articles",
+        "id": "content",
+        "label": "Content",
+        "href": "/#content",
         "show": true
       }
     ]

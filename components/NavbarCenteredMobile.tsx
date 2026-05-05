@@ -413,9 +413,9 @@ export default function NavbarCenteredMobile() {
                     className="inline-flex items-center justify-center gap-2 rounded-md border border-accent bg-accent px-4 py-2.5 text-sm font-semibold text-slate-50 shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md"
                   >
                     {(() => {
-                      const Icon = (LucideIcons as any).Sparkles;
+                      const Icon = (LucideIcons as any).Handshake;
                       return Icon ? (
-                        <Icon className="h-4 w-4 fill-current" aria-hidden />
+                        <Icon className="h-4 w-4" aria-hidden />
                       ) : null;
                     })()}
                     <span>{primaryCta.label}</span>

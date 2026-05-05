@@ -8,7 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
-import { Sparkles } from "lucide-react";
+import { Handshake } from "lucide-react";
 
 import { navbarConfig, isExternalHref } from "@/config/navbarConfig";
 import type {
@@ -19,7 +19,7 @@ import type {
 function PrimaryCtaContent({ label }: { label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      <Sparkles className="h-3.5 w-3.5 fill-current" />
+      <Handshake className="h-3.5 w-3.5" />
       <span>{label}</span>
     </span>
   );
@@ -46,7 +46,7 @@ function jumpToIdWithRetry(id: string) {
     const el = document.getElementById(id);
     if (el) {
       // ✅ no smooth scroll
-      el.scrollIntoView({ behavior: "auto", block: "start" });
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
       return;
     }
 
