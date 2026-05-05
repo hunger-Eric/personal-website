@@ -174,7 +174,7 @@ export default function LinksPage() {
   };
 
   return (
-    <main className="relative mx-auto flex min-h-[100dvh] w-full max-w-md flex-col items-center bg-white px-5 pb-10 pt-16 text-slate-900 sm:pt-20">
+    <main className="relative mx-auto flex min-h-[100dvh] w-full max-w-md flex-col items-center px-5 pb-10 pt-16 text-slate-900 sm:pt-20">
       <JsonLd data={profileJsonLd} />
 
       {/* Top-left: Email */}
