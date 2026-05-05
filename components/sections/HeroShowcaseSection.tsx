@@ -230,9 +230,8 @@ export function HeroShowcaseSection() {
   // Top small text
   const smallLabel = "Hi there,";
 
-  // Big heading lines
+  // Big heading line
   const lineOne = "Kevin Trinh here";
-  const lineTwo = "I build full-stack apps, tools, and ML side projects";
 
   const description =
     "I'm currently pursuing a B.S. in Computer Science at the University of Houston. I have a profound interest in machine learning, databases, full-stack apps, and everything in between.";
@@ -249,7 +248,7 @@ export function HeroShowcaseSection() {
               {smallLabel}
             </p>
 
-            {/* big heading, two lines (second line slightly smaller) */}
+            {/* big heading */}
             <h1 className="mt-3 text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
               <span className="block">
                 <Typewriter
@@ -262,11 +261,6 @@ export function HeroShowcaseSection() {
                   startDelayMs={250}
                   accentClassName="text-indigo-400"
                 />
-              </span>
-
-              {/* ✅ Slightly darker than the main line + slightly smaller */}
-              <span className="mt-1 block text-2xl text-slate-200/90 sm:text-3xl lg:text-[2.1rem]">
-                {lineTwo}
               </span>
             </h1>
 

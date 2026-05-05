@@ -492,8 +492,7 @@ export function ContributionGraphCard({
     return buildYearGrid(year, dataByYear[year]);
   }, [year, useRolling, today, dataByYear]);
 
-  const cardClass =
-    "rounded-2xl border border-white/10 bg-white/5 px-2 py-2 text-slate-50 shadow-[0_18px_45px_rgba(15,23,42,0.6)] sm:px-4 sm:py-3";
+  const cardClass = "text-slate-50";
 
   // Loading skeleton component
   const ContributionSkeleton = () => (
@@ -535,18 +534,15 @@ export function ContributionGraphCard({
 
   return (
     <section className={`mt-10 ${className ?? ""}`}>
-      {/* Title row (outside card) */}
-      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-        <h2 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">
-          {title}
-        </h2>
-      </div>
+      <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+        ~/{title}
+      </h2>
 
       {/* Graph + year buttons */}
       <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-stretch">
-        {/* Graph card */}
+        {/* Graph */}
         <div className={cardClass}>
-          <div className="rounded-xl p-1.5 sm:p-2">
+          <div>
             {/* Scrollable graph on small screens */}
             <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
               {isLoading ? (
@@ -657,7 +653,7 @@ export function ContributionGraphCard({
         </div>
 
         {/* Year selector */}
-        <div className="flex w-full flex-row justify-between gap-1.5 text-xs text-slate-300 md:w-[4.75rem] md:flex-col md:text-sm">
+        <div className="flex w-full flex-row justify-between gap-3 text-xs text-muted-foreground md:w-[4.75rem] md:flex-col md:gap-2 md:text-sm">
           {years.map((y) => {
             const isActive = y === year;
             const isCurrent = y === currentYear;
@@ -668,7 +664,6 @@ export function ContributionGraphCard({
                 type="button"
                 onClick={() => {
                   if (isCurrent) {
-                    // Toggle rolling vs Jan–Dec when clicking the current year again
                     if (year === currentYear && isActive) {
                       setRollingCurrentYear((prev) => !prev);
                     } else {
@@ -680,10 +675,10 @@ export function ContributionGraphCard({
                     setRollingCurrentYear(false);
                   }
                 }}
-                className={`flex-1 rounded-md border px-2 py-2 text-center font-medium transition-colors ${
+                className={`flex-1 px-1 py-1 text-center font-medium transition-colors md:text-left ${
                   isActive
-                    ? "border-indigo-500 bg-indigo-500 text-slate-950"
-                    : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"
+                    ? "text-indigo-300"
+                    : "text-muted-foreground hover:text-slate-200"
                 }`}
               >
                 {y}

@@ -2,10 +2,8 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useMemo } from "react";
 import {
-  ExternalLink,
   MapPin,
   Mail,
   GitFork,
@@ -297,24 +295,13 @@ export function AboutSection() {
 
           {/* RIGHT */}
           <div className="space-y-8">
-            <Link
-              href="/about"
-              className="group/readme block rounded-2xl border border-white/10 bg-transparent transition-colors duration-200 hover:border-white/20"
-              aria-label="Open About page"
-            >
+            <div className="rounded-2xl border border-white/10 bg-transparent">
               <div className="flex items-center justify-between px-4 py-3">
                 <div className="text-xs font-semibold text-muted-foreground">
                   <span>{a.handle}</span>
                   <span> / </span>
                   <span>{fileBase}</span>
                   {fileExt ? <span>{fileExt}</span> : null}
-                </div>
-
-                <div className="inline-flex items-center gap-2">
-                  <span className="text-xs font-semibold text-muted-foreground opacity-0 transition-opacity duration-200 group-hover/readme:opacity-100 group-hover/readme:text-indigo-300">
-                    Read more
-                  </span>
-                  <ExternalLink className="h-4 w-4 text-muted-foreground transition-colors duration-200 group-hover/readme:text-indigo-300" />
                 </div>
               </div>
 
@@ -339,7 +326,7 @@ export function AboutSection() {
                   </div>
                 ) : null}
               </div>
-            </Link>
+            </div>
           </div>
         </div>
       </div>
