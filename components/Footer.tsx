@@ -1,5 +1,11 @@
 // components/Footer.tsx
-import { Github, Linkedin, Instagram, Youtube, Music2 } from "lucide-react";
+import {
+  GithubGlyph,
+  LinkedInGlyph,
+  YoutubeGlyph,
+  InstagramGlyph,
+  TikTokGlyph,
+} from "@/components/BrandGlyphs";
 
 import { siteConfig } from "../config/siteConfig";
 
@@ -26,20 +32,20 @@ function getSocials(): SocialEntry[] {
     }));
 }
 
-function iconFor(key: string) {
+function glyphFor(key: string) {
   switch (key) {
     case "github":
-      return Github;
+      return GithubGlyph;
     case "linkedin":
-      return Linkedin;
+      return LinkedInGlyph;
     case "tiktok":
-      return Music2;
+      return TikTokGlyph;
     case "youtube":
-      return Youtube;
+      return YoutubeGlyph;
     case "instagram":
-      return Instagram;
+      return InstagramGlyph;
     default:
-      return Github;
+      return GithubGlyph;
   }
 }
 
@@ -52,9 +58,9 @@ export function Footer() {
     <footer className="mt-12 bg-transparent">
       <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4 px-4 py-8 text-center">
         {socials.length ? (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-3">
             {socials.map(({ key, label, href }) => {
-              const Icon = iconFor(key);
+              const Glyph = glyphFor(key);
               return (
                 <a
                   key={key}
@@ -63,9 +69,9 @@ export function Footer() {
                   rel="noreferrer"
                   aria-label={label}
                   title={label}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground"
+                  className="group inline-flex items-center justify-center transition-transform duration-150 hover:-translate-y-0.5"
                 >
-                  <Icon className="h-[18px] w-[18px]" />
+                  <Glyph className="h-7 w-7 transition-transform duration-150 group-hover:scale-110" />
                 </a>
               );
             })}

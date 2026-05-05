@@ -50,7 +50,7 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
     : project.summary ?? "";
 
   const actionBtnClass =
-    "inline-flex h-7 w-7 items-center justify-center rounded-md border border-white/15 bg-transparent text-muted-foreground transition-colors hover:border-accent hover:text-foreground";
+    "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-all duration-150 hover:scale-110 hover:text-foreground";
 
   const image = project.imageUrl || fallbackImage(project);
 

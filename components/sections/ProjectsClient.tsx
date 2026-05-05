@@ -3,15 +3,15 @@
 
 import Link from "next/link";
 import { useMemo, type ReactNode } from "react";
+import { ArrowRight } from "lucide-react";
 import {
-  Github,
-  Globe,
-  FileText,
-  Download,
-  PlayCircle,
-  ExternalLink,
-  ArrowRight,
-} from "lucide-react";
+  FilledGithub,
+  FilledGlobe,
+  FilledFileText,
+  FilledDownload,
+  FilledPlay,
+  FilledArrowUpRight,
+} from "@/components/FilledIcons";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ProjectItem } from "../../config/projects";
 import { Modal } from "../ui/Modal";
@@ -73,17 +73,17 @@ export function ProjectsSectionClient({
   const iconFor = (type?: string): ReactNode => {
     switch (type) {
       case "github":
-        return <Github className="h-3.5 w-3.5" />;
+        return <FilledGithub className="h-4 w-4" />;
       case "live":
-        return <Globe className="h-3.5 w-3.5" />;
+        return <FilledGlobe className="h-4 w-4" />;
       case "docs":
-        return <FileText className="h-3.5 w-3.5" />;
+        return <FilledFileText className="h-4 w-4" />;
       case "download":
-        return <Download className="h-3.5 w-3.5" />;
+        return <FilledDownload className="h-4 w-4" />;
       case "video":
-        return <PlayCircle className="h-3.5 w-3.5" />;
+        return <FilledPlay className="h-4 w-4" />;
       default:
-        return <ExternalLink className="h-3.5 w-3.5" />;
+        return <FilledArrowUpRight className="h-4 w-4" />;
     }
   };
 

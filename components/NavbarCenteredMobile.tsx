@@ -15,11 +15,6 @@ import {
   type NavDropdownFooterCfg,
 } from "../config/navbarConfig";
 import { siteConfig } from "../config/siteConfig";
-import {
-  GithubGlyph,
-  LinkedInGlyph,
-  YoutubeGlyph,
-} from "@/components/BrandGlyphs";
 
 type NavItem = {
   key: string;
@@ -454,14 +449,18 @@ export default function NavbarCenteredMobile() {
                     target={primaryCta.external ? "_blank" : undefined}
                     rel={primaryCta.external ? "noreferrer" : undefined}
                     onClick={() => setIsOpen(false)}
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-accent bg-accent px-3 py-2 text-center text-sm font-semibold text-slate-50 shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md"
+                    className="inline-flex items-center justify-center gap-1.5 rounded-md border border-accent bg-accent px-3 py-2 text-center text-sm font-semibold text-slate-50 shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md"
                   >
+                    {(() => {
+                      const Icon = (LucideIcons as any).Sparkles;
+                      return Icon ? (
+                        <Icon
+                          className="h-3.5 w-3.5 fill-current"
+                          aria-hidden
+                        />
+                      ) : null;
+                    })()}
                     <span>{primaryCta.label}</span>
-                    <span className="inline-flex items-center -space-x-1">
-                      <GithubGlyph className="h-3.5 w-3.5 rounded-full ring-1 ring-accent" />
-                      <LinkedInGlyph className="h-3.5 w-3.5 rounded-full ring-1 ring-accent" />
-                      <YoutubeGlyph className="h-3.5 w-3.5 rounded-full bg-white ring-1 ring-accent" />
-                    </span>
                   </a>
                 )}
               </div>

@@ -8,26 +8,19 @@ import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
+import { Sparkles } from "lucide-react";
+
 import { navbarConfig, isExternalHref } from "@/config/navbarConfig";
 import type {
   NavDropdownItemCfg,
   NavDropdownFooterCfg,
 } from "@/config/navbarConfig";
-import {
-  GithubGlyph,
-  LinkedInGlyph,
-  YoutubeGlyph,
-} from "@/components/BrandGlyphs";
 
 function PrimaryCtaContent({ label }: { label: string }) {
   return (
-    <span className="inline-flex items-center gap-2">
+    <span className="inline-flex items-center gap-1.5">
+      <Sparkles className="h-3.5 w-3.5 fill-current" />
       <span>{label}</span>
-      <span className="inline-flex items-center -space-x-1">
-        <GithubGlyph className="h-3.5 w-3.5 rounded-full ring-1 ring-accent" />
-        <LinkedInGlyph className="h-3.5 w-3.5 rounded-full ring-1 ring-accent" />
-        <YoutubeGlyph className="h-3.5 w-3.5 rounded-full bg-white ring-1 ring-accent" />
-      </span>
     </span>
   );
 }

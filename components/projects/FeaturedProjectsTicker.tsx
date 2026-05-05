@@ -2,17 +2,15 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
-  ExternalLink,
-  Github,
-  Globe,
-  FileText,
-  Download,
-  PlayCircle,
-  ChevronLeft,
-  ChevronRight,
-  FolderGit2,
-} from "lucide-react";
+  FilledGithub,
+  FilledGlobe,
+  FilledFileText,
+  FilledDownload,
+  FilledPlay,
+  FilledArrowUpRight,
+} from "@/components/FilledIcons";
 import type { ProjectItem } from "../../config/projects";
 
 interface FeaturedProjectsTickerProps {
@@ -24,17 +22,17 @@ type ProjectLink = NonNullable<ProjectItem["links"]>[number];
 function iconForLink(type?: string) {
   switch (type) {
     case "github":
-      return Github;
+      return FilledGithub;
     case "live":
-      return Globe;
+      return FilledGlobe;
     case "docs":
-      return FileText;
+      return FilledFileText;
     case "download":
-      return Download;
+      return FilledDownload;
     case "video":
-      return PlayCircle;
+      return FilledPlay;
     default:
-      return ExternalLink;
+      return FilledArrowUpRight;
   }
 }
 
@@ -226,7 +224,7 @@ export function FeaturedProjectsCarousel({
                     onClick={() => openHref(primary.href)}
                     className={actionBtnClass}
                   >
-                    <FolderGit2 className="h-3.5 w-3.5 opacity-90" />
+                    <FilledArrowUpRight className="h-4 w-4 opacity-90" />
                     <span>View Project</span>
                   </button>
                 ) : null}
@@ -242,7 +240,7 @@ export function FeaturedProjectsCarousel({
                         onClick={() => openHref(l.href)}
                         className={actionBtnClass}
                       >
-                        <Ico className="h-3.5 w-3.5 opacity-90" />
+                        <Ico className="h-4 w-4 opacity-90" />
                         <span>
                           {l.label ||
                             (l.type === "live"
