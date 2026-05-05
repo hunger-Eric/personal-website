@@ -61,16 +61,6 @@ export function AboutSection() {
             ~/About Me
           </h2>
           <div className="h-px w-24 bg-white/5 sm:w-32" aria-hidden />
-          <div className="flex-1" />
-          <a
-            href="/about"
-            target="_blank"
-            rel="noreferrer"
-            className="group inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <span>About me</span>
-            <SquareArrowOutUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </a>
         </div>
 
         <div className="mt-8 grid gap-5 lg:grid-cols-[290px_1fr] lg:gap-6">
@@ -150,9 +140,10 @@ export function AboutSection() {
                   rel="noreferrer"
                   aria-label="Open About page in a new tab"
                   title="Open About page"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-white/5 hover:text-indigo-300"
+                  className="group inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-muted-foreground transition-colors hover:bg-white/5 hover:text-indigo-300"
                 >
-                  <SquareArrowOutUpRight className="h-4 w-4" />
+                  <span>Read more</span>
+                  <SquareArrowOutUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </a>
               </div>
 

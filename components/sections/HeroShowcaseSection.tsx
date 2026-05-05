@@ -224,7 +224,7 @@ export function HeroShowcaseSection() {
   const lineOne = "Hi, Kevin here.";
 
   const description =
-    "Computer Science student at the University of Houston building full-stack web apps and developer tools that ship to real users — with a focus on clean UI, scalable backends, and practical machine learning.";
+    "Computer Science student at the University of Houston building full-stack web apps with clean UI, scalable backends, and practical machine learning.";
 
   return (
     // ✅ less top padding on mobile, unchanged on desktop
