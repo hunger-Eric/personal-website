@@ -101,13 +101,6 @@ export function generateProjectSchema(project: {
       name: siteConfig.name,
       url: BASE_URL,
     },
-    ...(project.stars && {
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: 5,
-        ratingCount: project.stars,
-      },
-    }),
     ...(project.dateCreated && { dateCreated: project.dateCreated }),
     offers: {
       "@type": "Offer",

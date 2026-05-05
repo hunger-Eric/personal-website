@@ -8,12 +8,12 @@
   "cta": {
     "primary": {
       "label": "Read more about me",
-      "href": "/about",
+      "href": "/#about",
       "external": false
     },
     "secondary": {
       "label": "Read more about me",
-      "href": "/about",
+      "href": "/#about",
       "external": true
     }
   },

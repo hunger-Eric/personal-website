@@ -197,7 +197,7 @@ export default function LinksPage() {
       </div>
 
       {/* Avatar */}
-      <div className="mb-5 h-28 w-28 overflow-hidden rounded-full ring-1 ring-slate-200 sm:h-32 sm:w-32">
+      <div className="relative mb-5 h-28 w-28 overflow-hidden rounded-full ring-1 ring-slate-200 sm:h-32 sm:w-32">
         <Image
           src="/images/avatar.jpg"
           alt={siteConfig.name}

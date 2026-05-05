@@ -63,7 +63,7 @@ export function PublicationsSection() {
               <a
                 href={primaryHref}
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 aria-label={`Open ${featured.title}`}
                 className="relative block aspect-[4/5] w-full overflow-hidden bg-white/5 lg:aspect-auto lg:min-h-[320px]"
               >
@@ -96,7 +96,7 @@ export function PublicationsSection() {
                 <a
                   href={primaryHref}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                   className="bg-[length:0%_2px] bg-left-bottom bg-no-repeat bg-gradient-to-r from-white/70 to-white/70 transition-[background-size] duration-300 ease-out group-hover:bg-[length:100%_2px]"
                 >
                   {featured.title}
@@ -124,7 +124,7 @@ export function PublicationsSection() {
                         key={`${featured.id}-${link.label}`}
                         href={link.href}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noreferrer noopener"
                         className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-transparent px-2.5 py-1 text-[12px] text-muted-foreground transition-colors hover:border-accent hover:text-foreground"
                       >
                         <Icon className="h-3.5 w-3.5" />

@@ -217,7 +217,7 @@ export function ProjectDetails({ project, iconFor }: ProjectDetailsProps) {
               <a
                 href={project.repoHomepage}
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="inline-flex w-full items-center justify-center rounded-lg border border-white/25 bg-white/5 px-3.5 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-colors hover:border-accent hover:bg-white/10 hover:text-foreground"
               >
                 <span className="truncate">
@@ -239,7 +239,7 @@ export function ProjectDetails({ project, iconFor }: ProjectDetailsProps) {
               <a
                 href={latestReleaseUrl}
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="inline-flex w-full items-center justify-center rounded-lg border border-white/25 bg-white/5 px-3.5 py-2 text-sm font-medium text-muted-foreground shadow-sm transition-colors hover:border-accent hover:bg-white/10 hover:text-foreground"
               >
                 <span className="truncate">{latestReleaseButtonText}</span>
@@ -309,7 +309,7 @@ export function ProjectDetails({ project, iconFor }: ProjectDetailsProps) {
               key={`${project.id}-${l.label}`}
               href={l.href}
               target="_blank"
-              rel="noreferrer"
+              rel="noreferrer noopener"
               className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/25 bg-white/5 px-3.5 py-2 text-sm font-medium text-white/90 shadow-sm transition-colors hover:border-accent hover:bg-white/10 hover:text-foreground sm:w-auto"
             >
               {iconFor(l.type)}
@@ -323,7 +323,7 @@ export function ProjectDetails({ project, iconFor }: ProjectDetailsProps) {
               <a
                 href={`${normalizedRepoUrl}/commits`}
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/25 bg-white/5 px-3.5 py-2 text-sm font-medium text-white/90 shadow-sm transition-colors hover:border-accent hover:bg-white/10 hover:text-foreground sm:w-auto"
               >
                 <GitCommit className="h-3.5 w-3.5" />
@@ -335,7 +335,7 @@ export function ProjectDetails({ project, iconFor }: ProjectDetailsProps) {
                 <a
                   href={`${normalizedRepoUrl}/releases`}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                   className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-white/25 bg-white/5 px-3.5 py-2 text-sm font-medium text-white/90 shadow-sm transition-colors hover:border-accent hover:bg-white/10 hover:text-foreground sm:w-auto"
                 >
                   <Tag className="h-3.5 w-3.5" />

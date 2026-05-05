@@ -185,17 +185,12 @@
           {
             "id": "who-i-am",
             "label": "About",
-            "href": "/about",
+            "href": "/#about",
             "description": "Who I am, my purpose & goals",
             "icon": "User",
             "column": "left"
           }
-        ],
-        "dropdownFooter": {
-          "text": "Want to help support my work?",
-          "linkLabel": "Donate to my Sponsor page",
-          "href": "/support"
-        }
+        ]
       },
 
       {

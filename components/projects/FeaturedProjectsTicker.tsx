@@ -141,10 +141,10 @@ export function FeaturedProjectsCarousel({
   };
 
   const navBtnClass =
-    "inline-flex items-center justify-center rounded-md border border-white/15 bg-black/40 p-2.5 text-slate-50/95 backdrop-blur-md transition-all duration-200 hover:bg-black/55 hover:border-white/30 active:scale-95";
+    "inline-flex items-center justify-center rounded-md border border-white/15 bg-white/5 p-2.5 text-slate-200 transition-all duration-200 hover:border-white/30 hover:bg-white/10 hover:text-white active:scale-95";
 
   const actionBtnClass =
-    "inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-black/30 px-3.5 py-2 text-[13px] font-medium text-slate-50 backdrop-blur-md transition-all duration-200 hover:border-white/40 hover:bg-black/50 sm:text-sm";
+    "inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-transparent px-3.5 py-2 text-[13px] font-medium text-slate-200 transition-all duration-200 hover:border-accent hover:text-foreground sm:text-sm";
 
   return (
     <div
@@ -155,135 +155,114 @@ export function FeaturedProjectsCarousel({
       onBlurCapture={() => setPaused(false)}
     >
       <div
-        className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-950"
+        className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
         aria-label="Featured projects carousel"
       >
-        {/* Fixed, modest height so the carousel stays compact */}
-        <div className="relative h-[300px] w-full sm:h-[360px] md:h-[420px]">
-          {/* Image stack — full bleed, crossfade */}
-          <div className="absolute inset-0">
-            {slides.map((project, idx) => {
-              const image = project.imageUrl;
-              const isActive = idx === activeIndex;
-              return (
-                <div
-                  key={`${project.id}-${idx}`}
-                  className={[
-                    "absolute inset-0",
-                    reduceMotion
-                      ? "transition-none"
-                      : "transition-opacity duration-700 ease-out",
-                    isActive ? "opacity-100" : "opacity-0",
-                  ].join(" ")}
-                  aria-hidden={!isActive}
-                >
-                  {image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={image}
-                      alt={project.name}
-                      className="absolute inset-0 h-full w-full object-cover object-center"
-                      loading={isActive ? "eager" : "lazy"}
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/35 via-violet-500/20 to-sky-500/20" />
-                  )}
-                </div>
-              );
-            })}
+        {/* Slide content: vertical stack — title, image, description, tools, buttons */}
+        <div
+          key={`slide-${activeIndex}`}
+          className={[
+            "flex flex-col gap-4 px-6 py-6 sm:gap-5 sm:px-8 sm:py-8",
+            reduceMotion ? "" : "animate-in fade-in-0 duration-300 ease-out",
+          ].join(" ")}
+        >
+          <h4 className="text-center text-2xl font-semibold leading-tight text-foreground sm:text-3xl">
+            {current.name}
+          </h4>
+
+          {/* Cover image — sits between title and description */}
+          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl border border-white/10 bg-white/5">
+            {current.imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={current.imageUrl}
+                alt={current.name}
+                className="absolute inset-0 h-full w-full object-cover object-center"
+                loading="eager"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/35 via-violet-500/20 to-sky-500/20" />
+            )}
           </div>
 
-          {/* Dark overlay so text always reads. Flat scrim + a subtle gradient at the edges. */}
-          <div className="pointer-events-none absolute inset-0 bg-black/55" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+          <p className="mx-auto max-w-2xl text-center text-sm leading-6 text-muted-foreground sm:text-[15px] sm:leading-7 line-clamp-3">
+            {blurb}
+          </p>
 
-          {/* Centered content */}
-          <div className="relative z-10 flex h-full w-full items-center justify-center px-6 py-8 sm:px-10">
-            <div className="w-full max-w-2xl text-center">
-              <h4 className="text-2xl font-semibold leading-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)] sm:text-3xl md:text-4xl">
-                {current.name}
-              </h4>
+          {tools.length ? (
+            <p className="text-center text-[13px] font-medium text-indigo-300 sm:text-sm">
+              {tools.join(", ")}
+            </p>
+          ) : null}
 
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-50/95 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:text-[15px] sm:leading-7 md:text-base md:leading-7 line-clamp-3">
-                {blurb}
-              </p>
+          <div className="flex flex-wrap justify-center gap-2">
+            {primary?.href ? (
+              <button
+                type="button"
+                onClick={() => openHref(primary.href)}
+                className={actionBtnClass}
+              >
+                <FilledArrowUpRight className="h-4 w-4 opacity-90" />
+                <span>View Project</span>
+              </button>
+            ) : null}
 
-              {tools.length ? (
-                <p className="mt-3 text-[13px] font-medium text-indigo-200 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:text-sm">
-                  {tools.join(", ")}
-                </p>
-              ) : null}
-
-              <div className="mt-5 flex flex-wrap justify-center gap-2">
-                {primary?.href ? (
+            {links
+              .filter((l) => l.href !== primary?.href)
+              .map((l) => {
+                const Ico = iconForLink(l.type);
+                return (
                   <button
+                    key={`${current.id}-${l.type}-${l.href}`}
                     type="button"
-                    onClick={() => openHref(primary.href)}
+                    onClick={() => openHref(l.href)}
                     className={actionBtnClass}
                   >
-                    <FilledArrowUpRight className="h-4 w-4 opacity-90" />
-                    <span>View Project</span>
+                    <Ico className="h-4 w-4 opacity-90" />
+                    <span>
+                      {l.label ||
+                        (l.type === "live"
+                          ? "Live"
+                          : l.type === "github"
+                          ? "GitHub"
+                          : l.type === "docs"
+                          ? "Docs"
+                          : l.type === "download"
+                          ? "Download"
+                          : l.type === "video"
+                          ? "Video"
+                          : "Open")}
+                    </span>
                   </button>
-                ) : null}
-
-                {links
-                  .filter((l) => l.href !== primary?.href)
-                  .map((l) => {
-                    const Ico = iconForLink(l.type);
-                    return (
-                      <button
-                        key={`${current.id}-${l.type}-${l.href}`}
-                        type="button"
-                        onClick={() => openHref(l.href)}
-                        className={actionBtnClass}
-                      >
-                        <Ico className="h-4 w-4 opacity-90" />
-                        <span>
-                          {l.label ||
-                            (l.type === "live"
-                              ? "Live"
-                              : l.type === "github"
-                              ? "GitHub"
-                              : l.type === "docs"
-                              ? "Docs"
-                              : l.type === "download"
-                              ? "Download"
-                              : l.type === "video"
-                              ? "Video"
-                              : "Open")}
-                        </span>
-                      </button>
-                    );
-                  })}
-              </div>
-            </div>
+                );
+              })}
           </div>
-
-          {/* Side arrows */}
-          {total > 1 ? (
-            <>
-              <button
-                type="button"
-                onClick={goPrev}
-                aria-label="Previous project"
-                className={`absolute left-3 top-1/2 z-20 -translate-y-1/2 ${navBtnClass} sm:left-5`}
-              >
-                <ChevronLeft className="h-5 w-5" strokeWidth={2.4} />
-              </button>
-              <button
-                type="button"
-                onClick={goNext}
-                aria-label="Next project"
-                className={`absolute right-3 top-1/2 z-20 -translate-y-1/2 ${navBtnClass} sm:right-5`}
-              >
-                <ChevronRight className="h-5 w-5" strokeWidth={2.4} />
-              </button>
-            </>
-          ) : null}
         </div>
+
+        {/* Side arrows */}
+        {total > 1 ? (
+          <>
+            <button
+              type="button"
+              onClick={goPrev}
+              aria-label="Previous project"
+              className={`absolute left-3 top-1/2 z-20 -translate-y-1/2 ${navBtnClass} sm:left-5`}
+            >
+              <ChevronLeft className="h-5 w-5" strokeWidth={2.4} />
+            </button>
+            <button
+              type="button"
+              onClick={goNext}
+              aria-label="Next project"
+              className={`absolute right-3 top-1/2 z-20 -translate-y-1/2 ${navBtnClass} sm:right-5`}
+            >
+              <ChevronRight className="h-5 w-5" strokeWidth={2.4} />
+            </button>
+          </>
+        ) : null}
       </div>
 
       {/* Indicators — rectangles, outside the card */}

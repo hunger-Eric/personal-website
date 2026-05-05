@@ -62,7 +62,7 @@ export function CertificationsSection() {
                   <a
                     href={targetLink}
                     target="_blank"
-                    rel="noreferrer"
+                    rel="noreferrer noopener"
                     className="inline-flex items-center gap-2 rounded-md bg-[var(--accent)] px-3 py-1.5 text-xs font-medium text-white shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-md sm:text-sm"
                   >
                     <span>View credential</span>

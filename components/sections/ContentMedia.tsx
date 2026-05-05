@@ -122,7 +122,13 @@ function PlatformBadge({ type }: { type: MediaType }) {
   );
 }
 
-function MediaCard({ item }: { item: MediaItem }) {
+function MediaCard({
+  item,
+  className: extraClass = "",
+}: {
+  item: MediaItem;
+  className?: string;
+}) {
   const rowSpanClass = item.rowSpan === 2 ? "row-span-2" : "row-span-1";
 
   const Inner = (
@@ -142,11 +148,16 @@ function MediaCard({ item }: { item: MediaItem }) {
     </article>
   );
 
-  const className = `block h-full ${rowSpanClass}`;
+  const className = `block h-full ${rowSpanClass} ${extraClass}`.trim();
 
   if (item.external) {
     return (
-      <a href={item.href} target="_blank" rel="noreferrer" className={className}>
+      <a
+        href={item.href}
+        target="_blank"
+        rel="noreferrer noopener"
+        className={className}
+      >
         {Inner}
       </a>
     );
@@ -169,10 +180,15 @@ export function ContentMediaSection() {
           <div className="hidden h-px w-40 bg-white/15 sm:block sm:w-72" aria-hidden />
         </div>
 
-        {/* Masonry-feel grid — fixed row height, items span 1 or 2 rows */}
+        {/* Mobile: only the first 3 items render (the rest get hidden via class).
+            sm+: full 9-item masonry feel with mixed row spans. */}
         <div className="mt-8 grid auto-rows-[170px] grid-cols-1 gap-4 [grid-auto-flow:dense] sm:auto-rows-[180px] sm:grid-cols-2 lg:grid-cols-3">
-          {ITEMS.map((item) => (
-            <MediaCard key={item.id} item={item} />
+          {ITEMS.map((item, i) => (
+            <MediaCard
+              key={item.id}
+              item={item}
+              className={i >= 3 ? "hidden sm:block" : ""}
+            />
           ))}
         </div>
       </div>

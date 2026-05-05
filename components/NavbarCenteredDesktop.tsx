@@ -267,7 +267,7 @@ export function NavbarCentered() {
               <a
                 href={logo.href}
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="group flex items-center gap-2 transform-gpu transition hover:scale-[0.97] active:scale-95"
                 onMouseEnter={() => {
                   cancelCloseDesktop();
@@ -379,7 +379,7 @@ export function NavbarCentered() {
                           key={itemKey}
                           href={item.href}
                           target="_blank"
-                          rel="noreferrer"
+                          rel="noreferrer noopener"
                           className={[
                             "rounded-md px-2.5 py-1 md:px-3 md:py-1.5",
                             "font-semibold text-muted-foreground transition hover:bg-white/10 hover:text-foreground",
@@ -505,7 +505,7 @@ export function NavbarCentered() {
                 <a
                   href={primaryCta.href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                   className="rounded-md border border-accent bg-accent px-3.5 py-1.5 text-xs font-semibold text-slate-50 shadow-sm transition-transform transition-colors hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md md:text-sm"
                   onMouseEnter={() => {
                     cancelCloseDesktop();
@@ -588,7 +588,7 @@ function DesktopDropdownItem({
       <a
         href={item.href}
         target="_blank"
-        rel="noreferrer"
+        rel="noreferrer noopener"
         onClick={onNavigate}
         className="group flex min-h-[64px] items-center gap-3 rounded-lg px-2.5 py-2 text-left text-xs transition hover:bg-slate-900 md:text-sm"
       >
@@ -691,7 +691,7 @@ function renderMegaMenuFromChildren(
             <a
               href={footer.href}
               target="_blank"
-              rel="noreferrer"
+              rel="noreferrer noopener"
               onClick={onNavigate}
               className="font-semibold text-indigo-400 transition hover:text-indigo-300"
             >

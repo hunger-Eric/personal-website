@@ -1,6 +1,8 @@
 // components/sections/HeroShowcaseSection.tsx
 "use client";
 
+import Image from "next/image";
+
 import { siteConfig } from "../../config/siteConfig";
 import {
   FileText,
@@ -247,13 +249,28 @@ export function HeroShowcaseSection() {
     "Computer Science student at the University of Houston building full-stack web apps with clean UI, scalable backends, and practical machine learning.";
 
   return (
-    // ✅ less top padding on mobile, unchanged on desktop
-    <section id="top" className="pt-12 pb-20 sm:pt-16 lg:pt-28">
+    // ✅ Mobile: vertically centered viewport-height hero; desktop unchanged
+    <section
+      id="top"
+      className="flex min-h-[calc(100dvh-4rem)] flex-col justify-center pt-12 pb-20 sm:block sm:min-h-0 sm:pt-16 lg:pt-28"
+    >
       <div className="mx-auto w-full max-w-6xl px-4">
         {/* Top hero row (right side left blank for now) */}
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           {/* Left: intro + socials + CTAs */}
           <div className="text-center sm:text-left">
+            {/* Mobile-only small portrait above the title */}
+            <div className="relative mx-auto mb-5 h-20 w-20 overflow-hidden rounded-xl border border-white/10 sm:hidden">
+              <Image
+                src="/avatar.jpg"
+                alt={siteConfig.name}
+                fill
+                sizes="80px"
+                className="object-cover"
+                priority
+              />
+            </div>
+
             {/* big heading */}
             <h1 className="text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
               <span className="block">
@@ -325,8 +342,8 @@ export function HeroShowcaseSection() {
           <div className="hidden lg:block" />
         </div>
 
-        {/* Contribution graph row */}
-        <div className="mt-20">
+        {/* Contribution graph — md+ only (hidden on mobile to keep above-the-fold focused) */}
+        <div className="mt-20 hidden md:block">
           <ContributionGraphCard />
         </div>
       </div>

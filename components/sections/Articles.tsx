@@ -23,11 +23,9 @@ import { blogPosts as articles } from "../../config/articles";
  * - CTA links to /articles
  */
 export function ArticleSection() {
-  if (!articles?.length) return null;
-
   // Ensure "latest first" ordering (best-effort by date, fallback to original order)
   const ordered = useMemo(() => {
-    const list = [...articles];
+    const list = [...(articles ?? [])];
     list.sort((a: any, b: any) => {
       const da = a?.date ? new Date(a.date).getTime() : 0;
       const db = b?.date ? new Date(b.date).getTime() : 0;
@@ -42,6 +40,8 @@ export function ArticleSection() {
     });
     return list;
   }, []);
+
+  if (!ordered.length) return null;
 
   const featured = ordered.find((post: any) => post.featured) ?? ordered[0];
   const latestTwo = ordered
@@ -121,7 +121,7 @@ function ArticleCard({
       <a
         href={href}
         target="_blank"
-        rel="noreferrer"
+        rel="noreferrer noopener"
         className={`block ${wrapperClassName}`}
       >
         {Inner}

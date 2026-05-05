@@ -19,9 +19,26 @@ import {
 export const metadata: Metadata = {
   title: "Projects",
   description: `Explore ${siteConfig.name}'s portfolio of software projects, including open-source tools, web applications, and more.`,
+  alternates: { canonical: "/projects" },
   openGraph: {
+    type: "website",
+    url: "/projects",
     title: `Projects | ${siteConfig.name}`,
     description: `Explore ${siteConfig.name}'s portfolio of software projects.`,
+    images: [
+      {
+        url: "/images/demo_1.png",
+        width: 1200,
+        height: 630,
+        alt: `${siteConfig.name} — projects`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Projects | ${siteConfig.name}`,
+    description: `Explore ${siteConfig.name}'s portfolio of software projects.`,
+    images: ["/images/demo_1.png"],
   },
 };
 

@@ -64,15 +64,15 @@ export function AboutSection() {
             {/* Portrait + stats container.
                 Mobile (default): horizontal — portrait LEFT, stats RIGHT.
                 sm+:               vertical — full-width portrait above stats. */}
-            {/* Portrait — full-width square on every breakpoint */}
+            {/* Portrait — sm+ only (mobile shows a small avatar in the hero instead) */}
             {a.avatarUrl ? (
-              <div className="group relative mx-auto aspect-square w-40 overflow-hidden rounded-xl border border-white/10 sm:w-full">
+              <div className="group relative hidden aspect-square w-full overflow-hidden rounded-xl border border-white/10 sm:block">
                 <Image
                   src={a.avatarUrl}
                   alt={a.displayName || siteConfig.name}
                   fill
                   className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.06]"
-                  sizes="(min-width: 1024px) 290px, (min-width: 640px) 100vw, 160px"
+                  sizes="(min-width: 1024px) 290px, 100vw"
                   priority={false}
                 />
               </div>

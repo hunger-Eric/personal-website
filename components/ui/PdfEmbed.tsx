@@ -19,7 +19,7 @@ export default function PdfEmbed({ src, className }: PdfEmbedProps) {
             <a
               href={src}
               target="_blank"
-              rel="noreferrer"
+              rel="noreferrer noopener"
               className="text-accent underline"
             >
               Open the PDF in a new tab

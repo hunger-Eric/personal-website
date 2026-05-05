@@ -26,9 +26,7 @@ interface ProjectsSectionClientProps {
 export function ProjectsSectionClient({
   projects,
 }: ProjectsSectionClientProps) {
-  // If the loader somehow returns an empty list, show nothing
-  if (!projects.length) return null;
-
+  // Hooks must run unconditionally — keep them above any early return.
   const defaultVisibleCount = 3;
 
   const router = useRouter();
@@ -89,6 +87,9 @@ export function ProjectsSectionClient({
 
   const modalTitle: string | undefined = selected?.name ?? "Project";
 
+  // Empty list guard — kept *after* hooks so the rules of hooks aren't broken.
+  if (!projects.length) return null;
+
   return (
     <section id="projects" className="py-16 scroll-mt-12 lg:py-24 overflow-x-hidden">
       {/* Heading container */}
@@ -123,7 +124,7 @@ export function ProjectsSectionClient({
             <FeaturedProjectsCarousel projects={featuredCarouselProjects} />
           </div>
           <div className="grid grid-cols-1 gap-4 md:hidden">
-            {featuredCarouselProjects.slice(0, 3).map((project) => (
+            {featuredCarouselProjects.slice(0, 6).map((project) => (
               <ProjectCard
                 key={project.id}
                 project={project}

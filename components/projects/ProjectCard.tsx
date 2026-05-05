@@ -50,7 +50,7 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
     : project.summary ?? "";
 
   const actionBtnClass =
-    "inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-all duration-150 hover:scale-110 hover:text-foreground";
+    "inline-flex h-7 w-7 items-center justify-center rounded-md text-indigo-400 transition-all duration-150 hover:scale-110 hover:text-indigo-300";
 
   const image = project.imageUrl || fallbackImage(project);
 
@@ -99,7 +99,7 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
                   key={`${project.id}-${link.label}-${link.href}`}
                   href={link.href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                   onClick={(e) => e.stopPropagation()}
                   aria-label={link.label}
                   title={link.label}

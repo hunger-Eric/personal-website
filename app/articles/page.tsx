@@ -11,9 +11,26 @@ import {
 export const metadata: Metadata = {
   title: "Articles",
   description: `Read ${siteConfig.name}'s articles about software development, technology, and more.`,
+  alternates: { canonical: "/articles" },
   openGraph: {
+    type: "website",
+    url: "/articles",
     title: `Articles | ${siteConfig.name}`,
     description: `Read ${siteConfig.name}'s articles about software development, technology, and more.`,
+    images: [
+      {
+        url: "/images/demo_1.png",
+        width: 1200,
+        height: 630,
+        alt: `${siteConfig.name} — articles`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `Articles | ${siteConfig.name}`,
+    description: `Read ${siteConfig.name}'s articles about software development, technology, and more.`,
+    images: ["/images/demo_1.png"],
   },
 };
 

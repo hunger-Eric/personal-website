@@ -60,7 +60,7 @@ export function Footer() {
                   key={key}
                   href={href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noreferrer noopener"
                   aria-label={label}
                   title={label}
                   className="text-muted-foreground transition-colors duration-150 hover:text-foreground"

@@ -65,7 +65,7 @@ export function YouTubeSection() {
             <a
               href={channelUrl}
               target="_blank"
-              rel="noreferrer"
+              rel="noreferrer noopener"
               className="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-4 py-2 text-xs font-medium text-white shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-accent/90 sm:text-sm"
             >
               <Youtube className="h-4 w-4" />
@@ -117,7 +117,7 @@ export function YouTubeSection() {
               <a
                 href={featured.url}
                 target="_blank"
-                rel="noreferrer"
+                rel="noreferrer noopener"
                 className="inline-flex items-center gap-1.5 self-start rounded-md border border-white/25 px-3 py-1.5 text-xs font-medium text-white/90 transition hover:bg-white/10 sm:text-sm"
               >
                 <span>Watch on YouTube</span>
@@ -144,7 +144,7 @@ function VideoCard({ label, video }: { label: string; video: SimpleVideo }) {
     <a
       href={video.url}
       target="_blank"
-      rel="noreferrer"
+      rel="noreferrer noopener"
       className="group flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-muted-foreground transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.01] hover:border-accent/70 hover:bg-white/10 sm:p-4 sm:text-sm md:flex-row md:items-start"
     >
       <div className="md:w-40 md:flex-shrink-0">
