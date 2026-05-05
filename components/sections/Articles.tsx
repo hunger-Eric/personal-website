@@ -191,9 +191,7 @@ function FeaturedCardInner({ post }: { post: Article }) {
 
         <h4 className="mt-2 min-w-0 text-[15px] font-semibold leading-snug text-foreground sm:text-base">
           <span className="block min-w-0 break-words line-clamp-2">
-            <span className="bg-[length:0%_2px] bg-left-bottom bg-no-repeat bg-gradient-to-r from-white/70 to-white/70 transition-[background-size] duration-300 ease-out group-hover:bg-[length:100%_2px]">
-              {post.title}
-            </span>
+            <span>{post.title}</span>
           </span>
         </h4>
 

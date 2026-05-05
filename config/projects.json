@@ -9,16 +9,12 @@
       "priority": 2
     },
     {
-      "repo_url": "https://github.com/KevinTrinhDev/McGraw-Plus",
+      "repo_url": "https://github.com/KevinTrinhDev/Github-Profile-Booster",
       "priority": 3
     },
     {
-      "repo_url": "https://github.com/KevinTrinhDev/Github-Profile-Booster",
-      "priority": 4
-    },
-    {
       "repo_url": "https://github.com/KevinTrinhDev/futures-trading-bot",
-      "priority": 5
+      "priority": 4
     }
   ],
   "local_projects": [

@@ -3,7 +3,7 @@
 
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { FolderGit2, Star, GitFork, Download, Clock } from "lucide-react";
+import { FolderGit2, Star, GitFork, Download } from "lucide-react";
 import type { ProjectItem, ProjectLink } from "../../config/projects";
 
 interface ProjectCardProps {
@@ -11,20 +11,6 @@ interface ProjectCardProps {
   onOpenDetails: (project: ProjectItem) => void;
   iconFor: (type?: string) => ReactNode;
   hideImage?: boolean;
-}
-
-function formatRelativeDate(iso?: string): string | null {
-  if (!iso) return null;
-  const d = new Date(iso);
-  if (isNaN(d.getTime())) return null;
-  const now = Date.now();
-  const diffMs = now - d.getTime();
-  const days = Math.floor(diffMs / 86_400_000);
-  if (days < 1) return "today";
-  if (days < 7) return `${days}d ago`;
-  if (days < 30) return `${Math.floor(days / 7)}w ago`;
-  if (days < 365) return `${Math.floor(days / 30)}mo ago`;
-  return `${Math.floor(days / 365)}y ago`;
 }
 
 function fallbackImage(_project: ProjectItem): string {
@@ -42,8 +28,6 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
 
   const liveLink = project.links?.find((l) => l.type === "live");
   const isLive = Boolean(liveLink);
-
-  const lastUpdated = formatRelativeDate(project.repoPushedAt);
 
   const projectHref =
     (project as any).href ||
@@ -132,29 +116,11 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
           ) : null}
         </div>
 
-        {/* Title with updated marker */}
-        <div className="mt-3 flex items-baseline justify-between gap-3">
+        {/* Title */}
+        <div className="mt-3">
           <h4 className="text-lg font-semibold text-foreground">
-            <span
-              className={[
-                "bg-[length:0%_2px] bg-left-bottom bg-no-repeat",
-                "bg-gradient-to-r from-white/70 to-white/70",
-                "transition-[background-size] duration-300 ease-out",
-                "group-hover:bg-[length:100%_2px]",
-              ].join(" ")}
-            >
-              {project.name}
-            </span>
+            {project.name}
           </h4>
-          {lastUpdated ? (
-            <span
-              className="inline-flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground"
-              title={`Last updated ${lastUpdated}`}
-            >
-              <Clock className="h-3 w-3" />
-              {lastUpdated}
-            </span>
-          ) : null}
         </div>
 
         {/* Body */}
@@ -165,23 +131,11 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
             </p>
           ) : null}
 
-          {/* Tech chips */}
+          {/* Tech list — comma-separated, single line */}
           {project.technologies?.length ? (
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {project.technologies.slice(0, 6).map((t) => (
-                <span
-                  key={`${project.id}-tech-${t}`}
-                  className="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 text-[11px] font-medium text-slate-200/80"
-                >
-                  {t}
-                </span>
-              ))}
-              {project.technologies.length > 6 && (
-                <span className="rounded-md px-2 py-0.5 text-[11px] text-muted-foreground">
-                  +{project.technologies.length - 6}
-                </span>
-              )}
-            </div>
+            <p className="mt-4 truncate text-[12px] font-medium text-indigo-200/80">
+              {project.technologies.join(", ")}
+            </p>
           ) : null}
         </div>
 

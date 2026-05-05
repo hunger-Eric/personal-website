@@ -11,7 +11,6 @@ import {
   PlayCircle,
   ExternalLink,
   FolderGit2,
-  ArrowUpRight,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ProjectItem } from "../../config/projects";
@@ -148,7 +147,7 @@ export function ProjectsSectionClient({
               className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-6 py-3 text-sm font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
             >
               <span>View all projects</span>
-              <ArrowUpRight className="h-4 w-4" />
+              <ExternalLink className="h-4 w-4" />
             </a>
           </div>
         )}
