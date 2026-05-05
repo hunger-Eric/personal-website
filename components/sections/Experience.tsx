@@ -168,26 +168,12 @@ export function ExperienceSection() {
               </div>
 
               {activeItem.description?.length > 0 && (
-                <ul className={bulletClass}>
+                <ul
+                  className={`${bulletClass} list-disc pl-5 marker:text-indigo-400/70`}
+                >
                   {activeItem.description.slice(0, 3).map((line, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-start gap-2 leading-relaxed"
-                    >
-                      <span
-                        className="
-                          mt-[7px]
-                          inline-block
-                          h-0
-                          w-0
-                          border-y-[4px]
-                          border-y-transparent
-                          border-l-[7px]
-                          border-l-accent
-                        "
-                        aria-hidden="true"
-                      />
-                      <span>{line}</span>
+                    <li key={idx} className="leading-relaxed">
+                      {line}
                     </li>
                   ))}
                 </ul>

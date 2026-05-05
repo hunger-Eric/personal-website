@@ -289,15 +289,24 @@ export function HeroShowcaseSection() {
 
             {/* CTA */}
             <div className="mt-7 flex flex-wrap gap-3">
-              <a
-                href="/connect"
-                target="_blank"
-                rel="noreferrer noopener"
-                className="group inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-slate-50 shadow-sm transition-colors duration-150 hover:bg-accent/90 hover:shadow-md"
-              >
-                <Handshake className="h-4 w-4 transition-transform duration-200 group-hover:-rotate-6" />
-                <span>Connect with me</span>
-              </a>
+              {(() => {
+                const socials: any = (siteConfig as any).socials ?? {};
+                const email = socials.email || socials.mail || "";
+                const emailHref = email
+                  ? email.startsWith("mailto:")
+                    ? email
+                    : `mailto:${email}`
+                  : "#";
+                return (
+                  <a
+                    href={emailHref}
+                    className="group inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-slate-50 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-accent/95 hover:shadow-lg hover:shadow-accent/30"
+                  >
+                    <Handshake className="h-4 w-4 transition-transform duration-200 group-hover:-rotate-6" />
+                    <span>Say hello to me</span>
+                  </a>
+                );
+              })()}
             </div>
           </div>
 
