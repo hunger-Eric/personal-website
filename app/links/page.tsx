@@ -1,7 +1,16 @@
 // app/links/page.tsx
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ArrowUpRight, Mail } from "lucide-react";
+import Link from "next/link";
+import {
+  ArrowUpRight,
+  UserPlus,
+  Play,
+  GraduationCap,
+  Wrench,
+  Newspaper,
+  Image as ImageIcon,
+} from "lucide-react";
 
 import { siteConfig } from "@/config/siteConfig";
 import { ShareButton } from "@/components/ShareButton";
@@ -15,6 +24,7 @@ import {
   TikTokGlyph,
   MediumGlyph,
 } from "@/components/BrandGlyphs";
+import { loadProjects, type ProjectItem } from "@/config/projects";
 
 const BASE_URL = (
   process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev"
@@ -82,7 +92,7 @@ function glyphForKey(key: string) {
   }
 }
 
-export default function LinksPage() {
+export default async function LinksPage() {
   const socialMap = new Map(
     (siteConfig.socialsList ?? []).map((s) => [s.key, s])
   );
@@ -91,7 +101,7 @@ export default function LinksPage() {
   const emailHref =
     typeof emailEntry?.href === "string" && emailEntry.href.startsWith("mailto:")
       ? emailEntry.href
-      : "mailto:kevin@kevintrinh.dev";
+      : "mailto:hi@kevintrinh.dev";
 
   const socials: SocialGlyph[] = SOCIAL_ORDER.flatMap((key) => {
     const s = socialMap.get(key);
@@ -140,9 +150,60 @@ export default function LinksPage() {
     },
   ];
 
-  // TikTok hub URL (fallback if not in config)
-  const tiktokHref =
-    socialMap.get("tiktok")?.href || "https://www.tiktok.com/@KevinTrinhDev";
+  // Featured projects (carousel) — fall back to first projects if none flagged
+  let featuredProjects: ProjectItem[] = [];
+  try {
+    const all = await loadProjects();
+    const featured = all.filter((p) => p.featured);
+    featuredProjects = (featured.length ? featured : all).slice(0, 5);
+  } catch {
+    featuredProjects = [];
+  }
+
+  // YouTube tile (replaces previous TikTok tile)
+  const youtubeChannel =
+    socialMap.get("youtube")?.href ||
+    "https://www.youtube.com/@KevinTrinhDev";
+  const ytId = (siteConfig as any).featuredContent?.youtubeVideoId as
+    | string
+    | undefined;
+  const youtubeHref = ytId
+    ? `https://www.youtube.com/watch?v=${ytId}`
+    : youtubeChannel;
+  const youtubeThumb = ytId
+    ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`
+    : null;
+
+  // CoogCasa cards
+  const coogCasaCards: Array<{
+    key: string;
+    label: string;
+    description: string;
+    href: string;
+    icon: React.ReactNode;
+  }> = [
+    {
+      key: "coogcasa-scholarships",
+      label: "UH Scholarships",
+      description: "Curated scholarships for UH students",
+      href: "https://coogcasa.com/scholarships",
+      icon: <GraduationCap className="h-5 w-5 text-emerald-600" />,
+    },
+    {
+      key: "coogcasa-tools",
+      label: "Student Tools",
+      description: "Free tools made for UH students",
+      href: "https://coogcasa.com/tools",
+      icon: <Wrench className="h-5 w-5 text-sky-600" />,
+    },
+    {
+      key: "coogcasa-home",
+      label: "CoogCasa.com",
+      description: "Home for everything UH",
+      href: "https://coogcasa.com",
+      icon: <Newspaper className="h-5 w-5 text-indigo-600" />,
+    },
+  ];
 
   const year = new Date().getFullYear();
 
@@ -177,14 +238,16 @@ export default function LinksPage() {
     <main className="relative mx-auto flex min-h-[100dvh] w-full max-w-md flex-col items-center px-5 pb-10 pt-16 text-slate-900 sm:pt-20">
       <JsonLd data={profileJsonLd} />
 
-      {/* Top-left: Email */}
+      {/* Top-left: Save contact (vCard) */}
       <a
-        href={emailHref}
-        aria-label={`Email ${siteConfig.name}`}
-        title={`Email ${siteConfig.name}`}
-        className="absolute left-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 sm:left-5 sm:top-5"
+        href="/contact.vcf"
+        download="KevinTrinh.vcf"
+        aria-label={`Save ${siteConfig.name} to your contacts`}
+        title="Save my contact"
+        className="absolute left-4 top-4 inline-flex h-10 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 sm:left-5 sm:top-5"
       >
-        <Mail className="h-4 w-4" aria-hidden />
+        <UserPlus className="h-4 w-4" aria-hidden />
+        <span>Save contact</span>
       </a>
 
       {/* Top-right: Share */}
@@ -219,15 +282,13 @@ export default function LinksPage() {
         <span>{siteConfig.location || "Houston, TX"}</span>
       </div>
 
-      {/* Description — same-color keyword pipes */}
+      {/* Tagline */}
       <p className="mt-3 max-w-xs text-center text-[13px] font-medium tracking-wide text-slate-700 sm:text-sm">
         <span>Software</span>
         <span className="mx-2 text-slate-300">|</span>
         <span>Tech</span>
         <span className="mx-2 text-slate-300">|</span>
-        <span>Builder</span>
-        <span className="mx-2 text-slate-300">|</span>
-        <span>CS @ UH</span>
+        <span>Creator</span>
       </p>
 
       {/* Social glyphs */}
@@ -280,27 +341,167 @@ export default function LinksPage() {
         ))}
       </div>
 
-      {/* Latest TikTok — clean light card, no gradient */}
+      {/* Popular projects — horizontal scroll */}
+      {featuredProjects.length > 0 && (
+        <section className="mt-7 w-full" aria-label="Popular projects">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Popular projects
+            </h2>
+            <Link
+              href="/projects"
+              className="text-xs font-semibold text-slate-500 hover:text-slate-700"
+            >
+              View all
+            </Link>
+          </div>
+
+          <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
+            {featuredProjects.map((p) => {
+              const liveLink = p.links?.find((l) => l.type === "live");
+              const repo = p.githubRepoUrl;
+              const slugHref = `/projects/${p.id}`;
+              const href = liveLink?.href || repo || slugHref;
+              const img = p.imageUrl || "/images/demo_1.png";
+              return (
+                <a
+                  key={p.id}
+                  href={href}
+                  target={href.startsWith("http") ? "_blank" : undefined}
+                  rel={href.startsWith("http") ? "noreferrer noopener" : undefined}
+                  className="group flex w-56 flex-none snap-start flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors hover:border-slate-300 hover:bg-slate-50"
+                >
+                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img}
+                      alt={p.name}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col gap-1 px-3 py-2">
+                    <span className="line-clamp-1 text-sm font-semibold text-slate-900">
+                      {p.name}
+                    </span>
+                    <span className="line-clamp-2 text-[12px] leading-snug text-slate-500">
+                      {p.summary}
+                    </span>
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Featured YouTube — replaces the previous TikTok tile */}
       <a
-        href={tiktokHref}
+        href={youtubeHref}
         target="_blank"
         rel="noreferrer noopener"
         className="group mt-4 block w-full overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50"
       >
         <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <TikTokGlyph className="h-14 w-14 transition-transform duration-200 group-hover:scale-110" />
-          </div>
+          {youtubeThumb ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={youtubeThumb}
+                alt="Featured YouTube video"
+                loading="lazy"
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-600 text-white shadow-lg">
+                  <Play className="h-5 w-5 translate-x-[1px] fill-current" />
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <YoutubeGlyph className="h-14 w-14 transition-transform duration-200 group-hover:scale-110" />
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-3 px-4 py-3">
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-600">
-            TikTok
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-red-200 bg-red-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-700">
+            YouTube
           </span>
           <span className="line-clamp-1 text-sm font-medium text-slate-700">
-            Latest TikTok — placeholder
+            Latest from my channel
           </span>
         </div>
       </a>
+
+      {/* CoogCasa — UH student stuff */}
+      <section className="mt-7 w-full" aria-label="CoogCasa">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            CoogCasa · UH student hub
+          </h2>
+          <a
+            href="https://coogcasa.com"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-xs font-semibold text-slate-500 hover:text-slate-700"
+          >
+            Visit
+          </a>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          {coogCasaCards.map(({ key, label, description, href, icon }) => (
+            <a
+              key={key}
+              href={href}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="group inline-flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition-colors hover:border-slate-300 hover:bg-slate-50"
+            >
+              <span className="flex h-9 w-9 flex-none items-center justify-center rounded-md bg-slate-100">
+                {icon}
+              </span>
+              <span className="flex min-w-0 flex-col text-left">
+                <span className="text-sm font-semibold leading-tight text-slate-900">
+                  {label}
+                </span>
+                <span className="text-[12px] font-normal leading-snug text-slate-500">
+                  {description}
+                </span>
+              </span>
+              <ArrowUpRight
+                className="ml-auto h-4 w-4 flex-none text-slate-400 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-700"
+                aria-hidden
+              />
+            </a>
+          ))}
+        </div>
+      </section>
+
+      {/* Media kit — bottom block */}
+      <section className="mt-7 w-full" aria-label="Media kit">
+        <a
+          href={`mailto:${emailHref.replace(/^mailto:/i, "")}?subject=Media%20kit%20request`}
+          className="group inline-flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition-colors hover:border-slate-300 hover:bg-slate-50"
+        >
+          <span className="flex h-9 w-9 flex-none items-center justify-center rounded-md bg-slate-100">
+            <ImageIcon className="h-5 w-5 text-slate-700" />
+          </span>
+          <span className="flex min-w-0 flex-col text-left">
+            <span className="text-sm font-semibold leading-tight text-slate-900">
+              Media kit
+            </span>
+            <span className="text-[12px] font-normal leading-snug text-slate-500">
+              For brands &amp; partnerships — email me
+            </span>
+          </span>
+          <ArrowUpRight
+            className="ml-auto h-4 w-4 flex-none text-slate-400 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-700"
+            aria-hidden
+          />
+        </a>
+      </section>
 
       {/* Copyright */}
       <div className="mt-auto pt-10 text-center text-xs leading-relaxed text-slate-400">

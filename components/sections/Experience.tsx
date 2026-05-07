@@ -90,47 +90,46 @@ export function ExperienceSection() {
         </div>
 
         <div className="mt-8 flex flex-col gap-4 md:flex-row md:items-start">
-          {/* Left: roles list (wider) */}
+          {/* Left: roles list — horizontal scroll on mobile, vertical on md+ */}
           <div className="w-full border-b border-white/10 pb-4 md:w-72 md:border-b-0 md:pb-0 md:pr-6">
-            <ul className="space-y-1">
+            <ul className="-mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-col md:gap-0 md:space-y-1 md:overflow-visible md:px-0 md:pb-0 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
               {experience.map((item) => {
                 const isActive = item.id === activeItem.id;
                 return (
-                  <li key={item.id}>
+                  <li key={item.id} className="flex-none snap-start md:flex-auto md:snap-align-none">
                     <button
                       type="button"
                       onClick={() => handleSelect(item.id)}
                       className={[
-                        "group w-full rounded-md px-3 py-3 text-left transition-colors hover:bg-white/5",
-                        isActive ? "bg-white/5" : "",
+                        "group flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-left transition-colors hover:bg-white/5",
+                        "md:w-full md:border-0 md:px-3 md:py-3",
+                        isActive ? "bg-white/5 border-accent/40 md:border-0" : "",
                       ].join(" ")}
                     >
-                      <div className="flex items-center gap-3">
-                        <CompanyAvatar
-                          logoUrl={item.logoUrl}
-                          company={item.company}
-                        />
+                      <CompanyAvatar
+                        logoUrl={item.logoUrl}
+                        company={item.company}
+                      />
 
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={
-                              isActive
-                                ? `${roleCompanyClass} text-indigo-300`
-                                : `${roleCompanyClass} text-foreground group-hover:text-accent/60`
-                            }
-                          >
-                            {formatCompany(item.company)}
-                          </p>
-                        </div>
-
-                        <div
-                          className={`h-12 w-[2px] rounded-full transition-all duration-200 ${
+                      <div className="min-w-0 md:flex-1">
+                        <p
+                          className={
                             isActive
-                              ? "bg-accent"
-                              : "bg-transparent group-hover:bg-accent/40"
-                          }`}
-                        />
+                              ? `${roleCompanyClass} text-indigo-300 whitespace-nowrap md:whitespace-normal`
+                              : `${roleCompanyClass} text-foreground group-hover:text-accent/60 whitespace-nowrap md:whitespace-normal`
+                          }
+                        >
+                          {formatCompany(item.company)}
+                        </p>
                       </div>
+
+                      <div
+                        className={`hidden h-12 w-[2px] rounded-full transition-all duration-200 md:block ${
+                          isActive
+                            ? "bg-accent"
+                            : "bg-transparent group-hover:bg-accent/40"
+                        }`}
+                      />
                     </button>
                   </li>
                 );

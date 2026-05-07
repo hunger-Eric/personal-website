@@ -27,12 +27,63 @@
         "label": "Content",
         "href": "/#content",
         "show": true
+      },
+
+      {
+        "id": "more",
+        "label": "More",
+        "href": "",
+        "show": true,
+        "children": [
+          {
+            "id": "more-articles",
+            "label": "Articles",
+            "href": "/articles",
+            "description": "Writing, deep dives, and dev notes",
+            "icon": "BookOpen",
+            "column": "right"
+          },
+          {
+            "id": "more-resume",
+            "label": "Resume",
+            "href": "/resume",
+            "description": "Latest copy of my resume (PDF)",
+            "icon": "FileText",
+            "column": "right"
+          },
+          {
+            "id": "more-links",
+            "label": "All my links",
+            "href": "/links",
+            "description": "Socials, contact, and shortcuts in one page",
+            "icon": "Link2",
+            "column": "left"
+          },
+          {
+            "id": "more-discord",
+            "label": "Discord",
+            "href": "/discord",
+            "description": "Join my server",
+            "icon": "MessageCircle",
+            "external": true,
+            "column": "right"
+          },
+          {
+            "id": "more-github",
+            "label": "GitHub",
+            "href": "https://github.com/KevinTrinhDev",
+            "description": "Builds & open-source code",
+            "icon": "Github",
+            "external": true,
+            "column": "right"
+          }
+        ]
       }
     ]
   },
 
   "cta": {
-    "contact": { "label": "Email me", "href": "mailto:kevin@kevintrinh.dev", "external": true, "show": false },
+    "contact": { "label": "Email me", "href": "mailto:hi@kevintrinh.dev", "external": true, "show": false },
     "primary": {
       "label": "Connect with me",
       "href": "/links",

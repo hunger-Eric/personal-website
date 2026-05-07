@@ -68,9 +68,9 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
       ].join(" ")}
       aria-label={`Open ${project.name} project page`}
     >
-      {/* Cover image */}
+      {/* Cover image — desktop: at top, mobile: rendered below the title (see inner div) */}
       {!hideImage && (
-        <div className="relative aspect-[16/9] w-full overflow-hidden bg-white/5">
+        <div className="relative hidden aspect-[16/9] w-full overflow-hidden bg-white/5 md:block">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={image}
@@ -118,6 +118,19 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
             {project.name}
           </h4>
         </div>
+
+        {/* Cover image — mobile only, between title and description */}
+        {!hideImage && (
+          <div className="relative mt-3 -mx-4 aspect-[16/9] w-[calc(100%+2rem)] overflow-hidden bg-white/5 md:hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={image}
+              alt={project.name}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+              loading="lazy"
+            />
+          </div>
+        )}
 
         {/* Body */}
         <div className="mt-3 flex-1">

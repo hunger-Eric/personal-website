@@ -124,6 +124,13 @@ const nextConfig: NextConfig = {
   // Redirects for common patterns
   async redirects() {
     return [
+      // www → apex (both prod + Cloudflare-Pages preview www)
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "www.kevintrinh.dev" }],
+        destination: "https://kevintrinh.dev/:path*",
+        permanent: true,
+      },
       // Redirect old routes if you migrate from another portfolio
       // { source: '/portfolio', destination: '/projects', permanent: true },
     ];

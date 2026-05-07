@@ -27,7 +27,7 @@ export function ProjectsSectionClient({
   projects,
 }: ProjectsSectionClientProps) {
   // Hooks must run unconditionally — keep them above any early return.
-  const defaultVisibleCount = 3;
+  const defaultVisibleCount = 6;
 
   const router = useRouter();
   const pathname = usePathname();
@@ -109,8 +109,7 @@ export function ProjectsSectionClient({
             rel="noreferrer noopener"
             className="group inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:px-3.5 sm:py-2 sm:text-sm"
           >
-            <span className="sm:hidden">All Projects</span>
-            <span className="hidden sm:inline">View all Projects</span>
+            <span>View all Projects</span>
             <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
           </a>
         </div>

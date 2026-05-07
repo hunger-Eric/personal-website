@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -163,7 +164,9 @@ export default function NavbarCenteredMobile() {
     if (!isOpen) setOpenKey(null);
   }, [isOpen]);
 
-  // Lock background scroll while drawer is open
+  // Lock background scroll while drawer is open.
+  // Defensive: also clear on unmount in case the cleanup gets skipped by a
+  // stale render in social in-app webviews (TikTok / IG).
   useEffect(() => {
     if (!isOpen) return;
     const prev = document.body.style.overflow;
@@ -172,6 +175,22 @@ export default function NavbarCenteredMobile() {
       document.body.style.overflow = prev;
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    return () => {
+      // Final safety net: never leave the page locked if this component
+      // unmounts while the drawer was open.
+      if (typeof document !== "undefined") {
+        document.body.style.overflow = "";
+      }
+    };
+  }, []);
+
+  // Mount-gate so createPortal only runs client-side.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Close on Escape
   useEffect(() => {
@@ -268,30 +287,39 @@ export default function NavbarCenteredMobile() {
         </div>
       </div>
 
-      {/* Backdrop */}
-      <div
-        aria-hidden
-        onClick={() => setIsOpen(false)}
-        className={[
-          "sm:hidden fixed inset-0 z-40 bg-slate-950/60 backdrop-blur-sm transition-opacity duration-200",
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
-        ].join(" ")}
-      />
+      {/* Backdrop + drawer are portaled to document.body so they escape the
+          sticky <header> ancestor — fixes a known iOS in-app webview bug
+          (TikTok / Instagram) where fixed-inside-sticky leaves the blurred
+          overlay visible after the drawer closes. */}
+      {mounted && createPortal(
+        <>
+          {/* Backdrop */}
+          <div
+            aria-hidden
+            onClick={() => setIsOpen(false)}
+            className={[
+              "sm:hidden fixed inset-0 z-[10000] bg-slate-950/60 backdrop-blur-sm transition-opacity duration-200",
+              isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
+            ].join(" ")}
+          />
 
-      {/* Slide-in drawer from the right */}
-      <div
-        ref={panelRef}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Main navigation"
-        className={[
-          "sm:hidden fixed top-0 right-0 z-50 h-[100dvh] w-[85%] max-w-sm",
-          "border-l border-white/10 bg-slate-950/95 shadow-xl shadow-slate-950/40",
-          "backdrop-blur supports-[backdrop-filter]:backdrop-blur",
-          "transition-transform duration-300 ease-out",
-          isOpen ? "translate-x-0" : "translate-x-full",
-        ].join(" ")}
-      >
+          {/* Slide-in drawer from the right */}
+          <div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Main navigation"
+            className={[
+              "sm:hidden fixed top-0 right-0 z-[10001] h-[100dvh] w-[85%] max-w-sm",
+              "border-l border-white/10 bg-slate-950/95 shadow-xl shadow-slate-950/40",
+              "backdrop-blur supports-[backdrop-filter]:backdrop-blur",
+              "transition-transform duration-300 ease-out",
+              isOpen ? "translate-x-0" : "translate-x-full",
+              // Hide entirely when closed so closed-state isn't kept in the
+              // composited layer tree on quirky webviews.
+              isOpen ? "visible" : "invisible",
+            ].join(" ")}
+          >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
             <span className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -426,6 +454,9 @@ export default function NavbarCenteredMobile() {
           </div>
         </div>
       </div>
+        </>,
+        document.body
+      )}
     </header>
   );
 }

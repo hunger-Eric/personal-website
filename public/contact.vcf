@@ -1,0 +1,19 @@
+BEGIN:VCARD
+VERSION:3.0
+N:Trinh;Kevin;Huy;;
+FN:Kevin Trinh
+NICKNAME:KevinTrinhDev
+TITLE:Software · Tech · Creator
+EMAIL;TYPE=INTERNET,PREF:hi@kevintrinh.dev
+URL:https://kevintrinh.dev
+URL;TYPE=instagram:https://www.instagram.com/KevinTrinhDev
+URL;TYPE=tiktok:https://www.tiktok.com/@KevinTrinhDev
+URL;TYPE=youtube:https://www.youtube.com/@KevinTrinhDev
+URL;TYPE=linkedin:https://www.linkedin.com/in/KevinTrinhDev
+URL;TYPE=github:https://github.com/KevinTrinhDev
+URL;TYPE=x:https://x.com/KevinTrinhDev
+URL;TYPE=threads:https://www.threads.net/@KevinTrinhDev
+BDAY:2002-12-27
+PHOTO;VALUE=URI:https://kevintrinh.dev/avatar.jpg
+NOTE:Software · Tech · Creator. Building thoughtful, fast software.
+END:VCARD

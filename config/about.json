@@ -24,8 +24,8 @@
     { "type": "school", "label": "University of Houston" },
     {
       "type": "email",
-      "label": "kevin@kevintrinh.dev",
-      "href": "mailto:kevin@kevintrinh.dev"
+      "label": "hi@kevintrinh.dev",
+      "href": "mailto:hi@kevintrinh.dev"
     },
     {
       "type": "linkedin",
@@ -192,8 +192,8 @@
       "items": [
         {
           "type": "email",
-          "label": "kevin@kevintrinh.dev",
-          "href": "mailto:kevin@kevintrinh.dev"
+          "label": "hi@kevintrinh.dev",
+          "href": "mailto:hi@kevintrinh.dev"
         },
         {
           "type": "linkedin",

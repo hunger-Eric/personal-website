@@ -340,12 +340,10 @@ export function HeroShowcaseSection() {
               </a>
             </div>
 
-            {/* CTA — opens the hub page in a new tab */}
+            {/* CTA — open default mail client */}
             <div className="mt-7 flex flex-wrap justify-center gap-3 sm:justify-start">
               <a
-                href="/links"
-                target="_blank"
-                rel="noreferrer noopener"
+                href="mailto:hi@kevintrinh.dev"
                 className="group inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-slate-50 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-accent/95 hover:shadow-lg hover:shadow-accent/30"
               >
                 <IconMailFilled className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5" />
