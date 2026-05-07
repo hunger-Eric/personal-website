@@ -2,7 +2,6 @@
 import { Metadata } from "next";
 import { siteConfig } from "@/config/siteConfig";
 import { getArticles } from "@/lib/mdx/mdx";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 import {
   ArticlesBrowser,
   type ArticleListItem,
@@ -57,22 +56,15 @@ export default async function ArticlesPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-      <div className="mb-10">
-        <Breadcrumbs
-          items={[
-            { name: "Home", url: "/" },
-            { name: "Articles", url: "/articles" },
-          ]}
-        />
-
+      <header className="mb-10 text-center">
         <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
           Articles
         </h1>
-        <p className="max-w-2xl text-lg text-muted-foreground">
+        <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
           Thoughts, tutorials, and insights about software development,
           technology, and more.
         </p>
-      </div>
+      </header>
 
       <ArticlesBrowser articles={items} />
     </div>

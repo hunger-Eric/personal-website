@@ -32,10 +32,9 @@ type Props = {
 };
 
 /**
- * Vertical article card — image on top, content below. Used on /articles
- * and in the related-posts grid at the bottom of individual articles.
- * Shows: image, title, author (avatar + name), date, summary (line-clamp).
- * No category badge, no tags, no read-time.
+ * Horizontal article card — image takes the same width as the content half
+ * (50/50 on sm+), stacks on mobile. Author + date use the same typography
+ * separated by a thin "|" divider. No hover-underline animation.
  */
 export function ArticleCard({ article }: Props) {
   const author = (article as { author?: string }).author || siteConfig.name;
@@ -43,9 +42,10 @@ export function ArticleCard({ article }: Props) {
   return (
     <Link
       href={`/articles/${article.slug}`}
-      className="group flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-colors duration-200 hover:border-accent/50 hover:bg-white/[0.07]"
+      className="group flex h-full flex-col overflow-hidden rounded-xl border border-white/10 bg-white/5 transition-colors duration-200 hover:border-accent/50 hover:bg-white/[0.07] sm:flex-row"
     >
-      <div className="relative aspect-[16/10] w-full flex-none overflow-hidden bg-white/5">
+      {/* Image — takes the same horizontal half as the content on sm+ */}
+      <div className="relative aspect-[16/10] w-full flex-none overflow-hidden bg-white/5 sm:aspect-auto sm:w-1/2 sm:self-stretch">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={articleImage(article)}
@@ -56,36 +56,34 @@ export function ArticleCard({ article }: Props) {
         />
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col p-5">
-        <h3 className="text-lg font-semibold leading-snug">
-          <span className="relative inline bg-[linear-gradient(currentColor,currentColor)] bg-[length:0%_2px] bg-[position:0_100%] bg-no-repeat transition-[background-size] duration-300 group-hover:bg-[length:100%_2px]">
-            {article.title}
-          </span>
+      <div className="flex min-w-0 flex-1 flex-col justify-center gap-3 p-5 sm:w-1/2">
+        <h3 className="text-lg font-semibold leading-snug text-foreground">
+          {article.title}
         </h3>
 
-        {/* Author + date row */}
-        <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="relative h-6 w-6 flex-none overflow-hidden rounded-full ring-1 ring-white/10">
+        {article.summary && (
+          <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+            {article.summary}
+          </p>
+        )}
+
+        {/* Author + " | " + date — same color/size/weight */}
+        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="relative h-8 w-8 flex-none overflow-hidden rounded-full ring-1 ring-white/10">
             <Image
               src={AUTHOR_AVATAR}
               alt=""
               fill
-              sizes="24px"
+              sizes="32px"
               className="object-cover"
             />
           </span>
-          <span className="font-medium text-foreground">{author}</span>
+          <span>{author}</span>
           <span aria-hidden className="text-muted-foreground/60">
-            ·
+            |
           </span>
           <span>{formatDate(article.date)}</span>
         </div>
-
-        {article.summary && (
-          <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-            {article.summary}
-          </p>
-        )}
       </div>
     </Link>
   );
