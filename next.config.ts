@@ -124,11 +124,19 @@ const nextConfig: NextConfig = {
   // Redirects for common patterns
   async redirects() {
     return [
-      // www → apex (both prod + Cloudflare-Pages preview www)
+      // www → apex. Two entries because path-param substitution into an
+      // absolute destination URL leaves a literal ":path*" when the path is
+      // empty (root) on the OpenNext-on-Cloudflare runtime.
       {
-        source: "/:path*",
+        source: "/",
         has: [{ type: "host", value: "www.kevintrinh.dev" }],
-        destination: "https://kevintrinh.dev/:path*",
+        destination: "https://kevintrinh.dev/",
+        permanent: true,
+      },
+      {
+        source: "/:path+",
+        has: [{ type: "host", value: "www.kevintrinh.dev" }],
+        destination: "https://kevintrinh.dev/:path+",
         permanent: true,
       },
       // Redirect old routes if you migrate from another portfolio
