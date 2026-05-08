@@ -100,7 +100,7 @@ export const metadata: Metadata = {
     description: siteConfig.tagline,
     images: [
       {
-        url: "/images/og/home.png",
+        url: "/images/og/home.png?v=3",
         width: 1200,
         height: 630,
         alt: `${siteConfig.name} - ${siteConfig.title}`,
@@ -113,7 +113,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${siteConfig.name} – ${siteConfig.title}`,
     description: siteConfig.tagline,
-    images: ["/images/og/home.png"],
+    images: ["/images/og/home.png?v=3"],
     creator: "@KevinTrinhDev",
   },
 

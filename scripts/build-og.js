@@ -79,14 +79,6 @@ function youtubeGlyph() {
     <polygon points="22,17 22,39 40,28" fill="#ffffff"/>`;
 }
 
-function instagramGlyph() {
-  return `
-    <rect width="56" height="56" rx="13" fill="url(#ig-grad)"/>
-    <rect x="13" y="13" width="30" height="30" rx="8" fill="none" stroke="#ffffff" stroke-width="3"/>
-    <circle cx="28" cy="28" r="6.5" fill="none" stroke="#ffffff" stroke-width="3"/>
-    <circle cx="37" cy="19" r="2" fill="#ffffff"/>`;
-}
-
 function tiktokGlyph() {
   // Black square + offset cyan/magenta accents behind the white note.
   // The triple-fill creates the brand's chromatic-aberration look without
@@ -104,27 +96,22 @@ function socialsRow(y) {
   const items = [
     { glyph: linkedInGlyph(), handle: "in/KevinTrinhDev" },
     { glyph: youtubeGlyph(), handle: "@KevinTrinhDev" },
-    { glyph: instagramGlyph(), handle: "@KevinTrinhDev" },
     { glyph: tiktokGlyph(), handle: "@KevinTrinhDev" },
   ];
-  // Vertical stack per cell: glyph centred horizontally with the handle
-  // text centred below it. Frees up plenty of horizontal room for the
-  // handle so it can read at a comfortable size.
+  // Horizontal layout per cell: glyph on the left with the handle text
+  // sitting to its right and vertically centred against the glyph.
   const cellWidth = (W - PAD * 2) / items.length;
   return items
     .map((item, i) => {
       const cellLeft = PAD + i * cellWidth;
-      const glyphX = cellLeft + (cellWidth - GLYPH_SIZE) / 2;
-      const labelX = cellLeft + cellWidth / 2;
-      const labelY = y + GLYPH_SIZE + 26;
+      const labelX = cellLeft + GLYPH_SIZE + 16;
+      const labelY = y + GLYPH_SIZE / 2 + 8;
       return `
-      <g transform="translate(${glyphX}, ${y})">
+      <g transform="translate(${cellLeft}, ${y})">
         ${item.glyph}
       </g>
-      <text x="${labelX}" y="${labelY}" font-family="${FONT}" font-size="22"
-            font-weight="600" fill="${TEXT}" text-anchor="middle">${escapeXml(
-              item.handle
-            )}</text>`;
+      <text x="${labelX}" y="${labelY}" font-family="${FONT}" font-size="24"
+            font-weight="600" fill="${TEXT}">${escapeXml(item.handle)}</text>`;
     })
     .join("\n");
 }
@@ -173,16 +160,6 @@ function svg({ eyebrow = "", title, subtitle = "" }) {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
-  <defs>
-    <linearGradient id="ig-grad" x1="0" y1="1" x2="1" y2="0">
-      <stop offset="0%"   stop-color="#FEDA75"/>
-      <stop offset="25%"  stop-color="#FA7E1E"/>
-      <stop offset="50%"  stop-color="#D62976"/>
-      <stop offset="75%"  stop-color="#962FBF"/>
-      <stop offset="100%" stop-color="#4F5BD5"/>
-    </linearGradient>
-  </defs>
-
   <!-- Base -->
   <rect width="${W}" height="${H}" fill="${BG}"/>
 
@@ -216,11 +193,11 @@ function svg({ eyebrow = "", title, subtitle = "" }) {
   }
 
   <!-- Divider above socials -->
-  <line x1="${PAD}" y1="475" x2="${W - PAD}" y2="475"
+  <line x1="${PAD}" y1="510" x2="${W - PAD}" y2="510"
         stroke="${RING}" stroke-width="1"/>
 
-  <!-- Socials row (glyph above, handle below) -->
-  ${socialsRow(500)}
+  <!-- Socials row (glyph + handle, horizontal) -->
+  ${socialsRow(540)}
 </svg>`;
 }
 
