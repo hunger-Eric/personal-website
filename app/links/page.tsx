@@ -27,6 +27,7 @@ const LINKS_DESCRIPTION = `Where ${siteConfig.name} hangs out online — socials
 // Feature flags — flip to true to surface a section.
 const SHOW_ARTICLES_SECTION = false;
 const SHOW_COOGCASA_SECTION = false;
+const SHOW_MEDIA_KIT = false;
 
 export const metadata: Metadata = {
   title: `Links | ${siteConfig.name}`,
@@ -487,39 +488,42 @@ export default async function LinksPage() {
         </section>
       )}
 
-      {/* Media kit — image-led card: banner on top, CTA below */}
-      <a
-        href="https://beacons.ai/kevintrinh/mediakit"
-        target="_blank"
-        rel="noreferrer noopener"
-        aria-label="View my media kit"
-        className="group mt-4 flex w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50"
-      >
-        <div className="relative aspect-[12/5] w-full overflow-hidden bg-slate-100">
-          <Image
-            src="/images/mediakitimage.jpg"
-            alt="Media kit"
-            fill
-            sizes="(max-width: 768px) 100vw, 640px"
-            className="object-cover"
-          />
-        </div>
-
-        <div className="flex items-center justify-between gap-3 px-4 py-3">
-          <span className="text-sm font-semibold leading-tight text-slate-900">
-            View My Media Kit
-          </span>
-          <span className="inline-flex items-center gap-1 text-[12px] font-medium text-slate-500">
-            <span className="hidden sm:inline">Live stats via</span>
-            <span className="sm:hidden">via</span>
-            <span className="font-semibold text-slate-700">Beacons.AI</span>
-            <ArrowUpRight
-              className="h-3.5 w-3.5 text-slate-400 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-700"
-              aria-hidden
+      {/* Media kit — image-led card: banner on top, CTA below.
+          Hidden behind SHOW_MEDIA_KIT flag — flip to true to re-enable. */}
+      {SHOW_MEDIA_KIT && (
+        <a
+          href="https://beacons.ai/kevintrinh/mediakit"
+          target="_blank"
+          rel="noreferrer noopener"
+          aria-label="View my media kit"
+          className="group mt-4 flex w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors duration-150 hover:border-slate-300 hover:bg-slate-50"
+        >
+          <div className="relative aspect-[12/5] w-full overflow-hidden bg-slate-100">
+            <Image
+              src="/images/mediakitimage.jpg"
+              alt="Media kit"
+              fill
+              sizes="(max-width: 768px) 100vw, 640px"
+              className="object-cover"
             />
-          </span>
-        </div>
-      </a>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 px-4 py-3">
+            <span className="text-sm font-semibold leading-tight text-slate-900">
+              View My Media Kit
+            </span>
+            <span className="inline-flex items-center gap-1 text-[12px] font-medium text-slate-500">
+              <span className="hidden sm:inline">Live stats via</span>
+              <span className="sm:hidden">via</span>
+              <span className="font-semibold text-slate-700">Beacons.AI</span>
+              <ArrowUpRight
+                className="h-3.5 w-3.5 text-slate-400 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-700"
+                aria-hidden
+              />
+            </span>
+          </div>
+        </a>
+      )}
 
       {/* Footer — two lines */}
       <div className="mt-auto flex flex-col items-center gap-1 pt-10 text-center text-xs text-slate-500">
