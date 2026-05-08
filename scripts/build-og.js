@@ -17,12 +17,9 @@ const PAD = 80;
 const BG = "#0a0e1a";
 const TEXT = "#fafafa";
 const MUTED = "#94a3b8";
-const HANDLE = "#cbd5e1"; // slate-300 — slightly brighter than MUTED so handles read clearly
 const ACCENT = "#6366f1";
 const RING = "#1f2937";
 const FONT = "DejaVu Sans"; // librsvg-friendly system font
-
-const HANDLE_TEXT = "@KevinTrinhDev";
 
 // Avatar — embedded inline so the SVG is self-contained.
 const AVATAR_PATH = path.join(
@@ -92,13 +89,12 @@ function tiktokGlyph() {
 
 function socialsRow(y) {
   const items = [
-    { glyph: linkedInGlyph(), label: "LinkedIn" },
-    { glyph: youtubeGlyph(), label: "YouTube" },
-    { glyph: githubGlyph(), label: "GitHub" },
-    { glyph: tiktokGlyph(), label: "TikTok" },
+    { glyph: linkedInGlyph(), handle: "in/KevinTrinhDev" },
+    { glyph: youtubeGlyph(), handle: "@KevinTrinhDev" },
+    { glyph: githubGlyph(), handle: "@KevinTrinhDev" },
+    { glyph: tiktokGlyph(), handle: "@KevinTrinhDev" },
   ];
-  // Even cells across the content width; each label sits to the right of
-  // its glyph with a two-line "Platform / @handle" stack.
+  // Even cells across the content width; single-line handle next to glyph.
   const cellWidth = (W - PAD * 2) / items.length;
   return items
     .map((item, i) => {
@@ -106,10 +102,8 @@ function socialsRow(y) {
       return `
       <g transform="translate(${x}, ${y})">
         ${item.glyph}
-        <text x="58" y="20" font-family="${FONT}" font-size="22" font-weight="700"
-              fill="${TEXT}">${escapeXml(item.label)}</text>
-        <text x="58" y="42" font-family="${FONT}" font-size="18" font-weight="500"
-              fill="${HANDLE}">${escapeXml(HANDLE_TEXT)}</text>
+        <text x="58" y="30" font-family="${FONT}" font-size="22" font-weight="600"
+              fill="${TEXT}">${escapeXml(item.handle)}</text>
       </g>`;
     })
     .join("\n");
@@ -138,23 +132,24 @@ function avatarBlock(centerY) {
 }
 
 function svg({ eyebrow = "", title, subtitle = "" }) {
-  const [sub1, sub2] = splitSubtitle(subtitle, 50);
+  const [sub1, sub2] = splitSubtitle(subtitle, 56);
 
+  // Eyebrow is a breadcrumb-style label ("Kevin Trinh / Articles"), kept
+  // in source case rather than uppercased so the slash reads naturally.
   const eyebrowBlock = eyebrow
-    ? `<text x="${PAD}" y="160" font-family="${FONT}" font-size="22" font-weight="700"
-            letter-spacing="6" fill="${ACCENT}">${escapeXml(
-        eyebrow.toUpperCase()
-      )}</text>`
+    ? `<text x="${PAD}" y="160" font-family="${FONT}" font-size="22" font-weight="600"
+            letter-spacing="1" fill="${ACCENT}">${escapeXml(eyebrow)}</text>`
     : "";
 
-  // Title baseline. We bump it slightly when an eyebrow exists so the gap
-  // between the two reads as deliberate.
+  // Title baseline. Slightly lower when an eyebrow exists so the gap reads
+  // as deliberate. Title font is 80pt — small enough to leave breathing room
+  // beside the avatar even on the longer titles.
   const titleY = eyebrow ? 290 : 270;
-  // Title visual centre — for a 92pt font the cap-height middle sits ~31pt
+  // Title visual centre — for an 80pt font the cap-height middle sits ~28pt
   // above the baseline. Aligning the avatar to this looks balanced.
-  const titleVisualCenter = titleY - 31;
-  const sub1Y = titleY + 70;
-  const sub2Y = sub1Y + 52;
+  const titleVisualCenter = titleY - 28;
+  const sub1Y = titleY + 60;
+  const sub2Y = sub1Y + 46;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">
@@ -171,20 +166,20 @@ function svg({ eyebrow = "", title, subtitle = "" }) {
   ${eyebrowBlock}
 
   <!-- Title -->
-  <text x="${PAD}" y="${titleY}" font-family="${FONT}" font-size="92"
+  <text x="${PAD}" y="${titleY}" font-family="${FONT}" font-size="80"
         font-weight="700" fill="${TEXT}">${escapeXml(title)}</text>
 
   <!-- Subtitle -->
   ${
     sub1
-      ? `<text x="${PAD}" y="${sub1Y}" font-family="${FONT}" font-size="34" font-weight="400" fill="${MUTED}">${escapeXml(
+      ? `<text x="${PAD}" y="${sub1Y}" font-family="${FONT}" font-size="30" font-weight="400" fill="${MUTED}">${escapeXml(
           sub1
         )}</text>`
       : ""
   }
   ${
     sub2
-      ? `<text x="${PAD}" y="${sub2Y}" font-family="${FONT}" font-size="34" font-weight="400" fill="${MUTED}">${escapeXml(
+      ? `<text x="${PAD}" y="${sub2Y}" font-family="${FONT}" font-size="30" font-weight="400" fill="${MUTED}">${escapeXml(
           sub2
         )}</text>`
       : ""
@@ -209,21 +204,21 @@ const CARDS = [
   },
   {
     file: "links.png",
-    eyebrow: "Links",
+    eyebrow: "Kevin Trinh / Links",
     title: "Find me online",
-    subtitle: "Socials, content, and writing — all in one place.",
+    subtitle: "Socials, content, and writing all in one place.",
   },
   {
     file: "articles.png",
-    eyebrow: "Articles",
+    eyebrow: "Kevin Trinh / Articles",
     title: "Writing & Notes",
     subtitle: "Deep dives, guides, and dev notes from Kevin Trinh.",
   },
   {
     file: "projects.png",
-    eyebrow: "Projects",
+    eyebrow: "Kevin Trinh / Projects",
     title: "Things I've built",
-    subtitle: "Open-source apps, tools, and side projects by Kevin Trinh.",
+    subtitle: "Open source apps, tools, and side projects by Kevin Trinh.",
   },
 ];
 
