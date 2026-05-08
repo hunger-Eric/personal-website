@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Mail, UserPlus, Play, Newspaper } from "lucide-react";
+import { ArrowUpRight, Mail, Play, Newspaper } from "lucide-react";
 
 import { siteConfig } from "@/config/siteConfig";
 import { ShareButton } from "@/components/ShareButton";
@@ -15,6 +15,7 @@ import {
   InstagramGlyph,
   TikTokGlyph,
 } from "@/components/BrandGlyphs";
+import { loadLatestYouTubeVideos } from "@/config/youtubeFeed";
 
 const BASE_URL = (
   process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev"
@@ -23,7 +24,7 @@ const BASE_URL = (
 const LINKS_DESCRIPTION = `Where ${siteConfig.name} hangs out online — socials, portfolio, and content in one link.`;
 
 // Feature flags — flip to true to surface a section.
-const SHOW_ARTICLES_SECTION = false;
+const SHOW_ARTICLES_SECTION = true;
 const SHOW_COOGCASA_SECTION = false;
 
 export const metadata: Metadata = {
@@ -102,7 +103,7 @@ function isExternal(href: string): boolean {
   }
 }
 
-export default function LinksPage() {
+export default async function LinksPage() {
   const socialMap = new Map(
     (siteConfig.socialsList ?? []).map((s) => [s.key, s])
   );
@@ -155,19 +156,33 @@ export default function LinksPage() {
     },
   ];
 
-  // YouTube tile (channel link / featured video).
+  // YouTube tile — prefer the channel's most recent upload from the public
+  // RSS feed; fall back to the pinned featured video / channel link.
   const youtubeChannel =
     socialMap.get("youtube")?.href ||
     "https://www.youtube.com/@KevinTrinhDev";
-  const ytId = (siteConfig as any).featuredContent?.youtubeVideoId as
-    | string
-    | undefined;
-  const youtubeHref = ytId
+  const channelId =
+    ((siteConfig as any).featuredContent?.youtubeChannelId as
+      | string
+      | undefined) || "";
+  const featuredVideoId =
+    ((siteConfig as any).featuredContent?.youtubeVideoId as
+      | string
+      | undefined) || "";
+  const latestVideos = channelId
+    ? await loadLatestYouTubeVideos(channelId, 1)
+    : [];
+  const latestVideo = latestVideos[0];
+  const ytId = latestVideo?.id || featuredVideoId;
+  const ytTitle = latestVideo?.title || "Latest from my channel";
+  const youtubeHref = latestVideo?.url
+    ? latestVideo.url
+    : ytId
     ? `https://www.youtube.com/watch?v=${ytId}`
     : youtubeChannel;
-  // Use mqdefault.jpg — small (~10 KB), loads instantly on weak wifi.
+  // Use hqdefault.jpg — sharper than mqdefault for the larger card.
   const youtubeThumb = ytId
-    ? `https://i.ytimg.com/vi/${ytId}/mqdefault.jpg`
+    ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`
     : null;
 
   const year = new Date().getFullYear();
@@ -252,27 +267,19 @@ export default function LinksPage() {
     <main className="relative mx-auto flex min-h-[100dvh] w-full max-w-md flex-col items-center px-5 pb-10 pt-16 text-slate-900 sm:pt-20">
       <JsonLd data={profileJsonLd} />
 
-      {/* Top-left: Email (mailto) — icon button */}
+      {/* Top-left: Email (mailto) — pill with label */}
       <a
         href={emailHref}
         aria-label={`Email ${siteConfig.name}`}
         title={`Email ${siteConfig.name}`}
-        className="absolute left-4 top-4 inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 sm:left-5 sm:top-5"
+        className="absolute left-4 top-4 inline-flex h-10 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 sm:left-5 sm:top-5"
       >
         <Mail className="h-4 w-4" aria-hidden />
+        <span>Contact me</span>
       </a>
 
-      {/* Top-right: Save contact (vCard) + Share — icons only */}
+      {/* Top-right: Share — icon only */}
       <div className="absolute right-4 top-4 flex items-center gap-2 sm:right-5 sm:top-5">
-        <a
-          href="/contact.vcf"
-          download="KevinTrinh.vcf"
-          aria-label={`Save ${siteConfig.name} to your contacts`}
-          title="Save my contact"
-          className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100"
-        >
-          <UserPlus className="h-4 w-4" aria-hidden />
-        </a>
         <ShareButton
           label="Share"
           showLabel={false}
@@ -338,55 +345,71 @@ export default function LinksPage() {
         {bigButtons.map((btn) => renderBigButton(btn))}
       </div>
 
-      {/* Featured YouTube — styled like an embedded player */}
-      <a
-        href={youtubeHref}
-        target="_blank"
-        rel="noreferrer noopener"
-        aria-label="Watch the latest video on YouTube"
-        className="group mt-4 block w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-150 hover:border-slate-300 hover:shadow-md"
-      >
-        <div className="relative aspect-video w-full overflow-hidden bg-slate-900">
-          {youtubeThumb ? (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={youtubeThumb}
-                alt="Featured YouTube video"
-                loading="lazy"
-                decoding="async"
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-              />
-              {/* Soft gradient for play-button contrast */}
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/25" />
-              {/* Play button — YouTube-red rounded shape */}
+      {/* Recent YouTube upload — section header + thumbnail-only card */}
+      <section className="mt-7 w-full" aria-label="Recent YouTube Upload">
+        <div className="mb-2 flex items-center justify-between">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Recent YouTube Upload
+          </h2>
+          <a
+            href={youtubeChannel}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="text-xs font-semibold text-slate-500 hover:text-slate-700"
+          >
+            View channel
+          </a>
+        </div>
+        <a
+          href={youtubeHref}
+          target="_blank"
+          rel="noreferrer noopener"
+          aria-label={`Watch on YouTube: ${ytTitle}`}
+          className="group block w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-150 hover:border-slate-300 hover:shadow-md"
+        >
+          <div className="relative aspect-video w-full overflow-hidden bg-slate-900">
+            {youtubeThumb ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={youtubeThumb}
+                  alt={ytTitle}
+                  loading="lazy"
+                  decoding="async"
+                  className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                />
+                {/* Gradient for legibility of overlays */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/20" />
+                {/* Center play button — YouTube-red */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="inline-flex h-14 w-20 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg shadow-black/30 ring-4 ring-white/15 transition-transform duration-200 group-hover:scale-105">
+                    <Play className="h-6 w-6 translate-x-[1px] fill-current" />
+                  </span>
+                </div>
+                {/* Top-left: avatar + video title overlay */}
+                <div className="absolute left-2 right-2 top-2 flex items-center gap-2">
+                  <span className="relative inline-flex h-7 w-7 flex-none overflow-hidden rounded-full ring-1 ring-white/40">
+                    <Image
+                      src="/images/avatar.jpg"
+                      alt=""
+                      fill
+                      sizes="28px"
+                      className="object-cover"
+                    />
+                  </span>
+                  <span className="line-clamp-1 text-[12px] font-semibold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+                    {ytTitle}
+                  </span>
+                </div>
+              </>
+            ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <span className="inline-flex h-14 w-20 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg shadow-black/30 ring-4 ring-white/15 transition-transform duration-200 group-hover:scale-105">
-                  <Play className="h-6 w-6 translate-x-[1px] fill-current" />
-                </span>
+                <YoutubeGlyph className="h-14 w-14" />
               </div>
-              {/* Channel chip top-left */}
-              <div className="absolute left-2 top-2 inline-flex items-center gap-1.5 rounded-md bg-black/60 px-2 py-1 text-[11px] font-semibold text-white backdrop-blur-sm">
-                <YoutubeGlyph className="h-3.5 w-3.5" />
-                <span>@KevinTrinhDev</span>
-              </div>
-            </>
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <YoutubeGlyph className="h-14 w-14" />
-            </div>
-          )}
-        </div>
-        <div className="flex items-center gap-3 px-4 py-3">
-          <span className="line-clamp-1 flex-1 text-sm font-semibold text-slate-900">
-            Latest from my channel
-          </span>
-          <span className="inline-flex items-center gap-1 text-[12px] font-medium text-red-700">
-            Watch on YouTube
-            <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
-          </span>
-        </div>
-      </a>
+            )}
+          </div>
+        </a>
+      </section>
 
       {/* Articles section — currently hidden, structure ready for later */}
       {SHOW_ARTICLES_SECTION && (
@@ -462,20 +485,26 @@ export default function LinksPage() {
           />
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 px-4 py-3">
           <span className="text-sm font-semibold leading-tight text-slate-900">
             View My Media Kit
           </span>
-          <ArrowUpRight
-            className="h-4 w-4 flex-none text-slate-400 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-700"
-            aria-hidden
-          />
+          <span className="inline-flex items-center gap-1 text-[12px] font-medium text-slate-500">
+            <span className="hidden sm:inline">Live stats via</span>
+            <span className="sm:hidden">via</span>
+            <span className="font-semibold text-slate-700">Beacons.AI</span>
+            <ArrowUpRight
+              className="h-3.5 w-3.5 text-slate-400 transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-slate-700"
+              aria-hidden
+            />
+          </span>
         </div>
       </a>
 
-      {/* Footer — single line, slightly more visible */}
-      <div className="mt-auto pt-10 text-center text-xs text-slate-500">
-        Built by Kevin Trinh · © {year} All rights reserved
+      {/* Footer — two lines */}
+      <div className="mt-auto flex flex-col items-center gap-1 pt-10 text-center text-xs text-slate-500">
+        <span>Built &amp; Designed by Kevin Trinh</span>
+        <span>© {year} All rights reserved</span>
       </div>
     </main>
   );
