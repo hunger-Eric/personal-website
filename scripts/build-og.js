@@ -56,37 +56,48 @@ function splitSubtitle(text, maxChars) {
   return [text.slice(0, split).trim(), text.slice(split).trim()];
 }
 
-// Brand glyphs as inline SVG <g> snippets, sized to a 44px box.
+// Brand glyphs as inline SVG <g> snippets, sized to a 56px box.
+// Geometry follows each platform's actual mark (LinkedIn 'in' with the
+// official curve on the n; YouTube horizontal play; Instagram camera with
+// proper proportions; TikTok offset cyan/magenta note).
+const GLYPH_SIZE = 56;
+
 function linkedInGlyph() {
   return `
-    <rect width="44" height="44" rx="8" fill="#0A66C2"/>
-    <text x="22" y="32" font-family="${FONT}" font-size="24" font-weight="700"
-          fill="#ffffff" text-anchor="middle">in</text>`;
+    <rect width="56" height="56" rx="10" fill="#0A66C2"/>
+    <circle cx="17" cy="18" r="3" fill="#ffffff"/>
+    <rect x="14" y="23" width="6" height="20" fill="#ffffff"/>
+    <path d="M24 23h6v3c1.2-2 3.6-3.4 6.6-3.4 5 0 7.4 2.8 7.4 7.6V43h-6V31.6c0-2.2-1-3.6-3-3.6s-4 1.6-4 4V43h-7V23z"
+          fill="#ffffff"/>`;
 }
 
 function youtubeGlyph() {
+  // Rounded rectangle with a centered play triangle — matches YT's actual
+  // app-mark proportions when squared off (red rounded square + triangle).
   return `
-    <rect width="44" height="44" rx="10" fill="#FF0000"/>
-    <polygon points="17,12 17,32 33,22" fill="#ffffff"/>`;
+    <rect width="56" height="56" rx="13" fill="#FF0000"/>
+    <polygon points="22,17 22,39 40,28" fill="#ffffff"/>`;
 }
 
 function instagramGlyph() {
   return `
-    <rect width="44" height="44" rx="10" fill="url(#ig-grad)"/>
-    <rect x="11" y="11" width="22" height="22" rx="6" fill="none" stroke="#ffffff" stroke-width="2.5"/>
-    <circle cx="22" cy="22" r="5" fill="none" stroke="#ffffff" stroke-width="2.5"/>
-    <circle cx="29.5" cy="14.5" r="1.6" fill="#ffffff"/>`;
+    <rect width="56" height="56" rx="13" fill="url(#ig-grad)"/>
+    <rect x="13" y="13" width="30" height="30" rx="8" fill="none" stroke="#ffffff" stroke-width="3"/>
+    <circle cx="28" cy="28" r="6.5" fill="none" stroke="#ffffff" stroke-width="3"/>
+    <circle cx="37" cy="19" r="2" fill="#ffffff"/>`;
 }
 
 function tiktokGlyph() {
-  // Simplified TikTok mark: black square + offset cyan/magenta accents
-  // behind a white musical-note silhouette. Works at this size without
-  // looking muddy.
+  // Black square + offset cyan/magenta accents behind the white note.
+  // The triple-fill creates the brand's chromatic-aberration look without
+  // a filter (which librsvg rasterises inconsistently).
+  const note =
+    "M34 14c.5 3 2.5 4.7 5.5 5v3.7a11 11 0 0 1-6-1.5v8.4a8.8 8.8 0 1 1-8.8-8.8c.5 0 1 0 1.5.1v3.7c-.5-.2-1-.3-1.5-.3a5.4 5.4 0 1 0 5.4 5.4V14H34z";
   return `
-    <rect width="44" height="44" rx="8" fill="#000000"/>
-    <path d="M27.5 12c.5 2.6 2.3 4.2 4.8 4.5v3a8.7 8.7 0 0 1-4.6-1.2v6.9a7.4 7.4 0 1 1-7.4-7.4c.4 0 .9 0 1.3.1v3.1c-.4-.1-.8-.2-1.3-.2a4.4 4.4 0 1 0 4.4 4.4V12h2.8z" fill="#25F4EE" transform="translate(1.2 0)"/>
-    <path d="M27.5 12c.5 2.6 2.3 4.2 4.8 4.5v3a8.7 8.7 0 0 1-4.6-1.2v6.9a7.4 7.4 0 1 1-7.4-7.4c.4 0 .9 0 1.3.1v3.1c-.4-.1-.8-.2-1.3-.2a4.4 4.4 0 1 0 4.4 4.4V12h2.8z" fill="#FE2C55" transform="translate(-1.2 0)"/>
-    <path d="M27.5 12c.5 2.6 2.3 4.2 4.8 4.5v3a8.7 8.7 0 0 1-4.6-1.2v6.9a7.4 7.4 0 1 1-7.4-7.4c.4 0 .9 0 1.3.1v3.1c-.4-.1-.8-.2-1.3-.2a4.4 4.4 0 1 0 4.4 4.4V12h2.8z" fill="#ffffff"/>`;
+    <rect width="56" height="56" rx="10" fill="#000000"/>
+    <path d="${note}" fill="#25F4EE" transform="translate(1.6 0)"/>
+    <path d="${note}" fill="#FE2C55" transform="translate(-1.6 0)"/>
+    <path d="${note}" fill="#ffffff"/>`;
 }
 
 function socialsRow(y) {
@@ -96,17 +107,24 @@ function socialsRow(y) {
     { glyph: instagramGlyph(), handle: "@KevinTrinhDev" },
     { glyph: tiktokGlyph(), handle: "@KevinTrinhDev" },
   ];
-  // Even cells across the content width; single-line handle next to glyph.
+  // Vertical stack per cell: glyph centred horizontally with the handle
+  // text centred below it. Frees up plenty of horizontal room for the
+  // handle so it can read at a comfortable size.
   const cellWidth = (W - PAD * 2) / items.length;
   return items
     .map((item, i) => {
-      const x = PAD + i * cellWidth;
+      const cellLeft = PAD + i * cellWidth;
+      const glyphX = cellLeft + (cellWidth - GLYPH_SIZE) / 2;
+      const labelX = cellLeft + cellWidth / 2;
+      const labelY = y + GLYPH_SIZE + 26;
       return `
-      <g transform="translate(${x}, ${y})">
+      <g transform="translate(${glyphX}, ${y})">
         ${item.glyph}
-        <text x="56" y="29" font-family="${FONT}" font-size="19" font-weight="600"
-              fill="${TEXT}">${escapeXml(item.handle)}</text>
-      </g>`;
+      </g>
+      <text x="${labelX}" y="${labelY}" font-family="${FONT}" font-size="22"
+            font-weight="600" fill="${TEXT}" text-anchor="middle">${escapeXml(
+              item.handle
+            )}</text>`;
     })
     .join("\n");
 }
@@ -198,11 +216,11 @@ function svg({ eyebrow = "", title, subtitle = "" }) {
   }
 
   <!-- Divider above socials -->
-  <line x1="${PAD}" y1="510" x2="${W - PAD}" y2="510"
+  <line x1="${PAD}" y1="475" x2="${W - PAD}" y2="475"
         stroke="${RING}" stroke-width="1"/>
 
-  <!-- Socials row -->
-  ${socialsRow(548)}
+  <!-- Socials row (glyph above, handle below) -->
+  ${socialsRow(500)}
 </svg>`;
 }
 
