@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     siteName: `${siteConfig.name} Website`,
     images: [
       {
-        url: "/images/og/links.png?v=3",
+        url: "/images/og/links.png?v=4",
         width: 1200,
         height: 630,
         alt: `${siteConfig.name} — content & socials hub`,
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: `${siteConfig.name} · Content & Socials`,
     description: PAGE_DESCRIPTION,
-    images: ["/images/og/links.png?v=3"],
+    images: ["/images/og/links.png?v=4"],
   },
   robots: { index: true, follow: true },
 };

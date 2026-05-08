@@ -95,8 +95,8 @@ function tiktokGlyph() {
 function socialsRow(y) {
   const items = [
     { glyph: linkedInGlyph(), handle: "in/KevinTrinhDev" },
-    { glyph: youtubeGlyph(), handle: "@KevinTrinhDev" },
     { glyph: tiktokGlyph(), handle: "@KevinTrinhDev" },
+    { glyph: youtubeGlyph(), handle: "@KevinTrinhDev" },
   ];
   // Horizontal layout per cell: glyph on the left with the handle text
   // sitting to its right and vertically centred against the glyph.
@@ -211,19 +211,19 @@ const CARDS = [
   },
   {
     file: "links.png",
-    eyebrow: "Kevin Trinh / Links",
+    eyebrow: "",
     title: "Find me online",
     subtitle: "Socials, content, and writing all in one place.",
   },
   {
     file: "articles.png",
-    eyebrow: "Kevin Trinh / Articles",
+    eyebrow: "",
     title: "Writing & Notes",
     subtitle: "Deep dives, guides, and dev notes from Kevin Trinh.",
   },
   {
     file: "projects.png",
-    eyebrow: "Kevin Trinh / Projects",
+    eyebrow: "",
     title: "Things I've built",
     subtitle: "Open source apps, tools, and side projects by Kevin Trinh.",
   },
