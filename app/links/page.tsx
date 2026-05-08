@@ -2,7 +2,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Mail, Play, Newspaper } from "lucide-react";
+import { ArrowUpRight, Mail, Play } from "lucide-react";
 
 import { siteConfig } from "@/config/siteConfig";
 import { ShareButton } from "@/components/ShareButton";
@@ -14,6 +14,7 @@ import {
   YoutubeGlyph,
   InstagramGlyph,
   TikTokGlyph,
+  MediumGlyph,
 } from "@/components/BrandGlyphs";
 import { loadLatestYouTubeVideos } from "@/config/youtubeFeed";
 
@@ -24,7 +25,7 @@ const BASE_URL = (
 const LINKS_DESCRIPTION = `Where ${siteConfig.name} hangs out online — socials, portfolio, and content in one link.`;
 
 // Feature flags — flip to true to surface a section.
-const SHOW_ARTICLES_SECTION = true;
+const SHOW_ARTICLES_SECTION = false;
 const SHOW_COOGCASA_SECTION = false;
 
 export const metadata: Metadata = {
@@ -63,7 +64,6 @@ type SocialGlyph = {
 };
 
 const SOCIAL_ORDER = [
-  "github",
   "linkedin",
   "youtube",
   "instagram",
@@ -72,8 +72,6 @@ const SOCIAL_ORDER = [
 
 function glyphForKey(key: string) {
   switch (key) {
-    case "github":
-      return GithubGlyph;
     case "linkedin":
       return LinkedInGlyph;
     case "youtube":
@@ -153,6 +151,13 @@ export default async function LinksPage() {
       description: "Builds & open source on GitHub",
       href: "https://github.com/KevinTrinhDev",
       icon: <GithubGlyph className="h-7 w-7" />,
+    },
+    {
+      key: "articles",
+      label: "Articles",
+      description: "Read my writing on Medium",
+      href: "https://medium.com/@KevinTrinhDev",
+      icon: <MediumGlyph className="h-7 w-7" />,
     },
   ];
 
@@ -385,13 +390,13 @@ export default async function LinksPage() {
                 />
                 {/* Gradient for legibility of overlays */}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/20" />
-                {/* Center play button — YouTube-red */}
+                {/* Center play button — accurate YouTube red & shape */}
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="inline-flex h-14 w-20 items-center justify-center rounded-xl bg-red-600 text-white shadow-lg shadow-black/30 ring-4 ring-white/15 transition-transform duration-200 group-hover:scale-105">
-                    <Play className="h-6 w-6 translate-x-[1px] fill-current" />
+                  <span className="inline-flex h-12 w-[68px] items-center justify-center rounded-[14px] bg-[#FF0000] text-white shadow-md shadow-black/40 transition-transform duration-200 group-hover:scale-105">
+                    <Play className="h-[22px] w-[22px] translate-x-[1px] fill-current" />
                   </span>
                 </div>
-                {/* Top-left: avatar + video title overlay */}
+                {/* Top-left: avatar + video title overlay (fades right) */}
                 <div className="absolute left-2 right-2 top-2 flex items-center gap-2">
                   <span className="relative inline-flex h-7 w-7 flex-none overflow-hidden rounded-full ring-1 ring-white/40">
                     <Image
@@ -402,7 +407,15 @@ export default async function LinksPage() {
                       className="object-cover"
                     />
                   </span>
-                  <span className="line-clamp-1 text-[12px] font-semibold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]">
+                  <span
+                    className="block min-w-0 flex-1 overflow-hidden whitespace-nowrap text-[14px] font-bold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]"
+                    style={{
+                      WebkitMaskImage:
+                        "linear-gradient(to right, #000 78%, transparent)",
+                      maskImage:
+                        "linear-gradient(to right, #000 78%, transparent)",
+                    }}
+                  >
                     {ytTitle}
                   </span>
                 </div>
@@ -416,7 +429,9 @@ export default async function LinksPage() {
         </a>
       </section>
 
-      {/* Articles section — currently hidden, structure ready for later */}
+      {/* Legacy: standalone Articles section — kept behind a flag for easy
+          re-enable, but Articles is now a third big button (Portfolio /
+          Projects / Articles) so this is normally off. */}
       {SHOW_ARTICLES_SECTION && (
         <section className="mt-7 w-full" aria-label="Articles">
           <div className="mb-2 flex items-center justify-between">
@@ -435,7 +450,7 @@ export default async function LinksPage() {
             className="group inline-flex w-full items-center gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 transition-colors hover:border-slate-300 hover:bg-slate-50"
           >
             <span className="flex h-9 w-9 flex-none items-center justify-center rounded-md bg-slate-100">
-              <Newspaper className="h-5 w-5 text-slate-700" />
+              <MediumGlyph className="h-5 w-5" />
             </span>
             <span className="flex min-w-0 flex-col text-left">
               <span className="text-sm font-semibold leading-tight text-slate-900">
