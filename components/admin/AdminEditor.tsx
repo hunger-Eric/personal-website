@@ -33,8 +33,18 @@ export function AdminEditor({
   useEffect(() => {
     const url = loadUrl || `/api/admin/${configKey}`;
     fetch(url)
-      .then((r) => r.json())
-      .then((d) => setData(d.config || d))
+      .then(async (r) => {
+        const body = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          const msg = body?.error || `请求失败 (${r.status})`;
+          throw new Error(msg);
+        }
+        const nextData = body?.config ?? body;
+        if (!nextData || typeof nextData !== "object") {
+          throw new Error("配置数据格式不正确");
+        }
+        setData(nextData);
+      })
       .catch((e) => setError("加载失败: " + e.message))
       .finally(() => setLoading(false));
   }, [configKey, loadUrl]);
