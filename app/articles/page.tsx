@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { ArticlesBrowser, type ArticleListItem } from "@/components/articles/ArticlesBrowser";
 import { siteConfig } from "@/config/siteConfig";
 import { getArticles } from "@/lib/mdx/mdx";
+import { PageTitle } from "@/components/PageTitle";
 
 export const metadata: Metadata = {
   title: "文章",
@@ -49,12 +50,7 @@ export default async function ArticlesPage() {
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-      <header className="mb-10 text-center">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">文章</h1>
-        <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-          分享软件开发、产品实践与个人学习过程中的思考。
-        </p>
-      </header>
+      <PageTitle pageKey="articles" />
       <ArticlesBrowser articles={items} />
     </div>
   );

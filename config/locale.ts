@@ -25,6 +25,11 @@ export type TranslationDict = {
   common: {
     viewAll: string;
   };
+  pages: {
+    articlesTitle: string;
+    articlesDescription: string;
+    photographyTitle: string;
+  };
 };
 
 const zh: TranslationDict = {
@@ -50,6 +55,11 @@ const zh: TranslationDict = {
   common: {
     viewAll: "查看全部",
   },
+  pages: {
+    articlesTitle: "文章",
+    articlesDescription: "分享软件开发、产品实践与个人学习过程中的思考。",
+    photographyTitle: "摄影",
+  },
 };
 
 const en: TranslationDict = {
@@ -74,6 +84,11 @@ const en: TranslationDict = {
   },
   common: {
     viewAll: "View all",
+  },
+  pages: {
+    articlesTitle: "Articles",
+    articlesDescription: "Thoughts on software development, product practice, and personal learning.",
+    photographyTitle: "Photography",
   },
 };
 

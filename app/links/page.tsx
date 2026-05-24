@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowUpRight, Mail, Play } from "lucide-react";
 
 import { siteConfig } from "@/config/siteConfig";
+import aboutData from "@/config/about.json";
 import { ShareButton } from "@/components/ShareButton";
 import { JsonLd } from "@/components/JsonLd";
 import { FilledMapPin } from "@/components/FilledIcons";
@@ -149,15 +150,15 @@ export default async function LinksPage() {
     {
       key: "projects",
       label: "Projects",
-      description: "Builds & open source on GitHub",
-      href: "https://github.com/KevinTrinhDev",
+      description: "开源项目 on GitHub",
+      href: "https://github.com/hunger-Eric",
       icon: <GithubGlyph className="h-7 w-7" />,
     },
     {
       key: "articles",
       label: "Articles",
-      description: "Read my writing on Medium",
-      href: "https://medium.com/@KevinTrinhDev",
+      description: "技术文章与实践记录",
+      href: "/articles",
       icon: <MediumGlyph className="h-7 w-7" />,
     },
   ];
@@ -303,7 +304,7 @@ export default async function LinksPage() {
       {/* Avatar */}
       <div className="relative mb-5 h-28 w-28 overflow-hidden rounded-full ring-1 ring-slate-200 sm:h-32 sm:w-32">
         <Image
-          src="/images/avatar.jpg"
+          src={aboutData.avatarUrl}
           alt={siteConfig.name}
           fill
           sizes="128px"
@@ -318,10 +319,12 @@ export default async function LinksPage() {
       </h1>
 
       {/* Location */}
+      {siteConfig.location && (
       <div className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-slate-500">
         <FilledMapPin className="h-4 w-4 text-slate-400" />
-        <span>{siteConfig.location || "Houston, TX"}</span>
+        <span>{siteConfig.location}</span>
       </div>
+      )}
 
       {/* Tagline — Software | Tech | Creator | Builder */}
       <p className="mt-3 max-w-xs text-center text-[13px] font-medium tracking-wide text-slate-700 sm:text-sm">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { siteConfig } from "@/config/siteConfig";
 import photographyData from "@/config/photography.json";
+import { PageTitle } from "@/components/PageTitle";
 
 export const metadata: Metadata = {
   title: "Photography",
@@ -36,15 +37,11 @@ export default function PhotographyPage() {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-      {/* Header */}
-      <header className="mb-14 text-center">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
-          Photography
-        </h1>
-        <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-          {description}
-        </p>
-      </header>
+      {/* Header — title localized, description from photography.json */}
+      <PageTitle pageKey="photography" showDescription={false} />
+      <p className="mx-auto mb-14 max-w-2xl text-center text-lg text-muted-foreground">
+        {description}
+      </p>
 
       {/* Project Cards Grid */}
       <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
