@@ -1,0 +1,58 @@
+---
+title: "Personal Website Deploy Retrospective: From Template to Maintainable Workflow"
+slug: "personal-website-deploy-retrospective"
+summary: "A practical recap of choosing a template, hardening configuration, and building a safer deploy-and-admin workflow."
+date: "2026-05-24"
+category: "Engineering"
+tags: ["Next.js", "Vercel", "GitHub Actions", "Admin"]
+featured: true
+draft: false
+imageSrc: "/images/og/home.png"
+imageAlt: "Personal website deployment retrospective"
+author: "fengc"
+---
+
+This site was not built just to look good on day one.  
+The real target was a workflow that stays maintainable after many updates.
+
+## 1. Start With the Right Base
+
+The project started from DevfolioX because it already had:
+
+1. Config-driven content and sections.
+2. A complete route structure for home, articles, projects, and APIs.
+3. A test baseline we can extend instead of rebuilding.
+
+That let us spend time on real requirements, not foundation work.
+
+## 2. Build for Real Operations
+
+The biggest upgrades focused on long-term operations:
+
+1. Admin-side configuration editing.
+2. Safer deploy triggers with status feedback.
+3. Public and private content access control for media pages.
+4. Better error visibility when tokens or environment values are missing.
+
+The key result is a shorter loop from change to verification.
+
+## 3. Reduce Hidden Risk
+
+The most common failures were not UI-level issues.  
+They were environment and auth mismatches:
+
+1. Cookie policy differences between local and production.
+2. Missing tokens for GitHub and Vercel.
+3. Drift between docs and actual runtime behavior.
+
+So we aligned auth behavior by environment and documented a minimal ops runbook in `README.md`.
+
+## 4. What Comes Next
+
+Next priorities are content quality and project detail depth:
+
+1. Keep MDX publishing consistent with reliable frontmatter.
+2. Expand project detail pages with clearer context and outcomes.
+3. Keep admin configuration explicit and difficult to misuse.
+
+For a personal site maintained over time, predictability beats one-time visual wow.

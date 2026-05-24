@@ -10,6 +10,9 @@ export type TranslationDict = {
     contact: string;
   };
   nav: {
+    home: string;
+    menu: string;
+    viewMore: string;
     about: string;
     projects: string;
     articles: string;
@@ -32,6 +35,9 @@ const zh: TranslationDict = {
     contact: "联系我",
   },
   nav: {
+    home: "首页",
+    menu: "菜单",
+    viewMore: "查看更多",
     about: "关于",
     projects: "项目",
     articles: "文章",
@@ -54,6 +60,9 @@ const en: TranslationDict = {
     contact: "Contact Me",
   },
   nav: {
+    home: "Home",
+    menu: "Menu",
+    viewMore: "View more",
     about: "About",
     projects: "Projects",
     articles: "Articles",

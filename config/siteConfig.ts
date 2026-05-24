@@ -85,6 +85,18 @@ type SiteJson = {
   nav?: NavConfig;
 };
 
+const PUBLIC_CONTACT_EMAIL = (process.env.NEXT_PUBLIC_CONTACT_EMAIL || "").trim();
+
+function normalizeEmailHref(href: string): string {
+  const raw = (href || "").trim();
+  if (raw === "mailto:" || raw === "") {
+    return PUBLIC_CONTACT_EMAIL ? `mailto:${PUBLIC_CONTACT_EMAIL}` : "";
+  }
+  if (raw.startsWith("mailto:")) return raw;
+  if (raw.includes("@") && !raw.includes("://")) return `mailto:${raw}`;
+  return raw;
+}
+
 // ---------- helpers ----------
 function toShortSha(sha?: string) {
   if (!sha) return null;
@@ -134,7 +146,7 @@ function normalizeSocials(input?: SiteJson["socials"]): SocialItem[] {
         withCopyFlags({
           key: s.key,
           label: s.label || s.key,
-          href: s.href,
+          href: s.key === "email" ? normalizeEmailHref(s.href) : s.href,
           icon: s.icon,
           showIn: s.showIn || {}, // default show everywhere handled below
           detail: s.detail,

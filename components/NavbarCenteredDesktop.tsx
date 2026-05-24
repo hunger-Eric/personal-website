@@ -11,6 +11,7 @@ import * as LucideIcons from "lucide-react";
 import { navbarConfig, isExternalHref } from "@/config/navbarConfig";
 import type { NavDropdownItemCfg } from "@/config/navbarConfig";
 import { LangSwitch } from "@/components/LangSwitch";
+import { useLocale } from "@/components/LocaleProvider";
 
 function PrimaryCtaContent({ label }: { label: string }) {
   return (
@@ -75,6 +76,7 @@ function popPendingSection() {
 }
 
 export function NavbarCentered() {
+  const { t } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -195,6 +197,15 @@ export function NavbarCentered() {
   const primaryCta = navbarConfig.cta.primary;
 
   const textLinks = useMemo(() => items, [items]);
+  const navLabelById: Record<string, string> = {
+    about: t.nav.about,
+    projects: t.nav.projects,
+    articles: t.nav.articles,
+    photography: t.nav.photography,
+    more: t.nav.more,
+  };
+  const resolveNavLabel = (id: string | undefined, fallback: string) =>
+    (id && navLabelById[id]) || fallback;
 
   // scroll style after scrolling
   useEffect(() => {
@@ -363,7 +374,7 @@ export function NavbarCentered() {
                           }}
                           onClick={() => navigateToSectionOnHome(hashId)}
                         >
-                          {item.label}
+                          {resolveNavLabel(item.id, item.label)}
                         </button>
                       );
                     }
@@ -431,7 +442,7 @@ export function NavbarCentered() {
                         aria-haspopup="menu"
                         aria-expanded={isDropdownOpen}
                       >
-                        <span>{item.label}</span>
+                        <span>{resolveNavLabel(item.id, item.label)}</span>
                         <ChevronDown
                           className={[
                             "h-4 w-4 transition-transform duration-200",
@@ -496,7 +507,7 @@ export function NavbarCentered() {
                 }}
                 onClick={() => setOpenDropdownKey(null)}
               >
-                {contactCta.label}
+                {t.nav.connect}
               </a>
             )}
 
@@ -514,7 +525,7 @@ export function NavbarCentered() {
                   }}
                   onClick={() => setOpenDropdownKey(null)}
                 >
-                  <PrimaryCtaContent label={primaryCta.label} />
+                  <PrimaryCtaContent label={t.nav.connect} />
                 </a>
               ) : (
                 <Link
@@ -527,7 +538,7 @@ export function NavbarCentered() {
                   }}
                   onClick={() => setOpenDropdownKey(null)}
                 >
-                  <PrimaryCtaContent label={primaryCta.label} />
+                  <PrimaryCtaContent label={t.nav.connect} />
                 </Link>
               ))}
           </div>

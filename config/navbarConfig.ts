@@ -61,6 +61,14 @@ function isExternalHref(href: string) {
 }
 
 const data = (raw as unknown as NavbarJson) ?? ({} as NavbarJson);
+const PUBLIC_CONTACT_EMAIL = (process.env.NEXT_PUBLIC_CONTACT_EMAIL || "").trim();
+
+function normalizeCtaHref(href: string) {
+  const rawHref = (href || "").trim();
+  if (rawHref !== "mailto:") return rawHref;
+  if (!PUBLIC_CONTACT_EMAIL) return "";
+  return `mailto:${PUBLIC_CONTACT_EMAIL}`;
+}
 
 // Normalize + provide computed external defaults
 export const navbarConfig = {
@@ -87,10 +95,11 @@ export const navbarConfig = {
   cta: {
     contact: {
       ...data.cta.contact,
+      href: normalizeCtaHref(data.cta.contact?.href || ""),
       show: data.cta.contact?.show !== false,
       external:
         data.cta.contact?.external ??
-        isExternalHref(data.cta.contact?.href || ""),
+        isExternalHref(normalizeCtaHref(data.cta.contact?.href || "")),
     },
     primary: {
       ...data.cta.primary,

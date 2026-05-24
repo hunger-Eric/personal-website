@@ -76,9 +76,14 @@ describe("calculateReadingTime", () => {
 });
 
 describe("article loader (real content)", () => {
-  it("returns empty array when no articles exist", async () => {
+  it("returns a valid article list shape", async () => {
     const articles = await getArticles();
-    expect(articles.length).toBe(0);
+    expect(Array.isArray(articles)).toBe(true);
+    for (const article of articles) {
+      expect(typeof article.slug).toBe("string");
+      expect(typeof article.title).toBe("string");
+      expect(typeof article.date).toBe("string");
+    }
   });
 
   it("handles article slug resolution gracefully", async () => {
