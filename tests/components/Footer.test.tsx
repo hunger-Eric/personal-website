@@ -26,4 +26,11 @@ describe("Footer", () => {
     const footer = container.querySelector("footer");
     expect(footer).toBeInTheDocument();
   });
+
+  it("renders copyright with year and name", async () => {
+    const { Footer } = await import("@/components/Footer");
+    const { container } = render(React.createElement(Footer));
+    const year = new Date().getFullYear();
+    expect(container.textContent).toContain(`© ${year} Test User`);
+  });
 });
