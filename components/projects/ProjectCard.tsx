@@ -2,6 +2,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { Folder, Star, GitFork, Download } from "lucide-react";
 import type { ProjectItem, ProjectLink } from "../../config/projects";
 
@@ -16,30 +17,13 @@ function fallbackImage(_project: ProjectItem): string {
   return "/images/demo_1.png";
 }
 
-/**
- * Pick the most appropriate external destination for a project click:
- *   1. Live demo / hosted URL  → highest priority
- *   2. GitHub repo URL
- *   3. First non-empty link in the project's `links[]`
- *   4. null  → card stays click-no-op
- */
-function externalHref(project: ProjectItem): string | null {
-  const live = project.links?.find((l) => l.type === "live")?.href;
-  if (live) return live;
-  if (project.githubRepoUrl) return project.githubRepoUrl;
-  const repoFromLinks = project.links?.find((l) => l.type === "github")?.href;
-  if (repoFromLinks) return repoFromLinks;
-  const anyLink = project.links?.find((l) => !!l.href)?.href;
-  return anyLink || null;
-}
-
 export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
   const hasStats =
     project.githubStars !== undefined ||
     project.githubForks !== undefined ||
     project.downloads !== undefined;
 
-  const href = externalHref(project);
+  const href = `/projects/${encodeURIComponent(project.id)}`;
 
   const firstDesc = project.description?.length
     ? project.description[0]
@@ -55,7 +39,7 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
     "outline-none focus-visible:ring-2 focus-visible:ring-white/30",
     "transition-colors transition-shadow transition-transform duration-200 ease-out",
     "hover:bg-white/[0.07] hover:border-white/15 hover:shadow-sm hover:-translate-y-[1px]",
-    href ? "cursor-pointer" : "",
+    "cursor-pointer",
   ].join(" ");
 
   const inner = (
@@ -163,26 +147,13 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
     </>
   );
 
-  // Whole card is a click-target → external link in a new tab. If the
-  // project has no usable external URL we fall back to a non-interactive
-  // article element so we never render a dead link.
-  if (!href) {
-    return (
-      <article className={cardClass} aria-label={project.name}>
-        {inner}
-      </article>
-    );
-  }
-
   return (
-    <a
+    <Link
       href={href}
-      target="_blank"
-      rel="noreferrer noopener"
-      aria-label={`Open ${project.name} (opens in a new tab)`}
+      aria-label={`Open ${project.name} details`}
       className={cardClass}
     >
       {inner}
-    </a>
+    </Link>
   );
 }
