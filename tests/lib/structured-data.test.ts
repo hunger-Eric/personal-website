@@ -79,6 +79,24 @@ describe("generateBreadcrumbSchema", () => {
     const r = generateBreadcrumbSchema([]);
     expect(r.itemListElement).toEqual([]);
   });
+
+  // Line 210: absolute URL branch — item.url starts with "http"
+  it("handles absolute URLs in breadcrumb items", async () => {
+    vi.doMock("@/config/siteConfig", () => ({
+      siteConfig: { name: "X", socialsList: [] },
+    }));
+    const { generateBreadcrumbSchema } = await import("@/lib/structured-data");
+    const items = [
+      { name: "Home", url: "/" },
+      { name: "External", url: "https://external.com/page" },
+    ];
+    const r = generateBreadcrumbSchema(items);
+    expect(r.itemListElement).toHaveLength(2);
+    // Relative URL should be prefixed with BASE_URL
+    expect(r.itemListElement[0].item).toBe(`${BASE_URL}/`);
+    // Absolute URL should be used as-is
+    expect(r.itemListElement[1].item).toBe("https://external.com/page");
+  });
 });
 
 describe("generateProjectSchema", () => {

@@ -212,6 +212,107 @@ describe("fetchYouTubeVideos", () => {
     const r = await fetchYouTubeVideos("UC_test");
     expect(r).toEqual([]);
   });
+
+  // ---- Coverage edge cases ----
+  // Line 126: videosData.items is null (not empty array)
+  it("videos API returns [] when items is null", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [{ id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/vid1/hqdefault.jpg" } } } }]
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ items: null }), { status: 200 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toEqual([]);
+  });
+
+  // Lines 130-131: thumbnail with only medium (no high), snippet fallbacks
+  it("videos API uses medium thumbnail when high is absent", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [{ id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { medium: { url: "https://img.youtube.com/vi/vid1/mqdefault.jpg" } } } }]
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        items: [{ id: "vid1", snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { medium: { url: "https://img.youtube.com/vi/vid1/mqdefault.jpg" } } }, statistics: { viewCount: "500", likeCount: "50" } }]
+      }), { status: 200 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(1);
+    expect(r[0].thumbnailUrl).toBe("https://img.youtube.com/vi/vid1/mqdefault.jpg");
+  });
+
+  // Lines 130-131: thumbnail with only default (no high/medium)
+  it("videos API falls through to empty string when only default thumbnail", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [{ id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { default: { url: "https://img.youtube.com/vi/vid1/default.jpg" } } } }]
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        items: [{ id: "vid1", snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { default: { url: "https://img.youtube.com/vi/vid1/default.jpg" } } }, statistics: { viewCount: "500", likeCount: "50" } }]
+      }), { status: 200 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(1);
+    // high and medium are both absent, default is not checked
+    expect(r[0].thumbnailUrl).toBe("");
+  });
+
+  // Line 136: viewCount and likeCount with undefined values inside existing statistics
+  it("videos API handles statistics with viewCount undefined", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [{ id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/vid1/hqdefault.jpg" } } } }]
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        items: [{ id: "vid1", snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/vid1/hqdefault.jpg" } } }, statistics: { likeCount: "100" } }]
+      }), { status: 200 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(1);
+    expect(r[0].viewCount).toBeUndefined();
+    expect(r[0].likeCount).toBe(100);
+  });
+
+  // Line 136: likeCount as undefined
+  it("videos API handles statistics with likeCount undefined", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [{ id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/vid1/hqdefault.jpg" } } } }]
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        items: [{ id: "vid1", snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/vid1/hqdefault.jpg" } } }, statistics: { viewCount: "999" } }]
+      }), { status: 200 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(1);
+    expect(r[0].viewCount).toBe(999);
+    expect(r[0].likeCount).toBeUndefined();
+  });
 });
 
 describe("formatDuration", () => {

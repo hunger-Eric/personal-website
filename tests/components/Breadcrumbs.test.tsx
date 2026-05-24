@@ -179,4 +179,21 @@ describe("Breadcrumbs", () => {
     const lastSpan = screen.getByText("Home");
     expect(lastSpan).toHaveAttribute("title", "Home");
   });
+
+  it("truncates at word boundary when space is past 60% of max", async () => {
+    const { Breadcrumbs } = await import("@/components/Breadcrumbs");
+    render(React.createElement(Breadcrumbs, {
+      items: [
+        { name: "Home", url: "/" },
+        { name: "A B C D E F G H I J ShouldBeClipped", url: "/articles/long" },
+      ],
+      truncateLastAt: 20,
+    }));
+    // slice(0,20) = "A B C D E F G H I J " — lastIndexOf space = 17 > 12 (60% of 20)
+    // So it should word-boundary truncate to "A B C D E F G H I J" + "…"
+    const lastItem = screen.getByText(/…$/);
+    expect(lastItem).toBeInTheDocument();
+    // The text should be without the word "ShouldBeClipped"
+    expect(lastItem.textContent).not.toContain("ShouldBeClipped");
+  });
 });

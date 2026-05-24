@@ -240,6 +240,27 @@ describe("PageBlocks", () => {
       const img = document.querySelector("img");
       expect(img).not.toBeInTheDocument();
     });
+
+    it("handles missing alt attribute gracefully", () => {
+      render(
+        <PageBlocks
+          blocks={[
+            makeBlock({
+              type: "gallery",
+              content: {
+                images: [{ src: "/img-no-alt.jpg" }],
+              },
+            }),
+          ]}
+        />
+      );
+
+      const img = document.querySelector("img");
+      expect(img).toBeInTheDocument();
+      expect(img).toHaveAttribute("src", "/img-no-alt.jpg");
+      // img.alt should fall back to empty string
+      expect(img).toHaveAttribute("alt", "");
+    });
   });
 
   // ──────── cards ────────
