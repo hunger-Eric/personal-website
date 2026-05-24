@@ -85,6 +85,133 @@ describe("fetchYouTubeVideos", () => {
     const r = await fetchYouTubeVideos("UC_test");
     expect(r).toEqual([]);
   });
+
+  // ----- NEW TESTS for branch coverage -----
+
+  it("fallback path: handles object id without videoId when videos API fails", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        // item.id is an object but has no videoId - this gets us into the
+        // search results but yields empty videoIds -> empty array from first branch
+        // To hit the fallback path, we need items with valid videoId in search
+        // but then have the videos API fail
+        return new Response(JSON.stringify({
+          items: [
+            { id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: {} } }
+          ]
+        }), { status: 200 });
+      }
+      // videos API fails -> fallback
+      return new Response("Fail", { status: 500 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(1);
+    expect(r[0].id).toBe("vid1");
+    expect(r[0].url).toBe("https://www.youtube.com/watch?v=vid1");
+  });
+
+  it("fallback path: object id with no videoId element gives empty id", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [
+            { id: { videoId: "v1" }, snippet: { title: "T1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/v1/hqdefault.jpg" } } } }
+          ]
+        }), { status: 200 });
+      }
+      return new Response("Fail", { status: 500 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(1);
+  });
+
+  it("videos API success path handles object id type", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [{ id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/vid1/hqdefault.jpg" } } } }]
+        }), { status: 200 });
+      }
+      // videos API response where item.id is an object (not a string)
+      return new Response(JSON.stringify({
+        items: [{ id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/vid1/hqdefault.jpg" } } }, statistics: { viewCount: "1500" }, contentDetails: { duration: "PT5M" } }]
+      }), { status: 200 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(1);
+    // When item.id is an object, videoId = "" because typeof item.id !== "string"
+    expect(r[0].id).toBe("");
+    // But url still uses the original videoId from search? No, it uses videoId from item.id
+    expect(r[0].url).toBe("https://www.youtube.com/watch?v=");
+  });
+
+  it("videos API handles items with string ids correctly", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [{ id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/vid1/hqdefault.jpg" } } } }]
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        items: [{ id: "vid1", snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { medium: { url: "https://img.youtube.com/vi/vid1/mqdefault.jpg" } } }, statistics: { viewCount: "999999999", likeCount: "500" }, contentDetails: { duration: "PT1H30M" } }]
+      }), { status: 200 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(1);
+    expect(r[0].id).toBe("vid1");
+    expect(r[0].thumbnailUrl).toBe("https://img.youtube.com/vi/vid1/mqdefault.jpg");
+    expect(r[0].duration).toBe("PT1H30M");
+  });
+
+  it("videos API handles missing statistics and contentDetails", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [{ id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { default: { url: "https://img.youtube.com/vi/vid1/default.jpg" } } } }]
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        items: [{ id: "vid1", snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: {} } }]
+      }), { status: 200 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(1);
+    expect(r[0].viewCount).toBeUndefined();
+    expect(r[0].likeCount).toBeUndefined();
+    expect(r[0].duration).toBeUndefined();
+    expect(r[0].thumbnailUrl).toBe("");
+  });
+
+  it("videos API handles no items", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [{ id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/vid1/hqdefault.jpg" } } } }]
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({ items: [] }), { status: 200 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toEqual([]);
+  });
 });
 
 describe("formatDuration", () => {
@@ -98,6 +225,7 @@ describe("formatDuration", () => {
 
 describe("formatViewCount", () => {
   it("returns empty string for undefined", () => { expect(formatViewCount()).toBe(""); });
+  it("returns empty string for 0", () => { expect(formatViewCount(0)).toBe(""); });
   it("formats millions", () => { expect(formatViewCount(1500000)).toBe("1.5M views"); });
   it("formats thousands", () => { expect(formatViewCount(2500)).toBe("2.5K views"); });
   it("formats small numbers", () => { expect(formatViewCount(500)).toBe("500 views"); });

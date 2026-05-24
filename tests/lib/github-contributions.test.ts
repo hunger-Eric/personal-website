@@ -76,4 +76,89 @@ describe("fetchGitHubContributionsForYear", () => {
     delete process.env.GITHUB_TOKEN;
     await expect(fetchGitHubContributionsForYear("user", 2025)).rejects.toThrow("GITHUB_TOKEN");
   });
+
+  // ----- NEW TESTS for branch coverage -----
+
+  it("retries on AbortError (timeout) then succeeds", async () => {
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        const err = new Error("The operation was aborted");
+        err.name = "AbortError";
+        throw err;
+      }
+      return makeOkResponse([{ contributionDays: [{ date: "2025-03-01", contributionCount: 7 }] }]);
+    });
+    const r = await fetchGitHubContributionsForYear("user", 2025);
+    expect(r).toHaveLength(1);
+    expect(r[0].date).toBe("2025-03-01");
+  }, 30000);
+
+  it("throws after exhausting retries on AbortError", async () => {
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      const err = new Error("The operation was aborted");
+      err.name = "AbortError";
+      throw err;
+    });
+    await expect(fetchGitHubContributionsForYear("user", 2025)).rejects.toThrow(
+      "GitHub API request timed out after multiple attempts"
+    );
+  }, 30000);
+
+  it("re-throws non-retryable errors immediately (e.g. 401)", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(new Response("Unauthorized", { status: 401 }));
+    await expect(fetchGitHubContributionsForYear("user", 2025)).rejects.toThrow("GitHub GraphQL error: 401");
+  });
+
+  it("re-throws non-retryable errors immediately (e.g. 403)", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(new Response("Forbidden", { status: 403 }));
+    await expect(fetchGitHubContributionsForYear("user", 2025)).rejects.toThrow("GitHub GraphQL error: 403");
+  });
+
+  it("re-throws non-AbortError network errors immediately", async () => {
+    vi.spyOn(global, "fetch").mockRejectedValue(new Error("DNS resolution failed"));
+    await expect(fetchGitHubContributionsForYear("user", 2025)).rejects.toThrow("DNS resolution failed");
+  });
+
+  it("retries on retryable error then eventually throws when all retries exhausted", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(new Response("Rate limited", { status: 429 }));
+    await expect(fetchGitHubContributionsForYear("user", 2025)).rejects.toThrow("GitHub GraphQL error: 429");
+  }, 30000);
+
+  it("retries on 503 then succeeds", async () => {
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount <= 2) return new Response("Service Unavailable", { status: 503 });
+      return makeOkResponse([{ contributionDays: [{ date: "2025-04-01", contributionCount: 2 }] }]);
+    });
+    const r = await fetchGitHubContributionsForYear("user", 2025);
+    expect(r).toHaveLength(1);
+    expect(r[0].date).toBe("2025-04-01");
+  }, 30000);
+
+  it("handles GraphQL errors with multiple error messages", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ errors: [{ message: "Error 1" }, { message: "Error 2" }] }), { status: 200 })
+    );
+    await expect(fetchGitHubContributionsForYear("user", 2025)).rejects.toThrow("Error 1, Error 2");
+  });
+
+  it("handles non-ok response with text() failure", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue({
+      ok: false,
+      status: 403,
+      text: () => Promise.reject(new Error("Cannot read body")),
+    } as any);
+    await expect(fetchGitHubContributionsForYear("user", 2025)).rejects.toThrow("GitHub GraphQL error: 403 - Unknown error");
+  });
+
+  it("handles missing data path gracefully", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ data: { user: null } }), { status: 200 })
+    );
+    const r = await fetchGitHubContributionsForYear("user", 2025);
+    expect(r).toEqual([]);
+  });
 });
