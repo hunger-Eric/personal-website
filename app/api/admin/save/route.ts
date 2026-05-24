@@ -48,9 +48,42 @@ export async function POST(request: NextRequest) {
       existing?.sha
     );
 
+    // Trigger Vercel deployment after successful save
+    const vercelToken = process.env.VERCEL_TOKEN;
+    const teamId = process.env.VERCEL_TEAM_ID;
+    const projectId = process.env.VERCEL_PROJECT_ID || "prj_eybWuVuRiAOtdFQTAz9rA63LPT41";
+
+    if (vercelToken) {
+      try {
+        const url = teamId
+          ? `https://api.vercel.com/v13/deployments?teamId=${teamId}`
+          : "https://api.vercel.com/v13/deployments";
+        await fetch(url, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${vercelToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: "personal-website",
+            project: projectId,
+            target: "production",
+            gitSource: {
+              type: "github",
+              repo: "hunger-Eric/personal-website",
+              ref: "main",
+              repoId: 1247962453,
+            },
+          }),
+        });
+      } catch (_err) {
+        console.error("Vercel deploy trigger failed (non-fatal):", _err);
+      }
+    }
+
     return NextResponse.json({
       success: true,
-      message: `${key} 配置已保存并推送到 GitHub`,
+      message: `${key} 配置已保存并推送，正在自动部署到 Vercel`,
     });
   } catch (err: any) {
     console.error("Admin save API error:", err);
