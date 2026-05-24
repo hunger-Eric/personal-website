@@ -1,8 +1,8 @@
 {
-  "defaultMode": "dark",
+  "defaultMode": "light",
   "allowToggle": false,
   "respectSystemPreference": false,
-  "accentColor": "indigo",
+  "accentColor": "emerald",
   "presets": {
     "indigo": {
       "accent": "#7170ff",
