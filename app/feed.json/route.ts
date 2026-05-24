@@ -38,8 +38,8 @@ export async function GET() {
     title: `${siteConfig.name} — Articles`,
     home_page_url: `${BASE_URL}/articles`,
     feed_url: `${BASE_URL}/feed.json`,
-    description: `Articles, tutorials and writing by ${siteConfig.name}.`,
-    language: "en-US",
+    description: `关于 ${siteConfig.name} 的文章、教程与写作。`,
+    language: "zh-CN",
     authors: [{ name: siteConfig.name, url: BASE_URL }],
     items,
   };

@@ -1,8 +1,7 @@
-// components/sections/ProjectsClient.tsx
 "use client";
 
 import { useMemo, type ReactNode } from "react";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, FolderOpen } from "lucide-react";
 import {
   FilledGithub,
   FilledGlobe,
@@ -11,9 +10,10 @@ import {
   FilledPlay,
   FilledArrowUpRight,
 } from "@/components/FilledIcons";
+import { useLocale } from "@/components/LocaleProvider";
+import { getSiteCopy } from "@/config/contentCopy";
 import type { ProjectItem } from "../../config/projects";
 import { ProjectCard } from "../projects/ProjectCard";
-import { FeaturedProjectsCarousel } from "../projects/FeaturedProjectsTicker";
 
 interface ProjectsSectionClientProps {
   projects: ProjectItem[];
@@ -22,23 +22,8 @@ interface ProjectsSectionClientProps {
 export function ProjectsSectionClient({
   projects,
 }: ProjectsSectionClientProps) {
-  // Desktop compact grid below the carousel: 3 cards (smaller set since the
-  // carousel already showcases the heavy hitters).
-  const defaultVisibleCount = 3;
-  // Mobile (no carousel) shows full ProjectCards — 6 of them.
-  const mobileVisibleCount = 6;
-
-  const visibleProjects = useMemo(
-    () => projects.slice(0, Math.min(defaultVisibleCount, projects.length)),
-    [projects]
-  );
-
-  // Use featured projects for the carousel; fallback to first projects if none marked featured.
-  // Also cap to 8 to keep the carousel clean.
-  const featuredCarouselProjects = useMemo(() => {
-    const featured = projects.filter((p) => p.featured);
-    return (featured.length ? featured : projects).slice(0, 8);
-  }, [projects]);
+  const { locale } = useLocale();
+  const copy = getSiteCopy(locale);
 
   const iconFor = (type?: string): ReactNode => {
     switch (type) {
@@ -57,67 +42,51 @@ export function ProjectsSectionClient({
     }
   };
 
-  // Empty list guard — kept *after* hooks so the rules of hooks aren't broken.
-  if (!projects.length) return null;
+  const featuredProject = useMemo(
+    () => projects.find((project) => project.featured) || projects[0] || null,
+    [projects]
+  );
+
+  const supportingProjects = useMemo(() => {
+    if (!featuredProject) return [];
+    return projects.filter((project) => project.id !== featuredProject.id).slice(0, 3);
+  }, [projects, featuredProject]);
+
+  const visibleProjects = featuredProject
+    ? [featuredProject, ...supportingProjects]
+    : [];
+
+  if (!projects.length || !featuredProject) {
+    return null;
+  }
 
   return (
-    <section id="projects" className="py-16 scroll-mt-12 lg:py-24 overflow-x-hidden">
-      {/* Heading container */}
+    <section id="projects" className="scroll-mt-12 py-16 lg:py-24">
       <div className="mx-auto w-full max-w-6xl px-4">
         <div className="flex items-center gap-4">
-          <h2 className="font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
-            ~/Projects
+          <h2 className="flex items-center gap-2 font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
+            <FolderOpen className="h-4 w-4" />
+            <span>{copy.projects.heading}</span>
           </h2>
-          <div
-            className="hidden h-px w-40 bg-white/15 sm:block sm:w-72"
-            aria-hidden
-          />
+          <div className="hidden h-px w-40 bg-border sm:block sm:w-72" aria-hidden />
           <div className="flex-1" />
           <a
-            href="https://github.com/KevinTrinhDev"
-            target="_blank"
-            rel="noreferrer noopener"
-            className="group inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-white/80 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-white/10 hover:text-white active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:px-3.5 sm:py-2 sm:text-sm"
+            href="/projects"
+            className="group inline-flex items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3.5 py-2 text-sm font-medium text-foreground transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-muted active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
           >
-            <span>View all Projects</span>
-            <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5 sm:h-4 sm:w-4" />
+            <span>{copy.projects.viewAll}</span>
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
           </a>
         </div>
-      </div>
 
-      {/* Featured projects carousel — desktop only.
-          Mobile gets full ProjectCards instead (rendered below). */}
-      {featuredCarouselProjects.length > 0 && (
-        <div className="mx-auto mt-8 hidden w-full max-w-6xl px-4 md:block">
-          <FeaturedProjectsCarousel projects={featuredCarouselProjects} />
-        </div>
-      )}
-
-      {/* Mobile: 6 stacked ProjectCards (no carousel). */}
-      <div className="mx-auto mt-8 w-full max-w-6xl px-4 md:hidden">
-        <div className="grid grid-cols-1 gap-4">
-          {projects.slice(0, mobileVisibleCount).map((project) => (
+        <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {visibleProjects.map((project, index) => (
             <ProjectCard
               key={project.id}
               project={project}
               iconFor={iconFor}
+              featured={index === 0}
             />
-          ))}
-        </div>
-      </div>
-
-      {/* Compact 3-column grid (no images) — desktop/tablet only; mobile is
-          covered by the featured cards above so we don't show duplicates */}
-      <div className="mx-auto mt-8 hidden w-full max-w-6xl px-4 md:block">
-        <div className="grid auto-rows-fr gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {visibleProjects.map((project) => (
-            <div key={project.id} className="opacity-100 translate-y-0">
-              <ProjectCard
-                project={project}
-                iconFor={iconFor}
-                hideImage
-              />
-            </div>
           ))}
         </div>
       </div>

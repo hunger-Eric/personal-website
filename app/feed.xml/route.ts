@@ -69,9 +69,9 @@ export async function GET() {
   <link>${BASE_URL}/articles</link>
   <atom:link href="${BASE_URL}/feed.xml" rel="self" type="application/rss+xml" />
   <description>${escapeXml(
-    `Articles, tutorials and writing by ${siteConfig.name}.`
+    `关于 ${siteConfig.name} 的文章、教程与写作。`
   )}</description>
-  <language>en-us</language>
+  <language>zh-cn</language>
   <lastBuildDate>${lastBuild}</lastBuildDate>
 ${items}
 </channel>

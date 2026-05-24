@@ -3,7 +3,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, FolderOpen } from "lucide-react";
 import {
   FilledGithub,
   FilledGlobe,
@@ -151,7 +151,7 @@ export function FeaturedProjectsCarousel({
         aria-label="Featured projects carousel"
       >
         {/* Fixed, modest height so the carousel stays compact */}
-        <div className="relative h-[300px] w-full sm:h-[360px] md:h-[420px]">
+        <div className="relative h-[240px] w-full sm:h-[280px] md:h-[320px]">
           {/* Image stack — full bleed, crossfade */}
           <div className="absolute inset-0">
             {slides.map((project, idx) => {
@@ -186,30 +186,35 @@ export function FeaturedProjectsCarousel({
           </div>
 
           {/* Dark overlay so text always reads. Flat scrim + a subtle gradient at the edges. */}
-          <div className="pointer-events-none absolute inset-0 bg-white/35" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/40" />
+          <div className="pointer-events-none absolute inset-0 bg-white/42" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/45" />
 
           {/* Centered content */}
-          <div className="relative z-10 flex h-full w-full items-center justify-center px-6 py-8 sm:px-10">
-            <div className="w-full max-w-2xl text-center">
-              <h4 className="text-2xl font-semibold leading-tight text-foreground sm:text-3xl md:text-4xl">
+          <div className="relative z-10 flex h-full w-full items-center justify-center px-5 py-6 sm:px-8">
+            <div className="w-full max-w-xl text-center">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card/90 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:text-[12px]">
+                <FolderOpen className="h-3.5 w-3.5" />
+                <span>Featured project</span>
+              </div>
+
+              <h4 className="text-xl font-semibold leading-tight text-foreground sm:text-2xl md:text-[2rem]">
                 {current.name}
               </h4>
 
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-foreground/85 sm:text-[15px] sm:leading-7 md:text-base md:leading-7 line-clamp-3">
+              <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-foreground/82 sm:text-[15px] sm:leading-7 line-clamp-2">
                 {blurb}
               </p>
 
               {tools.length ? (
-                <p className="mt-3 text-[13px] font-medium text-indigo-600 sm:text-sm">
+                <p className="mt-2 text-[12px] font-medium text-indigo-600 sm:text-sm">
                   {tools.join(", ")}
                 </p>
               ) : null}
 
-              <div className="mt-5 flex flex-wrap justify-center gap-2">
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
                 <Link
                   href={`/projects/${encodeURIComponent(current.id)}`}
-                  className={actionBtnClass}
+                  className={`${actionBtnClass} px-3 py-1.5`}
                 >
                   <FilledArrowUpRight className="h-4 w-4 opacity-90" />
                   <span>View Details</span>
@@ -224,7 +229,7 @@ export function FeaturedProjectsCarousel({
                         key={`${current.id}-${l.type}-${l.href}`}
                         type="button"
                         onClick={() => openHref(l.href)}
-                        className={actionBtnClass}
+                        className={`${actionBtnClass} px-3 py-1.5`}
                       >
                         <Ico className="h-4 w-4 opacity-90" />
                         <span>

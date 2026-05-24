@@ -118,6 +118,8 @@ export async function deleteRepoFile(
 
 /**
  * Save a new photo file to the repo.
+ * The caller is expected to pass the original file bytes unchanged; this helper
+ * only base64-encodes them for the GitHub Contents API.
  * Returns the raw GitHub URL and the path.
  */
 export async function uploadPhoto(

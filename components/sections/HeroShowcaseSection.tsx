@@ -1,7 +1,5 @@
-// components/sections/HeroShowcaseSection.tsx
+﻿// components/sections/HeroShowcaseSection.tsx
 "use client";
-
-import Image from "next/image";
 
 import { siteConfig } from "../../config/siteConfig";
 import {
@@ -10,12 +8,11 @@ import {
   ArrowUpRight,
   Coffee,
   GraduationCap,
-  AtSign,
-  MoreHorizontal,
 } from "lucide-react";
 
 import { ContributionGraphCard } from "../ContributionGraphCard";
-import { Typewriter } from "../Typewriter";
+import { useLocale } from "@/components/LocaleProvider";
+import { getSiteCopy } from "@/config/contentCopy";
 
 type SocialItem = {
   key: string; // key to look up in siteConfig.socials if present
@@ -29,7 +26,6 @@ type SocialItem = {
 // All point to @KevinTrinhDev on each platform; Resume points at the
 // site's PDF route (/resume).
 const SOCIALS: SocialItem[] = [
-  { key: "github", label: "GitHub" },
   { key: "linkedin", label: "LinkedIn" },
   { key: "tiktok", label: "TikTok" },
   { key: "youtube", label: "YouTube" },
@@ -161,17 +157,6 @@ function IconInstagramFilled({ className = "" }: { className?: string }) {
   );
 }
 
-function IconMailFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M2.5 6.4A2.5 2.5 0 0 1 5 4h14a2.5 2.5 0 0 1 2.5 2.4l-9.5 5.7-9.5-5.7Zm0 1.95v9.15A2.5 2.5 0 0 0 5 20h14a2.5 2.5 0 0 0 2.5-2.5V8.35l-9.05 5.43a1 1 0 0 1-1.05 0L2.5 8.35Z"
-      />
-    </svg>
-  );
-}
-
 function IconTikTokFilled({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
@@ -218,7 +203,7 @@ function SocialIcon({ item }: { item: SocialItem }) {
   if (key === "linkedin") return <IconLinkedInSquareFilled className={base} />;
   if (key === "x") return <IconXFilled className={base} />;
 
-  // ✅ Actual platform logos
+  // 鉁?Actual platform logos
   if (key === "tiktok") return <IconTikTokFilled className={base} />;
   if (key === "leetcode") return <IconLeetCodeFilled className={base} />;
   if (key === "youtube") return <IconYouTubeFilled className={base} />;
@@ -240,71 +225,51 @@ function SocialIcon({ item }: { item: SocialItem }) {
 }
 
 export function HeroShowcaseSection() {
+  const { locale } = useLocale();
+  const copy = getSiteCopy(locale);
   // Resume now opens as a real page (PDF viewer) in a new tab.
   const resumeHref = "/resume";
 
   // Big heading line
-  const lineOne = `Hi, ${siteConfig.name} here.`;
-
-  const description =
-    "全栈程序猿，摄影爱好者。捣鼓 Next.js、Python、AI Agent 和自动化工具，偶尔出去拍拍照。";
+  const lineOne = copy.hero.line || `Hi, ${siteConfig.name} here.`;
+  const nameStart = Math.max(0, lineOne.indexOf(siteConfig.name));
+  const beforeName = nameStart > 0 ? lineOne.slice(0, nameStart) : "";
+  const afterName =
+    nameStart >= 0 ? lineOne.slice(nameStart + siteConfig.name.length) : lineOne;
 
   return (
-    // ✅ Mobile: ~80dvh tall + centered, so the next section peeks below the fold.
+    // Mobile: ~80dvh tall + centered, so the next section peeks below the fold.
     // Desktop layout unchanged.
     <section
       id="top"
-      className="flex min-h-[80dvh] flex-col justify-center pt-10 pb-12 sm:block sm:min-h-0 sm:pt-16 sm:pb-20 lg:pt-28"
+      className="flex min-h-[70dvh] flex-col justify-start pt-10 pb-12 sm:block sm:min-h-0 sm:pt-16 sm:pb-20 lg:pt-28"
     >
       <div className="mx-auto w-full max-w-6xl px-4">
         {/* Top hero row (right side left blank for now) */}
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-          {/* Left: intro + socials + CTAs */}
+          {/* Left: intro + socials */}
           <div className="text-center sm:text-left">
-            {/* Mobile-only small portrait above the title */}
-            <div className="relative mx-auto mb-5 h-20 w-20 overflow-hidden rounded-xl border border-white/10 sm:hidden">
-              <Image
-                src="/avatar.jpg"
-                alt={siteConfig.name}
-                fill
-                sizes="80px"
-                className="object-cover"
-                priority
-              />
-            </div>
-
             {/* big heading */}
             <h1 className="text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
               <span className="block">
-                <Typewriter
-                  text={lineOne}
-                  highlightStart={lineOne.indexOf("Kevin")}
-                  highlightEnd={
-                    lineOne.indexOf("Kevin") + "Kevin".length
-                  }
-                  speedMs={45}
-                  startDelayMs={250}
-                  accentClassName="text-indigo-400"
-                />
+                {beforeName}
+                <span className="text-foreground">{siteConfig.name}</span>
+                {afterName}
               </span>
             </h1>
 
             <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:mx-0 sm:text-base">
-              {description}
+              {copy.hero.description}
             </p>
 
             {/* Social links row */}
             <div className="mt-5 flex flex-wrap justify-center gap-2 text-xs sm:justify-start sm:text-sm">
               {SOCIALS.map((item) => {
                 const href = resolveSocialHref(item, resumeHref);
-                // Skip any social that hasn't been configured (no real href)
                 if (!href || href === "#" || href.startsWith("copy:")) {
                   return null;
                 }
 
-                // Every social link in the hero opens in a new tab — even
-                // /discord (which lives on this domain but immediately
-                // redirects out to discord.gg).
                 const visibilityCls = item.mobileHidden
                   ? "hidden sm:inline-flex"
                   : "inline-flex";
@@ -324,37 +289,13 @@ export function HeroShowcaseSection() {
                   </a>
                 );
               })}
-
-              {/* Mobile-only "more" affordance — same-tab so flipping back to
-                  the portfolio is instant. */}
-              <a
-                href="/links"
-                aria-label="See all my links"
-                title="See all my links"
-                className="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs text-slate-50/90 transition-colors duration-150 hover:bg-white/5 hover:text-slate-50 sm:hidden"
-              >
-                <MoreHorizontal className="h-4 w-4" />
-                <span>More</span>
-              </a>
-            </div>
-
-            {/* CTA — open default mail client */}
-            <div className="mt-7 flex flex-wrap justify-center gap-3 sm:justify-start">
-              <a
-                href={siteConfig.socialsList.find(s => s.key === "email")?.href || "#"}
-                className="group inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-slate-50 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-accent/95 hover:shadow-lg hover:shadow-accent/30"
-              >
-                <IconMailFilled className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5" />
-                <span>联系我</span>
-              </a>
             </div>
           </div>
-
           {/* Right column intentionally blank for now */}
           <div className="hidden lg:block" />
         </div>
 
-        {/* Contribution graph — md+ only (hidden on mobile to keep above-the-fold focused) */}
+        {/* Contribution graph 鈥?md+ only (hidden on mobile to keep above-the-fold focused) */}
         <div className="mt-20 hidden md:block">
           <ContributionGraphCard />
         </div>

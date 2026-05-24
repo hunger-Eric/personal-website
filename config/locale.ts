@@ -1,4 +1,4 @@
-export type Locale = "zh" | "en";
+﻿export type Locale = "zh" | "en";
 
 export const LOCALE_STORAGE_KEY = "devfoliox-locale";
 

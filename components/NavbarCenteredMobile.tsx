@@ -42,6 +42,7 @@ export default function NavbarCenteredMobile() {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const toggleRef = useRef<HTMLButtonElement | null>(null);
   const navLabelById: Record<string, string> = {
+    home: t.nav.home,
     about: t.nav.about,
     projects: t.nav.projects,
     articles: t.nav.articles,

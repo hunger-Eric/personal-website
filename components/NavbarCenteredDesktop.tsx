@@ -216,6 +216,7 @@ export function NavbarCentered() {
     return out;
   }, [items]);
   const navLabelById: Record<string, string> = {
+    home: t.nav.home,
     about: t.nav.about,
     projects: t.nav.projects,
     articles: t.nav.articles,
@@ -417,7 +418,7 @@ export function NavbarCentered() {
                           }}
                           onClick={() => setOpenDropdownKey(null)}
                         >
-                          {item.label}
+                          {resolveNavLabel(item.id, item.label)}
                         </a>
                       );
                     }
@@ -438,7 +439,7 @@ export function NavbarCentered() {
                         }}
                         onClick={() => setOpenDropdownKey(null)}
                       >
-                        {item.label}
+                        {resolveNavLabel(item.id, item.label)}
                       </Link>
                     );
                   }

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ArrowUpRight, Mail, Play } from "lucide-react";
 
 import { siteConfig } from "@/config/siteConfig";
-import aboutData from "@/config/about.json";
 import { ShareButton } from "@/components/ShareButton";
 import { JsonLd } from "@/components/JsonLd";
 import { FilledMapPin } from "@/components/FilledIcons";
@@ -150,15 +149,15 @@ export default async function LinksPage() {
     {
       key: "projects",
       label: "Projects",
-      description: "Open source on GitHub",
-      href: "https://github.com/hunger-Eric",
+      description: "Builds & open source on GitHub",
+      href: "https://github.com/KevinTrinhDev",
       icon: <GithubGlyph className="h-7 w-7" />,
     },
     {
       key: "articles",
       label: "Articles",
-      description: "Dev notes & deep dives",
-      href: "/articles",
+      description: "Read my writing on Medium",
+      href: "https://medium.com/@KevinTrinhDev",
       icon: <MediumGlyph className="h-7 w-7" />,
     },
   ];
@@ -167,7 +166,7 @@ export default async function LinksPage() {
   // RSS feed; fall back to the pinned featured video / channel link.
   const youtubeChannel =
     socialMap.get("youtube")?.href ||
-    "";
+    "https://www.youtube.com/@KevinTrinhDev";
   const channelId =
     ((siteConfig as any).featuredContent?.youtubeChannelId as
       | string
@@ -276,7 +275,7 @@ export default async function LinksPage() {
   };
 
   return (
-    <main className="relative mx-auto flex min-h-[100dvh] w-full max-w-md flex-col items-center px-5 pb-10 pt-16 text-slate-900 sm:pt-20">
+    <main className="relative mx-auto flex min-h-[100dvh] w-full max-w-md flex-col items-center px-5 pb-10 pt-12 text-slate-900 sm:pt-14">
       <JsonLd data={profileJsonLd} />
 
       {/* Top-left: Email (mailto) — pill with label */}
@@ -301,30 +300,16 @@ export default async function LinksPage() {
         />
       </div>
 
-      {/* Avatar */}
-      <div className="relative mb-5 h-28 w-28 overflow-hidden rounded-full ring-1 ring-slate-200 sm:h-32 sm:w-32">
-        <Image
-          src={aboutData.avatarUrl}
-          alt={siteConfig.name}
-          fill
-          sizes="128px"
-          className="object-cover"
-          priority
-        />
-      </div>
-
       {/* Name */}
       <h1 className="text-center text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">
         {siteConfig.name}
       </h1>
 
       {/* Location */}
-      {siteConfig.location && (
       <div className="mt-1.5 inline-flex items-center gap-1.5 text-sm text-slate-500">
         <FilledMapPin className="h-4 w-4 text-slate-400" />
-        <span>{siteConfig.location}</span>
+        <span>{siteConfig.location || "Houston, TX"}</span>
       </div>
-      )}
 
       {/* Tagline — Software | Tech | Creator | Builder */}
       <p className="mt-3 max-w-xs text-center text-[13px] font-medium tracking-wide text-slate-700 sm:text-sm">
@@ -362,7 +347,7 @@ export default async function LinksPage() {
       </div>
 
       {/* Recent YouTube upload — section header + thumbnail-only card */}
-      {youtubeChannel && <section className="mt-7 w-full" aria-label="Recent YouTube Upload">
+      <section className="mt-7 w-full" aria-label="Recent YouTube Upload">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Recent YouTube Upload
@@ -402,17 +387,8 @@ export default async function LinksPage() {
                     <Play className="h-[22px] w-[22px] translate-x-[1px] fill-current" />
                   </span>
                 </div>
-                {/* Top-left: avatar + video title overlay (fades right) */}
+                {/* Top-left: video title overlay (fades right) */}
                 <div className="absolute left-2.5 right-2.5 top-2.5 flex items-center gap-2.5">
-                  <span className="relative inline-flex h-9 w-9 flex-none overflow-hidden rounded-full ring-1 ring-white/40">
-                    <Image
-                      src="/images/avatar.jpg"
-                      alt=""
-                      fill
-                      sizes="36px"
-                      className="object-cover"
-                    />
-                  </span>
                   <span
                     className="block min-w-0 flex-1 overflow-hidden whitespace-nowrap text-[17px] font-bold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.7)]"
                     style={{
@@ -433,7 +409,8 @@ export default async function LinksPage() {
             )}
           </div>
         </a>
-        </section>}
+      </section>
+
       {/* Legacy: standalone Articles section — kept behind a flag for easy
           re-enable, but Articles is now a third big button (Portfolio /
           Projects / Articles) so this is normally off. */}
@@ -531,7 +508,7 @@ export default async function LinksPage() {
 
       {/* Footer — two lines */}
       <div className="mt-auto flex flex-col items-center gap-1 pt-10 text-center text-xs text-slate-500">
-        <span>Built with Next.js</span>
+        <span>Built &amp; Designed by Kevin Trinh</span>
         <span>© {year} All rights reserved</span>
       </div>
     </main>

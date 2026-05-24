@@ -1,9 +1,10 @@
-// components/PhotographyGallery.tsx
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+
 import Image from "next/image";
-import { Eye, EyeOff, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Lock, X } from "lucide-react";
+
 import { PhotoPinModal } from "./PhotoPinModal";
 
 type Photo = {
@@ -25,13 +26,12 @@ type Props = {
 const SESSION_STORAGE_KEY = "photography_session_token";
 const TOKENS_STORAGE_KEY = "photography_photo_tokens";
 
-export function PhotographyGallery({ photos, projectTitle }: Props) {
+export function PhotographyGallery({ photos }: Props) {
   const [mounted, setMounted] = useState(false);
   const [pinModalOpen, setPinModalOpen] = useState(false);
   const [photoTokens, setPhotoTokens] = useState<Map<string, string>>(new Map());
-  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
-  // Restore from sessionStorage on mount
   useEffect(() => {
     setMounted(true);
     try {
@@ -42,7 +42,6 @@ export function PhotographyGallery({ photos, projectTitle }: Props) {
         setPhotoTokens(new Map(parsed));
       }
     } catch {
-      // sessionStorage corrupted, start fresh
       sessionStorage.removeItem(SESSION_STORAGE_KEY);
       sessionStorage.removeItem(TOKENS_STORAGE_KEY);
     }
@@ -50,11 +49,7 @@ export function PhotographyGallery({ photos, projectTitle }: Props) {
 
   const handlePinSuccess = useCallback((tokens: Map<string, string>) => {
     setPhotoTokens(tokens);
-    // Persist to sessionStorage (cleared when tab closes)
-    sessionStorage.setItem(
-      TOKENS_STORAGE_KEY,
-      JSON.stringify(Array.from(tokens.entries()))
-    );
+    sessionStorage.setItem(TOKENS_STORAGE_KEY, JSON.stringify(Array.from(tokens.entries())));
     sessionStorage.setItem(SESSION_STORAGE_KEY, "true");
   }, []);
 
@@ -66,23 +61,70 @@ export function PhotographyGallery({ photos, projectTitle }: Props) {
 
   const hasPrivate = photos.some((p) => p.private);
   const isPrivateVisible = photoTokens.size > 0;
-  const visiblePhotos = isPrivateVisible
-    ? photos
-    : photos.filter((p) => !p.private);
+  const visiblePhotos = isPrivateVisible ? photos : photos.filter((p) => !p.private);
 
-  /** Get the display src for a photo — uses signed API URL for private photos */
-  const getPhotoSrc = (photo: Photo): string => {
-    if (!photo.private) return photo.src;
-    const token = photoTokens.get(photo.id);
-    if (token) {
-      return `/api/photo/${photo.id}?token=${encodeURIComponent(token)}`;
-    }
-    return photo.src; // fallback
-  };
+  const selectedPhoto =
+    selectedIndex !== null ? visiblePhotos[selectedIndex] ?? null : null;
+
+  const getPhotoSrc = useCallback(
+    (photo: Photo) => {
+      if (!photo.private) return photo.src;
+      const token = photoTokens.get(photo.id);
+      if (token) {
+        return `/api/photo/${photo.id}?token=${encodeURIComponent(token)}`;
+      }
+      return photo.src;
+    },
+    [photoTokens]
+  );
+
+  const openPhoto = useCallback(
+    (index: number) => {
+      if (visiblePhotos.length === 0) return;
+      const normalized =
+        ((index % visiblePhotos.length) + visiblePhotos.length) % visiblePhotos.length;
+      setSelectedIndex(normalized);
+    },
+    [visiblePhotos.length]
+  );
+
+  const closeLightbox = useCallback(() => {
+    setSelectedIndex(null);
+  }, []);
+
+  const goPrev = useCallback(() => {
+    if (selectedIndex === null) return;
+    openPhoto(selectedIndex - 1);
+  }, [openPhoto, selectedIndex]);
+
+  const goNext = useCallback(() => {
+    if (selectedIndex === null) return;
+    openPhoto(selectedIndex + 1);
+  }, [openPhoto, selectedIndex]);
+
+  useEffect(() => {
+    if (selectedIndex === null) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        closeLightbox();
+      }
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        goPrev();
+      }
+      if (event.key === "ArrowRight") {
+        event.preventDefault();
+        goNext();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [closeLightbox, goNext, goPrev, selectedIndex]);
 
   return (
     <>
-      {/* Controls */}
       {hasPrivate && (
         <div className="mb-8 flex items-center justify-center gap-4">
           {isPrivateVisible ? (
@@ -113,26 +155,24 @@ export function PhotographyGallery({ photos, projectTitle }: Props) {
         </div>
       )}
 
-      {/* Photo Grid */}
       {visiblePhotos.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 text-4xl">🔒</div>
+          <div className="mb-4 text-4xl">📷</div>
           <h2 className="text-xl font-semibold">私密照片已隐藏</h2>
-          <p className="mt-2 text-muted-foreground">
-            输入PIN码查看
-          </p>
+          <p className="mt-2 text-muted-foreground">输入 PIN 码查看内容</p>
         </div>
       ) : (
         <div className="columns-1 gap-6 sm:columns-2 lg:columns-3">
-          {visiblePhotos.map((photo) => {
+          {visiblePhotos.map((photo, index) => {
             const src = getPhotoSrc(photo);
+
             return (
               <div
                 key={photo.id}
                 className="group relative mb-6 break-inside-avoid overflow-hidden rounded-2xl border border-border bg-card"
               >
                 <button
-                  onClick={() => setSelectedPhoto(photo)}
+                  onClick={() => openPhoto(index)}
                   className="relative block w-full overflow-hidden"
                   style={{
                     aspectRatio: `${photo.width}/${photo.height}`,
@@ -148,11 +188,11 @@ export function PhotographyGallery({ photos, projectTitle }: Props) {
                       alt={photo.title}
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      unoptimized
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
 
-                  {/* Private overlay when locked */}
                   {photo.private && !isPrivateVisible && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-lg">
                       <div className="flex flex-col items-center gap-2 text-white">
@@ -163,22 +203,17 @@ export function PhotographyGallery({ photos, projectTitle }: Props) {
                   )}
                 </button>
 
-                {/* Photo info */}
                 <div className="p-4">
                   <h3 className="flex items-center gap-2 font-medium">
                     {photo.title}
-                    {photo.private && (
-                      <Lock className="h-3.5 w-3.5 text-amber-500" />
-                    )}
+                    {photo.private && <Lock className="h-3.5 w-3.5 text-amber-500" />}
                   </h3>
                   {photo.description && (
-                    <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
+                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
                       {photo.description}
                     </p>
                   )}
-                  <p className="mt-1.5 text-xs text-muted-foreground">
-                    {photo.date}
-                  </p>
+                  <p className="mt-1.5 text-xs text-muted-foreground">{photo.date}</p>
                 </div>
               </div>
             );
@@ -186,55 +221,72 @@ export function PhotographyGallery({ photos, projectTitle }: Props) {
         </div>
       )}
 
-      {/* Lightbox */}
-      {selectedPhoto && (
+      {selectedPhoto && selectedIndex !== null && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
-          onClick={() => setSelectedPhoto(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-2 backdrop-blur-md sm:p-4"
+          onClick={closeLightbox}
         >
           <button
-            onClick={() => setSelectedPhoto(null)}
-            className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white hover:bg-white/20"
+            onClick={(e) => {
+              e.stopPropagation();
+              closeLightbox();
+            }}
+            className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
+            aria-label="关闭"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M18 6 6 18" />
-              <path d="m6 6 12 12" />
-            </svg>
+            <X className="h-5 w-5" />
           </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              goPrev();
+            }}
+            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20 sm:left-6"
+            aria-label="上一张"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              goNext();
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20 sm:right-6"
+            aria-label="下一张"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+
           <div
-            className="relative max-h-[90vh] max-w-[90vw] overflow-hidden rounded-2xl"
+            className="relative flex items-center justify-center overflow-hidden rounded-2xl"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              width: "min(98vw, 1800px)",
+              height: "min(94vh, 1200px)",
+            }}
           >
             <Image
               src={getPhotoSrc(selectedPhoto)}
               alt={selectedPhoto.title}
-              width={1200}
-              height={900}
-              className="h-auto w-auto max-h-[85vh] object-contain"
-              style={{
-                aspectRatio: `${selectedPhoto.width}/${selectedPhoto.height}`,
-              }}
+              fill
+              sizes="98vw"
+              unoptimized
+              className="object-contain"
             />
+
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-              <h3 className="text-lg font-semibold text-white">
-                {selectedPhoto.title}
-              </h3>
+              <h3 className="text-lg font-semibold text-white">{selectedPhoto.title}</h3>
               {selectedPhoto.description && (
-                <p className="text-sm text-white/80">
-                  {selectedPhoto.description}
-                </p>
+                <p className="text-sm text-white/80">{selectedPhoto.description}</p>
               )}
-              <p className="mt-1 text-xs text-white/60">{selectedPhoto.date}</p>
+              <div className="mt-2 flex items-center justify-between text-xs text-white/60">
+                <span>{selectedPhoto.date}</span>
+                <span>
+                  {selectedIndex + 1} / {visiblePhotos.length}
+                </span>
+              </div>
             </div>
           </div>
         </div>
