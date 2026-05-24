@@ -7,8 +7,9 @@ vi.mock("@/config/siteConfig", () => ({
   siteConfig: { name: "Test", title: "Dev", tagline: "Building", socialsList: [] }
 }));
 vi.mock("lucide-react", () => ({ FileText: () => React.createElement("svg"), Mail: () => React.createElement("svg") }));
+const mockOpenResume = vi.fn();
 vi.mock("@/components/hooks/useModalRoute", () => ({
-  useModalRoute: () => ({ href: "/?resume", open: () => {}, close: () => {}, isActive: false })
+  useModalRoute: () => ({ href: "/?resume", open: mockOpenResume, close: () => {}, isActive: false })
 }));
 vi.mock("@/components/LocaleProvider", () => ({
   useLocale: () => ({
@@ -32,6 +33,17 @@ describe("HeroSection", () => {
     if (typeof Component === "function") {
       const { container } = render(React.createElement(Component));
       expect(container).toBeTruthy();
+    }
+  });
+
+  it("opens resume modal on resume button click", async () => {
+    const mod = await import("@/components/sections/Hero");
+    const Component = mod["HeroSection"];
+    const { container } = render(React.createElement(Component));
+    const resumeLink = container.querySelector('a[href="/?resume"]');
+    if (resumeLink) {
+      (resumeLink as HTMLAnchorElement).click();
+      expect(mockOpenResume).toHaveBeenCalled();
     }
   });
 });

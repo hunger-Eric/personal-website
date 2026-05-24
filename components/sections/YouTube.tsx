@@ -202,3 +202,6 @@ function getYouTubeEmbedUrl(url: string): string {
     return url;
   }
 }
+
+// Exported for testing
+export { getYouTubeEmbedUrl };
