@@ -1,18 +1,18 @@
 {
   "handle": "hunger-Eric",
   "displayName": "fengc",
-  "roleLine": "全栈程序猿，爱折腾 AI Agent 和自动化工具。",
+  "roleLine": "全栈程序猿，摄影爱好者。捣鼓 AI Agent 和自动化工具。",
   "schoolName": "",
   "avatarUrl": "/avatar.jpg",
 
   "cta": {
     "primary": {
-      "label": "Read more about me",
+      "label": "关于我",
       "href": "/#about",
       "external": false
     },
     "secondary": {
-      "label": "Read more about me",
+      "label": "关于我",
       "href": "/#about",
       "external": true
     }
@@ -31,10 +31,9 @@
   "readme": {
     "fileLabel": "README.md",
     "paragraphs": [
-      "全栈程序猿，主要捣鼓 Next.js、Python、AI Agent 和自动化。GitHub 上搞了个 notebooklm-cn（NotebookLM 中文版克隆），还折腾 Hermes Agent 的各种自动化工作流。",
-      "业余写小说，笔名夜行人，在番茄小说连载《沅水守河人》——湘西民间悬疑 + 修真。写代码和写故事对我来说都是创造，只是表达方式不同。"
+      "全栈程序猿，主要捣鼓 Next.js、Python、AI Agent 和自动化。GitHub 上搞了个 notebooklm-cn（NotebookLM 中文版克隆），还折腾 Hermes Agent 的各种自动化工作流。"
     ],
-    "afterTechParagraph": "最近沉迷于用 AI 辅助写作流程——从看板管理到自动审阅，代码思维应用到写作上还挺有意思的。"
+    "afterTechParagraph": "最近在探索如何用 AI 辅助摄影后期处理工作流。"
   },
 
   "techUsed": [
@@ -66,34 +65,25 @@
           { "icon": "Zap", "label": "自动化", "value": "10+ 工作流" },
           { "icon": "BookOpen", "label": "技能数", "value": "40+" }
         ]
-      },
-      {
-        "title": "《沅水守河人》",
-        "description": "湘西民间悬疑 + 修真，番茄小说连载。",
-        "icon": "BookOpen",
-        "stats": [
-          { "icon": "FileText", "label": "规划", "value": "100 万字" },
-          { "icon": "Pen", "label": "笔名", "value": "夜行人" }
-        ]
       }
     ]
   },
 
   "aboutPage": {
     "hero": {
-      "headline": "写代码的，也写故事。",
-      "subheadline": "全栈程序猿 · AI Agent 玩家 · 业余小说作者",
+      "headline": "写代码的，也拍照。",
+      "subheadline": "全栈程序猿 · AI Agent 玩家 · 摄影爱好者",
       "portraitUrl": "/avatar.jpg",
       "locationLabel": "",
 
       "primaryCta": {
-        "label": "View Projects",
+        "label": "项目",
         "href": "/#projects",
         "external": false,
         "icon": "ArrowRight"
       },
       "secondaryCta": {
-        "label": "Read Articles",
+        "label": "文章",
         "href": "/articles",
         "external": false,
         "icon": "ExternalLink"
@@ -102,8 +92,8 @@
 
     "story": {
       "paragraphs": [
-        "白天写代码，晚上写故事。全栈程序猿，主要用 Next.js、Python，最近沉迷 AI Agent 和自动化工作流。GitHub 上搞了 notebooklm-cn（NotebookLM 中文版克隆），日常用 Hermes Agent 管理各种自动化任务。",
-        "业余时间是个网络小说作者，笔名夜行人，在番茄小说连载《沅水守河人》——一部湘西民间悬疑 + 修真题材的长篇小说。写代码和写小说对我来说本质是一样的：都是在创造一个世界，只是表达方式不同。"
+        "全栈程序猿，主要用 Next.js、Python，最近沉迷 AI Agent 和自动化工作流。GitHub 上搞了 notebooklm-cn（NotebookLM 中文版克隆），日常用 Hermes Agent 管理各种自动化任务。",
+        "摄影爱好者，喜欢扫街和风光。最近在试 AI 辅助后期处理——毕竟程序猿的本能就是把一切能自动化的都自动化。"
       ]
     },
 
@@ -111,7 +101,7 @@
       "title": "最近在忙什么",
       "paragraphs": [
         "技术方面：继续折腾 Hermes Agent 的自动化工作流，写各种 skills，探索 AI 编程的边界。刚完成了 NotebookLM 中文版的网站克隆和部署。",
-        "写作方面：规划《沅水守河人》的后续章节，用 AI 辅助写作流程（看板管理 + 自动审阅 + 质量检查），把代码思维应用到创作中。"
+        "摄影方面：研究 AI 辅助 RAW 后期处理流程，探索计算摄影——把代码思维应用到图像处理上。"
       ],
       "imageUrl": "",
       "imageAlt": "Currently working on"
@@ -119,7 +109,7 @@
 
     "usage": {
       "title": "常用工具栈",
-      "description": "代码和写作日常。",
+      "description": "代码和摄影日常。",
 
       "technologies": [
         "Next.js",
@@ -139,8 +129,7 @@
       "platforms": [
         "GitHub",
         "Vercel",
-        "Cloudflare",
-        "番茄小说"
+        "Cloudflare"
       ]
     },
 
@@ -148,7 +137,7 @@
       "title": "开发环境",
       "paragraphs": [
         "WSL + Neovim + Hermes Agent 的 AI 编程流。Obsidian 管理知识库（PARA + Zettelkasten）。",
-        "小说写作用 Obsidian + AI 辅助管线，从大纲到发布有完整的工作流。"
+        "摄影后期用 Lightroom + AI 辅助插件。"
       ],
       "imageUrl": "",
       "imageAlt": "Dev setup",
@@ -172,19 +161,8 @@
 
     "inspirations": {
       "title": "Inspirations",
-      "description": "影响我的创作者。",
-      "people": [
-        {
-          "name": "天下霸唱",
-          "href": "",
-          "avatarUrl": "default.jpg"
-        },
-        {
-          "name": "沈从文",
-          "href": "",
-          "avatarUrl": "default.jpg"
-        }
-      ]
+      "description": "",
+      "people": []
     }
   }
 }

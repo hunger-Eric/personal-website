@@ -1,7 +1,7 @@
 {
-  "name": "Kevin Trinh — Software Developer",
-  "short_name": "Kevin Trinh",
-  "description": "Kevin Trinh's portfolio, projects, and articles — CS student at the University of Houston building full-stack apps and useful tools.",
+  "name": "fengc — 全栈程序猿",
+  "short_name": "fengc",
+  "description": "fengc's portfolio — 全栈程序猿，摄影爱好者。Next.js / Python / AI Agent。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#050816",
@@ -21,6 +21,6 @@
     }
   ],
   "categories": ["portfolio", "blog", "technology"],
-  "lang": "en-US",
+  "lang": "zh-CN",
   "dir": "ltr"
 }

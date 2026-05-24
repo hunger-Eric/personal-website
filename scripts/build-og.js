@@ -205,9 +205,9 @@ const CARDS = [
   {
     file: "home.png",
     eyebrow: "",
-    title: "Kevin Trinh",
+title: "fengc",
     subtitle:
-      "Software Engineer & Creator from Houston, TX.\nBuilding thoughtful software at the University of Houston.",
+      "全栈程序猿，摄影爱好者。Next.js / Python / AI Agent。",
   },
   {
     file: "links.png",
@@ -219,7 +219,7 @@ const CARDS = [
     file: "articles.png",
     eyebrow: "",
     title: "Writing & Notes",
-    subtitle: "Deep dives, guides, and dev notes from Kevin Trinh.",
+    subtitle: "Deep dives, guides, and notes.",
   },
   {
     file: "projects.png",

@@ -26,6 +26,12 @@
             "label": "Articles",
             "href": "/articles",
             "icon": "BookOpen"
+          },
+          {
+            "id": "more-photography",
+            "label": "Photography",
+            "href": "/photography",
+            "icon": "Camera"
           }
         ]
       }

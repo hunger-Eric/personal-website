@@ -1,0 +1,137 @@
+{
+  "description": "用镜头记录走过的路、看过的风景。全栈程序猿 / 摄影爱好者。",
+  "projects": [
+    {
+      "id": "yuanshui",
+      "slug": "yuan-shui",
+      "title": "沅水",
+      "description": "沅水是一条有故事的江。沿江而下，从源头到入湖口，记录两岸的风土、人情与变迁。长期项目，持续更新。",
+      "coverImage": "https://images.unsplash.com/photo-1511497584788-876760111969?w=1200&q=80",
+      "coverWidth": 16,
+      "coverHeight": 9,
+      "date": "2025-04",
+      "status": "ongoing",
+      "photoCount": 4,
+      "photos": [
+        {
+          "id": "ys-001",
+          "title": "雾锁江面",
+          "description": "沅水晨雾，静谧如画",
+          "src": "https://images.unsplash.com/photo-1511497584788-876760111969?w=800&q=80",
+          "width": 16,
+          "height": 9,
+          "date": "2025-04",
+          "private": false
+        },
+        {
+          "id": "ys-002",
+          "title": "渡口",
+          "description": "老渡口的铁船",
+          "src": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80",
+          "width": 3,
+          "height": 4,
+          "date": "2025-05",
+          "private": false
+        },
+        {
+          "id": "ys-003",
+          "title": "渔舟",
+          "description": "夕阳下的独舟",
+          "src": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=800&q=80",
+          "width": 4,
+          "height": 3,
+          "date": "2025-06",
+          "private": true
+        },
+        {
+          "id": "ys-004",
+          "title": "夜岸",
+          "description": "江边的万家灯火",
+          "src": "https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80",
+          "width": 16,
+          "height": 9,
+          "date": "2025-07",
+          "private": true
+        }
+      ]
+    },
+    {
+      "id": "street-light",
+      "slug": "street-light",
+      "title": "街头光影",
+      "description": "城市街头的瞬间——光影、人物、故事。随走随拍，一个没有终点的项目。",
+      "coverImage": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&q=80",
+      "coverWidth": 3,
+      "coverHeight": 4,
+      "date": "2024-10",
+      "status": "ongoing",
+      "photoCount": 3,
+      "photos": [
+        {
+          "id": "sl-001",
+          "title": "老街光影",
+          "description": "巷子里午后的斜阳",
+          "src": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80",
+          "width": 3,
+          "height": 4,
+          "date": "2024-10",
+          "private": false
+        },
+        {
+          "id": "sl-002",
+          "title": "夜巷",
+          "description": "雨后的霓虹倒影",
+          "src": "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80",
+          "width": 4,
+          "height": 3,
+          "date": "2025-03",
+          "private": false
+        },
+        {
+          "id": "sl-003",
+          "title": "窗",
+          "description": "老茶馆里的时光",
+          "src": "https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80",
+          "width": 3,
+          "height": 4,
+          "date": "2024-12",
+          "private": true
+        }
+      ]
+    },
+    {
+      "id": "city-scapes",
+      "slug": "city-scapes",
+      "title": "城市切片",
+      "description": "记录不同城市的面孔——建筑、街景、地铁、人潮。从上海到武汉，从白天到黑夜。",
+      "coverImage": "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1200&q=80",
+      "coverWidth": 4,
+      "coverHeight": 3,
+      "date": "2025-01",
+      "status": "ongoing",
+      "photoCount": 2,
+      "photos": [
+        {
+          "id": "cs-001",
+          "title": "城市脉络",
+          "description": "上海陆家嘴的黄昏",
+          "src": "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80",
+          "width": 4,
+          "height": 3,
+          "date": "2025-01",
+          "private": false
+        },
+        {
+          "id": "cs-002",
+          "title": "人海",
+          "description": "地铁站的人潮",
+          "src": "https://images.unsplash.com/photo-1559827291-baf8b46d9cb2?w=800&q=80",
+          "width": 3,
+          "height": 4,
+          "date": "2025-02",
+          "private": true
+        }
+      ]
+    }
+  ]
+}

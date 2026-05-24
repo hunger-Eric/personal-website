@@ -244,10 +244,10 @@ export function HeroShowcaseSection() {
   const resumeHref = "/resume";
 
   // Big heading line
-  const lineOne = "Hi, Kevin here.";
+  const lineOne = `Hi, ${siteConfig.name} here.`;
 
   const description =
-    "Computer Science student at the University of Houston building full-stack web apps with clean UI, scalable backends, and practical machine learning.";
+    "全栈程序猿，摄影爱好者。捣鼓 Next.js、Python、AI Agent 和自动化工具，偶尔出去拍拍照。";
 
   return (
     // ✅ Mobile: ~80dvh tall + centered, so the next section peeks below the fold.
@@ -341,11 +341,11 @@ export function HeroShowcaseSection() {
             {/* CTA — open default mail client */}
             <div className="mt-7 flex flex-wrap justify-center gap-3 sm:justify-start">
               <a
-                href="mailto:contact@kevintrinh.dev"
+                href={siteConfig.socialsList.find(s => s.key === "email")?.href || "#"}
                 className="group inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-slate-50 shadow-sm transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-accent/95 hover:shadow-lg hover:shadow-accent/30"
               >
                 <IconMailFilled className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5" />
-                <span>Say hello to me!</span>
+                <span>联系我</span>
               </a>
             </div>
           </div>
