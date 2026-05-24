@@ -70,3 +70,18 @@ export function useLocale(): LocaleContextValue {
   }
   return context;
 }
+
+/**
+ * Inline script that restores saved locale BEFORE React hydration,
+ * so <html lang> is correct on first paint (no lang FOUC).
+ * Place inside <head> of root layout, like ThemeScript.
+ */
+export function LocaleScript() {
+  return (
+    <script
+      dangerouslySetInnerHTML={{
+        __html: `(function(){try{var v=localStorage.getItem("${LOCALE_STORAGE_KEY}");if(v==="en"||v==="zh"){document.documentElement.lang=v;}}catch(e){}})()`,
+      }}
+    />
+  );
+}

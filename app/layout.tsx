@@ -13,7 +13,7 @@ import { ConditionalChrome } from "@/components/ConditionalChrome";
 import { JsonLd } from "@/components/JsonLd";
 import { PageTransition } from "@/components/PageTransition";
 import { ThemeProvider, ThemeScript } from "@/components/ThemeProvider";
-import { LocaleProvider } from "@/components/LocaleProvider";
+import { LocaleProvider, LocaleScript } from "@/components/LocaleProvider";
 import {
   generatePersonSchema,
   generateWebSiteSchema,
@@ -84,17 +84,16 @@ export const metadata: Metadata = {
       { url: "/images/favicon.png", type: "image/png" },
     ],
     apple: [{ url: "/images/favicon.png", sizes: "180x180" }],
-    shortcut: ["/images/favicon.ico"],
   },
 
   // Manifest for PWA
   manifest: "/manifest.json",
 
-  // Open Graph — use a static image (dynamic next/og doesn't work reliably
-  // on Cloudflare Workers via OpenNext).
+  // Open Graph
   openGraph: {
     type: "website",
-    locale: "en_US",
+    locale: "zh_CN",
+    localeAlternate: ["en_US"],
     url: BASE_URL,
     siteName: `${siteConfig.name} Website`,
     title: `${siteConfig.name} – ${siteConfig.title}`,
@@ -160,13 +159,16 @@ export default function RootLayout({
 }) {
   return (
     <html
-      lang="en"
+      lang="zh"
       className={`${inter.variable} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <head>
         {/* Theme script - prevents flash of wrong theme */}
         <ThemeScript />
+
+        {/* Locale script - prevents flash of wrong lang attribute */}
+        <LocaleScript />
 
         {/*
           Disable native browser scroll restoration BEFORE the browser tries to
