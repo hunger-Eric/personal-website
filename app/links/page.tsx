@@ -167,7 +167,7 @@ export default async function LinksPage() {
   // RSS feed; fall back to the pinned featured video / channel link.
   const youtubeChannel =
     socialMap.get("youtube")?.href ||
-    "https://www.youtube.com/@KevinTrinhDev";
+    "";
   const channelId =
     ((siteConfig as any).featuredContent?.youtubeChannelId as
       | string
@@ -362,7 +362,7 @@ export default async function LinksPage() {
       </div>
 
       {/* Recent YouTube upload — section header + thumbnail-only card */}
-      <section className="mt-7 w-full" aria-label="Recent YouTube Upload">
+      {youtubeChannel && <section className="mt-7 w-full" aria-label="Recent YouTube Upload">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
             Recent YouTube Upload
@@ -433,8 +433,7 @@ export default async function LinksPage() {
             )}
           </div>
         </a>
-      </section>
-
+        </section>}
       {/* Legacy: standalone Articles section — kept behind a flag for easy
           re-enable, but Articles is now a third big button (Portfolio /
           Projects / Articles) so this is normally off. */}
@@ -532,7 +531,7 @@ export default async function LinksPage() {
 
       {/* Footer — two lines */}
       <div className="mt-auto flex flex-col items-center gap-1 pt-10 text-center text-xs text-slate-500">
-        <span>Built &amp; Designed by Kevin Trinh</span>
+        <span>Built with Next.js</span>
         <span>© {year} All rights reserved</span>
       </div>
     </main>
