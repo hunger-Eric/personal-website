@@ -143,4 +143,17 @@ describe("Typewriter", () => {
     unmount();
     expect(clearTimeoutSpy).toHaveBeenCalled();
   });
+
+  it("stops typing on unmount (cancelled guard)", async () => {
+    const { Typewriter } = await import("@/components/Typewriter");
+    const { container, unmount } = render(React.createElement(Typewriter, { text: "ABCDE", speedMs: 100, startDelayMs: 10 }));
+    // Advance past start delay and first couple ticks
+    act(() => { vi.advanceTimersByTime(150); }); // tick 0 and tick 1 fire, then...
+    expect(container.querySelector('[role="text"]')?.textContent?.length).toBeGreaterThan(0);
+    // Unmount while still typing (tick 2+ are scheduled)
+    unmount();
+    // Advance remaining time — should NOT throw (cancelled guard prevents setCount)
+    act(() => { vi.advanceTimersByTime(500); });
+    // No crash = test passes
+  });
 });

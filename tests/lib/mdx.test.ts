@@ -211,6 +211,43 @@ describe("getArticles", () => {
     expect(articles).toHaveLength(1);
     expect(articles[0].slug).toBe("hello-world");
   });
+
+  it("returns empty array when fs.readdirSync throws (catch block)", async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readdirSync).mockImplementation(() => {
+      throw new Error("ENOTDIR: not a directory");
+    });
+    const articles = await getArticles();
+    expect(articles).toEqual([]);
+  });
+
+  it("sorts two featured articles by date (both featured)", async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readdirSync).mockReturnValue(["a.mdx", "b.mdx"]);
+    vi.mocked(fs.readFileSync).mockImplementation((p: any) => {
+      if (fn(p) === "a.mdx")
+        return mdx({ title: "Older Featured", slug: "older", date: "2025-01-01", featured: true });
+      return mdx({ title: "Newer Featured", slug: "newer", date: "2025-06-01", featured: true });
+    });
+    const articles = await getArticles();
+    expect(articles).toHaveLength(2);
+    expect(articles[0].title).toBe("Newer Featured");
+    expect(articles[1].title).toBe("Older Featured");
+  });
+
+  it("sorts two non-featured articles by date (neither featured)", async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readdirSync).mockReturnValue(["a.mdx", "b.mdx"]);
+    vi.mocked(fs.readFileSync).mockImplementation((p: any) => {
+      if (fn(p) === "a.mdx")
+        return mdx({ title: "Older", slug: "older", date: "2025-01-01" });
+      return mdx({ title: "Newer", slug: "newer", date: "2025-06-01" });
+    });
+    const articles = await getArticles();
+    expect(articles).toHaveLength(2);
+    expect(articles[0].title).toBe("Newer");
+    expect(articles[1].title).toBe("Older");
+  });
 });
 
 // ---------------------------------------------------------------------------

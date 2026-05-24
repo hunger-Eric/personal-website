@@ -145,6 +145,30 @@ describe("adminGuard", () => {
       expect(result!.status).toBe(404);
     });
 
+    it("returns 404 when cookie header exists but no admin_token (parseCookieHeader line 32)", () => {
+      process.env.ENABLE_ADMIN = "true";
+      process.env.ADMIN_TOKEN = "my-secret-token";
+      const req = {
+        nextUrl: new URL("http://localhost/admin"),
+        headers: new Headers({ cookie: "other=value" }),
+        cookies: { get: () => undefined },
+      } as any;
+      const result = adminGuard(req);
+      expect(result).not.toBeNull();
+      expect(result!.status).toBe(404);
+    });
+
+    it("returns null when request has valid token via x-admin-token header", () => {
+      process.env.ENABLE_ADMIN = "true";
+      process.env.ADMIN_TOKEN = "my-secret-token";
+      const req = {
+        nextUrl: new URL("http://localhost/admin"),
+        headers: new Headers({ "x-admin-token": "my-secret-token" }),
+        cookies: { get: () => undefined },
+      } as any;
+      expect(adminGuard(req)).toBeNull();
+    });
+
     it("returns 404 when admin disabled even with valid token", () => {
       delete process.env.ENABLE_ADMIN;
       process.env.ADMIN_TOKEN = "my-secret-token";
