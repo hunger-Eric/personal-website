@@ -1,8 +1,7 @@
-// components/LangSwitch.tsx
 "use client";
 
-import { useLocale } from "./LocaleProvider";
 import { Languages } from "lucide-react";
+import { useLocale } from "./LocaleProvider";
 
 export function LangSwitch() {
   const { locale, toggleLocale } = useLocale();

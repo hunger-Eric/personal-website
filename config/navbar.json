@@ -16,24 +16,16 @@
         "show": true
       },
       {
-        "id": "more",
-        "label": "More",
-        "href": "",
-        "show": true,
-        "children": [
-          {
-            "id": "more-articles",
-            "label": "Articles",
-            "href": "/articles",
-            "icon": "BookOpen"
-          },
-          {
-            "id": "more-photography",
-            "label": "Photography",
-            "href": "/photography",
-            "icon": "Camera"
-          }
-        ]
+        "id": "articles",
+        "label": "Articles",
+        "href": "/articles",
+        "show": true
+      },
+      {
+        "id": "photography",
+        "label": "Photography",
+        "href": "/photography",
+        "show": true
       }
     ]
   },

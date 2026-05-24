@@ -1,45 +1,38 @@
-// app/articles/page.tsx
 import { Metadata } from "next";
+import { ArticlesBrowser, type ArticleListItem } from "@/components/articles/ArticlesBrowser";
 import { siteConfig } from "@/config/siteConfig";
 import { getArticles } from "@/lib/mdx/mdx";
-import {
-  ArticlesBrowser,
-  type ArticleListItem,
-} from "@/components/articles/ArticlesBrowser";
 
 export const metadata: Metadata = {
-  title: "Articles",
-  description: `Read ${siteConfig.name}'s articles about software development, technology, and more.`,
+  title: "文章",
+  description: `阅读 ${siteConfig.name} 的技术文章与实践记录。`,
   alternates: { canonical: "/articles" },
   openGraph: {
     type: "website",
     url: "/articles",
-    title: `Articles | ${siteConfig.name}`,
-    description: `Read ${siteConfig.name}'s articles about software development, technology, and more.`,
+    title: `文章 | ${siteConfig.name}`,
+    description: `阅读 ${siteConfig.name} 的技术文章与实践记录。`,
     images: [
       {
         url: "/images/og/articles.png?v=4",
         width: 1200,
         height: 630,
-        alt: `${siteConfig.name} — articles`,
+        alt: `${siteConfig.name} 文章`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `Articles | ${siteConfig.name}`,
-    description: `Read ${siteConfig.name}'s articles about software development, technology, and more.`,
+    title: `文章 | ${siteConfig.name}`,
+    description: `阅读 ${siteConfig.name} 的技术文章与实践记录。`,
     images: ["/images/og/articles.png?v=4"],
   },
 };
 
-// Revalidate every hour
-export const revalidate = 3600; // 1 hour
+export const revalidate = 3600;
 
 export default async function ArticlesPage() {
   const articles = await getArticles();
-
-  // Plain serializable items for the client component (drop unused fields)
   const items: ArticleListItem[] = articles.map((a) => ({
     slug: a.slug,
     title: a.title,
@@ -57,15 +50,11 @@ export default async function ArticlesPage() {
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
       <header className="mb-10 text-center">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
-          Articles
-        </h1>
+        <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">文章</h1>
         <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-          Thoughts, tutorials, and insights about software development,
-          technology, and more.
+          分享软件开发、产品实践与个人学习过程中的思考。
         </p>
       </header>
-
       <ArticlesBrowser articles={items} />
     </div>
   );

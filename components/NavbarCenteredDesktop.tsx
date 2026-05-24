@@ -196,13 +196,33 @@ export function NavbarCentered() {
   const contactCta = navbarConfig.cta.contact;
   const primaryCta = navbarConfig.cta.primary;
 
-  const textLinks = useMemo(() => items, [items]);
+  const textLinks = useMemo(() => {
+    const out: Array<(typeof items)[number]> = [];
+    for (const item of items) {
+      if (item.id === "more" && item.children?.length) {
+        for (const child of item.children) {
+          out.push({
+            id: child.id,
+            label: child.label,
+            href: child.href,
+            external: child.external,
+            show: true,
+          } as (typeof items)[number]);
+        }
+      } else {
+        out.push(item);
+      }
+    }
+    return out;
+  }, [items]);
   const navLabelById: Record<string, string> = {
     about: t.nav.about,
     projects: t.nav.projects,
     articles: t.nav.articles,
     photography: t.nav.photography,
     more: t.nav.more,
+    "more-articles": t.nav.articles,
+    "more-photography": t.nav.photography,
   };
   const resolveNavLabel = (id: string | undefined, fallback: string) =>
     (id && navLabelById[id]) || fallback;
@@ -471,10 +491,13 @@ export function NavbarCentered() {
                         }}
                         onMouseLeave={() => scheduleCloseDesktop(180)}
                       >
-                        {(item.children || []).map((child) => (
+        {(item.children || []).map((child) => (
                           <DesktopDropdownItem
                             key={child.id || child.href}
-                            item={child}
+                            item={{
+                              ...child,
+                              label: resolveNavLabel(child.id, child.label),
+                            }}
                             onNavigate={() => setOpenDropdownKey(null)}
                             navigateToSectionOnHome={navigateToSectionOnHome}
                           />

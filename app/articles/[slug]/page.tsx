@@ -76,7 +76,7 @@ export async function generateMetadata({
 function formatDate(dateStr: string): string {
   try {
     const date = new Date(dateStr);
-    return date.toLocaleDateString("en-US", {
+    return date.toLocaleDateString("zh-CN", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -167,7 +167,7 @@ export default async function ArticlePage({
 
           {article.updated && article.updated !== article.date && (
             <p className="mt-3 text-xs text-muted-foreground/80">
-              Last updated on {formatDate(article.updated)}
+              最后更新于 {formatDate(article.updated)}
             </p>
           )}
         </header>
@@ -198,7 +198,7 @@ export default async function ArticlePage({
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-accent"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Articles
+            返回文章列表
           </Link>
         </nav>
       </div>
@@ -207,7 +207,7 @@ export default async function ArticlePage({
           so the cards have room. 1 → 2 → 3 cols by breakpoint. */}
       {related.length > 0 && (
         <div className="mx-auto w-full max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
-          <h2 className="mb-5 text-xl font-semibold">Related Posts</h2>
+          <h2 className="mb-5 text-xl font-semibold">相关文章</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {related.map((r) => (
               <ArticleCard key={r.slug} article={r} />

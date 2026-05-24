@@ -54,7 +54,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         className="group mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-        Back to projects
+        返回项目列表
       </Link>
 
       <header className="mb-8">
@@ -84,7 +84,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         <main className="space-y-6">
           {desc.length > 0 && (
             <section className="rounded-2xl border border-border bg-card p-6">
-              <h2 className="mb-3 text-lg font-semibold">Overview</h2>
+              <h2 className="mb-3 text-lg font-semibold">项目介绍</h2>
               <div className="space-y-3 text-sm leading-7 text-muted-foreground">
                 {desc.map((line, idx) => (
                   <p key={idx}>{line}</p>
@@ -107,7 +107,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         <aside className="space-y-4">
           {project.technologies && project.technologies.length > 0 && (
             <section className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="mb-3 text-sm font-semibold">Tech Stack</h3>
+              <h3 className="mb-3 text-sm font-semibold">技术栈</h3>
               <div className="flex flex-wrap gap-2">
                 {project.technologies.map((tech) => (
                   <span
@@ -125,7 +125,7 @@ export default async function ProjectDetailPage({ params }: Props) {
             project.githubForks !== undefined ||
             project.downloads !== undefined) && (
             <section className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="mb-3 text-sm font-semibold">Repository Stats</h3>
+              <h3 className="mb-3 text-sm font-semibold">仓库指标</h3>
               <div className="space-y-2 text-sm text-muted-foreground">
                 {project.githubStars !== undefined && (
                   <p className="inline-flex items-center gap-2">
@@ -151,7 +151,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 
           {project.links && project.links.length > 0 && (
             <section className="rounded-2xl border border-border bg-card p-5">
-              <h3 className="mb-3 text-sm font-semibold">Related Links</h3>
+              <h3 className="mb-3 text-sm font-semibold">相关链接</h3>
               <div className="space-y-2">
                 {project.links.map((link) => (
                   <a

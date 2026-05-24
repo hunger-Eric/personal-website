@@ -41,19 +41,20 @@ export default function NavbarCenteredMobile() {
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const toggleRef = useRef<HTMLButtonElement | null>(null);
+  const navLabelById: Record<string, string> = {
+    about: t.nav.about,
+    projects: t.nav.projects,
+    articles: t.nav.articles,
+    photography: t.nav.photography,
+    more: t.nav.more,
+    "more-articles": t.nav.articles,
+    "more-photography": t.nav.photography,
+  };
+  const resolveNavLabel = (id: string | undefined, fallback: string) =>
+    (id && navLabelById[id]) || fallback;
 
   // Build mobile nav from navbarConfig (single source of truth)
   const { items, contactLink, primaryCta, logo } = useMemo(() => {
-    const navLabelById: Record<string, string> = {
-      about: t.nav.about,
-      projects: t.nav.projects,
-      articles: t.nav.articles,
-      photography: t.nav.photography,
-      more: t.nav.more,
-    };
-    const resolveNavLabel = (id: string | undefined, fallback: string) =>
-      (id && navLabelById[id]) || fallback;
-
     const centerItems: NavItem[] = (navbarConfig.centerItems || []).map(
       (it) => {
         const key = it.id || it.href || it.label;
@@ -413,7 +414,7 @@ export default function NavbarCenteredMobile() {
                           >
                             {/* mobile: title only */}
                             <span className="block text-[0.98rem] font-semibold text-slate-100">
-                              {child.label}
+                              {resolveNavLabel(child.id, child.label)}
                             </span>
                           </a>
                         ))}

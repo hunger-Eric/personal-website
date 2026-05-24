@@ -1,4 +1,3 @@
-// config/locale.ts
 export type Locale = "zh" | "en";
 
 export const LOCALE_STORAGE_KEY = "devfoliox-locale";
@@ -46,7 +45,7 @@ const zh: TranslationDict = {
     connect: "联系我",
   },
   footer: {
-    builtWith: "使用 Next.js 与爱构建",
+    builtWith: "使用 Next.js 构建",
   },
   common: {
     viewAll: "查看全部",
@@ -71,7 +70,7 @@ const en: TranslationDict = {
     connect: "Connect with me",
   },
   footer: {
-    builtWith: "Built with Next.js & love",
+    builtWith: "Built with Next.js",
   },
   common: {
     viewAll: "View all",
