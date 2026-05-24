@@ -130,10 +130,10 @@ export function FeaturedProjectsCarousel({
   };
 
   const navBtnClass =
-    "inline-flex items-center justify-center rounded-md border border-white/15 bg-black/40 p-2.5 text-slate-50/95 backdrop-blur-md transition-all duration-200 hover:bg-black/55 hover:border-white/30 active:scale-95";
+    "inline-flex items-center justify-center rounded-md border border-border bg-card/90 p-2.5 text-foreground backdrop-blur-md transition-all duration-200 hover:bg-muted active:scale-95";
 
   const actionBtnClass =
-    "inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-black/30 px-3.5 py-2 text-[13px] font-medium text-slate-50 backdrop-blur-md transition-all duration-200 hover:border-white/40 hover:bg-black/50 sm:text-sm";
+    "inline-flex items-center gap-1.5 rounded-md border border-border bg-card/90 px-3.5 py-2 text-[13px] font-medium text-foreground backdrop-blur-md transition-all duration-200 hover:bg-muted sm:text-sm";
 
   return (
     <div
@@ -144,7 +144,7 @@ export function FeaturedProjectsCarousel({
       onBlurCapture={() => setPaused(false)}
     >
       <div
-        className="relative overflow-hidden rounded-2xl border border-white/10 bg-slate-950"
+        className="relative overflow-hidden rounded-2xl border border-border bg-card"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -178,7 +178,7 @@ export function FeaturedProjectsCarousel({
                       loading={isActive ? "eager" : "lazy"}
                     />
                   ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/35 via-violet-500/20 to-sky-500/20" />
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-200/70 via-violet-100/50 to-sky-100/60" />
                   )}
                 </div>
               );
@@ -186,22 +186,22 @@ export function FeaturedProjectsCarousel({
           </div>
 
           {/* Dark overlay so text always reads. Flat scrim + a subtle gradient at the edges. */}
-          <div className="pointer-events-none absolute inset-0 bg-black/55" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60" />
+          <div className="pointer-events-none absolute inset-0 bg-white/35" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/40" />
 
           {/* Centered content */}
           <div className="relative z-10 flex h-full w-full items-center justify-center px-6 py-8 sm:px-10">
             <div className="w-full max-w-2xl text-center">
-              <h4 className="text-2xl font-semibold leading-tight text-white drop-shadow-[0_2px_14px_rgba(0,0,0,0.85)] sm:text-3xl md:text-4xl">
+              <h4 className="text-2xl font-semibold leading-tight text-foreground sm:text-3xl md:text-4xl">
                 {current.name}
               </h4>
 
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-50/95 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:text-[15px] sm:leading-7 md:text-base md:leading-7 line-clamp-3">
+              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-foreground/85 sm:text-[15px] sm:leading-7 md:text-base md:leading-7 line-clamp-3">
                 {blurb}
               </p>
 
               {tools.length ? (
-                <p className="mt-3 text-[13px] font-medium text-indigo-200 drop-shadow-[0_2px_10px_rgba(0,0,0,0.85)] sm:text-sm">
+                <p className="mt-3 text-[13px] font-medium text-indigo-600 sm:text-sm">
                   {tools.join(", ")}
                 </p>
               ) : null}
@@ -289,8 +289,8 @@ export function FeaturedProjectsCarousel({
                   className={[
                     "block h-[5px] rounded-[1px] transition-all duration-300",
                     isActive
-                      ? "w-12 bg-indigo-400"
-                      : "w-8 bg-white/25 group-hover:bg-white/40",
+                      ? "w-12 bg-indigo-500"
+                      : "w-8 bg-slate-300 group-hover:bg-slate-400",
                   ].join(" ")}
                 />
               </button>
