@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 
 process.env.ENABLE_ADMIN = "true";
+process.env.ADMIN_TOKEN = "test-admin-token";
 
 // Mock github-photo
 vi.mock("@/lib/github-photo", () => ({
@@ -25,7 +26,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({
           key: "site",
           content: { title: "My Site" },
@@ -58,7 +59,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({
           key: "navbar",
           content: { items: [] },
@@ -85,7 +86,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({
           key: "about",
           content: { bio: "hi" },
@@ -112,7 +113,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({
           key: "theme",
           content: { primary: "#000" },
@@ -133,7 +134,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({
           key: "photography",
           content: { projects: [] },
@@ -153,7 +154,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({
           key: "pages",
           content: { pages: [] },
@@ -170,7 +171,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({ content: { foo: "bar" } }),
       })
     );
@@ -186,7 +187,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({ key: "site" }),
       })
     );
@@ -202,7 +203,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({}),
       })
     );
@@ -216,7 +217,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({ key: "invalidKey", content: { foo: "bar" } }),
       })
     );
@@ -236,7 +237,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({ key: "site", content: { title: "Test" } }),
       })
     );
@@ -259,7 +260,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({ key: "site", content: { title: "Test" } }),
       })
     );
@@ -281,7 +282,7 @@ describe("POST /api/admin/save", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/save", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({ key: "site", content: { title: "Test" } }),
       })
     );

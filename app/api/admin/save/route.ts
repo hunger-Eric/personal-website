@@ -14,7 +14,7 @@ const CONFIG_PATHS: Record<string, string> = {
 };
 
 export async function POST(request: NextRequest) {
-  const guard = adminGuard();
+  const guard = adminGuard(request);
   if (guard) return guard;
 
   try {

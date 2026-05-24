@@ -7,8 +7,8 @@ import { adminGuard } from "@/lib/admin-guard";
 /**
  * GET: return the current photography config + available photos in repo
  */
-export async function GET() {
-  const guard = adminGuard();
+export async function GET(request: NextRequest) {
+  const guard = adminGuard(request);
   if (guard) return guard;
 
   try {
@@ -34,7 +34,7 @@ export async function GET() {
  * Expects multipart/form-data or JSON body
  */
 export async function POST(request: NextRequest) {
-  const guard = adminGuard();
+  const guard = adminGuard(request);
   if (guard) return guard;
 
   try {

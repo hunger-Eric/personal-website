@@ -3,6 +3,7 @@ import { describe, it, expect, vi, beforeAll } from "vitest";
 import { NextRequest } from "next/server";
 
 process.env.ENABLE_ADMIN = "true";
+process.env.ADMIN_TOKEN = "test-admin-token";
 
 // Mock all github-photo functions
 vi.mock("@/lib/github-photo", () => ({
@@ -36,7 +37,10 @@ describe("GET /api/admin/photography", () => {
     vi.mocked(listRepoDir).mockResolvedValueOnce(["private1.jpg"]);
 
     const { GET } = await import("@/app/api/admin/photography/route");
-    const res = await GET();
+    const req = new NextRequest(new Request("http://localhost/api/admin/photography", {
+      headers: { Cookie: "admin_token=test-admin-token" },
+    }));
+    const res = await GET(req);
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body).toHaveProperty("config");
@@ -50,7 +54,10 @@ describe("GET /api/admin/photography", () => {
     vi.mocked(listRepoDir).mockResolvedValueOnce([]);
 
     const { GET } = await import("@/app/api/admin/photography/route");
-    const res = await GET();
+    const req = new NextRequest(new Request("http://localhost/api/admin/photography", {
+      headers: { Cookie: "admin_token=test-admin-token" },
+    }));
+    const res = await GET(req);
     expect(res.status).toBe(500);
     const body = await res.json();
     expect(body.error).toBe("Network error");
@@ -61,7 +68,10 @@ describe("GET /api/admin/photography", () => {
     vi.mocked(listRepoDir).mockRejectedValueOnce(new Error("Auth error"));
 
     const { GET } = await import("@/app/api/admin/photography/route");
-    const res = await GET();
+    const req = new NextRequest(new Request("http://localhost/api/admin/photography", {
+      headers: { Cookie: "admin_token=test-admin-token" },
+    }));
+    const res = await GET(req);
     expect(res.status).toBe(500);
     const body = await res.json();
     expect(body.error).toBe("Auth error");
@@ -73,7 +83,10 @@ describe("GET /api/admin/photography", () => {
     vi.mocked(listRepoDir).mockResolvedValueOnce([]);
 
     const { GET } = await import("@/app/api/admin/photography/route");
-    const res = await GET();
+    const req = new NextRequest(new Request("http://localhost/api/admin/photography", {
+      headers: { Cookie: "admin_token=test-admin-token" },
+    }));
+    const res = await GET(req);
     expect(res.status).toBe(500);
     const body = await res.json();
     expect(body.error).toBe("Failed to load config");
@@ -84,7 +97,10 @@ describe("GET /api/admin/photography", () => {
     vi.mocked(listRepoDir).mockResolvedValueOnce([]);
 
     const { GET } = await import("@/app/api/admin/photography/route");
-    const res = await GET();
+    const req = new NextRequest(new Request("http://localhost/api/admin/photography", {
+      headers: { Cookie: "admin_token=test-admin-token" },
+    }));
+    const res = await GET(req);
     expect(res.status).toBe(500);
     const body = await res.json();
     expect(body.error).toBe("Failed to load config");
@@ -125,6 +141,7 @@ describe("POST /api/admin/photography (multipart/form-data)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
+        headers: { Cookie: "admin_token=test-admin-token" },
         body: formData,
       })
     );
@@ -158,6 +175,7 @@ describe("POST /api/admin/photography (multipart/form-data)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
+        headers: { Cookie: "admin_token=test-admin-token" },
         body: formData,
       })
     );
@@ -175,6 +193,7 @@ describe("POST /api/admin/photography (multipart/form-data)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
+        headers: { Cookie: "admin_token=test-admin-token" },
         body: formData,
       })
     );
@@ -200,6 +219,7 @@ describe("POST /api/admin/photography (multipart/form-data)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
+        headers: { Cookie: "admin_token=test-admin-token" },
         body: formData,
       })
     );
@@ -226,7 +246,7 @@ describe("POST /api/admin/photography (JSON body)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({ config: { projects: [] } }),
       })
     );
@@ -249,7 +269,7 @@ describe("POST /api/admin/photography (JSON body)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({
           config: { projects: [] },
           deletedPhotos: [{ path: "images/old.jpg" }],
@@ -275,7 +295,7 @@ describe("POST /api/admin/photography (JSON body)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({
           config: { projects: [] },
           deletedPhotos: [{ path: "images/gone.jpg" }],
@@ -299,7 +319,7 @@ describe("POST /api/admin/photography (JSON body)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({
           config: { projects: [] },
           deletedPhotos: [{ path: "images/fail.jpg" }],
@@ -323,7 +343,7 @@ describe("POST /api/admin/photography (JSON body)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({}),
       })
     );
@@ -342,7 +362,7 @@ describe("POST /api/admin/photography (JSON body)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({ config: { projects: [] } }),
       })
     );
@@ -361,7 +381,7 @@ describe("POST /api/admin/photography (JSON body)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
         body: JSON.stringify({ config: { projects: [] } }),
       })
     );
@@ -383,6 +403,7 @@ describe("POST /api/admin/photography (JSON body)", () => {
     const req = new NextRequest(
       new Request("http://localhost/api/admin/photography", {
         method: "POST",
+        headers: { Cookie: "admin_token=test-admin-token" },
         body: formData,
       })
     );
@@ -412,7 +433,7 @@ describe("POST /api/admin/photography (JSON body)", () => {
     );
     // Explicitly delete the content-type header
     Object.defineProperty(req, 'headers', {
-      value: new Headers(),
+      value: new Headers({ Cookie: "admin_token=test-admin-token" }),
       writable: false,
     });
 

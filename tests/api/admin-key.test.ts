@@ -3,6 +3,7 @@ import { describe, it, expect, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 process.env.ENABLE_ADMIN = "true";
+process.env.ADMIN_TOKEN = "test-admin-token";
 
 beforeEach(() => {
   vi.resetModules();
@@ -11,7 +12,9 @@ beforeEach(() => {
 describe("GET /api/admin/[key]", () => {
   it("returns 404 for unknown config key", async () => {
     const { GET } = await import("@/app/api/admin/[key]/route");
-    const req = new NextRequest(new Request("http://localhost/api/admin/unknown"));
+    const req = new NextRequest(new Request("http://localhost/api/admin/unknown", {
+      headers: { Cookie: "admin_token=test-admin-token" },
+    }));
     const params = Promise.resolve({ key: "unknown" });
     const res = await GET(req, { params } as any);
     expect(res.status).toBe(404);
@@ -24,7 +27,9 @@ describe("GET /api/admin/[key]", () => {
     // All valid keys will hit the 500 catch block.
     // This test verifies the error response shape.
     const { GET } = await import("@/app/api/admin/[key]/route");
-    const req = new NextRequest(new Request("http://localhost/api/admin/site"));
+    const req = new NextRequest(new Request("http://localhost/api/admin/site", {
+      headers: { Cookie: "admin_token=test-admin-token" },
+    }));
     const params = Promise.resolve({ key: "site" });
     const res = await GET(req, { params } as any);
     expect(res.status).toBe(500);
@@ -35,7 +40,9 @@ describe("GET /api/admin/[key]", () => {
   it("returns error message from thrown Error object", async () => {
     // This relies on the require() call throwing a real Error with .message
     const { GET } = await import("@/app/api/admin/[key]/route");
-    const req = new NextRequest(new Request("http://localhost/api/admin/navbar"));
+    const req = new NextRequest(new Request("http://localhost/api/admin/navbar", {
+      headers: { Cookie: "admin_token=test-admin-token" },
+    }));
     const params = Promise.resolve({ key: "navbar" });
     const res = await GET(req, { params } as any);
     expect(res.status).toBe(500);

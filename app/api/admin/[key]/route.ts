@@ -13,10 +13,10 @@ const CONFIG_MODULES: Record<string, () => any> = {
 };
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ key: string }> }
 ) {
-  const guard = adminGuard();
+  const guard = adminGuard(request);
   if (guard) return guard;
 
   const { key } = await params;
