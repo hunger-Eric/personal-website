@@ -12,9 +12,9 @@ interface ProjectCardProps {
   hideImage?: boolean;
 }
 
-function fallbackImage(_project: ProjectItem): string {
-  // Static fallback used when a project has no imageUrl in config.
-  return "/images/demo_1.png";
+function fallbackImage(project: ProjectItem): string | null {
+  // Return null when no image — caller should show gradient placeholder instead
+  return null;
 }
 
 export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
@@ -46,14 +46,20 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
     <>
       {/* Cover image — desktop: at top, mobile: rendered below the title (see inner div) */}
       {!hideImage && (
-        <div className="relative hidden aspect-[16/9] w-full overflow-hidden bg-white/5 md:block">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={image}
-            alt={project.name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-            loading="lazy"
-          />
+        <div className="relative hidden aspect-[16/9] w-full overflow-hidden bg-gradient-to-br from-indigo-500/10 to-sky-500/10 md:block">
+          {image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={image}
+              alt={project.name}
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+              loading="lazy"
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center">
+              <Folder className="h-12 w-12 text-indigo-300/20" />
+            </div>
+          )}
         </div>
       )}
 
@@ -96,14 +102,20 @@ export function ProjectCard({ project, iconFor, hideImage }: ProjectCardProps) {
 
         {/* Cover image — mobile only, between title and description. */}
         {!hideImage && (
-          <div className="relative mt-3 aspect-[16/9] w-full overflow-hidden rounded-lg border border-white/10 bg-white/5 md:hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={image}
-              alt={project.name}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
-              loading="lazy"
-            />
+          <div className="relative mt-3 aspect-[16/9] w-full overflow-hidden rounded-lg border border-white/10 bg-gradient-to-br from-indigo-500/10 to-sky-500/10 md:hidden">
+            {image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={image}
+                alt={project.name}
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                loading="lazy"
+              />
+            ) : (
+              <div className="flex h-full items-center justify-center">
+                <Folder className="h-12 w-12 text-indigo-300/20" />
+              </div>
+            )}
           </div>
         )}
 
