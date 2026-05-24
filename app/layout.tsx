@@ -241,8 +241,8 @@ export default function RootLayout({
           <ConditionalChrome>
             <Footer />
           </ConditionalChrome>
-        </ThemeProvider>
           </LocaleProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
