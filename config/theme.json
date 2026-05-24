@@ -1,5 +1,5 @@
 {
-  "defaultMode": "dark",
+  "defaultMode": "light",
   "allowToggle": true,
   "respectSystemPreference": true,
   "accentColor": "indigo",
