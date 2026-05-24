@@ -9,7 +9,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { themeConfig, type ThemeMode } from "@/config/theme";
+import { themeConfig, getAccentPreset, type ThemeMode } from "@/config/theme";
 
 type ResolvedTheme = "light" | "dark";
 
@@ -75,6 +75,17 @@ function applyTheme(resolvedTheme: ResolvedTheme): void {
   root.style.colorScheme = resolvedTheme;
 }
 
+function applyAccent(): void {
+  if (typeof document === "undefined") return;
+  const preset = getAccentPreset();
+  const root = document.documentElement;
+  root.style.setProperty("--accent", preset.accent);
+  root.style.setProperty("--accent-hover", preset.accentHover);
+  if (preset.accentLight) {
+    root.style.setProperty("--accent-light", preset.accentLight);
+  }
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   // Initialize with stored theme or default
   const [theme, setThemeState] = useState<ThemeMode>(() => {
@@ -95,6 +106,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const resolved = resolveTheme(theme);
     setResolvedTheme(resolved);
     applyTheme(resolved);
+    applyAccent();
     setStoredTheme(theme);
   }, [theme]);
 
@@ -153,6 +165,7 @@ export function useTheme(): ThemeContextValue {
  * Include this in the <head> of your document.
  */
 export function ThemeScript() {
+  const preset = getAccentPreset();
   const script = `
     (function() {
       try {
@@ -166,6 +179,11 @@ export function ThemeScript() {
 
         document.documentElement.classList.add(resolved);
         document.documentElement.style.colorScheme = resolved;
+
+        // Set accent colors from theme config
+        document.documentElement.style.setProperty('--accent', '${preset.accent}');
+        document.documentElement.style.setProperty('--accent-hover', '${preset.accentHover}');
+        ${preset.accentLight ? `document.documentElement.style.setProperty('--accent-light', '${preset.accentLight}');` : ''}
       } catch (e) {
         document.documentElement.classList.add('dark');
       }

@@ -10,8 +10,13 @@ const mockThemeConfig = {
 };
 
 vi.mock("@/config/theme", () => ({
-  themeConfig: mockThemeConfig,
+  themeConfig: Object.assign(mockThemeConfig, { accentColor: "indigo", presets: {} }),
   ThemeMode: "light" as "light" | "dark" | "system",
+  getAccentPreset: () => ({
+    accent: "#4f46e5",
+    accentHover: "#4338ca",
+    accentLight: "#818cf8",
+  }),
   default: mockThemeConfig,
 }));
 
