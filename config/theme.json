@@ -1,8 +1,8 @@
 {
-  "defaultMode": "dark",
+  "defaultMode": "light",
   "allowToggle": true,
   "respectSystemPreference": true,
-  "accentColor": "indigo",
+  "accentColor": "sky",
   "presets": {
     "indigo": {
       "accent": "#4f46e5",
