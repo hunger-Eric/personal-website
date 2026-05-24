@@ -1,0 +1,17 @@
+#!/bin/sh
+# Pre-commit hook: run full test suite, block commit if any test fails
+set -e
+
+echo "🧪 Running test suite..."
+cd "$(git rev-parse --show-toplevel)"
+npx vitest run
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ 测试未通过，提交已阻止"
+  echo "   请修复失败的测试后再提交"
+  exit 1
+fi
+
+echo ""
+echo "✅ 所有测试通过，提交继续"
