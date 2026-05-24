@@ -1,4 +1,4 @@
-// app/admin/login/page.tsx
+// app/admin/(auth)/login/page.tsx
 // Admin login page — password-based authentication
 "use client";
 
@@ -34,7 +34,6 @@ export default function AdminLoginPage() {
         return;
       }
 
-      // Success — redirect to admin panel
       router.push(redirectTo);
     } catch {
       setError("网络错误，请重试");
@@ -46,7 +45,6 @@ export default function AdminLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm">
-        {/* Header */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
             <Lock className="h-6 w-6 text-muted-foreground" />
@@ -57,7 +55,6 @@ export default function AdminLoginPage() {
           </p>
         </div>
 
-        {/* Login Form */}
         <form
           onSubmit={handleSubmit}
           className="rounded-2xl border border-border bg-card p-6 shadow-sm"
@@ -99,7 +96,6 @@ export default function AdminLoginPage() {
           </button>
         </form>
 
-        {/* Footer hint */}
         <p className="mt-6 text-center text-xs text-muted-foreground">
           或使用访问令牌直接登录
         </p>
