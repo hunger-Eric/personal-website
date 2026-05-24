@@ -501,13 +501,13 @@ export function ContributionGraphCard({
     return buildYearGrid(year, dataByYear[year]);
   }, [year, useRolling, today, dataByYear]);
 
-  const cardClass = "text-slate-50";
+  const cardClass = "text-foreground";
 
   // Loading skeleton component
   const ContributionSkeleton = () => (
     <div className="inline-block pt-1">
       {/* Month labels skeleton */}
-      <div className="flex justify-start gap-[3.5px] text-[0.8rem] leading-tight text-slate-300 sm:text-[0.85rem]">
+      <div className="flex justify-start gap-[3.5px] text-[0.8rem] leading-tight text-muted-foreground sm:text-[0.85rem]">
         {Array.from({ length: 53 }).map((_, weekIndex) => (
           <div
             key={`skeleton-month-${weekIndex}`}
@@ -547,7 +547,7 @@ export function ContributionGraphCard({
         <h2 className="font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
           ~/{title}
         </h2>
-        <div className="hidden h-px w-40 bg-white/15 sm:block sm:w-72" aria-hidden />
+        <div className="hidden h-px w-40 bg-border sm:block sm:w-72" aria-hidden />
       </div>
 
       {/* Graph + year buttons */}
@@ -594,17 +594,17 @@ export function ContributionGraphCard({
                             return (
                               <div
                                 key={`cell-${weekIndex}-${dayIndex}`}
-                                className="h-[8px] w-[8px] rounded-[2px] bg-slate-900/20 sm:h-[12px] sm:w-[12px] sm:rounded-[3px]"
+                                className="h-[8px] w-[8px] rounded-[2px] bg-slate-300/70 sm:h-[12px] sm:w-[12px] sm:rounded-[3px]"
                               />
                             );
                           }
 
                           // In-range cells: 0-level still visible (old "less" color)
                           const level = cell.level;
-                          let color = "bg-slate-800";
-                          if (level === 1) color = "bg-indigo-950";
-                          if (level === 2) color = "bg-indigo-900";
-                          if (level === 3) color = "bg-indigo-700";
+                          let color = "bg-slate-300";
+                          if (level === 1) color = "bg-indigo-200";
+                          if (level === 2) color = "bg-indigo-300";
+                          if (level === 3) color = "bg-indigo-400";
                           if (level === 4) color = "bg-indigo-500";
 
                           return (
@@ -629,10 +629,10 @@ export function ContributionGraphCard({
                   <div className="hidden items-center gap-2 sm:flex">
                     <span>Less</span>
                     <div className="flex items-center gap-[3.5px]">
-                      <span className="h-[12px] w-[12px] rounded-[3px] bg-slate-800" />
-                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-950" />
-                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-900" />
-                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-700" />
+                      <span className="h-[12px] w-[12px] rounded-[3px] bg-slate-300" />
+                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-200" />
+                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-300" />
+                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-400" />
                       <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-500" />
                     </div>
                     <span>More</span>
@@ -644,10 +644,10 @@ export function ContributionGraphCard({
                   <div className="hidden items-center gap-2 sm:flex">
                     <span>Less</span>
                     <div className="flex items-center gap-[3.5px]">
-                      <span className="h-[12px] w-[12px] rounded-[3px] bg-slate-800" />
-                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-950" />
-                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-900" />
-                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-700" />
+                      <span className="h-[12px] w-[12px] rounded-[3px] bg-slate-300" />
+                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-200" />
+                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-300" />
+                      <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-400" />
                       <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-500" />
                     </div>
                     <span>More</span>
@@ -689,8 +689,8 @@ export function ContributionGraphCard({
                 }}
                 className={`flex-1 px-1 py-1 text-center font-medium transition-colors md:text-left ${
                   isActive
-                    ? "text-indigo-300"
-                    : "text-muted-foreground hover:text-slate-200"
+                    ? "text-indigo-500"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {y}

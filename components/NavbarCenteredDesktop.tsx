@@ -270,7 +270,7 @@ export function NavbarCentered() {
   // 100% opaque always — no see-through.
   const headerBg = "bg-background";
   const headerBlur = "";
-  const headerBorder = scrolled ? "border-white/10" : "border-white/5";
+  const headerBorder = "border-border";
 
   return (
     <header
@@ -365,9 +365,9 @@ export function NavbarCentered() {
                 className={[
                   "pointer-events-auto flex items-center gap-1 rounded-2xl border px-2 py-1 text-xs md:gap-2 md:px-3 md:py-1.5 md:text-sm",
                   scrolled
-                    ? "border-white/15 bg-white/5 text-muted-foreground shadow-sm transition-[background-color,border-color,box-shadow,color] duration-300 ease-out"
+                    ? "border-border bg-card text-muted-foreground shadow-sm transition-[background-color,border-color,box-shadow,color] duration-300 ease-out"
                     : // ✅ not transparent at all (still subtle + minimal)
-                      "border-white/20 bg-slate-950 text-slate-200/90 shadow-[0_0_0_1px_rgba(255,255,255,0.06)] transition-[background-color,border-color,box-shadow,color] duration-300 ease-out",
+                      "border-border bg-card text-muted-foreground shadow-sm transition-[background-color,border-color,box-shadow,color] duration-300 ease-out",
                 ].join(" ")}
               >
                 {textLinks.map((item) => {
@@ -386,7 +386,7 @@ export function NavbarCentered() {
                           type="button"
                           className={[
                             "rounded-md px-2.5 py-1 md:px-3 md:py-1.5",
-                            "font-semibold text-muted-foreground transition hover:bg-white/10 hover:text-foreground",
+                            "font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground",
                           ].join(" ")}
                           onMouseEnter={() => {
                             cancelCloseDesktop();
@@ -409,7 +409,7 @@ export function NavbarCentered() {
                           rel="noreferrer noopener"
                           className={[
                             "rounded-md px-2.5 py-1 md:px-3 md:py-1.5",
-                            "font-semibold text-muted-foreground transition hover:bg-white/10 hover:text-foreground",
+                            "font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground",
                           ].join(" ")}
                           onMouseEnter={() => {
                             cancelCloseDesktop();
@@ -430,7 +430,7 @@ export function NavbarCentered() {
                         scroll={true}
                         className={[
                           "rounded-md px-2.5 py-1 md:px-3 md:py-1.5",
-                          "font-semibold text-muted-foreground transition hover:bg-white/10 hover:text-foreground",
+                          "font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground",
                         ].join(" ")}
                         onMouseEnter={() => {
                           cancelCloseDesktop();
@@ -457,7 +457,7 @@ export function NavbarCentered() {
                         className={[
                           "group inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 md:px-3 md:py-1.5",
                           "font-semibold text-muted-foreground transition",
-                          "hover:bg-white/10 hover:text-foreground",
+                          "hover:bg-muted hover:text-foreground",
                         ].join(" ")}
                         aria-haspopup="menu"
                         aria-expanded={isDropdownOpen}
@@ -478,7 +478,7 @@ export function NavbarCentered() {
                         role="menu"
                         className={[
                           "absolute left-1/2 top-full z-30 mt-2 w-44 -translate-x-1/2 origin-top",
-                          "overflow-hidden rounded-xl border border-white/10 bg-slate-950/95 py-1.5 text-sm shadow-xl shadow-slate-950/40",
+                          "overflow-hidden rounded-xl border border-border bg-card py-1.5 text-sm shadow-xl",
                           "supports-[backdrop-filter]:backdrop-blur",
                           "transition-all duration-150 ease-out",
                           isDropdownOpen
@@ -591,13 +591,13 @@ function DesktopDropdownItem({
       : null;
 
   const baseClass =
-    "flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm font-medium text-slate-200 transition-colors hover:bg-white/5 hover:text-white";
+    "flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground";
 
   const inner = (
     <>
       {IconComponent ? (
         <IconComponent
-          className="h-4 w-4 flex-none text-slate-400 transition-colors group-hover:text-slate-200"
+          className="h-4 w-4 flex-none text-muted-foreground transition-colors group-hover:text-foreground"
           aria-hidden
         />
       ) : null}
