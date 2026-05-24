@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
 import { Link2 } from "lucide-react";
@@ -46,19 +45,6 @@ export function AboutSection() {
 
         <div className="mt-8 grid gap-5 lg:grid-cols-[290px_1fr] lg:gap-6">
           <aside className="space-y-5">
-            {a.avatarUrl ? (
-              <div className="group relative hidden aspect-square w-full overflow-hidden rounded-xl border border-border sm:block">
-                <Image
-                  src={a.avatarUrl}
-                  alt={a.displayName || siteConfig.name}
-                  fill
-                  className="object-cover transition-transform duration-300 ease-out group-hover:scale-[1.06]"
-                  sizes="(min-width: 1024px) 290px, 100vw"
-                  priority={false}
-                />
-              </div>
-            ) : null}
-
             <Link
               href="/links"
               className="group inline-flex w-full min-w-0 items-center justify-center gap-2 rounded-md border border-accent/40 bg-accent/10 px-3.5 py-2.5 text-sm font-semibold text-foreground transition-colors duration-150 hover:border-accent hover:bg-accent/15"

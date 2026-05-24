@@ -1,6 +1,5 @@
 // app/articles/[slug]/page.tsx
 import { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
@@ -16,8 +15,6 @@ import { generateArticleSchema } from "@/lib/structured-data";
 import { MdxRenderer } from "@/components/mdx/MdxRenderer";
 import { ArticleCard } from "@/components/articles/ArticleCard";
 import type { ArticleListItem } from "@/components/articles/ArticlesBrowser";
-
-const AUTHOR_AVATAR = "/images/avatar.jpg";
 
 // Fully static — MDX is bundled at build time; fs access at runtime is not
 // available on Cloudflare Workers so we skip revalidation entirely.
@@ -143,15 +140,6 @@ export default async function ArticlePage({
 
           {/* Author + date — same typography as the cards, "|" separator */}
           <div className="mt-6 flex flex-wrap items-center gap-2 text-sm font-semibold">
-            <span className="relative h-9 w-9 flex-none overflow-hidden rounded-full ring-1 ring-white/10">
-              <Image
-                src={AUTHOR_AVATAR}
-                alt=""
-                fill
-                sizes="36px"
-                className="object-cover"
-              />
-            </span>
             <span className="text-foreground">{author}</span>
             <span aria-hidden className="font-normal text-slate-500">
               |

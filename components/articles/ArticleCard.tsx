@@ -9,7 +9,6 @@ import { siteConfig } from "@/config/siteConfig";
 import type { ArticleListItem } from "./ArticlesBrowser";
 
 const FALLBACK_IMG = "/images/demo_1.png";
-const AUTHOR_AVATAR = "/images/avatar.jpg";
 
 function formatDate(dateStr: string, locale: "zh" | "en"): string {
   try {
@@ -78,16 +77,6 @@ export function ArticleCard({ article }: Props) {
         )}
 
         <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-muted-foreground sm:text-sm">
-          <span className="relative h-8 w-8 flex-none overflow-hidden rounded-full ring-1 ring-border">
-            <Image
-              src={AUTHOR_AVATAR}
-              alt=""
-              fill
-              sizes="32px"
-              unoptimized
-              className="object-cover"
-            />
-          </span>
           <span className="text-foreground">{author}</span>
           <span aria-hidden className="text-muted-foreground/70">
             ·

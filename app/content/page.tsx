@@ -216,16 +216,6 @@ export default async function ContentPage() {
 
       {/* Header */}
       <header className="mt-10 flex flex-col items-center text-center sm:mt-12">
-        <div className="relative mb-4 h-20 w-20 overflow-hidden rounded-full ring-1 ring-slate-200 sm:h-24 sm:w-24">
-          <Image
-            src="/images/avatar.jpg"
-            alt={siteConfig.name}
-            fill
-            sizes="96px"
-            className="object-cover"
-            priority
-          />
-        </div>
         <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-[28px]">
           Content &amp; Socials
         </h1>
