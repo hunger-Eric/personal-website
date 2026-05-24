@@ -70,7 +70,7 @@ describe("FeaturedProjectsTicker", () => {
         ],
       })],
     }));
-    expect(screen.getByText("View Project")).toBeInTheDocument();
+    expect(screen.getByText("View Details")).toBeInTheDocument();
     expect(screen.getByText("GitHub")).toBeInTheDocument();
   });
 

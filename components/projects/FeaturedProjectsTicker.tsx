@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   FilledGithub,
@@ -16,8 +17,6 @@ import type { ProjectItem } from "../../config/projects";
 interface FeaturedProjectsTickerProps {
   projects: ProjectItem[];
 }
-
-type ProjectLink = NonNullable<ProjectItem["links"]>[number];
 
 function iconForLink(type?: string) {
   switch (type) {
@@ -34,15 +33,6 @@ function iconForLink(type?: string) {
     default:
       return FilledArrowUpRight;
   }
-}
-
-function pickPrimary(project: ProjectItem): ProjectLink | null {
-  return (
-    project.links?.find((l) => l.type === "live") ??
-    project.links?.find((l) => l.type === "github") ??
-    project.links?.[0] ??
-    null
-  );
 }
 
 function getBlurb(project: ProjectItem) {
@@ -133,7 +123,6 @@ export function FeaturedProjectsCarousel({
   const blurb = getBlurb(current);
   const tools = getTools(current);
   const links = (current.links ?? []).slice(0, 4);
-  const primary = pickPrimary(current);
 
   const openHref = (href?: string | null) => {
     if (!href) return;
@@ -218,19 +207,16 @@ export function FeaturedProjectsCarousel({
               ) : null}
 
               <div className="mt-5 flex flex-wrap justify-center gap-2">
-                {primary?.href ? (
-                  <button
-                    type="button"
-                    onClick={() => openHref(primary.href)}
-                    className={actionBtnClass}
-                  >
-                    <FilledArrowUpRight className="h-4 w-4 opacity-90" />
-                    <span>View Project</span>
-                  </button>
-                ) : null}
+                <Link
+                  href={`/projects/${encodeURIComponent(current.id)}`}
+                  className={actionBtnClass}
+                >
+                  <FilledArrowUpRight className="h-4 w-4 opacity-90" />
+                  <span>View Details</span>
+                </Link>
 
                 {links
-                  .filter((l) => l.href !== primary?.href)
+                  .filter((l) => !!l.href)
                   .map((l) => {
                     const Ico = iconForLink(l.type);
                     return (

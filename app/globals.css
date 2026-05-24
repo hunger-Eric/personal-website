@@ -3,13 +3,12 @@
 @tailwind utilities;
 
 :root {
-  /* Colors - Dark mode (default) */
   --background: #050816;
   --foreground: #f4f4f5;
   --muted: #71717a;
   --accent: #4f46e5;
   --accent-hover: #4338ca;
-  /* softer indigo for selection */
+  --accent-light: #818cf8;
   --selection-bg: #312e81;
 
   /* Font families - set by next/font */
@@ -33,9 +32,10 @@
   --muted: #6b7280;
   --accent: #4f46e5;
   --accent-hover: #4338ca;
+  --accent-light: #818cf8;
   --selection-bg: #c7d2fe;
   --card-bg: rgba(0, 0, 0, 0.02);
-  --card-border: rgba(0, 0, 0, 0.1);
+  --card-border: rgba(0, 0, 0, 0.08);
 }
 
 html {

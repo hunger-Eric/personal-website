@@ -17,6 +17,7 @@ import {
   type NavDropdownFooterCfg,
 } from "../config/navbarConfig";
 import { siteConfig } from "../config/siteConfig";
+import { useLocale } from "./LocaleProvider";
 
 type NavItem = {
   key: string;
@@ -30,6 +31,7 @@ type NavItem = {
 };
 
 export default function NavbarCenteredMobile() {
+  const { t } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -39,6 +41,17 @@ export default function NavbarCenteredMobile() {
 
   const panelRef = useRef<HTMLDivElement | null>(null);
   const toggleRef = useRef<HTMLButtonElement | null>(null);
+  const navLabelById: Record<string, string> = {
+    about: t.nav.about,
+    projects: t.nav.projects,
+    articles: t.nav.articles,
+    photography: t.nav.photography,
+    more: t.nav.more,
+    "more-articles": t.nav.articles,
+    "more-photography": t.nav.photography,
+  };
+  const resolveNavLabel = (id: string | undefined, fallback: string) =>
+    (id && navLabelById[id]) || fallback;
 
   // Build mobile nav from navbarConfig (single source of truth)
   const { items, contactLink, primaryCta, logo } = useMemo(() => {
@@ -48,7 +61,7 @@ export default function NavbarCenteredMobile() {
         return {
           key,
           id: it.id,
-          label: it.label,
+          label: resolveNavLabel(it.id, it.label),
           href: it.href,
           external: Boolean(it.external ?? isExternalHref(it.href)),
           isButton: false,
@@ -90,14 +103,14 @@ export default function NavbarCenteredMobile() {
       primaryCta,
       logo: navbarConfig.logo,
     };
-  }, []);
+  }, [t.nav.about, t.nav.projects, t.nav.articles, t.nav.photography, t.nav.more]);
 
   const menuLinks = useMemo<NavItem[]>(() => {
     if (isHome) return items;
     const homeItem: NavItem = {
       key: "nav-home",
       id: "home",
-      label: "Home",
+      label: t.nav.home,
       href: "/",
       external: false,
       isButton: false,
@@ -105,7 +118,7 @@ export default function NavbarCenteredMobile() {
       dropdownFooter: undefined,
     };
     return [homeItem, ...items];
-  }, [items, isHome]);
+  }, [items, isHome, t.nav.home]);
 
   // Socials for the bottom of the drawer (footer-visible only)
   const socialItems = useMemo(() => {
@@ -326,7 +339,7 @@ export default function NavbarCenteredMobile() {
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
             <span className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              Menu
+              {t.nav.menu}
             </span>
             <button
               type="button"
@@ -378,7 +391,7 @@ export default function NavbarCenteredMobile() {
 
                       {/* ✅ "View more" + chevron gray (not white) */}
                       <span className="inline-flex shrink-0 items-center gap-2 text-xs font-semibold text-muted-foreground">
-                        <span>View more</span>
+                        <span>{t.nav.viewMore}</span>
                         <ChevronDown
                           className={[
                             "h-4 w-4 text-muted-foreground transition-transform duration-200",
@@ -401,7 +414,7 @@ export default function NavbarCenteredMobile() {
                           >
                             {/* mobile: title only */}
                             <span className="block text-[0.98rem] font-semibold text-slate-100">
-                              {child.label}
+                              {resolveNavLabel(child.id, child.label)}
                             </span>
                           </a>
                         ))}
@@ -419,21 +432,23 @@ export default function NavbarCenteredMobile() {
               {/* CTAs — at the very bottom (Email me is mobile-only, hence
                   always rendered here regardless of contact.show) */}
               <div className="mt-6 flex flex-col gap-2">
-                <a
-                  href={contactLink.href}
-                  target={contactLink.external ? "_blank" : undefined}
-                  rel={contactLink.external ? "noreferrer noopener" : undefined}
-                  onClick={() => setIsOpen(false)}
-                  className="inline-flex items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-50 transition hover:border-accent hover:bg-white/10"
-                >
-                  {(() => {
-                    const Icon = (LucideIcons as any).Mail;
-                    return Icon ? (
-                      <Icon className="h-4 w-4 opacity-80" aria-hidden />
-                    ) : null;
-                  })()}
-                  <span>{contactLink.label}</span>
-                </a>
+                {contactLink.href && (
+                  <a
+                    href={contactLink.href}
+                    target={contactLink.external ? "_blank" : undefined}
+                    rel={contactLink.external ? "noreferrer noopener" : undefined}
+                    onClick={() => setIsOpen(false)}
+                    className="inline-flex items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-50 transition hover:border-accent hover:bg-white/10"
+                  >
+                    {(() => {
+                      const Icon = (LucideIcons as any).Mail;
+                      return Icon ? (
+                        <Icon className="h-4 w-4 opacity-80" aria-hidden />
+                      ) : null;
+                    })()}
+                    <span>{t.nav.connect}</span>
+                  </a>
+                )}
 
                 {navbarConfig.cta.primary.show !== false && (
                   <a
@@ -449,7 +464,7 @@ export default function NavbarCenteredMobile() {
                         <Icon className="h-4 w-4" aria-hidden />
                       ) : null;
                     })()}
-                    <span>{primaryCta.label}</span>
+                    <span>{t.nav.connect}</span>
                   </a>
                 )}
               </div>
