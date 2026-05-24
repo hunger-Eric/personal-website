@@ -1,39 +1,26 @@
 {
   "logo": {
-    "label": "Kevin Trinh",
+    "label": "fengc",
     "href": "/",
     "imageSrc": "",
-    "imageAlt": "Kevin Trinh"
+    "imageAlt": "fengc"
   },
 
   "center": {
     "items": [
       { "id": "about", "label": "About", "href": "/#about", "show": true },
       {
-        "id": "experience",
-        "label": "Experience",
-        "href": "/#experience",
-        "show": true
-      },
-      {
         "id": "projects",
         "label": "Projects",
         "href": "/#projects",
         "show": true
       },
-
       {
         "id": "more",
         "label": "More",
         "href": "",
         "show": true,
         "children": [
-          {
-            "id": "more-content",
-            "label": "Content",
-            "href": "/#content",
-            "icon": "Clapperboard"
-          },
           {
             "id": "more-articles",
             "label": "Articles",
@@ -46,7 +33,7 @@
   },
 
   "cta": {
-    "contact": { "label": "Email me", "href": "mailto:contact@kevintrinh.dev", "external": true, "show": false },
+    "contact": { "label": "Email me", "href": "mailto:", "external": true, "show": false },
     "primary": {
       "label": "Connect with me",
       "href": "/links",

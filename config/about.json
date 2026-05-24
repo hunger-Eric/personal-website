@@ -1,8 +1,8 @@
 {
-  "handle": "KevinTrinhDev",
-  "displayName": "Kevin Huy Trinh",
-  "roleLine": "Computer Science student focused on building clean, useful software.",
-  "schoolName": "University of Houston",
+  "handle": "hunger-Eric",
+  "displayName": "fengc",
+  "roleLine": "全栈程序猿，爱折腾 AI Agent 和自动化工具。",
+  "schoolName": "",
   "avatarUrl": "/avatar.jpg",
 
   "cta": {
@@ -18,87 +18,62 @@
     }
   },
 
-  "followers": { "followers": 506, "following": 26 },
+  "followers": { "followers": 0, "following": 0 },
 
   "profileLinks": [
-    { "type": "school", "label": "University of Houston" },
-    {
-      "type": "email",
-      "label": "contact@kevintrinh.dev",
-      "href": "mailto:contact@kevintrinh.dev"
-    },
-    {
-      "type": "linkedin",
-      "label": "in/KevinTrinhDev",
-      "href": "https://www.linkedin.com/in/KevinTrinhDev"
-    },
     {
       "type": "github",
-      "label": "github.com/KevinTrinhDev",
-      "href": "https://github.com/KevinTrinhDev"
+      "label": "github.com/hunger-Eric",
+      "href": "https://github.com/hunger-Eric"
     }
   ],
 
   "readme": {
     "fileLabel": "README.md",
     "paragraphs": [
-      "I'm a Computer Science student at the University of Houston building full-stack apps with a focus on clean UI and maintainable architecture. Most recently I shipped a degree-planning tool used by 100+ UH students.",
-      "Outside of code I'm into machine learning, desk setups and PCs, chess, thrifting, and gaming."
+      "全栈程序猿，主要捣鼓 Next.js、Python、AI Agent 和自动化。GitHub 上搞了个 notebooklm-cn（NotebookLM 中文版克隆），还折腾 Hermes Agent 的各种自动化工作流。",
+      "业余写小说，笔名夜行人，在番茄小说连载《沅水守河人》——湘西民间悬疑 + 修真。写代码和写故事对我来说都是创造，只是表达方式不同。"
     ],
-    "afterTechParagraph": "Right now I'm focused on shipping production-grade tools for students and small businesses — full-stack apps with thoughtful UI, reliable data layers, and infrastructure that scales without surprises."
+    "afterTechParagraph": "最近沉迷于用 AI 辅助写作流程——从看板管理到自动审阅，代码思维应用到写作上还挺有意思的。"
   },
 
   "techUsed": [
-    "C++",
+    "Next.js",
     "Python",
-    "React",
-    "PostgreSQL",
-    "Google Cloud",
-    "Linux Ubuntu",
-    "Git"
+    "TypeScript",
+    "Tailwind CSS",
+    "Git",
+    "AI Agent"
   ],
 
   "snapshot": {
-    "title": "Developer Snapshot",
+    "title": "数字足迹",
     "cards": [
       {
-        "title": "Projects & Repositories",
-        "description": "Overall stats of some of my projects & work.",
-        "icon": "FolderGit2",
+        "title": "notebooklm-cn",
+        "description": "NotebookLM 中文版克隆，Next.js 16 + Vercel 部署。",
+        "icon": "Globe",
         "stats": [
-          { "icon": "Star", "label": "Stars", "value": "109" },
-          { "icon": "GitFork", "label": "Forks", "value": "17" },
-          { "icon": "Activity", "label": "Downloads", "value": "120" }
+          { "icon": "Star", "label": "上线", "value": "✅" },
+          { "icon": "Globe", "label": "域名", "value": "notebooklm.itheheda.online" }
         ]
       },
       {
-        "title": "GitHub activity overview",
-        "description": "Recent activity across my work on GitHub.",
-        "icon": "Github",
+        "title": "Hermes Agent",
+        "description": "AI Agent 自动化工作流，效率工具。",
+        "icon": "Bot",
         "stats": [
-          { "icon": "GitCommitHorizontal", "label": "Commits", "value": "985" },
-          { "icon": "FolderGit2", "label": "Repos", "value": "42" },
-          { "icon": "GitPullRequest", "label": "PRs", "value": "12" }
+          { "icon": "Zap", "label": "自动化", "value": "10+ 工作流" },
+          { "icon": "BookOpen", "label": "技能数", "value": "40+" }
         ]
       },
       {
-        "title": "Open source projects I worked on",
-        "description": "Open-source projects I've contributed to & collaborated on.",
-        "icon": "GitPullRequest",
+        "title": "《沅水守河人》",
+        "description": "湘西民间悬疑 + 修真，番茄小说连载。",
+        "icon": "BookOpen",
         "stats": [
-          { "icon": "GitPullRequest", "label": "PRs", "value": "12" },
-          { "icon": "MessageSquare", "label": "Reviews", "value": "28" },
-          { "icon": "Bug", "label": "Issues", "value": "7" }
-        ]
-      },
-      {
-        "title": "All my Articles and Writing",
-        "description": "Blogs, wiki pages, documentations & learnings I've posted.",
-        "icon": "FileText",
-        "stats": [
-          { "icon": "NotebookPen", "label": "Blogs", "value": "8" },
-          { "icon": "BookOpenText", "label": "Docs", "value": "10" },
-          { "icon": "Folder", "label": "Total", "value": "18" }
+          { "icon": "FileText", "label": "规划", "value": "100 万字" },
+          { "icon": "Pen", "label": "笔名", "value": "夜行人" }
         ]
       }
     ]
@@ -106,10 +81,10 @@
 
   "aboutPage": {
     "hero": {
-      "headline": "I build modern full stack apps and free tools that save time.",
-      "subheadline": "",
+      "headline": "写代码的，也写故事。",
+      "subheadline": "全栈程序猿 · AI Agent 玩家 · 业余小说作者",
       "portraitUrl": "/avatar.jpg",
-      "locationLabel": "Houston, TX",
+      "locationLabel": "",
 
       "primaryCta": {
         "label": "View Projects",
@@ -118,8 +93,8 @@
         "icon": "ArrowRight"
       },
       "secondaryCta": {
-        "label": "View Resume",
-        "href": "/resume",
+        "label": "Read Articles",
+        "href": "/articles",
         "external": false,
         "icon": "ExternalLink"
       }
@@ -127,170 +102,86 @@
 
     "story": {
       "paragraphs": [
-        "I’m a full-stack focused, performance-first builder who’s obsessed with clean UI and maintainable architecture. I’m currently an undergraduate student at the University of Houston pursuing a B.S. in Computer Science, and I’m almost always building something on the side. I like creating products that feel fast, clean, and genuinely useful — especially tools that remove friction, reduce busywork, and make people’s day easier.",
-        "A lot of my work is full-stack end to end: modern UI, a reliable backend, and practical features that actually get used. Recently, I built a full-stack app used by 100+ students that helps UH students understand degree progress and get schedule recommendations. I care a lot about polish — spacing, clarity, and performance — and I’m constantly improving my engineering habits by focusing on clean architecture, better reliability, and systems that scale without turning into spaghetti."
+        "白天写代码，晚上写故事。全栈程序猿，主要用 Next.js、Python，最近沉迷 AI Agent 和自动化工作流。GitHub 上搞了 notebooklm-cn（NotebookLM 中文版克隆），日常用 Hermes Agent 管理各种自动化任务。",
+        "业余时间是个网络小说作者，笔名夜行人，在番茄小说连载《沅水守河人》——一部湘西民间悬疑 + 修真题材的长篇小说。写代码和写小说对我来说本质是一样的：都是在创造一个世界，只是表达方式不同。"
       ]
     },
 
     "now": {
-      "title": "What I’m currently working on",
+      "title": "最近在忙什么",
       "paragraphs": [
-        "Right now I’m iterating on DevfolioX (a clean portfolio template for developers) and expanding CoogPlanner — a full-stack app that helps UH students understand degree progress and build better schedules.",
-        "I also recently started VisibleSeed — where I build fast, modern websites and automation systems for local businesses. My focus is shipping reliable features, keeping the UI crisp, and making everything easy to use."
+        "技术方面：继续折腾 Hermes Agent 的自动化工作流，写各种 skills，探索 AI 编程的边界。刚完成了 NotebookLM 中文版的网站克隆和部署。",
+        "写作方面：规划《沅水守河人》的后续章节，用 AI 辅助写作流程（看板管理 + 自动审阅 + 质量检查），把代码思维应用到创作中。"
       ],
       "imageUrl": "",
       "imageAlt": "Currently working on"
     },
 
     "usage": {
-      "title": "Usage",
-      "description": "The stack and tools I like using day to day.",
+      "title": "常用工具栈",
+      "description": "代码和写作日常。",
 
       "technologies": [
         "Next.js",
-        "Tailwind CSS",
-        "TypeScript",
         "Python",
-        "C++",
-        "Supabase"
+        "TypeScript",
+        "Tailwind CSS",
+        "Vercel"
       ],
 
       "tools": [
-        "Ubuntu Linux",
-        "Git Bash",
-        "Firefox",
-        "Visual Studio Code",
-        "Notion"
+        "VS Code",
+        "Neovim",
+        "Obsidian",
+        "Hermes Agent"
       ],
 
       "platforms": [
-        "Cloudflare",
         "GitHub",
         "Vercel",
-        "Netlify",
-        "Google Cloud Run"
+        "Cloudflare",
+        "番茄小说"
       ]
     },
 
     "setup": {
-      "title": "Setup",
+      "title": "开发环境",
       "paragraphs": [
-        "I’m big on a clean, fast setup that keeps me in flow — minimal friction, quick feedback loops, and tools that don’t fight you.",
-        "My ideal setup is simple: fast machine, tidy workspace, and a workflow that makes it easy to stay consistent."
+        "WSL + Neovim + Hermes Agent 的 AI 编程流。Obsidian 管理知识库（PARA + Zettelkasten）。",
+        "小说写作用 Obsidian + AI 辅助管线，从大纲到发布有完整的工作流。"
       ],
-      "imageUrl": "/images/setup.jpg",
-      "imageAlt": "My setup",
-      "caption": "Clean workspace, fast feedback loops, and minimal friction."
+      "imageUrl": "",
+      "imageAlt": "Dev setup",
+      "caption": ""
     },
 
     "socialsSection": {
       "title": "Socials",
-      "description": "Where I’m active and easy to reach."
+      "description": "Where to find me."
     },
 
     "socials": {
       "items": [
         {
-          "type": "email",
-          "label": "contact@kevintrinh.dev",
-          "href": "mailto:contact@kevintrinh.dev"
-        },
-        {
-          "type": "linkedin",
-          "label": "LinkedIn",
-          "href": "https://www.linkedin.com/in/KevinTrinhDev"
-        },
-        {
           "type": "github",
           "label": "GitHub",
-          "href": "https://github.com/KevinTrinhDev"
-        },
-        {
-          "type": "tiktok",
-          "label": "TikTok",
-          "href": "https://www.tiktok.com/@KevinTrinhDev"
-        },
-        {
-          "type": "youtube",
-          "label": "YouTube",
-          "href": "https://www.youtube.com/@KevinTrinhDev"
-        },
-        { "type": "x", "label": "X", "href": "https://x.com/KevinTrinhDev" },
-        {
-          "type": "threads",
-          "label": "Threads",
-          "href": "https://www.threads.net/@KevinTrinhDev"
-        },
-        {
-          "type": "devto",
-          "label": "Dev.to",
-          "href": "https://dev.to/KevinTrinhDev"
-        },
-        {
-          "type": "medium",
-          "label": "Medium",
-          "href": "https://medium.com/@KevinTrinhDev"
-        },
-        {
-          "type": "leetcode",
-          "label": "LeetCode",
-          "href": "https://leetcode.com/KevinTrinhDev/"
-        },
-        {
-          "type": "handshake",
-          "label": "Handshake",
-          "href": "https://joinhandshake.com/"
-        },
-        {
-          "type": "discord",
-          "label": "Discord Community",
-          "href": "https://discord.com/"
+          "href": "https://github.com/hunger-Eric"
         }
       ]
     },
 
     "inspirations": {
       "title": "Inspirations",
-      "description": "Creators and builders I learn from consistently — coding, product mindset, business, and staying disciplined.",
+      "description": "影响我的创作者。",
       "people": [
         {
-          "name": "Neet Code",
-          "href": "https://www.youtube.com/@NeetCode",
+          "name": "天下霸唱",
+          "href": "",
           "avatarUrl": "default.jpg"
         },
         {
-          "name": "Alex Hormozi",
-          "href": "https://www.youtube.com/@AlexHormozi",
-          "avatarUrl": "default.jpg"
-        },
-        {
-          "name": "Gazi Ai",
-          "href": "https://www.youtube.com/@gaziai",
-          "avatarUrl": "default.jpg"
-        },
-        {
-          "name": "Sarah Liyt",
-          "href": "https://www.youtube.com/@sarahliyt",
-          "avatarUrl": "default.jpg"
-        },
-        {
-          "name": "Jenn Cho",
-          "href": "https://www.youtube.com/@imjenncho",
-          "avatarUrl": "default.jpg"
-        },
-        {
-          "name": "Bax Ate",
-          "href": "https://www.youtube.com/@Baxate",
-          "avatarUrl": "default.jpg"
-        },
-        {
-          "name": "Sarah Pan",
-          "href": "https://www.youtube.com/@sarahpan",
-          "avatarUrl": "default.jpg"
-        },
-        {
-          "name": "Brian Ruiz",
-          "href": "https://www.youtube.com/@brianruizy",
+          "name": "沈从文",
+          "href": "",
           "avatarUrl": "default.jpg"
         }
       ]

@@ -47,7 +47,11 @@
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.19.3",
     "@tailwindcss/typography": "^0.5.19",
-    "@types/node": "^20",
+    "@types/body-parser": "^1.19.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/mysql": "^2.15.27",
+    "@types/node": "^20.19.41",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/sanitize-html": "^2.16.0",
