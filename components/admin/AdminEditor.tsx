@@ -61,6 +61,42 @@ export function AdminEditor({
       }
       const result = await res.json();
       setMessage(result.message);
+
+      // Poll deployment status if deployId was returned
+      if (result.deployId) {
+        const pollInterval = setInterval(async () => {
+          try {
+            const statusRes = await fetch(
+              `/api/admin/deploy-status?deployId=${result.deployId}`
+            );
+            if (!statusRes.ok) return;
+            const statusData = await statusRes.json();
+            if (statusData.status === "READY") {
+              setMessage(
+                `${configKey} 配置已保存并部署完成 ✅`
+              );
+              clearInterval(pollInterval);
+            } else if (
+              statusData.status === "ERROR" ||
+              statusData.status === "FAILED"
+            ) {
+              setMessage(
+                `${configKey} 配置已保存，但自动部署失败 ⚠️`
+              );
+              clearInterval(pollInterval);
+            } else {
+              setMessage(
+                `${configKey} 配置已保存并推送，正在自动部署到 Vercel...`
+              );
+            }
+          } catch {
+            // Ignore polling errors
+          }
+        }, 5000);
+
+        // Stop polling after 3 minutes
+        setTimeout(() => clearInterval(pollInterval), 180000);
+      }
     } catch (e: any) {
       setError("保存失败: " + e.message);
     } finally {
