@@ -19,6 +19,7 @@ export default defineConfig({
       include: [
         "lib/photo-auth.ts",
         "lib/github-photo.ts",
+        "lib/admin-guard.ts",
         "lib/structured-data.ts",
         "lib/youtube.ts",
         "lib/devto.ts",
@@ -74,10 +75,10 @@ export default defineConfig({
       ],
       exclude: ["node_modules/", "tests/", "*.config.*", "types/"],
       thresholds: {
-        statements: 55,
-        branches: 40,
-        functions: 55,
-        lines: 55,
+        statements: 85,
+        branches: 75,
+        functions: 88,
+        lines: 88,
       },
     },
   },

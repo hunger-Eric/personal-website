@@ -1,5 +1,6 @@
 // app/api/admin/[key]/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { adminGuard } from "@/lib/admin-guard";
 
 // Dynamic import of config files
 const CONFIG_MODULES: Record<string, () => any> = {
@@ -15,6 +16,9 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ key: string }> }
 ) {
+  const guard = adminGuard();
+  if (guard) return guard;
+
   const { key } = await params;
   const loader = CONFIG_MODULES[key];
   if (!loader) {

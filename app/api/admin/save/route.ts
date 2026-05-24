@@ -1,6 +1,7 @@
 // app/api/admin/save/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getRepoFile, upsertRepoFile } from "@/lib/github-photo";
+import { adminGuard } from "@/lib/admin-guard";
 
 // Map of config key → repo file path
 const CONFIG_PATHS: Record<string, string> = {
@@ -13,6 +14,9 @@ const CONFIG_PATHS: Record<string, string> = {
 };
 
 export async function POST(request: NextRequest) {
+  const guard = adminGuard();
+  if (guard) return guard;
+
   try {
     const body = await request.json();
     const { key, content, message } = body;

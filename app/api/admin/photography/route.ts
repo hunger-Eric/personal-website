@@ -2,11 +2,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getRepoFile, saveConfig, uploadPhoto, deleteRepoFile, listRepoDir } from "@/lib/github-photo";
 import photographyData from "@/config/photography.json";
+import { adminGuard } from "@/lib/admin-guard";
 
 /**
  * GET: return the current photography config + available photos in repo
  */
 export async function GET() {
+  const guard = adminGuard();
+  if (guard) return guard;
+
   try {
     const publicPhotos = await listRepoDir("public/images/photography");
     const privatePhotos = await listRepoDir("private-photos");
@@ -30,6 +34,9 @@ export async function GET() {
  * Expects multipart/form-data or JSON body
  */
 export async function POST(request: NextRequest) {
+  const guard = adminGuard();
+  if (guard) return guard;
+
   try {
     const contentType = request.headers.get("content-type") || "";
 
