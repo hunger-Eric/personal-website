@@ -150,14 +150,14 @@ export default async function LinksPage() {
     {
       key: "projects",
       label: "Projects",
-      description: "开源项目 on GitHub",
+      description: "Open source on GitHub",
       href: "https://github.com/hunger-Eric",
       icon: <GithubGlyph className="h-7 w-7" />,
     },
     {
       key: "articles",
       label: "Articles",
-      description: "技术文章与实践记录",
+      description: "Dev notes & deep dives",
       href: "/articles",
       icon: <MediumGlyph className="h-7 w-7" />,
     },
