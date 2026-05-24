@@ -1,5 +1,5 @@
 // app/admin/layout.tsx
-import type { Metadata } from "next/metadata";
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { isAdminEnabled, verifyAdminToken } from "@/lib/admin-guard";
