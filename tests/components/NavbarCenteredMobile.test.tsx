@@ -40,6 +40,12 @@ vi.mock("@/components/LangSwitch", () => ({
     React.createElement("div", { "data-testid": "lang-switch-mobile" }, "LS"),
 }));
 
+vi.mock("@/components/LocaleProvider", () => ({
+  useLocale: () => ({
+    t: { nav: { connect: "Connect" } },
+  }),
+}));
+
 // Mock navbar config
 const mockNavbarConfig = {
   logo: { label: "FengC", href: "/", imageSrc: "", imageAlt: "Logo" },

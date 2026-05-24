@@ -163,8 +163,15 @@ export async function fetchGitHubContributionsForYear(
         throw new Error("GitHub API request timed out after multiple attempts");
       }
 
-      // For other errors, rethrow immediately
-      throw err;
+      // For other errors, retry if attempts remain, otherwise fall through to line 172
+      if (attempt < RETRY_CONFIG.maxRetries) {
+        const delay = getRetryDelay(attempt);
+        console.warn(
+          `GitHub API error: ${err.message}, retrying in ${Math.round(delay)}ms... (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries})`
+        );
+        await sleep(delay);
+        continue;
+      }
     }
   }
 

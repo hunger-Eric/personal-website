@@ -49,29 +49,29 @@ describe("ArticlesBrowser", () => {
       makeArticle("regular-2"),
     ];
     render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getByText("All Posts")).toBeInTheDocument();
+    expect(screen.getByText("全部文章")).toBeInTheDocument();
   });
 
   it("renders empty state when no articles", async () => {
     const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
     render(React.createElement(ArticlesBrowser, { articles: [] }));
-    expect(screen.getByText("All Posts")).toBeInTheDocument();
-    expect(screen.getByText("No articles found")).toBeInTheDocument();
+    expect(screen.getByText("全部文章")).toBeInTheDocument();
+    expect(screen.getByText("还没有文章")).toBeInTheDocument();
   });
 
   it("renders pagination when more than PAGE_SIZE articles", async () => {
     const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
     const articles = Array.from({ length: 15 }, (_, i) => makeArticle(`article-${i + 1}`));
     render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getByLabelText("Next page")).toBeInTheDocument();
-    expect(screen.getByLabelText("Previous page")).toBeInTheDocument();
+    expect(screen.getByLabelText("下一页")).toBeInTheDocument();
+    expect(screen.getByLabelText("上一页")).toBeInTheDocument();
   });
 
   it("disables previous button on first page", async () => {
     const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
     const articles = Array.from({ length: 15 }, (_, i) => makeArticle(`article-${i + 1}`));
     render(React.createElement(ArticlesBrowser, { articles }));
-    const prevBtn = screen.getByLabelText("Previous page");
+    const prevBtn = screen.getByLabelText("上一页");
     expect(prevBtn).toBeDisabled();
   });
 
@@ -79,44 +79,44 @@ describe("ArticlesBrowser", () => {
     const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
     const articles = Array.from({ length: 15 }, (_, i) => makeArticle(`article-${i + 1}`));
     render(React.createElement(ArticlesBrowser, { articles }));
-    const nextBtn = screen.getByLabelText("Next page");
+    const nextBtn = screen.getByLabelText("下一页");
     fireEvent.click(nextBtn);
     // Now on page 2 (last page since 15/9 = 2 pages)
-    expect(screen.getByLabelText("Next page")).toBeDisabled();
+    expect(screen.getByLabelText("下一页")).toBeDisabled();
   });
 
   it("navigates to next page on Next click", async () => {
     const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
     const articles = Array.from({ length: 15 }, (_, i) => makeArticle(`article-${i + 1}`));
     render(React.createElement(ArticlesBrowser, { articles }));
-    const nextBtn = screen.getByLabelText("Next page");
+    const nextBtn = screen.getByLabelText("下一页");
     fireEvent.click(nextBtn);
     // Should now show page 2
-    expect(screen.getByLabelText("Go to page 2")).toHaveAttribute("aria-current", "page");
+    expect(screen.getByLabelText("跳到第 2 页")).toHaveAttribute("aria-current", "page");
   });
 
   it("navigates to specific page on page button click", async () => {
     const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
     const articles = Array.from({ length: 15 }, (_, i) => makeArticle(`article-${i + 1}`));
     render(React.createElement(ArticlesBrowser, { articles }));
-    const page2Btn = screen.getByLabelText("Go to page 2");
+    const page2Btn = screen.getByLabelText("跳到第 2 页");
     fireEvent.click(page2Btn);
-    expect(screen.getByLabelText("Go to page 2")).toHaveAttribute("aria-current", "page");
+    expect(screen.getByLabelText("跳到第 2 页")).toHaveAttribute("aria-current", "page");
   });
 
   it("does not show pagination for single page", async () => {
     const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
     const articles = Array.from({ length: 5 }, (_, i) => makeArticle(`article-${i + 1}`));
     render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.queryByLabelText("Next page")).not.toBeInTheDocument();
-    expect(screen.queryByLabelText("Previous page")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("下一页")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("上一页")).not.toBeInTheDocument();
   });
 
   it("shows ellipsis in pagination for many pages", async () => {
     const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
     const articles = Array.from({ length: 100 }, (_, i) => makeArticle(`article-${i + 1}`));
     render(React.createElement(ArticlesBrowser, { articles }));
-    const ellipses = screen.getAllByText("…");
+    const ellipses = screen.getAllByText("...");
     expect(ellipses.length).toBeGreaterThanOrEqual(1);
   });
 
@@ -135,8 +135,8 @@ describe("ArticlesBrowser", () => {
     const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
     const articles = [makeArticle("only", { featured: true })];
     render(React.createElement(ArticlesBrowser, { articles }));
-    // Only hero shows, no "All Posts" section
-    expect(screen.queryByText("All Posts")).not.toBeInTheDocument();
+    // Only hero shows, no "全部文章" section
+    expect(screen.queryByText("全部文章")).not.toBeInTheDocument();
   });
 
   it("renders author from siteConfig when not provided", async () => {
@@ -155,7 +155,7 @@ describe("pageNumbers helper", () => {
     const articles = Array.from({ length: 7 }, (_, i) => makeArticle(`article-${i + 1}`));
     const { container } = render(React.createElement(ArticlesBrowser, { articles }));
     // Only 1 page, no pagination
-    expect(screen.queryByLabelText("Next page")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("下一页")).not.toBeInTheDocument();
   });
 });
 
@@ -164,7 +164,7 @@ describe("formatDate", () => {
     const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
     const articles = [makeArticle("test", { featured: true, date: "2025-06-15" })];
     render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getByText("June 15, 2025")).toBeInTheDocument();
+    expect(screen.getByText("2025年6月15日")).toBeInTheDocument();
   });
 
   it("returns original string for invalid dates", async () => {

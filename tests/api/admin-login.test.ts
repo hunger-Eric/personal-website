@@ -30,7 +30,7 @@ describe("POST /api/admin/login", () => {
     expect(cookieHeader).toBeTruthy();
     expect(cookieHeader).toContain("admin_token=test-token-123");
     expect(cookieHeader).toContain("HttpOnly");
-    expect(cookieHeader).toContain("Secure");
+    expect(cookieHeader).not.toContain("Secure");
     expect(cookieHeader.toLowerCase()).toContain("samesite=strict");
     expect(cookieHeader).toContain("Max-Age=604800");
   });

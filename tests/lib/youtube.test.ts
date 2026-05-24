@@ -272,6 +272,100 @@ describe("fetchYouTubeVideos", () => {
     expect(r[0].thumbnailUrl).toBe("");
   });
 
+  // ---- VIDEOS API: snippet title/description/publishedAt fallback to "" ----
+  // Success path lines 130-131, 136: item.snippet missing title/description/publishedAt
+  it("videos API: snippet without title falls back to empty string", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [{ id: { videoId: "vid1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/vid1/hqdefault.jpg" } } } }]
+        }), { status: 200 });
+      }
+      return new Response(JSON.stringify({
+        items: [{ id: "vid1", snippet: {}, statistics: { viewCount: "1500", likeCount: "100" } }]
+      }), { status: 200 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(1);
+    expect(r[0].title).toBe("");
+    expect(r[0].description).toBe("");
+    expect(r[0].publishedAt).toBe("");
+  });
+
+  // Fallback path lines 112-113, 118: snippet missing title/description/publishedAt
+  it("fallback path: snippet without title/description/publishedAt", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [{ id: { videoId: "vid1" }, snippet: {} }]
+        }), { status: 200 });
+      }
+      return new Response("Fail", { status: 500 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(1);
+    expect(r[0].title).toBe("");
+    expect(r[0].description).toBe("");
+    expect(r[0].publishedAt).toBe("");
+  });
+
+  // Fallback path line 109: typeof item.id === "object" else branch (string id)
+  // We need a valid videoId to trigger the videos API, then have it fail,
+  // and then in the fallback map, the search item with string id hits the else branch
+  it("fallback path: mix of object and string item.id types", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [
+            { id: { videoId: "v1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/v1/hqdefault.jpg" } } } },
+            { id: "str-id", snippet: { title: "V2", description: "D2", publishedAt: "2025-01-02", thumbnails: { high: { url: "https://img.youtube.com/vi/str/hqdefault.jpg" } } } }
+          ]
+        }), { status: 200 });
+      }
+      return new Response("Fail", { status: 500 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(2);
+    // First item had object id with videoId="v1"
+    expect(r[0].id).toBe("v1");
+    // Second item had string id "str-id" -> ternary else branch: item.id
+    expect(r[1].id).toBe("str-id");
+  });
+
+  // Fallback path line 111: videoId is falsy (object id without videoId)
+  it("fallback path: object id without videoId in mixed items", async () => {
+    process.env.YOUTUBE_API_KEY = "test-key";
+    let callCount = 0;
+    vi.spyOn(global, "fetch").mockImplementation(async () => {
+      callCount++;
+      if (callCount === 1) {
+        return new Response(JSON.stringify({
+          items: [
+            { id: { videoId: "v1" }, snippet: { title: "V1", description: "D1", publishedAt: "2025-01-01", thumbnails: { high: { url: "https://img.youtube.com/vi/v1/hqdefault.jpg" } } } },
+            { id: { }, snippet: { title: "NoId", description: "Desc", publishedAt: "2025-01-02", thumbnails: { high: { url: "https://img.youtube.com/vi/no/hqdefault.jpg" } } } }
+          ]
+        }), { status: 200 });
+      }
+      return new Response("Fail", { status: 500 });
+    });
+    const r = await fetchYouTubeVideos("UC_test");
+    expect(r).toHaveLength(2);
+    // First item has videoId="v1"
+    expect(r[0].id).toBe("v1");
+    // Second item: typeof id === "object", id.videoId is undefined -> videoId = undefined
+    // Then videoId || "" gives ""
+    expect(r[1].id).toBe("");
+  });
+
   // Line 136: viewCount and likeCount with undefined values inside existing statistics
   it("videos API handles statistics with viewCount undefined", async () => {
     process.env.YOUTUBE_API_KEY = "test-key";

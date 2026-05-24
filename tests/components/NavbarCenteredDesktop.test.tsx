@@ -36,6 +36,21 @@ vi.mock("@/components/LangSwitch", () => ({
     React.createElement("div", { "data-testid": "lang-switch" }, "LangSwitch"),
 }));
 
+vi.mock("@/components/LocaleProvider", () => ({
+  useLocale: () => ({
+    t: {
+      nav: {
+        about: "About",
+        projects: "Projects",
+        articles: "Articles",
+        photography: "Photography",
+        more: "More",
+        connect: "Connect",
+      },
+    },
+  }),
+}));
+
 // Mock navbar config
 const mockNavbarConfig = {
   logo: { label: "FengC", href: "/", imageSrc: "", imageAlt: "Logo" },
@@ -126,6 +141,6 @@ describe("NavbarCentered", () => {
       "@/components/NavbarCenteredDesktop"
     );
     render(React.createElement(NavbarCentered));
-    expect(screen.getByText("Email me")).toBeInTheDocument();
+    expect(screen.getAllByText("Connect").length).toBeGreaterThanOrEqual(1);
   });
 });

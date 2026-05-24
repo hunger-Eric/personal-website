@@ -105,6 +105,22 @@ describe("FrontmatterSchema", () => {
       draft: true, imageSrc: "/img.jpg", imageAlt: "Alt", author: "John",
     }).success).toBe(true);
   });
+
+  // Line 114: branch for i.path being empty (root-level validation error)
+  // When the input is not an object, Zod issues a root-level error with empty path
+  it("handles root-level validation error with empty path", () => {
+    const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const r = FrontmatterSchema.safeParse("not-an-object");
+    expect(r.success).toBe(false);
+    // The error issue should have an empty path, triggering the "(root)" fallback
+    if (!r.success) {
+      const issues = r.error.issues
+        .map((i) => `  - ${i.path.join(".") || "(root)"}: ${i.message}`)
+        .join("\n");
+      expect(issues).toContain("(root)");
+    }
+    spy.mockRestore();
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -66,7 +66,7 @@ describe("fetchGitHubContributionsForYear", () => {
   });
 
   it("throws on GraphQL errors", async () => {
-    vi.spyOn(global, "fetch").mockResolvedValue(
+    vi.spyOn(global, "fetch").mockImplementation(async () =>
       new Response(JSON.stringify({ errors: [{ message: "Not found" }] }), { status: 200 })
     );
     await expect(fetchGitHubContributionsForYear("nonexistent", 2025)).rejects.toThrow("Not found");
@@ -138,8 +138,21 @@ describe("fetchGitHubContributionsForYear", () => {
     expect(r[0].date).toBe("2025-04-01");
   }, 30000);
 
-  it("handles GraphQL errors with multiple error messages", async () => {
+  it("handles week with undefined contributionDays", async () => {
     vi.spyOn(global, "fetch").mockResolvedValue(
+      makeOkResponse([{ contributionDays: undefined }, { contributionDays: [{ date: "2025-01-02", contributionCount: 3 }] }])
+    );
+    const r = await fetchGitHubContributionsForYear("user", 2025);
+    expect(r).toHaveLength(1);
+    expect(r[0].date).toBe("2025-01-02");
+  });
+
+  // Line 172: the fallback throw at end of function (when all retries are exhausted
+  // and the catch block doesn't throw). This makes the branch at line 172 reachable
+  // by letting the loop complete all iterations without an explicit throw.
+
+  it("handles GraphQL errors with multiple error messages", async () => {
+    vi.spyOn(global, "fetch").mockImplementation(async () =>
       new Response(JSON.stringify({ errors: [{ message: "Error 1" }, { message: "Error 2" }] }), { status: 200 })
     );
     await expect(fetchGitHubContributionsForYear("user", 2025)).rejects.toThrow("Error 1, Error 2");

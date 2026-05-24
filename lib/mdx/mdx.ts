@@ -261,7 +261,7 @@ export async function getTags(): Promise<string[]> {
   const tags = new Set<string>();
 
   for (const article of articles) {
-    for (const tag of article.tags || []) {
+    for (const tag of article.tags) {
       tags.add(tag);
     }
   }
