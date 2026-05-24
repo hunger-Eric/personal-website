@@ -295,3 +295,156 @@ describe("POST /api/admin/save", () => {
     consoleErrorSpy.mockRestore();
   });
 });
+
+describe("deploy trigger", () => {
+  const originalEnv = { ...process.env };
+
+  beforeEach(() => {
+    delete process.env.VERCEL_TOKEN;
+    delete process.env.VERCEL_TEAM_ID;
+    vi.clearAllMocks();
+  });
+
+  afterAll(() => {
+    process.env.VERCEL_TOKEN = originalEnv.VERCEL_TOKEN;
+    process.env.VERCEL_TEAM_ID = originalEnv.VERCEL_TEAM_ID;
+  });
+
+  it("triggers Vercel deploy with teamId when VERCEL_TOKEN is set", async () => {
+    process.env.VERCEL_TOKEN = "test-vercel-token";
+    process.env.VERCEL_TEAM_ID = "team_abc123";
+
+    vi.mocked(getRepoFile).mockResolvedValueOnce({ sha: "abc123", path: "config/site.json" });
+    vi.mocked(upsertRepoFile).mockResolvedValueOnce(undefined);
+
+    const mockFetch = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ id: "dpl_deploy123" }), { status: 200 })
+    );
+
+    const { POST } = await import("@/app/api/admin/save/route");
+    const req = new NextRequest(
+      new Request("http://localhost/api/admin/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
+        body: JSON.stringify({ key: "site", content: { title: "My Site" } }),
+      })
+    );
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.success).toBe(true);
+    expect(body.deployId).toBe("dpl_deploy123");
+
+    // Verify fetch URL includes teamId
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://api.vercel.com/v13/deployments?teamId=team_abc123",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Authorization: "Bearer test-vercel-token",
+        }),
+      })
+    );
+
+    mockFetch.mockRestore();
+  });
+
+  it("triggers Vercel deploy without teamId when VERCEL_TEAM_ID is not set", async () => {
+    process.env.VERCEL_TOKEN = "test-vercel-token";
+    // VERCEL_TEAM_ID intentionally not set
+
+    vi.mocked(getRepoFile).mockResolvedValueOnce({ sha: "abc123", path: "config/site.json" });
+    vi.mocked(upsertRepoFile).mockResolvedValueOnce(undefined);
+
+    const mockFetch = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ uid: "dpl_deploy456" }), { status: 200 })
+    );
+
+    const { POST } = await import("@/app/api/admin/save/route");
+    const req = new NextRequest(
+      new Request("http://localhost/api/admin/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
+        body: JSON.stringify({ key: "site", content: { title: "My Site" } }),
+      })
+    );
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.success).toBe(true);
+    expect(body.deployId).toBe("dpl_deploy456");
+
+    // Verify fetch URL does NOT include teamId
+    expect(mockFetch).toHaveBeenCalledWith(
+      "https://api.vercel.com/v13/deployments",
+      expect.any(Object)
+    );
+
+    mockFetch.mockRestore();
+  });
+
+  it("handles deploy fetch failure gracefully (non-fatal)", async () => {
+    process.env.VERCEL_TOKEN = "test-vercel-token";
+
+    vi.mocked(getRepoFile).mockResolvedValueOnce({ sha: "abc123", path: "config/site.json" });
+    vi.mocked(upsertRepoFile).mockResolvedValueOnce(undefined);
+
+    const mockFetch = vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new Error("Network timeout"));
+    const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    const { POST } = await import("@/app/api/admin/save/route");
+    const req = new NextRequest(
+      new Request("http://localhost/api/admin/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
+        body: JSON.stringify({ key: "site", content: { title: "My Site" } }),
+      })
+    );
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.success).toBe(true);
+    // deployId should be null when fetch fails
+    expect(body.deployId).toBeNull();
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      "Vercel deploy trigger failed (non-fatal):",
+      expect.any(Error)
+    );
+
+    mockFetch.mockRestore();
+    consoleSpy.mockRestore();
+  });
+
+  it("skips deploy trigger when VERCEL_TOKEN is not set", async () => {
+    // VERCEL_TOKEN not set
+
+    vi.mocked(getRepoFile).mockResolvedValueOnce({ sha: "abc123", path: "config/site.json" });
+    vi.mocked(upsertRepoFile).mockResolvedValueOnce(undefined);
+
+    const mockFetch = vi.spyOn(globalThis, "fetch");
+
+    const { POST } = await import("@/app/api/admin/save/route");
+    const req = new NextRequest(
+      new Request("http://localhost/api/admin/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Cookie: "admin_token=test-admin-token" },
+        body: JSON.stringify({ key: "site", content: { title: "My Site" } }),
+      })
+    );
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.success).toBe(true);
+    expect(body.deployId).toBeNull();
+
+    // fetch should NOT have been called
+    expect(mockFetch).not.toHaveBeenCalled();
+
+    mockFetch.mockRestore();
+  });
+});
