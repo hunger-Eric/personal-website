@@ -17,3 +17,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx vitest run
+      - run: npm run build
+        env:
+          ENABLE_ADMIN: "true"
+          ADMIN_TOKEN: "test-token"
+          ADMIN_PASSWORD: "test-password"
+          NEXT_PUBLIC_BASE_URL: "https://me.itheheda.online"
