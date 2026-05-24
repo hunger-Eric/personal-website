@@ -9,6 +9,7 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, Home } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
+import { LangSwitch } from "./LangSwitch";
 import {
   navbarConfig,
   isExternalHref,
@@ -251,6 +252,8 @@ export default function NavbarCenteredMobile() {
               {logo.label}
             </span>
           </Link>
+
+          <LangSwitch />
 
           {/* Hamburger */}
           <button

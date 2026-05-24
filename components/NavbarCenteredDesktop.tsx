@@ -10,6 +10,7 @@ import * as LucideIcons from "lucide-react";
 
 import { navbarConfig, isExternalHref } from "@/config/navbarConfig";
 import type { NavDropdownItemCfg } from "@/config/navbarConfig";
+import { LangSwitch } from "@/components/LangSwitch";
 
 function PrimaryCtaContent({ label }: { label: string }) {
   return (
@@ -476,7 +477,8 @@ export function NavbarCentered() {
           </nav>
 
           {/* Right CTAs */}
-          <div className="flex flex-1 items-center justify-end gap-3">
+          <div className="flex flex-1 items-center justify-end gap-1 sm:gap-3">
+            <LangSwitch />
             {/* Contact CTA — opens the user's default mail client (mailto:) */}
             {contactCta.show !== false && (
               <a

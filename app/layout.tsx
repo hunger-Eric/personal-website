@@ -13,6 +13,7 @@ import { ConditionalChrome } from "@/components/ConditionalChrome";
 import { JsonLd } from "@/components/JsonLd";
 import { PageTransition } from "@/components/PageTransition";
 import { ThemeProvider, ThemeScript } from "@/components/ThemeProvider";
+import { LocaleProvider } from "@/components/LocaleProvider";
 import {
   generatePersonSchema,
   generateWebSiteSchema,
@@ -206,6 +207,7 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
         <ThemeProvider>
+          <LocaleProvider>
           {/* Cloudflare Web Analytics — privacy-friendly, no cookies. Replaces
               @vercel/analytics, whose beacon doesn't reliably reach Vercel from
               Cloudflare Workers. */}
@@ -240,6 +242,7 @@ export default function RootLayout({
             <Footer />
           </ConditionalChrome>
         </ThemeProvider>
+          </LocaleProvider>
       </body>
     </html>
   );

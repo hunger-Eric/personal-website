@@ -4,8 +4,10 @@
 import { siteConfig } from "../../config/siteConfig";
 import { FileText, Mail } from "lucide-react";
 import { useModalRoute } from "@/components/hooks/useModalRoute";
+import { useLocale } from "@/components/LocaleProvider";
 
 export function HeroSection() {
+  const { t } = useLocale();
   // Short flag-style link: "/?resume"
   const resumeModal = useModalRoute({
     scheme: "flag",
@@ -17,7 +19,7 @@ export function HeroSection() {
     <section id="top" className="pt-16 pb-20">
       <div className="mx-auto w-full max-w-6xl px-4">
         <p className="text-base text-muted-foreground sm:text-lg">
-          Hi, my name is
+          {t.hero.greeting}
         </p>
 
         <h1 className="mt-3 text-5xl font-semibold sm:text-6xl">
@@ -44,7 +46,7 @@ export function HeroSection() {
             title={`Open ${resumeModal.href}`}
           >
             <FileText className="h-4 w-4" />
-            <span>My Resume</span>
+            <span>{t.hero.resume}</span>
           </a>
 
           <a
@@ -52,7 +54,7 @@ export function HeroSection() {
             className="inline-flex items-center gap-2 rounded-md border border-white/20 px-4 py-2 text-sm text-foreground transition-transform transition-colors hover:-translate-y-[1px] hover:border-accent hover:bg-white/5"
           >
             <Mail className="h-4 w-4" />
-            <span>Contact Me</span>
+            <span>{t.hero.contact}</span>
           </a>
         </div>
       </div>
