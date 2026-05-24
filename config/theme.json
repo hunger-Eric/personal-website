@@ -1,13 +1,13 @@
 {
-  "defaultMode": "light",
-  "allowToggle": false,
-  "respectSystemPreference": false,
-  "accentColor": "emerald",
+  "defaultMode": "dark",
+  "allowToggle": true,
+  "respectSystemPreference": true,
+  "accentColor": "indigo",
   "presets": {
     "indigo": {
-      "accent": "#7170ff",
-      "accentHover": "#828fff",
-      "accentLight": "#5e6ad2"
+      "accent": "#4f46e5",
+      "accentHover": "#4338ca",
+      "accentLight": "#818cf8"
     },
     "emerald": {
       "accent": "#10b981",
