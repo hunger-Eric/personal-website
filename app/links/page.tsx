@@ -19,7 +19,7 @@ import {
 import { loadLatestYouTubeVideos } from "@/config/youtubeFeed";
 
 const BASE_URL = (
-  process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev"
+  process.env.NEXT_PUBLIC_BASE_URL || "https://me.itheheda.online"
 ).replace(/\/$/, "");
 
 const LINKS_DESCRIPTION = `Where ${siteConfig.name} hangs out online — socials, portfolio, and content in one link.`;
@@ -111,7 +111,7 @@ export default async function LinksPage() {
   const emailHref =
     typeof emailEntry?.href === "string" && emailEntry.href.startsWith("mailto:")
       ? emailEntry.href
-      : "mailto:contact@kevintrinh.dev";
+      : "";
 
   const socials: SocialGlyph[] = SOCIAL_ORDER.flatMap((key) => {
     const s = socialMap.get(key);
@@ -221,7 +221,7 @@ export default async function LinksPage() {
         .filter(
           (h): h is string => typeof h === "string" && /^https?:\/\//i.test(h)
         ),
-      email: emailHref.replace(/^mailto:/i, ""),
+      ...(emailHref && { email: emailHref.replace(/^mailto:/i, "") }),
     },
   };
 
@@ -279,15 +279,17 @@ export default async function LinksPage() {
       <JsonLd data={profileJsonLd} />
 
       {/* Top-left: Email (mailto) — pill with label */}
-      <a
-        href={emailHref}
-        aria-label={`Email ${siteConfig.name}`}
-        title={`Email ${siteConfig.name}`}
-        className="absolute left-4 top-4 inline-flex h-10 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 sm:left-5 sm:top-5"
-      >
-        <Mail className="h-4 w-4" aria-hidden />
-        <span>Contact me</span>
-      </a>
+      {emailHref && (
+        <a
+          href={emailHref}
+          aria-label={`Email ${siteConfig.name}`}
+          title={`Email ${siteConfig.name}`}
+          className="absolute left-4 top-4 inline-flex h-10 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3.5 text-sm font-medium text-slate-700 transition-colors hover:border-slate-300 hover:bg-slate-100 sm:left-5 sm:top-5"
+        >
+          <Mail className="h-4 w-4" aria-hidden />
+          <span>Contact me</span>
+        </a>
+      )}
 
       {/* Top-right: Share — icon only */}
       <div className="absolute right-4 top-4 flex items-center gap-2 sm:right-5 sm:top-5">

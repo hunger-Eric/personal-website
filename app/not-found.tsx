@@ -8,8 +8,10 @@ import {
   User,
   Mail,
 } from "lucide-react";
+import { siteConfig } from "@/config/siteConfig";
 
 export default function NotFound() {
+  const emailHref = siteConfig.socialsList.find((s) => s.key === "email")?.href || "";
   const suggestions: {
     label: string;
     href: string;
@@ -19,12 +21,9 @@ export default function NotFound() {
     { label: "About me", href: "/#about", Icon: User },
     { label: "Projects", href: "/#projects", Icon: FolderGit2 },
     { label: "Articles", href: "/articles", Icon: Newspaper },
-    {
-      label: "Email me",
-      href: "mailto:contact@kevintrinh.dev",
-      Icon: Mail,
-      external: true,
-    },
+    ...(emailHref
+      ? [{ label: "Email me", href: emailHref, Icon: Mail, external: true }]
+      : []),
   ];
 
   return (
