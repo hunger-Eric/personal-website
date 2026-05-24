@@ -1,8 +1,8 @@
-// middleware.ts — Admin authentication gate
+// proxy.ts — Admin authentication gate
 //
 // Two auth paths:
-//   1. Login page:  /admin → redirect to /admin/login → enter password → cookie set → enter
-//   2. Token param: /admin?token=xxx → validate → cookie set → redirect clean
+//   1. Login page:  /admin -> redirect to /admin/login -> enter password -> cookie set -> enter
+//   2. Token param: /admin?token=xxx -> validate -> cookie set -> redirect clean
 //
 // Cookie: HttpOnly, Secure, SameSite=Strict, 7-day expiry
 // Token also accepted via x-admin-token header for programmatic calls.
@@ -18,14 +18,11 @@ import {
 /** Paths that should be accessible without auth (login page + its API) */
 const PUBLIC_ADMIN_PATHS = ["/admin/login", "/api/admin/login"];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Only intercept /admin/* and /api/admin/*
-  if (
-    !pathname.startsWith("/admin") &&
-    !pathname.startsWith("/api/admin")
-  ) {
+  if (!pathname.startsWith("/admin") && !pathname.startsWith("/api/admin")) {
     return NextResponse.next();
   }
 
@@ -83,3 +80,4 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: ["/admin/:path*", "/api/admin/:path*"],
 };
+

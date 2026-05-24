@@ -50,6 +50,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "unavatar.io",
       },
+      // Photography page demo assets
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
     ],
     // Cache optimized images for 1 year
     minimumCacheTTL: 31536000,
@@ -129,14 +134,14 @@ const nextConfig: NextConfig = {
       // empty (root) on the OpenNext-on-Cloudflare runtime.
       {
         source: "/",
-        has: [{ type: "host", value: "www.kevintrinh.dev" }],
-        destination: "https://kevintrinh.dev/",
+        has: [{ type: "host", value: "www.me.itheheda.online" }],
+        destination: "https://me.itheheda.online/",
         permanent: true,
       },
       {
         source: "/:path+",
-        has: [{ type: "host", value: "www.kevintrinh.dev" }],
-        destination: "https://kevintrinh.dev/:path+",
+        has: [{ type: "host", value: "www.me.itheheda.online" }],
+        destination: "https://me.itheheda.online/:path+",
         permanent: true,
       },
       // Redirect old routes if you migrate from another portfolio

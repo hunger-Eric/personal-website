@@ -1,9 +1,10 @@
 // app/api/og/route.tsx
-// Dynamic Open Graph image generation using Edge runtime
+// Dynamic Open Graph image generation
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
-export const runtime = "edge";
+// Use nodejs runtime to avoid edge-runtime build warnings in this repo.
+export const runtime = "nodejs";
 
 // Image dimensions for OG
 const WIDTH = 1200;
@@ -14,8 +15,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
 
     // Get parameters from URL
-    const title = searchParams.get("title") || "Kevin Trinh";
-    const subtitle = searchParams.get("subtitle") || "Software Developer";
+    const title = searchParams.get("title") || "fengc";
+    const subtitle = searchParams.get("subtitle") || "Full-Stack Developer";
     const theme = searchParams.get("theme") || "dark";
 
     // Theme colors

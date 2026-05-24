@@ -1,10 +1,10 @@
 // lib/admin-guard.ts
-// Shared admin access guard — used by middleware, API routes, and admin layout.
-// Defense-in-depth: even if middleware doesn't run, the routes themselves check.
+// Shared admin access guard — used by proxy, API routes, and admin layout.
+// Defense-in-depth: even if proxy doesn't run, the routes themselves check.
 //
 // Authentication flow:
-// 1. User visits /admin?token=xxx → middleware validates, sets cookie, redirects
-// 2. Subsequent requests carry the cookie → middleware validates it
+// 1. User visits /admin?token=xxx -> proxy validates, sets cookie, redirects
+// 2. Subsequent requests carry the cookie -> proxy validates it
 // 3. API routes + layout also double-check the token independently
 
 import { NextRequest, NextResponse } from "next/server";

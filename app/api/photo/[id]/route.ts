@@ -1,6 +1,6 @@
 // app/api/photo/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { verifySessionToken, signPhotoToken, verifyPhotoToken } from "@/lib/photo-auth";
+import { verifyPhotoToken } from "@/lib/photo-auth";
 import photographyData from "@/config/photography.json";
 import fs from "fs";
 import path from "path";
@@ -60,7 +60,7 @@ export async function GET(
   // If the src is a local file path (starts with / or .)
   if (photoSrc.startsWith("/") || photoSrc.startsWith(".") || photoSrc.startsWith("private-photos")) {
     const localPath = path.resolve(
-      process.cwd(),
+      /* turbopackIgnore: true */ process.cwd(),
       photoSrc.startsWith("/") ? photoSrc.slice(1) : photoSrc
     );
 

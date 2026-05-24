@@ -34,7 +34,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 // Base URL for canonical URLs and OG images
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://me.itheheda.online";
 
 // Cloudflare Web Analytics token (privacy-friendly, no cookies). Optional —
 // the beacon is only injected when the env var is present so previews and
@@ -115,7 +115,6 @@ export const metadata: Metadata = {
     title: `${siteConfig.name} – ${siteConfig.title}`,
     description: siteConfig.tagline,
     images: ["/images/og/home.png?v=4"],
-    creator: "@KevinTrinhDev",
   },
 
   // Robots
