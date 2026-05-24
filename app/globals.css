@@ -3,14 +3,14 @@
 @tailwind utilities;
 
 :root {
-  /* Colors - Dark mode (default) */
-  --background: #050816;
-  --foreground: #f4f4f5;
-  --muted: #71717a;
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  /* softer indigo for selection */
-  --selection-bg: #312e81;
+  /* Linear-inspired dark-first tokens */
+  --background: #08090a;
+  --foreground: #f7f8f8;
+  --muted: #8a8f98;
+  --accent: #7170ff;
+  --accent-hover: #828fff;
+  --accent-light: #5e6ad2;
+  --selection-bg: #2a2d59;
 
   /* Font families - set by next/font */
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
@@ -19,8 +19,8 @@
     Consolas, "Liberation Mono", monospace;
 
   /* Card styling */
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --card-border: rgba(255, 255, 255, 0.1);
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --card-border: rgba(255, 255, 255, 0.08);
 
   /* Spacing for consistency */
   --nav-height: 64px;
@@ -28,14 +28,15 @@
 
 /* Light mode (for future theme toggle) */
 .light {
-  --background: #ffffff;
-  --foreground: #1f2937;
-  --muted: #6b7280;
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  --selection-bg: #c7d2fe;
+  --background: #f7f8f8;
+  --foreground: #171717;
+  --muted: #62666d;
+  --accent: #5e6ad2;
+  --accent-hover: #7170ff;
+  --accent-light: #828fff;
+  --selection-bg: #d8dcff;
   --card-bg: rgba(0, 0, 0, 0.02);
-  --card-border: rgba(0, 0, 0, 0.1);
+  --card-border: rgba(0, 0, 0, 0.08);
 }
 
 html {

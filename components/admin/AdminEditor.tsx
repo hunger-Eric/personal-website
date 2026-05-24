@@ -1,4 +1,3 @@
-// components/admin/AdminEditor.tsx
 "use client";
 
 import { useState, useEffect, useCallback, ReactNode } from "react";
@@ -11,7 +10,6 @@ type Props = {
   configKey: string;
   loadUrl?: string;
   children: (data: any, setData: (d: any) => void) => ReactNode;
-  /** Optional transform before save */
   transformSave?: (data: any) => any;
 };
 
@@ -30,23 +28,22 @@ export function AdminEditor({
   const [error, setError] = useState<string | null>(null);
   const [ciMessage, setCiMessage] = useState<string | null>(null);
 
-  // Load data
   useEffect(() => {
     const url = loadUrl || `/api/admin/${configKey}`;
     fetch(url)
       .then(async (r) => {
         const body = await r.json().catch(() => ({}));
         if (!r.ok) {
-          const msg = body?.error || `请求失败 (${r.status})`;
+          const msg = body?.error || `Request failed (${r.status})`;
           throw new Error(msg);
         }
         const nextData = body?.config ?? body;
         if (!nextData || typeof nextData !== "object") {
-          throw new Error("配置数据格式不正确");
+          throw new Error("Invalid config payload");
         }
         setData(nextData);
       })
-      .catch((e) => setError("加载失败: " + e.message))
+      .catch((e) => setError(`Load failed: ${e.message}`))
       .finally(() => setLoading(false));
   }, [configKey, loadUrl]);
 
@@ -69,59 +66,48 @@ export function AdminEditor({
       });
       if (!res.ok) {
         const errData = await res.json();
-        throw new Error(errData.error || "保存失败");
+        throw new Error(errData.error || "Save failed");
       }
       const result = await res.json();
       setMessage(result.message);
 
-      // Poll latest GitHub Actions CI status after save push
       const ciPollInterval = setInterval(async () => {
         try {
           const ciRes = await fetch("/api/admin/ci-status");
-          if (!ciRes.ok) {
-            return;
-          }
+          if (!ciRes.ok) return;
           const ciData = await ciRes.json();
           if (ciData.status === "NOT_FOUND") {
-            setCiMessage("CI: 尚未检测到 workflow run");
+            setCiMessage("CI: workflow run not found yet");
             return;
           }
 
           if (ciData.status === "queued" || ciData.status === "waiting") {
-            setCiMessage(
-              `CI #${ciData.runNumber ?? "?"}: 排队中...`
-            );
+            setCiMessage(`CI #${ciData.runNumber ?? "?"}: queued...`);
             return;
           }
 
           if (ciData.status === "in_progress") {
-            setCiMessage(
-              `CI #${ciData.runNumber ?? "?"}: 运行中...`
-            );
+            setCiMessage(`CI #${ciData.runNumber ?? "?"}: running...`);
             return;
           }
 
           if (ciData.status === "completed") {
             if (ciData.conclusion === "success") {
-              setCiMessage(
-                `CI #${ciData.runNumber ?? "?"}: 通过 ✅`
-              );
+              setCiMessage(`CI #${ciData.runNumber ?? "?"}: passed`);
             } else {
               setCiMessage(
-                `CI #${ciData.runNumber ?? "?"}: ${ciData.conclusion || "失败"} ⚠️`
+                `CI #${ciData.runNumber ?? "?"}: ${ciData.conclusion || "failed"}`
               );
             }
             clearInterval(ciPollInterval);
           }
         } catch {
-          // Ignore CI polling errors to avoid blocking save UX
+          // keep save flow unaffected
         }
       }, 8000);
 
-      // Stop CI polling after 5 minutes
       setTimeout(() => clearInterval(ciPollInterval), 300000);
 
-      // Poll deployment status if deployId was returned
       if (result.deployId) {
         const pollInterval = setInterval(async () => {
           try {
@@ -131,33 +117,26 @@ export function AdminEditor({
             if (!statusRes.ok) return;
             const statusData = await statusRes.json();
             if (statusData.status === "READY") {
-              setMessage(
-                `${configKey} 配置已保存并部署完成 ✅`
-              );
+              setMessage(`${configKey} saved and deployed`);
               clearInterval(pollInterval);
             } else if (
               statusData.status === "ERROR" ||
               statusData.status === "FAILED"
             ) {
-              setMessage(
-                `${configKey} 配置已保存，但自动部署失败 ⚠️`
-              );
+              setMessage(`${configKey} saved, but auto-deploy failed`);
               clearInterval(pollInterval);
             } else {
-              setMessage(
-                `${configKey} 配置已保存并推送，正在自动部署到 Vercel...`
-              );
+              setMessage(`${configKey} saved. Deploying to Vercel...`);
             }
           } catch {
-            // Ignore polling errors
+            // ignore polling errors
           }
         }, 5000);
 
-        // Stop polling after 3 minutes
         setTimeout(() => clearInterval(pollInterval), 180000);
       }
     } catch (e: any) {
-      setError("保存失败: " + e.message);
+      setError(`Save failed: ${e.message}`);
     } finally {
       setSaving(false);
     }
@@ -166,63 +145,60 @@ export function AdminEditor({
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[color:var(--accent)] border-t-transparent" />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background pl-64">
-      {/* Top bar */}
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-card px-6 py-3">
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-card px-6 py-3">
         <div>
           <Link
             href="/admin"
             className="mb-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-3 w-3" />
-            返回仪表盘
+            Back to dashboard
           </Link>
           <h1 className="text-lg font-semibold">{title}</h1>
         </div>
         <button
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-amber-600 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[color:var(--accent-hover)] disabled:opacity-50"
         >
           {saving ? (
             <>
               <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              保存中...
+              Saving...
             </>
           ) : (
             <>
               <Save className="h-4 w-4" />
-              保存到 GitHub
+              Save to GitHub
             </>
           )}
         </button>
       </div>
 
-      {/* Body */}
       <div className="mx-auto max-w-4xl px-6 py-8">
         {description && (
           <p className="mb-6 text-sm text-muted-foreground">{description}</p>
         )}
 
-        {/* Messages */}
         {message && (
-          <div className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300">
+          <div className="mb-6 rounded-xl border border-emerald-300/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
             {message}
           </div>
         )}
         {ciMessage && (
-          <div className="mb-6 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-700 dark:border-sky-800 dark:bg-sky-900/30 dark:text-sky-300">
+          <div className="mb-6 rounded-xl border border-[color:var(--accent)]/40 bg-[color:var(--accent)]/10 px-4 py-3 text-sm text-[color:var(--accent-light)]">
             {ciMessage}
           </div>
         )}
         {error && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400">
+          <div className="mb-6 rounded-xl border border-red-300/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
             {error}
           </div>
         )}
