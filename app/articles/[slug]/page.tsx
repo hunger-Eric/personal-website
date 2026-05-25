@@ -3,6 +3,8 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import fs from "fs";
+import path from "path";
 
 import { siteConfig } from "@/config/siteConfig";
 import {
@@ -174,14 +176,19 @@ export default async function ArticlePage({
           </figure>
         )}
 
-        {/* Custom CSS for articles that need special styling */}
-        {article.slug === "arc-agi-progress-towards-agi" && (
-          <link rel="stylesheet" href="/css/arc-agi-article.css" />
-        )}
-
         {/* Body — single column, no TOC sidebar */}
         <article className="min-w-0">
-          <MdxRenderer source={article.content} prose={article.slug !== "arc-agi-progress-towards-agi"} />
+          {article.slug === "arc-agi-progress-towards-agi" ? (
+            <>
+              <link rel="stylesheet" href="/css/arc-agi-article.css" />
+              <div
+                className="arc-agi-article"
+                dangerouslySetInnerHTML={{ __html: article.content }}
+              />
+            </>
+          ) : (
+            <MdxRenderer source={article.content} />
+          )}
         </article>
 
         {/* Back to all */}
