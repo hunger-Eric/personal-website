@@ -1,5 +1,5 @@
-// components/projects/projectHelpers.ts
-import type { ProjectItem } from "../../config/projects";
+﻿// components/projects/projectHelpers.ts
+import type { CaseItem } from "../../config/cases";
 
 // Helper: format ISO date (e.g. repoCreatedAt) as "Mon YYYY"
 export function formatMonthYear(iso?: string): string | undefined {
@@ -36,7 +36,7 @@ export function formatShortDate(iso?: string): string | undefined {
 }
 
 // Helper: compute displayable start/end labels respecting AUTO + threshold
-export function getDisplayDates(project: ProjectItem): {
+export function getDisplayDates(project: CaseItem): {
   startLabel?: string;
   endLabel?: string;
 } {
@@ -81,7 +81,7 @@ export function getDisplayDates(project: ProjectItem): {
 }
 
 // Helper: best GitHub repo URL (githubRepoUrl > github link > undefined)
-export function getGithubRepoUrl(project: ProjectItem): string | undefined {
+export function getGithubRepoUrl(project: CaseItem): string | undefined {
   if (project.githubRepoUrl) return project.githubRepoUrl;
   const githubLink = project.links?.find((l) => l.type === "github");
   if (githubLink?.href) return githubLink.href;
@@ -97,3 +97,4 @@ export function normalizeRepoUrl(url: string): string {
 export function displayUrl(url: string): string {
   return url.replace(/^https?:\/\//i, "");
 }
+

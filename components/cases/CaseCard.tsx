@@ -7,10 +7,10 @@ import { FolderOpen, Star, GitFork, Download } from "lucide-react";
 
 import { useLocale } from "@/components/LocaleProvider";
 import { getSiteCopy } from "@/config/contentCopy";
-import type { ProjectItem, ProjectLink } from "../../config/projects";
+import type { CaseItem, CaseLink } from "../../config/cases";
 
 interface CaseCardProps {
-  project: ProjectItem;
+  caseItem: CaseItem;
   iconFor: (type?: string) => ReactNode;
   featured?: boolean;
 }
@@ -23,22 +23,18 @@ function formatTechnologies(technologies?: string[]) {
   return (technologies ?? []).slice(0, 4);
 }
 
-export function CaseCard({
-  project,
-  iconFor,
-  featured = false,
-}: CaseCardProps) {
+export function CaseCard({ caseItem, iconFor, featured = false }: CaseCardProps) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
   const hasStats =
-    project.githubStars !== undefined ||
-    project.githubForks !== undefined ||
-    project.downloads !== undefined;
+    caseItem.githubStars !== undefined ||
+    caseItem.githubForks !== undefined ||
+    caseItem.downloads !== undefined;
 
-  const href = `/projects/${encodeURIComponent(project.id)}`;
-  const summary = project.description?.[0] ?? project.summary ?? "";
-  const techs = formatTechnologies(project.technologies);
-  const image = project.imageUrl || fallbackImage();
+  const href = `/projects/${encodeURIComponent(caseItem.id)}`;
+  const summary = caseItem.description?.[0] ?? caseItem.summary ?? "";
+  const techs = formatTechnologies(caseItem.technologies);
+  const image = caseItem.imageUrl || fallbackImage();
 
   return (
     <article
@@ -58,7 +54,7 @@ export function CaseCard({
         >
           <Image
             src={image}
-            alt={project.name}
+            alt={caseItem.name}
             fill
             unoptimized
             sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
@@ -68,11 +64,7 @@ export function CaseCard({
           <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground backdrop-blur-sm">
             <FolderOpen className="h-3.5 w-3.5" />
             <span>
-              {featured
-                ? copy.projects.featuredBadge
-                : locale === "zh"
-                  ? "案例"
-                  : "Case"}
+              {featured ? copy.cases.featuredBadge : locale === "zh" ? "案例" : "Case"}
             </span>
           </div>
         </div>
@@ -89,7 +81,7 @@ export function CaseCard({
                   featured ? "text-xl sm:text-2xl" : "text-lg sm:text-[1.05rem]",
                 ].join(" ")}
               >
-                <span className="block min-w-0 break-words">{project.name}</span>
+                <span className="block min-w-0 break-words">{caseItem.name}</span>
               </h4>
               {techs.length ? (
                 <p className="mt-1 text-[12px] font-medium text-muted-foreground">
@@ -112,22 +104,22 @@ export function CaseCard({
 
           {hasStats ? (
             <div className="flex flex-wrap items-center gap-3 border-t border-border/70 pt-3 text-[12px] text-muted-foreground">
-              {project.githubStars !== undefined && (
+              {caseItem.githubStars !== undefined && (
                 <span className="inline-flex items-center gap-1.5" title="Stars">
                   <Star className="h-3.5 w-3.5" />
-                  <span>{project.githubStars}</span>
+                  <span>{caseItem.githubStars}</span>
                 </span>
               )}
-              {project.githubForks !== undefined && (
+              {caseItem.githubForks !== undefined && (
                 <span className="inline-flex items-center gap-1.5" title="Forks">
                   <GitFork className="h-3.5 w-3.5" />
-                  <span>{project.githubForks}</span>
+                  <span>{caseItem.githubForks}</span>
                 </span>
               )}
-              {project.downloads !== undefined && (
+              {caseItem.downloads !== undefined && (
                 <span className="inline-flex items-center gap-1.5" title="Downloads">
                   <Download className="h-3.5 w-3.5" />
-                  <span>{project.downloads}</span>
+                  <span>{caseItem.downloads}</span>
                 </span>
               )}
             </div>
@@ -135,11 +127,11 @@ export function CaseCard({
         </div>
       </Link>
 
-      {project.links?.length ? (
+      {caseItem.links?.length ? (
         <div className="flex flex-wrap gap-2 border-t border-border/70 p-4 pt-0 sm:p-5 sm:pt-0">
-          {project.links.map((link: ProjectLink) => (
+          {caseItem.links.map((link: CaseLink) => (
             <a
-              key={`${project.id}-${link.label}-${link.href}`}
+              key={`${caseItem.id}-${link.label}-${link.href}`}
               href={link.href}
               target="_blank"
               rel="noreferrer noopener"

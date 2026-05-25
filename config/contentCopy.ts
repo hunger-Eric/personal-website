@@ -1,5 +1,14 @@
 import type { Locale } from "./locale";
 
+type CasesCopy = {
+  heading: string;
+  viewAll: string;
+  featuredBadge: string;
+  viewDetails: string;
+  emptyTitle: string;
+  emptyDescription: string;
+};
+
 export type SiteCopy = {
   hero: {
     line: string;
@@ -12,14 +21,8 @@ export type SiteCopy = {
     paragraphs: string[];
     afterTechParagraph: string;
   };
-  projects: {
-    heading: string;
-    viewAll: string;
-    featuredBadge: string;
-    viewDetails: string;
-    emptyTitle: string;
-    emptyDescription: string;
-  };
+  cases: CasesCopy;
+  projects: CasesCopy;
   articles: {
     heading: string;
     description: string;
@@ -42,11 +45,29 @@ export type SiteCopy = {
   };
 };
 
+const zhCases: CasesCopy = {
+  heading: "~/案例",
+  viewAll: "查看全部案例",
+  featuredBadge: "精选案例",
+  viewDetails: "查看案例",
+  emptyTitle: "暂无案例",
+  emptyDescription: "案例内容还在整理中。",
+};
+
+const enCases: CasesCopy = {
+  heading: "~/Cases",
+  viewAll: "View all cases",
+  featuredBadge: "Featured case",
+  viewDetails: "View case",
+  emptyTitle: "No cases yet",
+  emptyDescription: "Case content is still being organized.",
+};
+
 const zh: SiteCopy = {
   hero: {
     line: "你好，我是 fengc。",
     description:
-      "全栈程序猿，摄影爱好者。捣鼓 Next.js、Python、AI Agent 和自动化工具，偶尔也会出去拍拍照。",
+      "全栈程序猿，摄影爱好者。擅长 Next.js、Python、AI Agent 和自动化工具，也会把零散的内容和工作流整理成更顺手的交付。",
   },
   about: {
     heading: "~/关于我",
@@ -59,14 +80,8 @@ const zh: SiteCopy = {
     afterTechParagraph:
       "最近也在琢磨怎么把 AI 更自然地放进摄影后期和日常整理流程里。",
   },
-  projects: {
-    heading: "~/案例",
-    viewAll: "查看全部案例",
-    featuredBadge: "精选案例",
-    viewDetails: "查看案例",
-    emptyTitle: "暂无案例",
-    emptyDescription: "案例内容还在整理中。",
-  },
+  cases: zhCases,
+  projects: zhCases,
   articles: {
     heading: "文章",
     description: "分享软件开发、产品实践与个人学习过程中的思考。",
@@ -93,7 +108,7 @@ const en: SiteCopy = {
   hero: {
     line: "Hi, fengc here.",
     description:
-      "Full-stack developer and photography enthusiast. I tinker with Next.js, Python, AI agents, and automation tools, and I still make time to go shoot photos.",
+      "Full-stack developer and photography enthusiast. I work with Next.js, Python, AI agents, and automation tools, and I still make time to go shoot photos.",
   },
   about: {
     heading: "~/About Me",
@@ -106,14 +121,8 @@ const en: SiteCopy = {
     afterTechParagraph:
       "Lately I have been exploring how AI can fit more naturally into photo post-production and everyday organization.",
   },
-  projects: {
-    heading: "~/Cases",
-    viewAll: "View all cases",
-    featuredBadge: "Featured case",
-    viewDetails: "View case",
-    emptyTitle: "No cases yet",
-    emptyDescription: "Case content is still being organized.",
-  },
+  cases: enCases,
+  projects: enCases,
   articles: {
     heading: "Articles",
     description: "Thoughts on software development, product practice, and personal learning.",
@@ -142,4 +151,3 @@ export const siteCopy: Record<Locale, SiteCopy> = { zh, en };
 export function getSiteCopy(locale: Locale): SiteCopy {
   return siteCopy[locale] || siteCopy.zh;
 }
-

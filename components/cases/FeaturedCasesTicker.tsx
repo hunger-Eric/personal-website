@@ -1,4 +1,4 @@
-// components/cases/FeaturedCasesTicker.tsx
+﻿// components/cases/FeaturedCasesTicker.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -12,10 +12,10 @@ import {
   FilledPlay,
   FilledArrowUpRight,
 } from "@/components/FilledIcons";
-import type { ProjectItem } from "../../config/projects";
+import type { CaseItem } from "../../config/cases";
 
 interface FeaturedCasesTickerProps {
-  projects: ProjectItem[];
+  cases: CaseItem[];
 }
 
 function iconForLink(type?: string) {
@@ -35,7 +35,7 @@ function iconForLink(type?: string) {
   }
 }
 
-function getBlurb(project: ProjectItem) {
+function getBlurb(project: CaseItem) {
   return (
     project.description?.[0] ??
     project.summary ??
@@ -43,15 +43,15 @@ function getBlurb(project: ProjectItem) {
   );
 }
 
-function getTools(project: ProjectItem) {
+function getTools(project: CaseItem) {
   const techs = project.technologies ?? [];
   return techs.slice(0, 8);
 }
 
 export function FeaturedCasesCarousel({
-  projects,
+  cases,
 }: FeaturedCasesTickerProps) {
-  const slides = useMemo(() => projects.slice(0, 8), [projects]);
+  const slides = useMemo(() => cases.slice(0, 8), [cases]);
   const total = slides.length;
 
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -148,11 +148,11 @@ export function FeaturedCasesCarousel({
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        aria-label="Featured projects carousel"
+        aria-label="Featured cases carousel"
       >
         {/* Fixed, modest height so the carousel stays compact */}
         <div className="relative h-[240px] w-full sm:h-[280px] md:h-[320px]">
-          {/* Image stack — full bleed, crossfade */}
+          {/* Image stack 鈥?full bleed, crossfade */}
           <div className="absolute inset-0">
             {slides.map((project, idx) => {
               const image = project.imageUrl;
@@ -277,7 +277,7 @@ export function FeaturedCasesCarousel({
         </div>
       </div>
 
-      {/* Indicators — rectangles, outside the card */}
+      {/* Indicators 鈥?rectangles, outside the card */}
       {total > 1 ? (
         <div className="mt-4 flex items-center justify-center gap-2">
           {Array.from({ length: total }).map((_, i) => {
@@ -308,3 +308,4 @@ export function FeaturedCasesCarousel({
 }
 
 export const FeaturedCasesTicker = FeaturedCasesCarousel;
+

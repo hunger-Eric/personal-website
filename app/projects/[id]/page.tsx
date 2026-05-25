@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink, Star, GitFork, Download } from "lucide-react";
 
-import { loadCases } from "@/config/projects";
+import { loadCases } from "@/config/cases";
 import { siteConfig } from "@/config/siteConfig";
 
 type Props = {
@@ -11,27 +11,27 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const projects = await loadCases();
-  return projects.map((p) => ({ id: p.id }));
+  const cases = await loadCases();
+  return cases.map((caseItem) => ({ id: caseItem.id }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const projects = await loadCases();
-  const project = projects.find((p) => p.id === id);
-  if (!project) return {};
+  const cases = await loadCases();
+  const caseItem = cases.find((item) => item.id === id);
+  if (!caseItem) return {};
 
   return {
-    title: `${project.name} | Cases`,
-    description: project.summary,
-    alternates: { canonical: `/projects/${project.id}` },
+    title: `${caseItem.name} | Cases`,
+    description: caseItem.summary,
+    alternates: { canonical: `/projects/${caseItem.id}` },
     openGraph: {
       type: "website",
-      url: `/projects/${project.id}`,
-      title: `${project.name} | ${siteConfig.name}`,
-      description: project.summary,
-      images: project.imageUrl
-        ? [{ url: project.imageUrl, alt: project.name }]
+      url: `/projects/${caseItem.id}`,
+      title: `${caseItem.name} | ${siteConfig.name}`,
+      description: caseItem.summary,
+      images: caseItem.imageUrl
+        ? [{ url: caseItem.imageUrl, alt: caseItem.name }]
         : undefined,
     },
   };
@@ -39,13 +39,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CaseDetailPage({ params }: Props) {
   const { id } = await params;
-  const projects = await loadCases();
-  const project = projects.find((p) => p.id === id);
+  const cases = await loadCases();
+  const caseItem = cases.find((item) => item.id === id);
 
-  if (!project) notFound();
+  if (!caseItem) notFound();
 
-  const desc =
-    project.description?.filter(Boolean) ?? (project.summary ? [project.summary] : []);
+  const descriptionLines =
+    caseItem.description?.filter(Boolean) ?? (caseItem.summary ? [caseItem.summary] : []);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
@@ -58,18 +58,18 @@ export default async function CaseDetailPage({ params }: Props) {
       </Link>
 
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{project.name}</h1>
-        {project.summary && (
-          <p className="mt-3 max-w-3xl text-lg text-muted-foreground">{project.summary}</p>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{caseItem.name}</h1>
+        {caseItem.summary && (
+          <p className="mt-3 max-w-3xl text-lg text-muted-foreground">{caseItem.summary}</p>
         )}
       </header>
 
-      {project.imageUrl && (
+      {caseItem.imageUrl && (
         <div className="mb-8 overflow-hidden rounded-2xl border border-border bg-card">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={project.imageUrl}
-            alt={project.name}
+            src={caseItem.imageUrl}
+            alt={caseItem.name}
             className="h-auto w-full object-cover"
             loading="eager"
           />
@@ -78,34 +78,34 @@ export default async function CaseDetailPage({ params }: Props) {
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
         <main className="space-y-6">
-          {desc.length > 0 && (
+          {descriptionLines.length > 0 && (
             <section className="rounded-2xl border border-border bg-card p-6">
               <h2 className="mb-3 text-lg font-semibold">案例介绍</h2>
               <div className="space-y-3 text-sm leading-7 text-muted-foreground">
-                {desc.map((line, idx) => (
-                  <p key={idx}>{line}</p>
+                {descriptionLines.map((line, index) => (
+                  <p key={index}>{line}</p>
                 ))}
               </div>
             </section>
           )}
 
-          {project.readmeHtmlFull && (
+          {caseItem.readmeHtmlFull && (
             <section className="rounded-2xl border border-border bg-card p-6">
               <h2 className="mb-4 text-lg font-semibold">README</h2>
               <article
                 className="prose prose-slate max-w-none dark:prose-invert"
-                dangerouslySetInnerHTML={{ __html: project.readmeHtmlFull }}
+                dangerouslySetInnerHTML={{ __html: caseItem.readmeHtmlFull }}
               />
             </section>
           )}
         </main>
 
         <aside className="space-y-4">
-          {project.technologies && project.technologies.length > 0 && (
+          {caseItem.technologies && caseItem.technologies.length > 0 && (
             <section className="rounded-2xl border border-border bg-card p-5">
               <h3 className="mb-3 text-sm font-semibold">技术栈</h3>
               <div className="flex flex-wrap gap-2">
-                {project.technologies.map((tech) => (
+                {caseItem.technologies.map((tech) => (
                   <span
                     key={tech}
                     className="rounded-md border border-border bg-background px-2.5 py-1 text-xs"
@@ -117,39 +117,39 @@ export default async function CaseDetailPage({ params }: Props) {
             </section>
           )}
 
-          {(project.githubStars !== undefined ||
-            project.githubForks !== undefined ||
-            project.downloads !== undefined) && (
+          {(caseItem.githubStars !== undefined ||
+            caseItem.githubForks !== undefined ||
+            caseItem.downloads !== undefined) && (
             <section className="rounded-2xl border border-border bg-card p-5">
               <h3 className="mb-3 text-sm font-semibold">仓库指标</h3>
               <div className="space-y-2 text-sm text-muted-foreground">
-                {project.githubStars !== undefined && (
+                {caseItem.githubStars !== undefined && (
                   <p className="inline-flex items-center gap-2">
                     <Star className="h-4 w-4" />
-                    <span>{project.githubStars} Stars</span>
+                    <span>{caseItem.githubStars} Stars</span>
                   </p>
                 )}
-                {project.githubForks !== undefined && (
+                {caseItem.githubForks !== undefined && (
                   <p className="inline-flex items-center gap-2">
                     <GitFork className="h-4 w-4" />
-                    <span>{project.githubForks} Forks</span>
+                    <span>{caseItem.githubForks} Forks</span>
                   </p>
                 )}
-                {project.downloads !== undefined && (
+                {caseItem.downloads !== undefined && (
                   <p className="inline-flex items-center gap-2">
                     <Download className="h-4 w-4" />
-                    <span>{project.downloads} Downloads</span>
+                    <span>{caseItem.downloads} Downloads</span>
                   </p>
                 )}
               </div>
             </section>
           )}
 
-          {project.links && project.links.length > 0 && (
+          {caseItem.links && caseItem.links.length > 0 && (
             <section className="rounded-2xl border border-border bg-card p-5">
               <h3 className="mb-3 text-sm font-semibold">相关链接</h3>
               <div className="space-y-2">
-                {project.links.map((link) => (
+                {caseItem.links.map((link) => (
                   <a
                     key={`${link.label}-${link.href}`}
                     href={link.href}
