@@ -37,7 +37,7 @@ export function CasesBrowser({ cases }: Props) {
       <section>
         <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           <Boxes className="h-4 w-4" />
-          <span>{copy.cases.featuredBadge}</span>
+          <span>{locale === "zh" ? "精选案例" : copy.cases.featuredBadge}</span>
         </div>
         <div className="grid gap-6 lg:grid-cols-2">
           {groups.featured.map((caseItem) => (

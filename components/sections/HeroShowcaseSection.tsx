@@ -30,7 +30,7 @@ function getLabSignals(locale: "zh" | "en"): LabSignal[] {
   if (locale === "zh") {
     return [
       { label: "方向", value: "AI Native Lab" },
-      { label: "方法", value: "workflow first" },
+      { label: "方法", value: "工作流优先" },
       { label: "输出", value: "可运行系统" },
     ];
   }
@@ -46,22 +46,22 @@ function getCapabilities(locale: "zh" | "en"): Capability[] {
   if (locale === "zh") {
     return [
       {
-        title: "AI Workflow Engineering",
-        description: "多模型协同、AI-assisted development、原型迭代流程。",
+        title: "AI 工作流工程",
+        description: "多模型协同、AI 辅助开发、原型迭代流程。",
         Icon: GitBranch,
       },
       {
-        title: "Automation Systems",
+        title: "自动化系统",
         description: "Docker、n8n、API、影刀与长期可维护自动化。",
         Icon: Workflow,
       },
       {
-        title: "Knowledge & RAG Systems",
+        title: "知识库与 RAG 系统",
         description: "本地知识库、多源检索、业务资料和内容资产接入。",
         Icon: BrainCircuit,
       },
       {
-        title: "Creative Production",
+        title: "AI 辅助内容生产",
         description: "AI 内容创作、视觉表达、素材整理和数字叙事。",
         Icon: Blocks,
       },
@@ -108,7 +108,7 @@ export function HeroShowcaseSection() {
           <div>
             <div className="inline-flex items-center gap-2 border-y border-border py-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               <Bot className="h-4 w-4" />
-              <span>{locale === "zh" ? "AI Native System Builder" : "AI Native Lab"}</span>
+              <span>{locale === "zh" ? "AI Native 系统构建者" : "AI Native Lab"}</span>
             </div>
 
             <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
@@ -153,7 +153,10 @@ export function HeroShowcaseSection() {
 
             <div className="mt-6 space-y-3">
               {capabilities.map(({ title, description, Icon }) => (
-                <div key={title} className="grid grid-cols-[32px_minmax(0,1fr)] gap-3 border-t border-border pt-3 first:border-t-0 first:pt-0">
+                <div
+                  key={title}
+                  className="grid grid-cols-[32px_minmax(0,1fr)] gap-3 border-t border-border pt-3 first:border-t-0 first:pt-0"
+                >
                   <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-muted-foreground">
                     <Icon className="h-4 w-4" />
                   </span>

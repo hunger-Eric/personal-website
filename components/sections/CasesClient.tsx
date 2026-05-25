@@ -38,7 +38,7 @@ function getPrimaryWorkflow(caseItem: CaseItem, locale: "zh" | "en") {
   return (
     caseItem.workflows?.[0] ||
     caseItem.aiOrchestration?.[0] ||
-    (locale === "zh" ? "AI workflow" : "AI workflow")
+    (locale === "zh" ? "AI 工作流" : "AI workflow")
   );
 }
 
@@ -72,7 +72,7 @@ function FeaturedLabRecord({
     >
       <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         <Bot className="h-4 w-4" />
-        <span>{locale === "zh" ? "Featured Lab Note" : "Featured Lab Note"}</span>
+        <span>{locale === "zh" ? "精选案例笔记" : "Featured Lab Note"}</span>
         <span className="text-border">/</span>
         <span>{metadataLabel(caseItem.status)}</span>
       </div>
@@ -90,23 +90,23 @@ function FeaturedLabRecord({
         <div className="grid gap-3 text-sm">
           <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-border pt-3">
             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Role
+              {locale === "zh" ? "角色" : "Role"}
             </span>
             <span className="text-foreground">{metadataLabel(caseItem.role)}</span>
           </div>
           <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-border pt-3">
             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              Workflow
+              {locale === "zh" ? "工作流" : "Workflow"}
             </span>
             <span className="text-foreground">{getPrimaryWorkflow(caseItem, locale)}</span>
           </div>
           <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-border pt-3">
             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              AI Stack
+              {locale === "zh" ? "AI 栈" : "AI Stack"}
             </span>
             <span className="text-foreground">
               {(caseItem.aiStack ?? caseItem.technologies ?? []).slice(0, 3).join(", ") ||
-                "AI-assisted workflow"}
+                (locale === "zh" ? "AI 辅助工作流" : "AI-assisted workflow")}
             </span>
           </div>
         </div>
@@ -163,7 +163,7 @@ function LabIndexRow({
           <BrainCircuit className="h-3.5 w-3.5" />
           <span className="truncate">
             {(caseItem.aiStack ?? caseItem.technologies ?? []).slice(0, 2).join(", ") ||
-              "AI stack"}
+              (locale === "zh" ? "AI 栈" : "AI stack")}
           </span>
         </div>
       </div>
@@ -220,7 +220,7 @@ export function CasesSectionClient({ cases }: CasesSectionClientProps) {
                 <div className="mt-8">
                   <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     <GitBranch className="h-4 w-4" />
-                    <span>{locale === "zh" ? "System Archive" : "System Archive"}</span>
+                    <span>{locale === "zh" ? "系统档案" : "System Archive"}</span>
                   </div>
                   {previewCases.map((caseItem, index) => (
                     <LabIndexRow
@@ -236,7 +236,7 @@ export function CasesSectionClient({ cases }: CasesSectionClientProps) {
               <div>
                 <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   <Boxes className="h-4 w-4" />
-                  <span>{locale === "zh" ? "Catalog Mode" : "Catalog Mode"}</span>
+                  <span>{locale === "zh" ? "目录模式" : "Catalog Mode"}</span>
                 </div>
                 {previewCases.map((caseItem, index) => (
                   <LabIndexRow
