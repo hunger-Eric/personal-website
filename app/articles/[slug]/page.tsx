@@ -3,8 +3,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import fs from "fs";
-import path from "path";
+import { redirect } from "next/navigation";
 
 import { siteConfig } from "@/config/siteConfig";
 import {
@@ -93,8 +92,13 @@ export default async function ArticlePage({
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
 
-  if (!article) {
+    if (!article) {
     notFound();
+  }
+
+  // Custom-styled articles redirect to their standalone HTML
+  if (article.slug === "arc-agi-progress-towards-agi") {
+    redirect("/articles/arc-agi");
   }
 
   const relatedArticles = await getRelatedArticles(slug, 3);
