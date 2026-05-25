@@ -40,9 +40,10 @@ const prettyCodeOptions = {
   defaultLang: "plaintext",
 } as const;
 
-export async function MdxRenderer({ source }: { source: string }) {
+export async function MdxRenderer({ source, prose = true }: { source: string; prose?: boolean }) {
+  const classes = prose ? PROSE_CLASSES : "";
   return (
-    <div className={PROSE_CLASSES}>
+    <div className={classes}>
       <MDXRemote
         source={source}
         components={mdxComponents}
