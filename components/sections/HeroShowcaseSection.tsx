@@ -297,7 +297,7 @@ export function HeroShowcaseSection() {
 
         {/* Contribution graph 鈥?md+ only (hidden on mobile to keep above-the-fold focused) */}
         <div className="mt-20 hidden md:block">
-          <ContributionGraphCard />
+          <ContributionGraphCard title={locale === "zh" ? "工作节奏" : "Work Rhythm"} />
         </div>
       </div>
     </section>
