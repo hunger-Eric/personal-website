@@ -8,8 +8,6 @@ import { getSiteCopy } from "@/config/contentCopy";
 import { siteConfig } from "@/config/siteConfig";
 import type { ArticleListItem } from "./ArticlesBrowser";
 
-const FALLBACK_IMG = "/images/demo_1.png";
-
 function formatDate(dateStr: string, locale: "zh" | "en"): string {
   try {
     const d = new Date(dateStr);
@@ -22,6 +20,8 @@ function formatDate(dateStr: string, locale: "zh" | "en"): string {
   } catch {
     return dateStr;
   }
+}
+
 type Props = {
   article: ArticleListItem;
 };
