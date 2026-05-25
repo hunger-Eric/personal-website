@@ -46,7 +46,7 @@ const zh: SiteCopy = {
   hero: {
     line: "你好，我是 fengc。",
     description:
-      "全栈程序猿，摄影爱好者。捣鼓 Next.js、Python、AI Agent 和自动化工具，偶尔出去拍拍照。",
+      "全栈程序猿，摄影爱好者。捣鼓 Next.js、Python、AI Agent 和自动化工具，偶尔也会出去拍拍照。",
   },
   about: {
     heading: "~/关于我",
@@ -60,12 +60,12 @@ const zh: SiteCopy = {
       "最近也在琢磨怎么把 AI 更自然地放进摄影后期和日常整理流程里。",
   },
   projects: {
-    heading: "~/项目",
-    viewAll: "查看全部项目",
-    featuredBadge: "精选项目",
-    viewDetails: "查看详情",
-    emptyTitle: "暂时没有项目",
-    emptyDescription: "项目内容还在整理中。",
+    heading: "~/案例",
+    viewAll: "查看全部案例",
+    featuredBadge: "精选案例",
+    viewDetails: "查看案例",
+    emptyTitle: "暂无案例",
+    emptyDescription: "案例内容还在整理中。",
   },
   articles: {
     heading: "文章",
@@ -84,8 +84,8 @@ const zh: SiteCopy = {
     completed: "已完成",
     private: "私密",
     photosSuffix: "张",
-    emptyTitle: "暂无项目",
-    emptyDescription: "摄影项目正在筹备中，敬请期待。",
+    emptyTitle: "暂无相册",
+    emptyDescription: "摄影项目正在准备中。",
   },
 };
 
@@ -107,17 +107,16 @@ const en: SiteCopy = {
       "Lately I have been exploring how AI can fit more naturally into photo post-production and everyday organization.",
   },
   projects: {
-    heading: "~/Projects",
-    viewAll: "View all projects",
-    featuredBadge: "Featured project",
-    viewDetails: "View details",
-    emptyTitle: "No projects yet",
-    emptyDescription: "Project content is still being organized.",
+    heading: "~/Cases",
+    viewAll: "View all cases",
+    featuredBadge: "Featured case",
+    viewDetails: "View case",
+    emptyTitle: "No cases yet",
+    emptyDescription: "Case content is still being organized.",
   },
   articles: {
     heading: "Articles",
-    description:
-      "Notes on software development, product practice, and personal learning.",
+    description: "Thoughts on software development, product practice, and personal learning.",
     viewAll: "View all articles",
     emptyTitle: "No articles yet",
     emptyDescription: "New posts will show up here after publishing.",
@@ -143,3 +142,4 @@ export const siteCopy: Record<Locale, SiteCopy> = { zh, en };
 export function getSiteCopy(locale: Locale): SiteCopy {
   return siteCopy[locale] || siteCopy.zh;
 }
+

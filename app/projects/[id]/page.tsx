@@ -1,8 +1,9 @@
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink, Star, GitFork, Download } from "lucide-react";
-import { loadProjects } from "@/config/projects";
+
+import { loadCases } from "@/config/projects";
 import { siteConfig } from "@/config/siteConfig";
 
 type Props = {
@@ -10,18 +11,18 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  const projects = await loadProjects();
+  const projects = await loadCases();
   return projects.map((p) => ({ id: p.id }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const projects = await loadProjects();
+  const projects = await loadCases();
   const project = projects.find((p) => p.id === id);
   if (!project) return {};
 
   return {
-    title: `${project.name} | Projects`,
+    title: `${project.name} | Cases`,
     description: project.summary,
     alternates: { canonical: `/projects/${project.id}` },
     openGraph: {
@@ -36,35 +37,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ProjectDetailPage({ params }: Props) {
+export default async function CaseDetailPage({ params }: Props) {
   const { id } = await params;
-  const projects = await loadProjects();
+  const projects = await loadCases();
   const project = projects.find((p) => p.id === id);
 
   if (!project) notFound();
 
   const desc =
-    project.description?.filter(Boolean) ??
-    (project.summary ? [project.summary] : []);
+    project.description?.filter(Boolean) ?? (project.summary ? [project.summary] : []);
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
       <Link
-        href="/#projects"
+        href="/projects"
         className="group mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-        返回项目列表
+        返回案例列表
       </Link>
 
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
-          {project.name}
-        </h1>
+        <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{project.name}</h1>
         {project.summary && (
-          <p className="mt-3 max-w-3xl text-lg text-muted-foreground">
-            {project.summary}
-          </p>
+          <p className="mt-3 max-w-3xl text-lg text-muted-foreground">{project.summary}</p>
         )}
       </header>
 
@@ -84,7 +80,7 @@ export default async function ProjectDetailPage({ params }: Props) {
         <main className="space-y-6">
           {desc.length > 0 && (
             <section className="rounded-2xl border border-border bg-card p-6">
-              <h2 className="mb-3 text-lg font-semibold">项目介绍</h2>
+              <h2 className="mb-3 text-lg font-semibold">案例介绍</h2>
               <div className="space-y-3 text-sm leading-7 text-muted-foreground">
                 {desc.map((line, idx) => (
                   <p key={idx}>{line}</p>

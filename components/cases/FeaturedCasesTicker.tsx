@@ -1,4 +1,4 @@
-// components/projects/FeaturedProjectsTicker.tsx
+// components/cases/FeaturedCasesTicker.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -14,7 +14,7 @@ import {
 } from "@/components/FilledIcons";
 import type { ProjectItem } from "../../config/projects";
 
-interface FeaturedProjectsTickerProps {
+interface FeaturedCasesTickerProps {
   projects: ProjectItem[];
 }
 
@@ -48,9 +48,9 @@ function getTools(project: ProjectItem) {
   return techs.slice(0, 8);
 }
 
-export function FeaturedProjectsCarousel({
+export function FeaturedCasesCarousel({
   projects,
-}: FeaturedProjectsTickerProps) {
+}: FeaturedCasesTickerProps) {
   const slides = useMemo(() => projects.slice(0, 8), [projects]);
   const total = slides.length;
 
@@ -307,4 +307,4 @@ export function FeaturedProjectsCarousel({
   );
 }
 
-export const FeaturedProjectsTicker = FeaturedProjectsCarousel;
+export const FeaturedCasesTicker = FeaturedCasesCarousel;

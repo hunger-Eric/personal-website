@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { useMemo } from "react";
-import { BriefcaseBusiness, FileText, Link2, Sparkles, Workflow } from "lucide-react";
+import {
+  BriefcaseBusiness,
+  FileText,
+  Link2,
+  Sparkles,
+  Workflow,
+  Users,
+} from "lucide-react";
 
 import { getSiteCopy } from "@/config/contentCopy";
 import { aboutConfig } from "../../config/aboutConfig";
@@ -10,58 +17,68 @@ import { siteConfig } from "../../config/siteConfig";
 import { useLocale } from "../LocaleProvider";
 
 type LocaleCopy = {
-  capabilitiesTitle: string;
-  capabilitiesLead: string;
-  capabilityItems: string[];
-  caseStudiesTitle: string;
-  caseStudiesLead: string;
-  workflowTitle: string;
-  workflowItems: string[];
-  stackIntro: string;
+  title: string;
+  lead: string;
+  personalTitle: string;
+  personalLead: string;
+  personalItems: string[];
+  enterpriseTitle: string;
+  enterpriseLead: string;
+  enterpriseItems: string[];
+  formatTitle: string;
+  formatItems: string[];
   closing: string;
 };
 
 function getLocaleCopy(locale: "zh" | "en"): LocaleCopy {
   if (locale === "zh") {
     return {
-      capabilitiesTitle: "我能帮客户做什么",
-      capabilitiesLead:
-        "我把网站、PPT、文档和自动化流程放在同一套交付里，尤其擅长面向企业的流程自动化、智能体联动和落地执行。",
-      capabilityItems: [
-        "影刀、n8n 等工作流自动化搭建",
-        "Codex、Hermes、OpenClaw 等智能体联动",
-        "企业流程自动化与效率工具落地",
-        "品牌站、个人站、产品介绍页与落地页",
-        "PPT、提案页、长文档与内容整理",
+      title: "我做过什么",
+      lead:
+        "我习惯把过往案例整理成网站、PPT、文档和自动化流程，让别人一眼就能看懂它解决了什么问题。",
+      personalTitle: "个人版",
+      personalLead: "更像一套顺手的小系统，主要解决表达、整理和持续维护。",
+      personalItems: [
+        "个人网站、作品集、知识库与内容归档",
+        "照片整理、笔记整理、资料收纳",
+        "把零散想法变成能长期使用的小工具",
       ],
-      caseStudiesTitle: "代表案例",
-      caseStudiesLead: "这些是我已经在做、也能继续扩展的方向。",
-      workflowTitle: "合作方式",
-      workflowItems: ["先梳理结构", "再补内容", "最后上线交付"],
-      stackIntro: "常用技术和工具：",
+      enterpriseTitle: "企业版",
+      enterpriseLead: "更像一条稳定的交付链路，重点是少返工、少重复、少卡壳。",
+      enterpriseItems: [
+        "流程自动化、资料整理、内容分发",
+        "网站、PPT、文档、演示页的交付整理",
+        "影刀、n8n、Codex、Hermes、OpenClaw 的联动落地",
+      ],
+      formatTitle: "案例通常这样呈现",
+      formatItems: ["网站", "PPT", "文档", "自动化流程"],
       closing:
-        "如果项目里还包括资料、图文或照片，我也会一起把信息结构和展示节奏收好。",
+        "AI 更适合放在摘要、起草、整理、检索和提醒这些环节里，像一个安静的助手，帮我把流程理顺，而不是替业务说话。",
     };
   }
 
   return {
-    capabilitiesTitle: "What I can deliver for clients",
-    capabilitiesLead:
-      "I keep websites, decks, documents, automation flows, and agent orchestration in one delivery track, with a strong focus on enterprise automation delivery.",
-    capabilityItems: [
-      "Workflow automation with Yingdao, n8n, and similar tools",
-      "Agent orchestration across Codex, Hermes, OpenClaw, and related systems",
-      "Enterprise process automation and productivity tooling",
-      "Brand sites, personal sites, product pages, and landing pages",
-      "PPT decks, proposal pages, long-form documents, and content cleanup",
+    title: "What I have built",
+    lead:
+      "I usually package past work as websites, slide decks, documents, or automation flows so the outcome is easy to understand at a glance.",
+    personalTitle: "Personal work",
+    personalLead: "A small system that keeps ideas, photos, and notes easy to maintain.",
+    personalItems: [
+      "Personal sites, portfolios, knowledge bases, and content archives",
+      "Photo organization, note cleanup, and asset management",
+      "Small tools that turn loose ideas into something reusable",
     ],
-    caseStudiesTitle: "Selected cases",
-    caseStudiesLead: "These are directions I already work on and can extend further.",
-    workflowTitle: "How I work",
-    workflowItems: ["Map the structure first", "Fill in the content second", "Ship it cleanly"],
-    stackIntro: "Main stack and tools:",
+    enterpriseTitle: "Enterprise work",
+    enterpriseLead: "A steadier delivery path that cuts down repeat work and handoffs.",
+    enterpriseItems: [
+      "Workflow automation, document cleanup, and content delivery",
+      "Websites, slide decks, documents, and demo pages prepared for sharing",
+      "Yingdao, n8n, Codex, Hermes, and OpenClaw connected in practical workflows",
+    ],
+    formatTitle: "Common formats",
+    formatItems: ["Websites", "PPT decks", "Documents", "Automation flows"],
     closing:
-      "If the project also includes documents, imagery, or photo assets, I help shape the information flow as part of the delivery.",
+      "AI works best in the background here: summarizing, drafting, organizing, searching, and nudging the workflow forward without taking over the work itself.",
   };
 }
 
@@ -85,7 +102,7 @@ export function AboutSection() {
   const caseStudies = useMemo(() => a.snapshot.cards.slice(0, 2), [a.snapshot.cards]);
 
   return (
-    <section id="about" className="py-16 scroll-mt-12 lg:py-24">
+    <section id="about" className="scroll-mt-12 py-16 lg:py-24">
       <div className="mx-auto w-full max-w-6xl px-4">
         <div className="flex items-center gap-4">
           <h2 className="font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
@@ -94,33 +111,63 @@ export function AboutSection() {
           <div className="hidden h-px w-40 bg-border sm:block sm:w-72" aria-hidden />
         </div>
 
-        <div className="mt-8 grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)] lg:gap-6">
+        <div className="mt-8 grid gap-5 lg:grid-cols-[330px_minmax(0,1fr)] lg:gap-6">
           <aside className="space-y-4">
             <div className="rounded-2xl border border-border bg-card/70 p-5 shadow-[0_16px_32px_-24px_rgba(15,23,42,0.18)]">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 <BriefcaseBusiness className="h-4 w-4" />
-                <span>{localeCopy.capabilitiesTitle}</span>
+                <span>{localeCopy.title}</span>
               </div>
               <p className="mt-3 text-sm leading-6 text-foreground/80">
-                {localeCopy.capabilitiesLead}
+                {localeCopy.lead}
               </p>
-              <ul className="mt-4 space-y-3 text-sm leading-6 text-foreground/85">
-                {localeCopy.capabilityItems.map((item) => (
-                  <li key={item} className="flex gap-3">
-                    <span className="mt-2 h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="rounded-2xl border border-border bg-card/70 p-5">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  <Users className="h-4 w-4" />
+                  <span>{localeCopy.personalTitle}</span>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-foreground/80">
+                  {localeCopy.personalLead}
+                </p>
+                <ul className="mt-4 space-y-3 text-sm leading-6 text-foreground/85">
+                  {localeCopy.personalItems.map((item) => (
+                    <li key={item} className="flex gap-3">
+                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="rounded-2xl border border-border bg-card/70 p-5">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  <Workflow className="h-4 w-4" />
+                  <span>{localeCopy.enterpriseTitle}</span>
+                </div>
+                <p className="mt-3 text-sm leading-6 text-foreground/80">
+                  {localeCopy.enterpriseLead}
+                </p>
+                <ul className="mt-4 space-y-3 text-sm leading-6 text-foreground/85">
+                  {localeCopy.enterpriseItems.map((item) => (
+                    <li key={item} className="flex gap-3">
+                      <span className="mt-2 h-1.5 w-1.5 rounded-full bg-accent" aria-hidden />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
 
             <div className="rounded-2xl border border-border bg-card/60 p-5">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                 <Sparkles className="h-4 w-4" />
-                <span>{localeCopy.workflowTitle}</span>
+                <span>{localeCopy.formatTitle}</span>
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                {localeCopy.workflowItems.map((item) => (
+                {localeCopy.formatItems.map((item) => (
                   <span
                     key={item}
                     className="inline-flex items-center rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground/80"
@@ -133,10 +180,14 @@ export function AboutSection() {
 
             <div className="rounded-2xl border border-border bg-card/70 p-5">
               <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                <Workflow className="h-4 w-4" />
-                <span>{localeCopy.caseStudiesTitle}</span>
+                <FileText className="h-4 w-4" />
+                <span>{locale === "zh" ? "代表案例" : "Selected cases"}</span>
               </div>
-              <p className="mt-3 text-sm leading-6 text-foreground/80">{localeCopy.caseStudiesLead}</p>
+              <p className="mt-3 text-sm leading-6 text-foreground/80">
+                {locale === "zh"
+                  ? "这些是我已经做过、也在持续整理展示的方向。"
+                  : "These are directions I have already built and keep presenting clearly."}
+              </p>
               <div className="mt-4 space-y-3">
                 {caseStudies.map((card) => (
                   <div
@@ -197,23 +248,28 @@ export function AboutSection() {
                   <span>{fileBase}</span>
                   {fileExt ? <span>{fileExt}</span> : null}
                 </div>
+                <div className="hidden text-[11px] font-medium text-muted-foreground sm:block">
+                  {localeCopy.closing}
+                </div>
               </div>
 
               <div className="space-y-5 px-4 py-5 text-sm leading-7 text-foreground/85 sm:px-6 sm:text-base">
                 <p>
                   {locale === "zh"
-                    ? "我会把网站、PPT、文档和自动化流程放在同一套交付节奏里，帮助客户更快看到可以直接使用的结果。"
-                    : "I keep websites, decks, documents, and automation flows on the same delivery rhythm so clients can see usable results faster."}
+                    ? "我会把案例按网站、PPT、文档和自动化流程这些形式整理出来，方便别人快速看懂项目的内容和结果。"
+                    : "I organize case studies as websites, slide decks, documents, and automation flows so the shape of the work is easy to understand quickly."}
                 </p>
 
                 <p>
                   {locale === "zh"
-                    ? "更常接的内容包括企业流程自动化、影刀 / n8n 工作流、Codex / Hermes / OpenClaw 等智能体联动、品牌站、产品介绍页和内容整理系统。项目如果需要兼顾照片、资料和文字，我也会一起把结构理顺。"
-                    : "I most often work on enterprise process automation, Yingdao / n8n workflows, agent orchestration across Codex / Hermes / OpenClaw, brand sites, product pages, and content systems. If a project also needs photos, assets, and written material, I help shape the structure too."}
+                    ? "更常处理的内容包括企业流程自动化、影刀 / n8n 工作流、Codex / Hermes / OpenClaw 这些智能体联动，以及品牌站、产品介绍页和内容整理系统。项目如果还包含照片、资料和文字，我也会一起把结构理顺。"
+                    : "I most often handle enterprise process automation, Yingdao / n8n workflows, agent orchestration across Codex / Hermes / OpenClaw, plus brand sites, product pages, and content systems. If a project also includes photos, assets, or writing, I help shape the structure too."}
                 </p>
 
                 <div>
-                  <p className="text-sm font-semibold text-foreground/90">{localeCopy.stackIntro}</p>
+                  <p className="text-sm font-semibold text-foreground/90">
+                    {copy.about.techIntro}
+                  </p>
                   <ul className="mt-3 grid list-disc grid-cols-2 gap-x-6 gap-y-1.5 pl-5 marker:text-accent/70">
                     {techList.map((t) => (
                       <li key={t}>{t}</li>
@@ -230,3 +286,4 @@ export function AboutSection() {
     </section>
   );
 }
+

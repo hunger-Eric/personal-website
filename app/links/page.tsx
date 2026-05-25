@@ -1,4 +1,4 @@
-// app/links/page.tsx
+﻿// app/links/page.tsx
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,9 +22,9 @@ const BASE_URL = (
   process.env.NEXT_PUBLIC_BASE_URL || "https://me.itheheda.online"
 ).replace(/\/$/, "");
 
-const LINKS_DESCRIPTION = `Where ${siteConfig.name} hangs out online — socials, portfolio, and content in one link.`;
+const LINKS_DESCRIPTION = `Where ${siteConfig.name} hangs out online 鈥?socials, portfolio, and content in one link.`;
 
-// Feature flags — flip to true to surface a section.
+// Feature flags 鈥?flip to true to surface a section.
 const SHOW_ARTICLES_SECTION = false;
 const SHOW_COOGCASA_SECTION = false;
 const SHOW_MEDIA_KIT = false;
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "profile",
     url: "/links",
-    title: `${siteConfig.name} · Links`,
+    title: `${siteConfig.name} 路 Links`,
     description: LINKS_DESCRIPTION,
     siteName: `${siteConfig.name} Website`,
     images: [
@@ -44,13 +44,13 @@ export const metadata: Metadata = {
         url: "/images/og/links.png?v=4",
         width: 1200,
         height: 630,
-        alt: `${siteConfig.name} — links to socials, projects, and articles`,
+        alt: `${siteConfig.name} 鈥?links to socials, cases, and articles`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.name} · Links`,
+    title: `${siteConfig.name} 路 Links`,
     description: LINKS_DESCRIPTION,
     images: ["/images/og/links.png?v=4"],
   },
@@ -122,7 +122,7 @@ export default async function LinksPage() {
     return [{ key, label: s.label || key, href, Glyph }];
   });
 
-  // Big buttons — Articles row removed per latest revision; Portfolio is now
+  // Big buttons 鈥?Articles row removed per latest revision; Portfolio is now
   // an internal Link (same tab) for fast switching.
   const bigButtons: Array<{
     key: string;
@@ -148,7 +148,7 @@ export default async function LinksPage() {
     },
     {
       key: "projects",
-      label: "Projects",
+      label: "Cases",
       description: "Builds & open source on GitHub",
       href: "https://github.com/KevinTrinhDev",
       icon: <GithubGlyph className="h-7 w-7" />,
@@ -162,7 +162,7 @@ export default async function LinksPage() {
     },
   ];
 
-  // YouTube tile — prefer the channel's most recent upload from the public
+  // YouTube tile 鈥?prefer the channel's most recent upload from the public
   // RSS feed; fall back to the pinned featured video / channel link.
   const youtubeChannel =
     socialMap.get("youtube")?.href ||
@@ -191,7 +191,7 @@ export default async function LinksPage() {
     : ytId
     ? `https://www.youtube.com/watch?v=${ytId}`
     : youtubeChannel;
-  // Use hqdefault.jpg — sharper than mqdefault for the larger card.
+  // Use hqdefault.jpg 鈥?sharper than mqdefault for the larger card.
   const youtubeThumb = ytId
     ? `https://i.ytimg.com/vi/${ytId}/hqdefault.jpg`
     : null;
@@ -202,7 +202,7 @@ export default async function LinksPage() {
     "@context": "https://schema.org",
     "@type": "ProfilePage",
     url: `${BASE_URL}/links`,
-    name: `${siteConfig.name} · Links`,
+    name: `${siteConfig.name} 路 Links`,
     description: LINKS_DESCRIPTION,
     mainEntity: {
       "@type": "Person",
@@ -278,7 +278,7 @@ export default async function LinksPage() {
     <main className="relative mx-auto flex min-h-[100dvh] w-full max-w-md flex-col items-center px-5 pb-10 pt-12 text-slate-900 sm:pt-14">
       <JsonLd data={profileJsonLd} />
 
-      {/* Top-left: Email (mailto) — pill with label */}
+      {/* Top-left: Email (mailto) 鈥?pill with label */}
       {emailHref && (
         <a
           href={emailHref}
@@ -291,7 +291,7 @@ export default async function LinksPage() {
         </a>
       )}
 
-      {/* Top-right: Share — icon only */}
+      {/* Top-right: Share 鈥?icon only */}
       <div className="absolute right-4 top-4 flex items-center gap-2 sm:right-5 sm:top-5">
         <ShareButton
           label="Share"
@@ -311,7 +311,7 @@ export default async function LinksPage() {
         <span>{siteConfig.location || "Houston, TX"}</span>
       </div>
 
-      {/* Tagline — Software | Tech | Creator | Builder */}
+      {/* Tagline 鈥?Software | Tech | Creator | Builder */}
       <p className="mt-3 max-w-xs text-center text-[13px] font-medium tracking-wide text-slate-700 sm:text-sm">
         <span>Software</span>
         <span className="mx-2 text-slate-300">|</span>
@@ -346,7 +346,7 @@ export default async function LinksPage() {
         {bigButtons.map((btn) => renderBigButton(btn))}
       </div>
 
-      {/* Recent YouTube upload — section header + thumbnail-only card */}
+      {/* Recent YouTube upload 鈥?section header + thumbnail-only card */}
       <section className="mt-7 w-full" aria-label="Recent YouTube Upload">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -381,7 +381,7 @@ export default async function LinksPage() {
                 />
                 {/* Gradient for legibility of overlays */}
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/55 via-transparent to-black/20" />
-                {/* Center play button — accurate YouTube red & shape */}
+                {/* Center play button 鈥?accurate YouTube red & shape */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <span className="inline-flex h-12 w-[68px] items-center justify-center rounded-[14px] bg-[#FF0000] text-white shadow-md shadow-black/40 transition-transform duration-200 group-hover:scale-105">
                     <Play className="h-[22px] w-[22px] translate-x-[1px] fill-current" />
@@ -411,9 +411,9 @@ export default async function LinksPage() {
         </a>
       </section>
 
-      {/* Legacy: standalone Articles section — kept behind a flag for easy
+      {/* Legacy: standalone Articles section 鈥?kept behind a flag for easy
           re-enable, but Articles is now a third big button (Portfolio /
-          Projects / Articles) so this is normally off. */}
+          Cases / Articles) so this is normally off. */}
       {SHOW_ARTICLES_SECTION && (
         <section className="mt-7 w-full" aria-label="Articles">
           <div className="mb-2 flex items-center justify-between">
@@ -450,12 +450,12 @@ export default async function LinksPage() {
         </section>
       )}
 
-      {/* CoogCasa block — currently disabled. Keep wired for easy re-enable. */}
+      {/* CoogCasa block 鈥?currently disabled. Keep wired for easy re-enable. */}
       {SHOW_COOGCASA_SECTION && (
         <section className="mt-7 w-full" aria-label="CoogCasa">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              CoogCasa · UH student hub
+              CoogCasa 路 UH student hub
             </h2>
             <a
               href="https://coogcasa.com"
@@ -469,8 +469,8 @@ export default async function LinksPage() {
         </section>
       )}
 
-      {/* Media kit — image-led card: banner on top, CTA below.
-          Hidden behind SHOW_MEDIA_KIT flag — flip to true to re-enable. */}
+      {/* Media kit 鈥?image-led card: banner on top, CTA below.
+          Hidden behind SHOW_MEDIA_KIT flag 鈥?flip to true to re-enable. */}
       {SHOW_MEDIA_KIT && (
         <a
           href="https://beacons.ai/kevintrinh/mediakit"
@@ -506,11 +506,12 @@ export default async function LinksPage() {
         </a>
       )}
 
-      {/* Footer — two lines */}
+      {/* Footer 鈥?two lines */}
       <div className="mt-auto flex flex-col items-center gap-1 pt-10 text-center text-xs text-slate-500">
         <span>Built &amp; Designed by Kevin Trinh</span>
-        <span>© {year} All rights reserved</span>
+        <span>漏 {year} All rights reserved</span>
       </div>
     </main>
   );
 }
+

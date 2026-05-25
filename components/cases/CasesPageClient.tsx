@@ -3,13 +3,13 @@
 import { useLocale } from "@/components/LocaleProvider";
 import { getSiteCopy } from "@/config/contentCopy";
 import type { ProjectItem } from "../../config/projects";
-import { ProjectsBrowser } from "./ProjectsBrowser";
+import { CasesBrowser } from "./CasesBrowser";
 
 type Props = {
   projects: ProjectItem[];
 };
 
-export function ProjectsPageClient({ projects }: Props) {
+export function CasesPageClient({ projects }: Props) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
 
@@ -26,7 +26,7 @@ export function ProjectsPageClient({ projects }: Props) {
         </p>
       </header>
 
-      <ProjectsBrowser projects={projects} />
+      <CasesBrowser projects={projects} />
     </div>
   );
 }

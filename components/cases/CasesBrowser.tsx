@@ -13,13 +13,13 @@ import {
 import { useLocale } from "@/components/LocaleProvider";
 import { getSiteCopy } from "@/config/contentCopy";
 import type { ProjectItem } from "../../config/projects";
-import { ProjectCard } from "./ProjectCard";
+import { CaseCard } from "./CaseCard";
 
 type Props = {
   projects: ProjectItem[];
 };
 
-export function ProjectsBrowser({ projects }: Props) {
+export function CasesBrowser({ projects }: Props) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
 
@@ -69,7 +69,7 @@ export function ProjectsBrowser({ projects }: Props) {
         </div>
 
         <div className="grid gap-4">
-          <ProjectCard project={groups.featured} iconFor={iconFor} featured />
+          <CaseCard project={groups.featured} iconFor={iconFor} featured />
         </div>
       </section>
 
@@ -77,7 +77,7 @@ export function ProjectsBrowser({ projects }: Props) {
         <section className="space-y-4">
           <div className="flex items-center gap-3">
             <h2 className="text-xl font-semibold sm:text-2xl">
-              {locale === "zh" ? "更多项目" : "More projects"}
+              {locale === "zh" ? "更多案例" : "More cases"}
             </h2>
             <span className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               {groups.rest.length}
@@ -86,7 +86,7 @@ export function ProjectsBrowser({ projects }: Props) {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {groups.rest.map((project) => (
-              <ProjectCard key={project.id} project={project} iconFor={iconFor} />
+              <CaseCard key={project.id} project={project} iconFor={iconFor} />
             ))}
           </div>
         </section>

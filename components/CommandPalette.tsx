@@ -30,7 +30,7 @@ interface SearchItem {
   id: string;
   title: string;
   description?: string;
-  category: "page" | "project" | "article" | "action";
+  category: "page" | "case" | "article" | "action";
   href?: string;
   external?: boolean;
   icon?: ReactNode;
@@ -67,10 +67,10 @@ const STATIC_ITEMS: SearchItem[] = [
   },
   {
     id: "projects",
-    title: "Projects",
-    description: "Jump to the projects section",
+    title: "Cases",
+    description: "Jump to the cases section",
     category: "page",
-    href: "/#projects",
+    href: "/projects",
     icon: <FolderOpen className="h-4 w-4" />,
   },
   {
@@ -114,19 +114,19 @@ export function CommandPalette({ projects = [], articles = [] }: CommandPaletteP
         setIsOpen(false);
       },
     },
-    // Projects: link the searchable entry to the project's external URL
+    // Cases: link the searchable entry to the case's external URL
     // (live → repo → first available) since /projects/[slug] no longer exists.
     ...projects.map((p) => {
       const live = p.links?.find((l) => l.type === "live")?.href;
       const repo =
         p.githubRepoUrl ||
         p.links?.find((l) => l.type === "github")?.href;
-      const href = live || repo || "/#projects";
+      const href = live || repo || "/projects";
       return {
         id: `project-${p.id}`,
         title: p.name,
         description: p.summary,
-        category: "project" as const,
+        category: "case" as const,
         href,
         external: href.startsWith("http"),
         icon: <FolderOpen className="h-4 w-4" />,

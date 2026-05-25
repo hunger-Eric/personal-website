@@ -9,7 +9,7 @@ import { useLocale } from "@/components/LocaleProvider";
 import { getSiteCopy } from "@/config/contentCopy";
 import type { ProjectItem, ProjectLink } from "../../config/projects";
 
-interface ProjectCardProps {
+interface CaseCardProps {
   project: ProjectItem;
   iconFor: (type?: string) => ReactNode;
   featured?: boolean;
@@ -23,11 +23,11 @@ function formatTechnologies(technologies?: string[]) {
   return (technologies ?? []).slice(0, 4);
 }
 
-export function ProjectCard({
+export function CaseCard({
   project,
   iconFor,
   featured = false,
-}: ProjectCardProps) {
+}: CaseCardProps) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
   const hasStats =
@@ -67,7 +67,13 @@ export function ProjectCard({
 
           <div className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-card/90 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground backdrop-blur-sm">
             <FolderOpen className="h-3.5 w-3.5" />
-            <span>{featured ? copy.projects.featuredBadge : locale === "zh" ? "项目" : "Project"}</span>
+            <span>
+              {featured
+                ? copy.projects.featuredBadge
+                : locale === "zh"
+                  ? "案例"
+                  : "Case"}
+            </span>
           </div>
         </div>
 

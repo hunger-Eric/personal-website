@@ -23,6 +23,7 @@ export type ProjectItem = {
 
   summary: string;
   description?: string[];
+  format?: string;
 
   start: string;
   end: string;
@@ -84,6 +85,12 @@ type RawLocalProject = ProjectItem & {
 };
 
 type RawConfig = {
+  display?: {
+    mode?: "auto" | "featured" | "catalog";
+    autoCatalogThreshold?: number;
+    featuredCount?: number;
+    previewLimit?: number;
+  };
   github_readme_projects: RawGithubReadmeProject[];
   local_projects: RawLocalProject[];
 };
@@ -156,13 +163,15 @@ function extractMetaFromReadme(readme: string) {
   );
   if (!match) return null;
   try {
-    const meta = JSON.parse(match[1].trim()) as {
-      title?: string;
-      summary?: string;
-      description?: string[];
-      technologies?: string[];
-      start?: string;
-      end?: string;
+      const meta = JSON.parse(match[1].trim()) as {
+        title?: string;
+        summary?: string;
+        description?: string[];
+        format?: string;
+        case_format?: string;
+        technologies?: string[];
+        start?: string;
+        end?: string;
       links?: ProjectLink[];
       githubStars?: number;
       githubForks?: number;
@@ -461,6 +470,7 @@ export async function loadProjects(): Promise<ProjectItem[]> {
           name: meta?.title ?? repo,
           summary: meta?.summary ?? "GitHub project",
           description: meta?.description,
+          format: meta?.format ?? meta?.case_format,
           start: meta?.start ?? "",
           end: meta?.end ?? "",
           technologies: meta?.technologies,
@@ -613,6 +623,7 @@ export async function loadProjects(): Promise<ProjectItem[]> {
 
       return {
         ...p,
+        format: p.format,
         githubStars:
           stars ??
           (typeof p.githubStars === "number" && Number.isFinite(p.githubStars)
@@ -655,3 +666,5 @@ export async function loadProjects(): Promise<ProjectItem[]> {
   const sorted = sortByPriority(merged);
   return sorted.map(({ _priority, ...rest }) => rest);
 }
+
+export const loadCases = loadProjects;

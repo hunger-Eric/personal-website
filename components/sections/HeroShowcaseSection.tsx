@@ -1,6 +1,9 @@
 ﻿// components/sections/HeroShowcaseSection.tsx
 "use client";
 
+import Link from "next/link";
+
+import { aboutConfig } from "../../config/aboutConfig";
 import { siteConfig } from "../../config/siteConfig";
 import {
   FileText,
@@ -227,6 +230,7 @@ function SocialIcon({ item }: { item: SocialItem }) {
 export function HeroShowcaseSection() {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
+  const featuredCases = aboutConfig.snapshot.cards.slice(0, 2);
   // Resume now opens as a real page (PDF viewer) in a new tab.
   const resumeHref = "/resume";
 
@@ -291,8 +295,67 @@ export function HeroShowcaseSection() {
               })}
             </div>
           </div>
-          {/* Right column intentionally blank for now */}
-          <div className="hidden lg:block" />
+
+          <div className="hidden lg:block">
+            <div className="rounded-3xl border border-border bg-card/70 p-5 shadow-[0_20px_40px_-28px_rgba(15,23,42,0.2)]">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    {locale === "zh" ? "精选案例" : "Selected cases"}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-foreground/80">
+                    {locale === "zh"
+                      ? "我会把过去做过的项目整理成网站、PPT、文档或自动化流程，方便快速查看。"
+                      : "I present past work as websites, slide decks, documents, or automation flows so it is easy to scan quickly."}
+                  </p>
+                </div>
+                <div className="rounded-full border border-border bg-background px-3 py-1 text-[11px] font-medium text-muted-foreground">
+                  {locale === "zh" ? "入口" : "Entry"}
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {featuredCases.map((card) => (
+                  <div
+                    key={card.title}
+                    className="rounded-2xl border border-border bg-background px-4 py-3"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate text-sm font-semibold text-foreground">
+                          {card.title}
+                        </h3>
+                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
+                          {card.description}
+                        </p>
+                      </div>
+                      <FileText className="h-4 w-4 flex-none text-accent" />
+                    </div>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {card.stats?.slice(0, 2).map((stat) => (
+                        <span
+                          key={`${card.title}-${stat.label}`}
+                          className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
+                        >
+                          <span>{stat.label}</span>
+                          <span className="text-foreground/70">·</span>
+                          <span className="text-foreground">{stat.value}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <Link
+                href="/projects"
+                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent/15"
+              >
+                {locale === "zh" ? "查看全部案例" : "View all cases"}
+                <ArrowUpRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
         </div>
 
         {/* Contribution graph 鈥?md+ only (hidden on mobile to keep above-the-fold focused) */}
