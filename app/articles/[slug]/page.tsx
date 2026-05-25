@@ -98,7 +98,7 @@ export default async function ArticlePage({
 
   // Custom-styled articles redirect to their standalone HTML
   if (article.slug === "arc-agi-progress-towards-agi") {
-    redirect("/articles/arc-agi");
+    redirect("/articles/arc-agi.html");
   }
 
   const relatedArticles = await getRelatedArticles(slug, 3);
