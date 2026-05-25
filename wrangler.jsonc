@@ -11,11 +11,11 @@
   "kv_namespaces": [
     {
       "binding": "NEXT_INC_CACHE_KV",
-      "id": "2f7020207b49487d844c6376d2ceae90"
+      "id": "de00f8a4d3584ce2943c40f33af23c42"
     },
     {
       "binding": "ARTICLE_VIEWS",
-      "id": "a3309691eaa34e70a9c4f417222bac8e"
+      "id": "793286328ea24d7dbef707e8586c0707"
     }
   ],
   "observability": {

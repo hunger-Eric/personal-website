@@ -22,12 +22,6 @@ function formatDate(dateStr: string, locale: "zh" | "en"): string {
   } catch {
     return dateStr;
   }
-}
-
-function articleImage(a: { imageSrc?: string }): string {
-  return a.imageSrc || FALLBACK_IMG;
-}
-
 type Props = {
   article: ArticleListItem;
 };
@@ -48,20 +42,28 @@ export function ArticleCard({ article }: Props) {
       href={`/articles/${article.slug}`}
       className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-all duration-200 hover:-translate-y-1 hover:shadow-sm"
     >
-      <div className="relative aspect-[16/10] overflow-hidden">
-        <Image
-          src={articleImage(article)}
-          alt={article.imageAlt || article.title}
-          fill
-          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-          unoptimized
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+      {article.imageSrc ? (
+        <div className="relative aspect-[16/10] overflow-hidden">
+          <Image
+            src={article.imageSrc}
+            alt={article.imageAlt || article.title}
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            unoptimized
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
 
-        <div className="absolute left-3 top-3 rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-sm">
-          {category}
+          <div className="absolute left-3 top-3 rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-sm">
+            {category}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex items-center justify-center px-4 pt-4">
+          <span className="rounded-full border border-border bg-card/90 px-3 py-1 text-xs font-medium text-foreground">
+            {category}
+          </span>
+        </div>
+      )}
 
       <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 sm:p-5">
         <h3 className="text-lg font-semibold leading-snug tracking-tight text-foreground sm:text-xl">
