@@ -17,6 +17,11 @@ export type CaseLink = {
   type?: CaseLinkType;
 };
 
+export type CaseArchitectureItem = {
+  label: string;
+  detail: string;
+};
+
 export type CaseItem = {
   id: string;
   name: string;
@@ -33,6 +38,21 @@ export type CaseItem = {
   technologies?: string[];
   links?: CaseLink[];
   featured?: boolean;
+  archive?: boolean;
+  caseType?: string;
+  role?: string;
+  status?: string;
+  tags?: string[];
+  workflows?: string[];
+  aiStack?: string[];
+  automation?: string[];
+  experiments?: string[];
+  problem?: string[];
+  systemOverview?: string[];
+  aiOrchestration?: string[];
+  architecture?: CaseArchitectureItem[];
+  results?: string[];
+  learnings?: string[];
 
   // Static shields / badges to show in the popup
   badges?: string[];
@@ -74,7 +94,7 @@ export type ProjectLink = CaseLink;
 export type ProjectItem = CaseItem;
 
 // 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ raw JSON shapes 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
-type RawGithubReadmeProject = {
+type RawGithubReadmeProject = Partial<CaseItem> & {
   repo_url: string;
   priority?: number;
 };
@@ -471,22 +491,38 @@ export async function loadCases(): Promise<CaseItem[]> {
 
         return {
           id,
-          name: meta?.title ?? repo,
-          summary: meta?.summary ?? "GitHub project",
-          description: meta?.description,
-          format: meta?.format ?? meta?.case_format,
-          start: meta?.start ?? "",
-          end: meta?.end ?? "",
-          technologies: meta?.technologies,
-          links: meta?.links,
-          featured: meta?.featured,
+          name: entry.name ?? meta?.title ?? repo,
+          summary: entry.summary ?? meta?.summary ?? "GitHub project",
+          description: entry.description ?? meta?.description,
+          format: entry.format ?? meta?.format ?? meta?.case_format,
+          start: entry.start ?? meta?.start ?? "",
+          end: entry.end ?? meta?.end ?? "",
+          technologies: entry.technologies ?? meta?.technologies,
+          links: entry.links ?? meta?.links,
+          featured: entry.featured ?? meta?.featured,
+          archive: entry.archive,
+          caseType: entry.caseType,
+          role: entry.role,
+          status: entry.status,
+          tags: entry.tags,
+          workflows: entry.workflows,
+          aiStack: entry.aiStack,
+          automation: entry.automation,
+          experiments: entry.experiments,
+          problem: entry.problem,
+          systemOverview: entry.systemOverview,
+          aiOrchestration: entry.aiOrchestration,
+          architecture: entry.architecture,
+          results: entry.results,
+          learnings: entry.learnings,
           // Prefer the README's image_url; otherwise fall back to a locally
           // generated branded banner so the carousel never shows a broken
           // dark fallback.
-          imageUrl: meta?.image_url ?? `/images/banners/${id}.svg`,
+          imageUrl: entry.imageUrl ?? meta?.image_url ?? `/images/banners/${id}.svg`,
 
-          badges: meta?.badges,
-          autoInactiveThresholdDays: meta?.auto_inactive_threshold_days,
+          badges: entry.badges ?? meta?.badges,
+          autoInactiveThresholdDays:
+            entry.autoInactiveThresholdDays ?? meta?.auto_inactive_threshold_days,
 
           githubStars:
             stars ??

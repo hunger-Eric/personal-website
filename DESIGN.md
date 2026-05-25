@@ -1,43 +1,47 @@
 # Personal Website Design System
 
-Version: 1.0
+Version: 2.0
 Owner: personal-website
-Goal: unify the site into a light, quiet, editorial workbench with photography-page clarity.
+Goal: present the site as an AI Native Lab: a quiet system archive for AI workflow, automation, knowledge systems, and AI-assisted development.
 
-## 1. Design Intent
+## 1. Strategic Positioning
 
-This site should feel like a calm personal workbench with a strong visual rhythm:
+This site is not a traditional frontend portfolio. It should make one idea clear:
 
-- light and breathable, but not empty
-- content-first, not marketing-first
-- expressive where images matter, restrained where text matters
-- consistent across home, articles, projects, photography, and admin
+> fengc designs and builds AI Native systems, not just user interfaces.
 
-The target blend is:
+The homepage, About section, and case system should communicate:
 
-- B: light editor/workbench
-- C: photography / gallery / notebook atmosphere
+- AI workflow engineering
+- automation systems
+- system thinking
+- multi-model collaboration
+- AI-assisted development
+- long-term scalable architecture
 
-The site should avoid:
+Avoid resume-like framing such as "I know React" or "frontend / backend / UI design". The valuable outcome is that AI, automation, content, systems, and workflows become something real and runnable.
 
-- dark, heavy, over-layered cards
-- mixed visual languages on adjacent sections
-- repeated content blocks that show the same information twice
-- ad-hoc component-specific colors that bypass the system
+## 2. Visual Direction
 
-## 2. Core Principles
+The site should feel like:
 
-1. One source of truth for content and locale.
-2. One token set for color, spacing, radius, and elevation.
-3. One card grammar for content surfaces.
-4. One gallery grammar for visual collections.
-5. One modal/lightbox grammar for large media.
-6. Keep page sections readable without decorative noise.
-7. Prefer density with order over density with clutter.
+- AI lab
+- independent research studio
+- system notebook
+- editorial tech archive
 
-## 3. Visual Tokens
+The visual language is clean, restrained, and information-dense. It should feel like a system design archive, not a Dribbble portfolio.
 
-### Color
+Avoid:
+
+- heavy animation
+- neon AI gradients
+- over-polished landing-page sections
+- large hover effects
+- generic three-card feature rows
+- technology lists as the main value proposition
+
+## 3. Tokens And UI Rules
 
 Use semantic tokens only:
 
@@ -48,269 +52,134 @@ Use semantic tokens only:
 - `border`
 - `accent`
 - `accent-foreground`
-- `destructive`
 - `success`
 - `warning`
+- `destructive`
 
-Rules:
+Typography:
 
-- accent color may vary by theme, but the page must still read as one palette
-- avoid hard-coded `indigo`, `amber`, `sky`, or `slate` except for small semantic badges and charts when mapped through tokens
-- all text and controls must remain legible in both locales and both themes
+- display titles are confident, not oversized
+- section labels can use mono / uppercase for archive feeling
+- body copy should be direct and concrete
+- metadata should be compact and scannable
 
-### Typography
+Layout:
 
-- page titles: large, heavy, but not oversized
-- section titles: compact, monospace or uppercase only where it helps scanning
-- body: medium weight, regular line height, no decorative tracking inflation
-- labels and metadata: small, muted, consistent
+- use asymmetric grids on desktop, single column on mobile
+- prefer lines, tabs, metadata rows, and grouped sections over stacked marketing cards
+- cards are used for individual records only
+- page sections are not nested inside card shells
 
-Rules:
+Motion:
 
-- do not scale font size by viewport width
-- avoid negative letter spacing
-- use line-clamp for summaries where needed
-
-### Spacing
-
-- page vertical rhythm: generous but not loose
-- section padding: consistent across home/article/photo/admin pages
-- cards: internal padding should be stable and predictable
-
-Rules:
-
-- no giant empty hero blocks unless a section is intentionally image-led
-- no nested page cards inside page cards
-- keep repeated lists aligned to a shared grid
-
-### Radius and Elevation
-
-- preferred radius: `rounded-xl` to `rounded-2xl`
-- avoid extreme pill usage except for badges and compact controls
-- shadows should be subtle and reserved for hover or floating overlays
-
-Rules:
-
-- cards must never feel like dark slabs
-- hover should be lift + border change, not glow explosion
-
-### Icons
-
-- use Lucide icons in controls and navigation where available
-- icon-only controls must have tooltips or accessible labels
-- avoid decorative icons without purpose
+- use low-intensity CSS transitions only
+- no heavy scroll animation
+- no decorative motion loops
 
 ## 4. Information Architecture
 
-### Content Sources
+Content should flow through normalized models:
 
-The site content should be normalized into a shared model:
+`config -> model builder -> locale-aware view model -> page sections -> shared components`
+
+Primary content models:
 
 - `site`
 - `nav`
 - `about`
-- `projects`
+- `cases`
 - `articles`
 - `photography`
 - `admin`
 
-Each section should consume a view model rather than reading raw config fragments directly.
+Locale rules:
 
-### Locale Rules
-
-- locale state is global
-- all visible UI copy must resolve from the locale dictionary or a locale-aware model
+- all visible UI copy comes from a locale-aware source
 - proper nouns stay proper nouns
-- translated labels should not be mixed on the same navigation row
+- Chinese and English should never mix on the same navigation row except product/tool names
 
-Examples:
+## 5. Homepage Pattern
 
-- zh nav: `关于 / 项目 / 文章 / 摄影`
-- en nav: `About / Projects / Articles / Photography`
-- zh article intro, project button labels, about copy, and admin labels should all follow zh together
+Homepage sections:
 
-## 5. Page Patterns
+1. Hero
+   - primary identity: AI Native Independent Developer / AI Native System Builder
+   - concise promise: build AI-powered systems, workflows, and digital products
+   - no resume-style technology list
 
-### Home
+2. What I Build
+   - AI Workflow Engineering
+   - Automation Systems
+   - Knowledge & RAG Systems
+   - AI-assisted Creative Production
 
-Home should read as a compact workbench:
+3. About Thesis
+   - explain that the work is about organizing AI into long-term workflows and product systems
+   - mention personal and small-team use cases without sounding like sales copy
 
-- hero: short identity + concise intro
-- contribution graph: useful, not dominant
-- about: readable overview card
-- projects: featured visual card + compact supporting list
-- articles: short list with tags/categories
+4. Lab Index / Casebook / System Archive
+   - cases are shown as system records
+   - expose workflow, AI stack, automation level, status, and tags
+   - do not rely on screenshots as the primary proof
 
-Rules:
+5. Articles and Photography
+   - keep the existing editorial and gallery clarity
 
-- no duplicate featured content blocks
-- no competing hero blocks
-- keep the first viewport calm
+## 6. Case System
 
-### Articles
+Cases are system design records, not project thumbnails.
 
-Articles should follow the photography-page clarity:
+Each case supports:
 
-- centered title and short description
-- cards grouped by category
-- category tag visible on each card
-- same-category items appear together
+- `featured`
+- `archive`
+- `tags`
+- `workflows`
+- `aiStack`
+- `automation`
+- `experiments`
+- `role`
+- `status`
+- `problem`
+- `systemOverview`
+- `aiOrchestration`
+- `architecture`
+- `results`
+- `learnings`
 
-Rules:
+Case detail page structure:
 
-- no oversized editorial hero card
-- no huge repeated feature section
-- categories should be stable and obvious
+1. Hero: name, one-line description, role, stack, status
+2. Problem: what problem this system solves
+3. System Overview: structure, workflow, AI orchestration
+4. Workflow: how AI participates, multi-model collaboration, automation flow
+5. Architecture: Docker, API, RAG, knowledge system, automation
+6. Results: MVP, efficiency, automation effect, scalability
+7. Learnings: system design and AI Native workflow thinking
 
-### Photography
+Homepage case behavior:
 
-Photography is the most image-led section:
+- with few cases, show a featured lab note plus a compact index
+- when cases grow beyond the configured threshold, switch to catalog/index mode
+- catalog mode groups by tags, workflows, AI stack, and status rather than only by date
 
-- cover cards should feel like curated album entrances
-- first cover can auto-compose from the first few photos
-- detail page should show a large gallery grid
-- lightbox must support large viewing and previous/next navigation
+## 7. Admin Direction
 
-Rules:
+Admin remains a quiet workbench:
 
-- preserve original image quality
-- gallery browsing should feel like a sequence, not isolated popups
-- private-photo access remains PIN gated
+- dense, structured, readable
+- explicit save states
+- predictable forms
+- case display strategy should be configurable over time
 
-### Projects
+When case management is expanded, it should edit the same case model used by the frontend.
 
-Projects should be visually concise:
+## 8. Quality Bar
 
-- featured project can be showcased once
-- supporting project content should not repeat the same card structure unnecessarily
-- titles, metadata, and actions should be compact and consistent
+Before shipping:
 
-Rules:
-
-- keep featured area readable
-- avoid stacked layers competing with the project title
-- project CTAs should be icon-led and short
-
-### Admin
-
-Admin should feel like a workbench, not a product landing page:
-
-- dense, structured, and readable
-- stable grids and forms
-- explicit actions and predictable save states
-
-Rules:
-
-- upload, reorder, edit, and save must map clearly to the underlying data model
-- visual language should stay quiet and functional
-
-## 6. Component Contracts
-
-### Shared Section Shell
-
-Use a shared section shell for:
-
-- heading
-- optional icon
-- short description
-- content area
-
-This shell must be reused across home, articles, and photography entry pages.
-
-### Shared Card
-
-Use one card grammar for content items:
-
-- border + card background
-- clear image region or content region
-- title
-- summary
-- metadata row
-
-### Shared Gallery Item
-
-Use one gallery item grammar for photography:
-
-- image first
-- badge overlays only when needed
-- metadata below image
-- consistent aspect ratios
-
-### Shared Modal / Lightbox
-
-Use one modal grammar for all large-media overlays:
-
-- dark scrim
-- large centered content
-- clear close affordance
-- next/previous when browsing a sequence
-
-## 7. Data Flow
-
-### Rule
-
-UI should not assemble page logic from raw fragments in many places.
-
-### Required Flow
-
-Content files/config
--> normalized model builder
--> locale-aware view model
--> page sections
--> shared components
-
-### Benefits
-
-- fewer mixed-language bugs
-- fewer duplicate visual states
-- easier admin editing
-- easier future refactors
-
-## 8. Photography Data Rules
-
-- uploaded images keep original bytes
-- generated cover images may be composed from existing photos, but originals stay untouched
-- display code may optimize presentation, but not reduce image fidelity
-- ordering is part of the data model, not the render layer
-- lightbox navigation uses the ordered gallery list
-
-## 9. Articles Data Rules
-
-- article cards must include category or tag context
-- cards are grouped by category on index pages
-- detail pages can use larger imagery, but should not overwhelm the reading flow
-
-## 10. Migration Strategy
-
-Phase 1:
-
-- unify locale-driven copy across nav, about, projects, articles, and photography
-- simplify duplicate sections on home
-
-Phase 2:
-
-- extract shared section/card/gallery/lightbox components
-- normalize project and article card data shapes
-
-Phase 3:
-
-- refactor admin photography into a clear ordered album editor
-- preserve raw uploads and ordering metadata
-
-Phase 4:
-
-- clean up remaining hard-coded palette and spacing outliers
-- verify both desktop and mobile screenshots
-
-## 11. Acceptance Criteria
-
-The redesign is done when:
-
-- zh mode and en mode read as complete, not partial
-- homepage feels calm on first view
-- projects no longer show repeated or conflicting visual blocks
-- article index groups items cleanly by category
-- photography cards and lightbox feel like a coherent gallery system
-- uploads keep original image fidelity
-- admin edits map clearly to data order and content
-
+- build must pass
+- desktop and mobile layouts must not overflow
+- Chinese and English copy must stay synchronized
+- hero and about must not repeat the same sentence
+- cases must communicate system thinking, not only UI polish

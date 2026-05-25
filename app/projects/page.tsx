@@ -5,8 +5,8 @@ import { siteConfig } from "@/config/siteConfig";
 import { loadCases } from "@/config/cases";
 
 export const metadata: Metadata = {
-  title: `Cases | ${siteConfig.name}`,
-  description: "Selected cases and ongoing work.",
+  title: `AI Native Lab | ${siteConfig.name}`,
+  description: "System records for AI workflow, automation, and AI-assisted development.",
   alternates: { canonical: "/projects" },
 };
 

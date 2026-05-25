@@ -15,14 +15,17 @@ export function CasesPageClient({ cases }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-      <header className="mb-14 text-center">
-        <h1 className="mb-4 text-4xl font-bold tracking-tight sm:text-5xl">
+      <header className="mb-14 border-y border-border py-8">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          {locale === "zh" ? "Casebook / System Archive" : "Casebook / System Archive"}
+        </p>
+        <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl">
           {copy.cases.heading}
         </h1>
-        <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+        <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground">
           {locale === "zh"
-            ? "我会把自己做过的工作、实验和持续维护的案例放在这里。"
-            : "A compact index of the work, experiments, and cases I keep maintaining."}
+            ? "这里记录我做过和持续维护的 AI Native 系统实验：问题、workflow、AI 协作、自动化、架构和结果。"
+            : "A compact archive of AI Native system experiments: problems, workflows, AI collaboration, automation, architecture, and outcomes."}
         </p>
       </header>
 

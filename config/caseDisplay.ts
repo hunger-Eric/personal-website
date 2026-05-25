@@ -1,4 +1,4 @@
-import raw from "./projects.json";
+import raw from "./cases.json";
 
 export type CaseDisplayMode = "auto" | "featured" | "catalog";
 

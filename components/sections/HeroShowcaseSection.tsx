@@ -1,364 +1,174 @@
-﻿// components/sections/HeroShowcaseSection.tsx
 "use client";
 
 import Link from "next/link";
-
-import { aboutConfig } from "../../config/aboutConfig";
-import { siteConfig } from "../../config/siteConfig";
 import {
+  ArrowRight,
+  Blocks,
+  Bot,
+  BrainCircuit,
   FileText,
-  Mail,
-  ArrowUpRight,
-  Coffee,
-  GraduationCap,
+  GitBranch,
+  Workflow,
 } from "lucide-react";
 
 import { ContributionGraphCard } from "../ContributionGraphCard";
 import { useLocale } from "@/components/LocaleProvider";
 import { getSiteCopy } from "@/config/contentCopy";
 
-type SocialItem = {
-  key: string; // key to look up in siteConfig.socials if present
+type LabSignal = {
   label: string;
-  type?: "link" | "email" | "resume" | "donate";
-  /** Hide this item below the sm breakpoint (mobile). */
-  mobileHidden?: boolean;
+  value: string;
 };
 
-// Hard-coded social platforms in the order requested.
-// All point to @KevinTrinhDev on each platform; Resume points at the
-// site's PDF route (/resume).
-const SOCIALS: SocialItem[] = [
-  { key: "linkedin", label: "LinkedIn" },
-  { key: "tiktok", label: "TikTok" },
-  { key: "youtube", label: "YouTube" },
-  { key: "instagram", label: "Instagram" },
-];
+type Capability = {
+  title: string;
+  description: string;
+  Icon: typeof Workflow;
+};
 
-function resolveSocialHref(item: SocialItem, resumeHref: string): string {
-  const socials: any = (siteConfig as any).socials ?? {};
-
-  if (item.type === "resume") {
-    return resumeHref || "/resume";
+function getLabSignals(locale: "zh" | "en"): LabSignal[] {
+  if (locale === "zh") {
+    return [
+      { label: "方向", value: "AI Native Lab" },
+      { label: "方法", value: "workflow first" },
+      { label: "输出", value: "systems, not slides only" },
+    ];
   }
 
-  if (item.type === "email") {
-    const email = socials.email || socials.mail;
-    return email
-      ? email.startsWith("mailto:")
-        ? email
-        : `mailto:${email}`
-      : "#";
+  return [
+    { label: "Mode", value: "AI Native Lab" },
+    { label: "Method", value: "workflow first" },
+    { label: "Output", value: "systems, not slides only" },
+  ];
+}
+
+function getCapabilities(locale: "zh" | "en"): Capability[] {
+  if (locale === "zh") {
+    return [
+      {
+        title: "AI Workflow Engineering",
+        description: "多模型协同、AI-assisted development、原型迭代流程。",
+        Icon: GitBranch,
+      },
+      {
+        title: "Automation Systems",
+        description: "Docker、n8n、API、影刀与长期可维护自动化。",
+        Icon: Workflow,
+      },
+      {
+        title: "Knowledge & RAG Systems",
+        description: "本地知识库、多源检索、业务资料和内容资产接入。",
+        Icon: BrainCircuit,
+      },
+      {
+        title: "Creative Production",
+        description: "AI 内容创作、视觉表达、素材整理和数字叙事。",
+        Icon: Blocks,
+      },
+    ];
   }
 
-  if (item.type === "donate") {
-    return socials.kofi || socials.ko_fi || socials.donate || "#";
-  }
-
-  // Generic link: try socials[key], else "#"
-  return socials[item.key] ?? "#";
-}
-
-/* ---------------- Brand-ish icons (filled SVGs) ---------------- */
-
-function IconGithubFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M12 2C6.477 2 2 6.58 2 12.23c0 4.52 2.865 8.353 6.839 9.706.5.095.682-.22.682-.49 0-.244-.009-.89-.014-1.747-2.782.617-3.368-1.375-3.368-1.375-.454-1.176-1.11-1.49-1.11-1.49-.907-.634.069-.621.069-.621 1.003.073 1.532 1.052 1.532 1.052.892 1.56 2.341 1.11 2.91.848.091-.664.35-1.11.636-1.366-2.22-.262-4.555-1.137-4.555-5.06 0-1.118.39-2.032 1.03-2.748-.104-.262-.446-1.318.098-2.748 0 0 .84-.275 2.75 1.05A9.28 9.28 0 0 1 12 7.07c.85.004 1.705.117 2.504.344 1.909-1.325 2.748-1.05 2.748-1.05.545 1.43.203 2.486.1 2.748.64.716 1.028 1.63 1.028 2.748 0 3.933-2.339 4.795-4.566 5.052.36.318.68.943.68 1.902 0 1.374-.013 2.48-.013 2.818 0 .272.18.59.688.49C19.137 20.579 22 16.75 22 12.23 22 6.58 17.523 2 12 2Z"
-      />
-    </svg>
-  );
-}
-
-function IconLinkedInSquareFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M19.5 2h-15A2.5 2.5 0 0 0 2 4.5v15A2.5 2.5 0 0 0 4.5 22h15a2.5 2.5 0 0 0 2.5-2.5v-15A2.5 2.5 0 0 0 19.5 2ZM8.1 18.6H5.7V10h2.4v8.6ZM6.9 9.02a1.39 1.39 0 1 1 0-2.78 1.39 1.39 0 0 1 0 2.78ZM18.6 18.6h-2.4v-4.45c0-1.06-.02-2.42-1.47-2.42-1.47 0-1.7 1.15-1.7 2.34v4.53h-2.4V10h2.3v1.18h.03c.32-.6 1.1-1.23 2.26-1.23 2.42 0 2.87 1.6 2.87 3.67v4.98Z"
-      />
-    </svg>
-  );
-}
-
-function IconXFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M18.9 2H22l-6.8 7.78L22.9 22H17l-4.6-6.1L6.9 22H3.8l7.3-8.38L1.2 2H7.3l4.2 5.6L18.9 2Zm-1.1 18h1.7L6.4 3.9H4.6L17.8 20Z"
-      />
-    </svg>
-  );
-}
-
-function IconYouTubeFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M23 7.5s-.2-1.7-.8-2.4c-.8-.9-1.7-.9-2.1-1C17.2 3.8 12 3.8 12 3.8h0s-5.2 0-8.1.3c-.4.1-1.3.1-2.1 1C1.2 5.8 1 7.5 1 7.5S.7 9.5.7 11.5v1.9c0 2 .3 4 .3 4s.2 1.7.8 2.4c.8.9 1.9.9 2.4 1 1.7.2 7.8.3 7.8.3s5.2 0 8.1-.3c.4-.1 1.3-.1 2.1-1 .6-.7.8-2.4.8-2.4s.3-2 .3-4v-1.9c0-2-.3-4-.3-4zM9.8 15.8V8.7l6.4 3.6-6.4 3.5z"
-      />
-    </svg>
-  );
-}
-
-function IconDiscordFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M20.317 4.369a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.211.375-.444.864-.608 1.249a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.249.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.319 13.58.099 18.057a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.077.077 0 0 0 .084-.027c.461-.63.873-1.295 1.226-1.994a.076.076 0 0 0-.041-.105 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.127c.126-.094.252-.192.371-.291a.074.074 0 0 1 .077-.01c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 0 1 .078.01c.119.099.245.197.372.291a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.04.106c.36.698.772 1.363 1.225 1.993a.076.076 0 0 0 .084.028 19.876 19.876 0 0 0 6.002-3.03.077.077 0 0 0 .031-.055c.5-5.177-.838-9.673-3.548-13.66a.061.061 0 0 0-.031-.028zM8.02 15.331c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.418 2.157-2.418 1.21 0 2.176 1.094 2.157 2.418 0 1.334-.955 2.419-2.157 2.419zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.418 2.157-2.418 1.21 0 2.176 1.094 2.157 2.418 0 1.334-.946 2.419-2.157 2.419z"
-      />
-    </svg>
-  );
-}
-
-function IconMediumFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M2.846 6.887c.03-.295-.082-.59-.302-.79L.367 3.47V3.09h6.76l5.223 11.45 4.59-11.45H23v.38l-1.862 1.785a.56.56 0 0 0-.214.537v13.11a.56.56 0 0 0 .214.537L23 21.224v.38h-9.37v-.38l1.93-1.83c.19-.19.19-.246.19-.537V8.26l-5.37 13.32h-.726L3.4 8.26v8.91a1.29 1.29 0 0 0 .357 1.07l2.514 3.04v.38H0v-.38l2.514-3.04a1.25 1.25 0 0 0 .332-1.07V6.887z"
-      />
-    </svg>
-  );
-}
-
-function IconDevToFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M7.42 10.05c-.18-.16-.46-.23-.84-.23H6l.02 2.44.04 2.45.56-.02c.41 0 .63-.07.83-.26.24-.24.26-.36.26-2.2 0-1.91-.02-1.96-.29-2.18zM0 4.94v14.12h24V4.94H0zM8.56 15.3c-.44.58-1.06.77-2.53.77H4.71V8.53h1.4c1.67 0 2.16.18 2.6.9.27.43.29.6.32 2.57.05 2.23-.02 2.73-.47 3.3zm5.09-5.47h-2.47v1.77h1.52v1.28l-.72.04-.75.03v1.77l1.22.03 1.2.04v1.28h-1.6c-1.53 0-1.6-.01-1.87-.3l-.3-.28v-3.16c0-3.02.01-3.18.25-3.48.23-.31.25-.31 1.88-.31h1.64v1.3zm4.68 5.45c-.17.43-.64.79-1 .79-.18 0-.45-.15-.67-.39-.32-.32-.45-.63-.82-2.08l-.9-3.39-.45-1.67h.76c.4 0 .75.02.75.05 0 .06 1.16 4.54 1.26 4.83.04.15.32-.7.73-2.3l.66-2.52.74-.04c.4-.02.73 0 .73.04 0 .14-1.67 6.38-1.8 6.68z"
-      />
-    </svg>
-  );
-}
-
-function IconLeetCodeFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z"
-      />
-    </svg>
-  );
-}
-
-function IconInstagramFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M12 2c-2.717 0-3.056.012-4.122.06-1.064.05-1.79.218-2.428.465a4.9 4.9 0 0 0-1.772 1.153A4.9 4.9 0 0 0 2.525 5.45c-.247.637-.415 1.363-.465 2.427C2.012 8.944 2 9.283 2 12s.012 3.056.06 4.122c.05 1.064.218 1.79.465 2.428a4.9 4.9 0 0 0 1.153 1.772 4.9 4.9 0 0 0 1.772 1.153c.638.247 1.364.415 2.428.465 1.066.048 1.405.06 4.122.06s3.056-.012 4.122-.06c1.064-.05 1.79-.218 2.428-.465a4.9 4.9 0 0 0 1.772-1.153 4.9 4.9 0 0 0 1.153-1.772c.247-.638.415-1.364.465-2.428.048-1.066.06-1.405.06-4.122s-.012-3.056-.06-4.122c-.05-1.064-.218-1.79-.465-2.428a4.9 4.9 0 0 0-1.153-1.772A4.9 4.9 0 0 0 18.55 2.525c-.638-.247-1.364-.415-2.428-.465C15.056 2.012 14.717 2 12 2Zm0 5.838a4.162 4.162 0 1 1 0 8.324 4.162 4.162 0 0 1 0-8.324Zm0 6.862a2.7 2.7 0 1 0 0-5.4 2.7 2.7 0 0 0 0 5.4Zm5.292-7.012a.972.972 0 1 1 0-1.944.972.972 0 0 1 0 1.944Z"
-      />
-    </svg>
-  );
-}
-
-function IconTikTokFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M16.7 2c.3 2.7 1.9 4.3 4.3 4.5V9c-1.6.1-3-.4-4.2-1.2v7.2c0 4.2-3.4 7.7-7.7 7.7S1.4 19.2 1.4 15s3.4-7.7 7.7-7.7c.5 0 1 .1 1.5.2v2.8c-.5-.2-1-.3-1.5-.3-2.7 0-4.9 2.2-4.9 4.9s2.2 4.9 4.9 4.9 4.9-2.2 4.9-4.9V2h2.7Z"
-      />
-    </svg>
-  );
-}
-
-function IconChatBubbleFilled({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M20 3H4a2 2 0 0 0-2 2v16.5a.5.5 0 0 0 .78.41L6.6 19.5H20a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2Z"
-      />
-    </svg>
-  );
-}
-
-function IconThreadsFilled({ className = "" }: { className?: string }) {
-  // Simplified Threads (Meta) glyph
-  return (
-    <svg viewBox="0 0 192 192" aria-hidden="true" className={className}>
-      <path
-        fill="currentColor"
-        d="M141.5 86.7c-.7-.4-1.5-.7-2.3-1.1-1.4-25.7-15.4-40.4-39-40.5h-.3c-14.1 0-25.8 6-33.1 17l13 8.9c5.4-8.2 13.9-9.9 20.1-9.9h.2c7.7.1 13.5 2.3 17.3 6.7 2.7 3.2 4.6 7.6 5.5 13.1-7.5-1.3-15.6-1.7-24.3-1.2-24.5 1.4-40.3 15.7-39.2 35.6.5 10.1 5.6 18.7 14.2 24.4 7.4 4.8 16.8 7.2 26.6 6.6 12.9-.7 23-5.6 30.1-14.6 5.4-6.8 8.8-15.7 10.3-26.7 6.1 3.7 10.7 8.5 13.2 14.4 4.3 9.9 4.5 26.2-8.8 39.4-11.6 11.6-25.6 16.6-46.7 16.8-23.4-.2-41.1-7.7-52.7-22.4C30 134.2 24.2 117.5 24 96.4c.2-21.1 6-37.8 17.1-49.7C52.7 32 70.4 24.5 93.8 24.3c23.5.2 41.6 7.7 53.6 22.5 5.9 7.2 10.4 16.3 13.3 27l16.4-4.4c-3.6-13.2-9.2-24.5-16.7-33.7C144.4 16 122.4 7.2 93.9 7H93.7C65.3 7.2 43.7 16 28.4 33c-13.6 15.2-20.6 36.3-20.7 62.6.1 26.3 7 47.4 20.7 62.7 15.2 17 36.9 25.8 65.3 25.9h.2c25.2-.2 43-6.7 57.6-21.1 19.2-19 18.6-42.7 12.3-57.3-4.5-10.4-13.2-18.9-25.1-24.5l-.4.4ZM98 142.4c-10.8.6-21.9-4-22.4-14-.4-7.4 5.3-15.7 23-16.7 2-.1 4-.2 5.9-.2 6.5 0 12.5.6 18 1.8-2 25.7-14.1 28.6-24.5 29.1Z"
-      />
-    </svg>
-  );
-}
-
-/* ------------------------------------------------------------- */
-
-function SocialIcon({ item }: { item: SocialItem }) {
-  const key = item.key.toLowerCase();
-  const base =
-    "h-4 w-4 text-slate-400 transition-colors group-hover:text-accent";
-
-  // Prefer filled/recognizable where it helps most
-  if (key === "github") return <IconGithubFilled className={base} />;
-  if (key === "linkedin") return <IconLinkedInSquareFilled className={base} />;
-  if (key === "x") return <IconXFilled className={base} />;
-
-  // 鉁?Actual platform logos
-  if (key === "tiktok") return <IconTikTokFilled className={base} />;
-  if (key === "leetcode") return <IconLeetCodeFilled className={base} />;
-  if (key === "youtube") return <IconYouTubeFilled className={base} />;
-  if (key === "instagram") return <IconInstagramFilled className={base} />;
-  if (key === "threads") return <IconThreadsFilled className={base} />;
-  if (key === "devto" || key === "dev.to")
-    return <IconDevToFilled className={base} />;
-  if (key === "medium") return <IconMediumFilled className={base} />;
-  if (key === "discord") return <IconDiscordFilled className={base} />;
-
-  // Keep the rest as-is
-  if (key === "email") return <Mail className={base} />;
-  if (key === "resume") return <FileText className={base} />;
-  if (key === "handshake") return <GraduationCap className={base} />;
-  if (key === "kofi") return <Coffee className={base} />;
-
-  // fallback
-  return <ArrowUpRight className={base} />;
+  return [
+    {
+      title: "AI Workflow Engineering",
+      description: "multi-model collaboration, AI-assisted development, prototyping loops",
+      Icon: GitBranch,
+    },
+    {
+      title: "Automation Systems",
+      description: "Docker, n8n, APIs, Yingdao, and maintainable automation",
+      Icon: Workflow,
+    },
+    {
+      title: "Knowledge & RAG Systems",
+      description: "local knowledge bases, retrieval, business context, content assets",
+      Icon: BrainCircuit,
+    },
+    {
+      title: "Creative Production",
+      description: "AI content production, visual thinking, asset systems, narrative design",
+      Icon: Blocks,
+    },
+  ];
 }
 
 export function HeroShowcaseSection() {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
-  const featuredCases = aboutConfig.snapshot.cards.slice(0, 2);
-  // Resume now opens as a real page (PDF viewer) in a new tab.
-  const resumeHref = "/resume";
-
-  // Big heading line
-  const lineOne = copy.hero.line || `Hi, ${siteConfig.name} here.`;
-  const nameStart = Math.max(0, lineOne.indexOf(siteConfig.name));
-  const beforeName = nameStart > 0 ? lineOne.slice(0, nameStart) : "";
-  const afterName =
-    nameStart >= 0 ? lineOne.slice(nameStart + siteConfig.name.length) : lineOne;
+  const labSignals = getLabSignals(locale);
+  const capabilities = getCapabilities(locale);
 
   return (
-    // Mobile: ~80dvh tall + centered, so the next section peeks below the fold.
-    // Desktop layout unchanged.
     <section
       id="top"
-      className="flex min-h-[70dvh] flex-col justify-start pt-10 pb-12 sm:block sm:min-h-0 sm:pt-16 sm:pb-20 lg:pt-28"
+      className="flex min-h-[76dvh] flex-col justify-center py-16 sm:min-h-0 lg:py-28"
     >
       <div className="mx-auto w-full max-w-6xl px-4">
-        {/* Top hero row (right side left blank for now) */}
-        <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-          {/* Left: intro + socials */}
-          <div className="text-center sm:text-left">
-            {/* big heading */}
-            <h1 className="text-4xl font-semibold leading-tight sm:text-5xl lg:text-6xl">
-              <span className="block">
-                {beforeName}
-                <span className="text-foreground">{siteConfig.name}</span>
-                {afterName}
-              </span>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.12fr)_minmax(360px,0.88fr)] lg:items-end">
+          <div>
+            <div className="inline-flex items-center gap-2 border-y border-border py-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <Bot className="h-4 w-4" />
+              <span>{locale === "zh" ? "AI Native System Builder" : "AI Native Lab"}</span>
+            </div>
+
+            <h1 className="mt-6 max-w-4xl text-4xl font-semibold leading-[1.05] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+              {copy.hero.line}
             </h1>
 
-            <p className="mx-auto mt-4 max-w-xl text-sm text-muted-foreground sm:mx-0 sm:text-base">
+            <p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground sm:text-lg">
               {copy.hero.description}
             </p>
 
-            {/* Social links row */}
-            <div className="mt-5 flex flex-wrap justify-center gap-2 text-xs sm:justify-start sm:text-sm">
-              {SOCIALS.map((item) => {
-                const href = resolveSocialHref(item, resumeHref);
-                if (!href || href === "#" || href.startsWith("copy:")) {
-                  return null;
-                }
-
-                const visibilityCls = item.mobileHidden
-                  ? "hidden sm:inline-flex"
-                  : "inline-flex";
-                return (
-                  <a
-                    key={item.key}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={[
-                      "group items-center gap-2 rounded-md px-2.5 py-1.5 text-xs sm:text-sm text-slate-50/90 transition-colors duration-150 hover:bg-white/5 hover:text-slate-50",
-                      visibilityCls,
-                    ].join(" ")}
-                  >
-                    <SocialIcon item={item} />
-                    <span className="text-slate-50">{item.label}</span>
-                  </a>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="hidden lg:block">
-            <div className="rounded-3xl border border-border bg-card/70 p-5 shadow-[0_20px_40px_-28px_rgba(15,23,42,0.2)]">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    {locale === "zh" ? "精选案例" : "Selected cases"}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-foreground/80">
-                    {locale === "zh"
-                      ? "我会把过去做过的项目整理成网站、PPT、文档或自动化流程，方便快速查看。"
-                      : "I present past work as websites, slide decks, documents, or automation flows so it is easy to scan quickly."}
-                  </p>
-                </div>
-                <div className="rounded-full border border-border bg-background px-3 py-1 text-[11px] font-medium text-muted-foreground">
-                  {locale === "zh" ? "入口" : "Entry"}
-                </div>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                {featuredCases.map((card) => (
-                  <div
-                    key={card.title}
-                    className="rounded-2xl border border-border bg-background px-4 py-3"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="truncate text-sm font-semibold text-foreground">
-                          {card.title}
-                        </h3>
-                        <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
-                          {card.description}
-                        </p>
-                      </div>
-                      <FileText className="h-4 w-4 flex-none text-accent" />
-                    </div>
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {card.stats?.slice(0, 2).map((stat) => (
-                        <span
-                          key={`${card.title}-${stat.label}`}
-                          className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
-                        >
-                          <span>{stat.label}</span>
-                          <span className="text-foreground/70">·</span>
-                          <span className="text-foreground">{stat.value}</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
+            <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 href="/projects"
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent/15"
+                className="inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
               >
-                {locale === "zh" ? "查看全部案例" : "View all cases"}
-                <ArrowUpRight className="h-4 w-4" />
+                <FileText className="h-4 w-4" />
+                <span>{locale === "zh" ? "进入案例档案" : "Open case archive"}</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                href="/#about"
+                className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <span>{locale === "zh" ? "查看工作方式" : "View working method"}</span>
               </Link>
             </div>
           </div>
+
+          <aside className="border-y border-border py-5">
+            <div className="grid grid-cols-3 divide-x divide-border">
+              {labSignals.map((signal) => (
+                <div key={signal.label} className="px-3 first:pl-0 last:pr-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    {signal.label}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold leading-5 text-foreground">
+                    {signal.value}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 space-y-3">
+              {capabilities.map(({ title, description, Icon }) => (
+                <div key={title} className="grid grid-cols-[32px_minmax(0,1fr)] gap-3 border-t border-border pt-3 first:border-t-0 first:pt-0">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-card text-muted-foreground">
+                    <Icon className="h-4 w-4" />
+                  </span>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+                    <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                      {description}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </aside>
         </div>
 
-        {/* Contribution graph 鈥?md+ only (hidden on mobile to keep above-the-fold focused) */}
         <div className="mt-20 hidden md:block">
           <ContributionGraphCard title={locale === "zh" ? "工作节奏" : "Work Rhythm"} />
         </div>

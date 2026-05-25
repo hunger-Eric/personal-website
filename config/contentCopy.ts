@@ -46,39 +46,39 @@ export type SiteCopy = {
 };
 
 const zhCases: CasesCopy = {
-  heading: "~/案例",
-  viewAll: "查看全部案例",
-  featuredBadge: "精选案例",
-  viewDetails: "查看案例",
-  emptyTitle: "暂无案例",
-  emptyDescription: "案例内容还在整理中。",
+  heading: "~/AI Native Lab",
+  viewAll: "进入系统档案",
+  featuredBadge: "精选档案",
+  viewDetails: "查看系统记录",
+  emptyTitle: "暂无系统档案",
+  emptyDescription: "案例档案还在整理中。",
 };
 
 const enCases: CasesCopy = {
-  heading: "~/Cases",
-  viewAll: "View all cases",
-  featuredBadge: "Featured case",
-  viewDetails: "View case",
-  emptyTitle: "No cases yet",
-  emptyDescription: "Case content is still being organized.",
+  heading: "~/AI Native Lab",
+  viewAll: "Open system archive",
+  featuredBadge: "Featured record",
+  viewDetails: "View system record",
+  emptyTitle: "No system records yet",
+  emptyDescription: "Case records are still being organized.",
 };
 
 const zh: SiteCopy = {
   hero: {
-    line: "你好，我是 fengc。",
+    line: "AI Native 独立开发者",
     description:
-      "全栈程序猿，摄影爱好者。擅长 Next.js、Python、AI Agent 和自动化工具，也会把零散的内容和工作流整理成更顺手的交付。",
+      "构建 AI 驱动的系统、工作流与数字产品。从自动化、知识库到 AI 内容创作，让想法快速变成真正可运行的系统。",
   },
   about: {
     heading: "~/关于我",
     socialsButton: "查看全部社交",
-    techIntro: "我最常使用的一些技术：",
+    techIntro: "我常设计的系统能力：",
     paragraphs: [
-      "全栈程序猿，摄影爱好者。平时主要在 Next.js、Python、AI Agent 和自动化工具之间来回切换，也会自己做一些小工具和工作流。",
-      "我会把写代码、整理内容和拍照当成一套连续的工作方式，希望它们都能保持轻量、清楚、可维护。",
+      "我关注的不是 AI 能生成什么，而是如何把 AI 真正组织进长期工作流与产品系统。",
+      "我不只是使用 AI 写代码，而是在设计 AI 时代的新型工作方式：让模型、自动化、内容和业务流程能稳定协同。",
     ],
     afterTechParagraph:
-      "最近也在琢磨怎么把 AI 更自然地放进摄影后期和日常整理流程里。",
+      "面向个人和小团队，我更关心能不能快速验证想法、减少重复劳动，并把系统做成以后还能继续扩展的样子。",
   },
   cases: zhCases,
   projects: zhCases,
@@ -106,20 +106,20 @@ const zh: SiteCopy = {
 
 const en: SiteCopy = {
   hero: {
-    line: "Hi, fengc here.",
+    line: "AI Native Independent Developer",
     description:
-      "Full-stack developer and photography enthusiast. I work with Next.js, Python, AI agents, and automation tools, and I still make time to go shoot photos.",
+      "I build AI-powered systems, workflows, and digital products, from automation pipelines and knowledge systems to AI-assisted creative experiences.",
   },
   about: {
     heading: "~/About Me",
     socialsButton: "View all socials",
-    techIntro: "Some of the technologies I work with most often:",
+    techIntro: "Systems I usually design:",
     paragraphs: [
-      "Full-stack developer and photography enthusiast. Most days I bounce between Next.js, Python, AI agents, and small automation tools that help me stay organized.",
-      "I treat coding, content, and photography as one continuous workflow, aiming to keep each part lightweight, clear, and maintainable.",
+      "I care less about what AI can generate in isolation, and more about how AI can be organized into long-term workflows and product systems.",
+      "I do not only use AI to write code. I design new working patterns where models, automation, content, and business processes can cooperate reliably.",
     ],
     afterTechParagraph:
-      "Lately I have been exploring how AI can fit more naturally into photo post-production and everyday organization.",
+      "For individuals and small teams, the goal is faster idea validation, less repetitive work, and systems that can keep scaling after the first version ships.",
   },
   cases: enCases,
   projects: enCases,

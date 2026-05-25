@@ -1,16 +1,18 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
-import { useMemo, type ReactNode } from "react";
-import { ArrowRight, FolderOpen, ChevronRight } from "lucide-react";
+import { useMemo } from "react";
 import {
-  FilledGithub,
-  FilledGlobe,
-  FilledFileText,
-  FilledDownload,
-  FilledPlay,
-  FilledArrowUpRight,
-} from "@/components/FilledIcons";
+  ArrowRight,
+  Bot,
+  Boxes,
+  BrainCircuit,
+  ChevronRight,
+  FolderOpen,
+  GitBranch,
+  Workflow,
+} from "lucide-react";
+
 import { useLocale } from "@/components/LocaleProvider";
 import { getSiteCopy } from "@/config/contentCopy";
 import {
@@ -19,144 +21,154 @@ import {
   resolveCaseDisplayMode,
 } from "@/config/caseDisplay";
 import type { CaseItem } from "../../config/cases";
-import { CaseCard } from "../cases/CaseCard";
 
 interface CasesSectionClientProps {
   cases: CaseItem[];
 }
 
-function caseFormatLabel(caseItem: CaseItem, locale: "zh" | "en") {
-  if (caseItem.format) return caseItem.format;
-  if (caseItem.badges?.length) return caseItem.badges[0];
-  return locale === "zh" ? "案例" : "Case";
+function metadataLabel(value?: string) {
+  return value?.trim() || "Archive";
 }
 
-function CompactCaseCard({
+function getPrimaryProblem(caseItem: CaseItem) {
+  return caseItem.problem?.[0] || caseItem.description?.[0] || caseItem.summary;
+}
+
+function getPrimaryWorkflow(caseItem: CaseItem, locale: "zh" | "en") {
+  return (
+    caseItem.workflows?.[0] ||
+    caseItem.aiOrchestration?.[0] ||
+    (locale === "zh" ? "AI workflow" : "AI workflow")
+  );
+}
+
+function TagRow({ items, empty }: { items?: string[]; empty: string }) {
+  const values = items?.length ? items.slice(0, 4) : [empty];
+  return (
+    <div className="flex flex-wrap gap-2">
+      {values.map((item) => (
+        <span
+          key={item}
+          className="rounded-full border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function FeaturedLabRecord({
   caseItem,
   locale,
 }: {
   caseItem: CaseItem;
   locale: "zh" | "en";
 }) {
-  const href = `/projects/${encodeURIComponent(caseItem.id)}`;
-
   return (
     <Link
-      href={href}
-      className="group flex h-full flex-col justify-between rounded-2xl border border-border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/40 hover:shadow-sm"
+      href={`/projects/${encodeURIComponent(caseItem.id)}`}
+      className="group block border-y border-border py-5 transition-colors hover:border-foreground/30"
     >
-      <div className="space-y-3">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h3 className="truncate text-base font-semibold text-foreground">
-              {caseItem.name}
-            </h3>
-            <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">
-              {caseItem.description?.[0] ?? caseItem.summary}
-            </p>
-          </div>
-          <span className="inline-flex flex-none items-center rounded-full border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-            {caseFormatLabel(caseItem, locale)}
-          </span>
+      <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        <Bot className="h-4 w-4" />
+        <span>{locale === "zh" ? "Featured Lab Note" : "Featured Lab Note"}</span>
+        <span className="text-border">/</span>
+        <span>{metadataLabel(caseItem.status)}</span>
+      </div>
+
+      <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div>
+          <h3 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            {caseItem.name}
+          </h3>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">
+            {getPrimaryProblem(caseItem)}
+          </p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {caseItem.technologies?.slice(0, 3).map((tech) => (
-            <span
-              key={`${caseItem.id}-${tech}`}
-              className="rounded-full bg-muted px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
-            >
-              {tech}
+        <div className="grid gap-3 text-sm">
+          <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-border pt-3">
+            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Role
             </span>
-          ))}
+            <span className="text-foreground">{metadataLabel(caseItem.role)}</span>
+          </div>
+          <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-border pt-3">
+            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              Workflow
+            </span>
+            <span className="text-foreground">{getPrimaryWorkflow(caseItem, locale)}</span>
+          </div>
+          <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-border pt-3">
+            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              AI Stack
+            </span>
+            <span className="text-foreground">
+              {(caseItem.aiStack ?? caseItem.technologies ?? []).slice(0, 3).join(", ") ||
+                "AI-assisted workflow"}
+            </span>
+          </div>
         </div>
       </div>
 
-      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-        <span>
-          {caseItem.links?.length
-            ? `${caseItem.links.length} ${locale === "zh" ? "个链接" : "links"}`
-            : locale === "zh"
-              ? "单一案例"
-              : "Single case"}
+      <div className="mt-5 flex items-center justify-between gap-4">
+        <TagRow
+          items={caseItem.tags}
+          empty={locale === "zh" ? "系统档案" : "system archive"}
+        />
+        <span className="inline-flex items-center gap-1 text-sm font-semibold text-foreground">
+          {locale === "zh" ? "查看记录" : "View record"}
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </span>
-        <ChevronRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
       </div>
     </Link>
   );
 }
 
-function CaseIndexPanel({
-  cases,
+function LabIndexRow({
+  caseItem,
+  index,
   locale,
 }: {
-  cases: CaseItem[];
+  caseItem: CaseItem;
+  index: number;
   locale: "zh" | "en";
 }) {
-  const display = getCaseDisplaySettings();
-  const resolvedMode = resolveCaseDisplayMode(cases.length);
-
   return (
-    <div className="rounded-3xl border border-border bg-card/70 p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.18)]">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            {locale === "zh" ? "案例索引" : "Case index"}
-          </p>
-          <p className="mt-2 text-sm leading-6 text-foreground/80">
-            {locale === "zh"
-              ? "案例一多时，这里会自然切成索引视图，方便快速扫过全部内容。"
-              : "This panel naturally turns into an index view as more cases are added, making it easy to scan everything."}
-          </p>
+    <Link
+      href={`/projects/${encodeURIComponent(caseItem.id)}`}
+      className="group grid gap-4 border-t border-border py-4 transition-colors hover:border-foreground/30 md:grid-cols-[64px_minmax(0,1fr)_260px_32px]"
+    >
+      <span className="font-mono text-sm text-muted-foreground">
+        {String(index + 1).padStart(2, "0")}
+      </span>
+      <div>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="text-base font-semibold text-foreground">{caseItem.name}</h3>
+          <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+            {metadataLabel(caseItem.caseType || caseItem.format)}
+          </span>
         </div>
-        <span className="rounded-full border border-border bg-background px-3 py-1 text-[11px] font-medium text-muted-foreground">
-          {formatCaseDisplayMode(display.mode, locale)}
-        </span>
+        <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
+          {getPrimaryProblem(caseItem)}
+        </p>
       </div>
-
-      <div className="mt-4 grid gap-3">
-        {cases.map((caseItem, index) => (
-          <Link
-            key={caseItem.id}
-            href={`/projects/${encodeURIComponent(caseItem.id)}`}
-            className="group flex items-center gap-3 rounded-2xl border border-border bg-background px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-sm"
-          >
-            <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg border border-border bg-muted/60 text-xs font-semibold text-muted-foreground">
-              {String(index + 1).padStart(2, "0")}
-            </span>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <h4 className="truncate text-sm font-semibold text-foreground">
-                  {caseItem.name}
-                </h4>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                  {caseFormatLabel(caseItem, locale)}
-                </span>
-              </div>
-              <p className="mt-1 line-clamp-1 text-xs text-muted-foreground">
-                {caseItem.description?.[0] ?? caseItem.summary}
-              </p>
-            </div>
-            <ChevronRight className="h-4 w-4 flex-none text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
-          </Link>
-        ))}
-      </div>
-
-      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span className="rounded-full bg-muted px-2.5 py-1 font-medium">
-          {cases.length} {locale === "zh" ? "个案例" : "cases"}
-        </span>
-        {resolvedMode === "catalog" ? (
-          <span className="rounded-full bg-muted px-2.5 py-1 font-medium">
-            {locale === "zh" ? "索引展示" : "Catalog view"}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Workflow className="h-3.5 w-3.5" />
+          <span className="truncate">{getPrimaryWorkflow(caseItem, locale)}</span>
+        </div>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <BrainCircuit className="h-3.5 w-3.5" />
+          <span className="truncate">
+            {(caseItem.aiStack ?? caseItem.technologies ?? []).slice(0, 2).join(", ") ||
+              "AI stack"}
           </span>
-        ) : (
-          <span className="rounded-full bg-muted px-2.5 py-1 font-medium">
-            {locale === "zh" ? "精选展示" : "Featured view"}
-          </span>
-        )}
+        </div>
       </div>
-    </div>
+      <ChevronRight className="hidden h-5 w-5 self-center text-muted-foreground transition-transform group-hover:translate-x-0.5 md:block" />
+    </Link>
   );
 }
 
@@ -166,160 +178,87 @@ export function CasesSectionClient({ cases }: CasesSectionClientProps) {
   const display = getCaseDisplaySettings();
   const mode = resolveCaseDisplayMode(cases.length);
 
-  const iconFor = (type?: string): ReactNode => {
-    switch (type) {
-      case "github":
-        return <FilledGithub className="h-4 w-4" />;
-      case "live":
-        return <FilledGlobe className="h-4 w-4" />;
-      case "docs":
-        return <FilledFileText className="h-4 w-4" />;
-      case "download":
-        return <FilledDownload className="h-4 w-4" />;
-      case "video":
-        return <FilledPlay className="h-4 w-4" />;
-      default:
-        return <FilledArrowUpRight className="h-4 w-4" />;
-    }
-  };
-
   const featuredCase = useMemo(
     () => cases.find((caseItem) => caseItem.featured) || cases[0] || null,
     [cases]
   );
+  const previewCases = useMemo(
+    () => cases.slice(0, Math.max(1, display.previewLimit)),
+    [cases, display.previewLimit]
+  );
 
-  const previewCases = useMemo(() => {
-    if (!cases.length) return [];
-    return cases.slice(0, Math.max(1, display.previewLimit));
-  }, [cases, display.previewLimit]);
-
-  if (!cases.length || !featuredCase) {
-    return null;
-  }
+  if (!cases.length || !featuredCase) return null;
 
   return (
     <section id="projects" className="scroll-mt-12 py-16 lg:py-24">
       <div className="mx-auto w-full max-w-6xl px-4">
-        <div className="flex items-center gap-4">
-          <h2 className="flex items-center gap-2 font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
-            <FolderOpen className="h-4 w-4" />
-            <span>{copy.cases.heading}</span>
-          </h2>
-          <div className="hidden h-px w-40 bg-border sm:block sm:w-72" aria-hidden />
-          <div className="flex-1" />
-          <a
-            href="/projects"
-            className="group inline-flex items-center justify-center gap-1.5 rounded-md border border-border bg-card px-3.5 py-2 text-sm font-medium text-foreground transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-muted active:scale-[0.99] focus:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
-          >
-            <span>{copy.cases.viewAll}</span>
-            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
-          </a>
-        </div>
-
-        {mode === "featured" ? (
-          <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]">
-            <CaseCard caseItem={featuredCase} iconFor={iconFor} featured />
-            <CaseIndexPanel cases={previewCases} locale={locale} />
+        <div className="grid gap-5 border-t border-border pt-5 lg:grid-cols-[280px_minmax(0,1fr)]">
+          <div>
+            <h2 className="flex items-center gap-2 font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
+              <FolderOpen className="h-4 w-4" />
+              <span>{copy.cases.heading}</span>
+            </h2>
+            <p className="mt-4 text-sm leading-6 text-muted-foreground">
+              {locale === "zh"
+                ? "这里不是普通作品集，而是系统设计档案。每个案例都记录问题、workflow、AI 参与方式、自动化和可扩展路径。"
+                : "This is not a normal portfolio. Each record captures the problem, workflow, AI orchestration, automation, and scaling path."}
+            </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+                {formatCaseDisplayMode(display.mode, locale)}
+              </span>
+              <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+                {cases.length} {locale === "zh" ? "个档案" : "records"}
+              </span>
+            </div>
           </div>
-        ) : (
-          <div className="mt-8 grid gap-4 lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
-            <div className="rounded-3xl border border-border bg-card/70 p-5 shadow-[0_18px_40px_-30px_rgba(15,23,42,0.18)]">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    {locale === "zh" ? "索引视图" : "Index view"}
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-foreground/80">
-                    {locale === "zh"
-                      ? "案例一多，这里会优先按索引方式展示，减少大封面的堆叠。"
-                      : "When the number of cases grows, this section shifts into an index-first view so large covers do not overwhelm the page."}
-                  </p>
-                </div>
-                <span className="rounded-full border border-border bg-background px-3 py-1 text-[11px] font-medium text-muted-foreground">
-                  {locale === "zh" ? "自动适配" : "Auto"}
-                </span>
-              </div>
 
-              <div className="mt-4 grid grid-cols-2 gap-2 text-xs text-muted-foreground">
-                <div className="rounded-2xl border border-border bg-background px-3 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.14em]">
-                    {locale === "zh" ? "阈值" : "Threshold"}
+          <div>
+            {mode === "featured" ? (
+              <>
+                <FeaturedLabRecord caseItem={featuredCase} locale={locale} />
+                <div className="mt-8">
+                  <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    <GitBranch className="h-4 w-4" />
+                    <span>{locale === "zh" ? "System Archive" : "System Archive"}</span>
                   </div>
-                  <div className="mt-1 text-base font-semibold text-foreground">
-                    {display.autoCatalogThreshold}
-                  </div>
+                  {previewCases.map((caseItem, index) => (
+                    <LabIndexRow
+                      key={caseItem.id}
+                      caseItem={caseItem}
+                      index={index}
+                      locale={locale}
+                    />
+                  ))}
                 </div>
-                <div className="rounded-2xl border border-border bg-background px-3 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.14em]">
-                    {locale === "zh" ? "当前数量" : "Now"}
-                  </div>
-                  <div className="mt-1 text-base font-semibold text-foreground">
-                    {cases.length}
-                  </div>
+              </>
+            ) : (
+              <div>
+                <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  <Boxes className="h-4 w-4" />
+                  <span>{locale === "zh" ? "Catalog Mode" : "Catalog Mode"}</span>
                 </div>
-              </div>
-
-              <div className="mt-4 space-y-2">
                 {previewCases.map((caseItem, index) => (
-                  <Link
+                  <LabIndexRow
                     key={caseItem.id}
-                    href={`/projects/${encodeURIComponent(caseItem.id)}`}
-                    className="group flex items-start gap-3 rounded-2xl border border-border bg-background px-4 py-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/30 hover:shadow-sm"
-                  >
-                    <span className="mt-0.5 flex h-8 w-8 flex-none items-center justify-center rounded-lg border border-border bg-muted/60 text-xs font-semibold text-muted-foreground">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="truncate text-sm font-semibold text-foreground">
-                          {caseItem.name}
-                        </h4>
-                        <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                          {caseFormatLabel(caseItem, locale)}
-                        </span>
-                      </div>
-                      <p className="mt-1 line-clamp-2 text-xs leading-5 text-muted-foreground">
-                        {caseItem.description?.[0] ?? caseItem.summary}
-                      </p>
-                    </div>
-                    <ChevronRight className="mt-1 h-4 w-4 flex-none text-muted-foreground transition-transform duration-200 group-hover:translate-x-0.5" />
-                  </Link>
+                    caseItem={caseItem}
+                    index={index}
+                    locale={locale}
+                  />
                 ))}
               </div>
+            )}
 
-              <Link
-                href="/projects"
-                className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-accent/40 bg-accent/10 px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-accent/15"
-              >
-                {copy.cases.viewAll}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-                {previewCases.map((caseItem) => (
-                <CompactCaseCard key={caseItem.id} caseItem={caseItem} locale={locale} />
-              ))}
-            </div>
+            <Link
+              href="/projects"
+              className="mt-6 inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+            >
+              <span>{copy.cases.viewAll}</span>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
-        )}
-
-        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span className="rounded-full bg-muted px-2.5 py-1 font-medium">
-            {mode === "featured"
-              ? locale === "zh"
-                ? "精选展示"
-                : "Featured view"
-              : locale === "zh"
-                ? "索引展示"
-                : "Catalog view"}
-          </span>
-          <span className="rounded-full bg-muted px-2.5 py-1 font-medium">
-            {cases.length} {locale === "zh" ? "个案例" : "cases"}
-          </span>
         </div>
       </div>
     </section>
   );
 }
-

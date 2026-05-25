@@ -1,15 +1,8 @@
 "use client";
 
-import { useMemo, type ReactNode } from "react";
-import { FolderOpen } from "lucide-react";
-import {
-  FilledGithub,
-  FilledGlobe,
-  FilledFileText,
-  FilledDownload,
-  FilledPlay,
-  FilledArrowUpRight,
-} from "@/components/FilledIcons";
+import { useMemo } from "react";
+import { Boxes, FolderOpen } from "lucide-react";
+
 import { useLocale } from "@/components/LocaleProvider";
 import { getSiteCopy } from "@/config/contentCopy";
 import type { CaseItem } from "../../config/cases";
@@ -23,32 +16,13 @@ export function CasesBrowser({ cases }: Props) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
 
-  const iconFor = (type?: string): ReactNode => {
-    switch (type) {
-      case "github":
-        return <FilledGithub className="h-4 w-4" />;
-      case "live":
-        return <FilledGlobe className="h-4 w-4" />;
-      case "docs":
-        return <FilledFileText className="h-4 w-4" />;
-      case "download":
-        return <FilledDownload className="h-4 w-4" />;
-      case "video":
-        return <FilledPlay className="h-4 w-4" />;
-      default:
-        return <FilledArrowUpRight className="h-4 w-4" />;
-    }
-  };
-
   const groups = useMemo(() => {
-    const featured = cases.find((caseItem) => caseItem.featured) || cases[0] || null;
-    const rest = featured
-      ? cases.filter((caseItem) => caseItem.id !== featured.id)
-      : cases.slice(1);
-    return { featured, rest };
+    const featured = cases.filter((caseItem) => caseItem.featured);
+    const archive = cases.filter((caseItem) => !caseItem.featured);
+    return { featured: featured.length ? featured : cases.slice(0, 1), archive };
   }, [cases]);
 
-  if (!cases.length || !groups.featured) {
+  if (!cases.length) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <FolderOpen className="mb-4 h-12 w-12 text-muted-foreground/50" />
@@ -59,34 +33,28 @@ export function CasesBrowser({ cases }: Props) {
   }
 
   return (
-    <div className="flex flex-col gap-10">
-      <section className="space-y-4">
-        <div className="flex items-center gap-3">
-          <h2 className="text-xl font-semibold sm:text-2xl">{copy.cases.featuredBadge}</h2>
-          <span className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-            1
-          </span>
+    <div className="space-y-12">
+      <section>
+        <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <Boxes className="h-4 w-4" />
+          <span>{copy.cases.featuredBadge}</span>
         </div>
-
-        <div className="grid gap-4">
-          <CaseCard caseItem={groups.featured} iconFor={iconFor} featured />
+        <div className="grid gap-6 lg:grid-cols-2">
+          {groups.featured.map((caseItem) => (
+            <CaseCard key={caseItem.id} caseItem={caseItem} featured />
+          ))}
         </div>
       </section>
 
-      {groups.rest.length ? (
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl font-semibold sm:text-2xl">
-              {locale === "zh" ? "更多案例" : "More cases"}
-            </h2>
-            <span className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-              {groups.rest.length}
-            </span>
+      {groups.archive.length ? (
+        <section>
+          <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <FolderOpen className="h-4 w-4" />
+            <span>{locale === "zh" ? "系统档案" : "System Archive"}</span>
           </div>
-
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {groups.rest.map((caseItem) => (
-              <CaseCard key={caseItem.id} caseItem={caseItem} iconFor={iconFor} />
+          <div className="grid gap-6 lg:grid-cols-2">
+            {groups.archive.map((caseItem) => (
+              <CaseCard key={caseItem.id} caseItem={caseItem} />
             ))}
           </div>
         </section>

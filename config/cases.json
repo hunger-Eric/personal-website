@@ -8,7 +8,54 @@
   "github_readme_projects": [
     {
       "repo_url": "https://github.com/hunger-Eric/notebooklm-cn",
-      "priority": 1
+      "priority": 1,
+      "name": "notebooklm-cn",
+      "summary": "把 NotebookLM 的核心体验改造成可维护的中文知识工作流实验。",
+      "format": "AI workflow case",
+      "caseType": "Knowledge workflow",
+      "role": "AI Native System Builder",
+      "status": "Active archive",
+      "featured": true,
+      "tags": ["AI workflow", "knowledge system", "localization", "automation"],
+      "workflows": ["document ingestion", "AI-assisted reading", "Chinese UX adaptation"],
+      "aiStack": ["NotebookLM concept", "multi-agent review", "Codex"],
+      "automation": ["README capture", "GitHub metadata sync", "deploy feedback loop"],
+      "experiments": ["localized knowledge assistant", "source-first note workflow"],
+      "problem": [
+        "中文知识整理和 AI 阅读工具经常停留在零散 prompt 和单次对话里，难以形成可复用的工作流。",
+        "原型需要同时处理内容输入、AI 辅助理解、界面表达和长期维护，而不是只做一个页面。"
+      ],
+      "systemOverview": [
+        "以 GitHub 仓库作为公开记录，把 README、部署状态和案例页面连接成一个可以持续更新的系统档案。",
+        "案例展示不只呈现 UI，而是记录输入、处理、反馈和扩展路径。"
+      ],
+      "aiOrchestration": [
+        "使用 Codex 辅助代码实现、结构整理和回归检查。",
+        "把模型输出限制在可审阅的代码、文档和配置里，减少一次性生成带来的维护负担。"
+      ],
+      "architecture": [
+        {
+          "label": "Content source",
+          "detail": "README and repository metadata become the source record for the public case page."
+        },
+        {
+          "label": "Interface",
+          "detail": "Next.js renders the public archive and keeps the case detail route stable."
+        },
+        {
+          "label": "Automation",
+          "detail": "Build, deploy, and status feedback are connected through GitHub and Vercel workflows."
+        }
+      ],
+      "results": [
+        "形成了一个可以长期更新的中文 AI 知识工作流案例。",
+        "把项目说明、技术记录和线上展示连接成同一条可维护链路。",
+        "为后续 RAG、知识库、自动化整理和多模型协作留下结构入口。"
+      ],
+      "learnings": [
+        "AI Native 案例应该记录系统如何工作，而不只是展示完成后的界面。",
+        "长期可扩展的工作流需要把内容源、自动化和部署反馈都纳入设计。"
+      ]
     }
   ],
   "local_projects": []
