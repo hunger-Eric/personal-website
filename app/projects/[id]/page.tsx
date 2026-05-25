@@ -99,10 +99,10 @@ function ArchitectureSection({ architecture }: { architecture?: CaseArchitecture
         <div>
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             <Layers3 className="h-4 w-4" />
-            <span>Architecture</span>
+            <span>Architecture / 架构</span>
           </div>
           <h2 className="mt-3 text-xl font-semibold tracking-tight text-foreground">
-            System structure
+            系统结构
           </h2>
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
@@ -121,10 +121,10 @@ function ArchitectureSection({ architecture }: { architecture?: CaseArchitecture
 function MetaRail({ caseItem }: { caseItem: CaseItem }) {
   const stack = caseItem.aiStack ?? caseItem.technologies ?? [];
   const rows = [
-    ["Role", caseItem.role],
-    ["Status", caseItem.status],
-    ["Type", caseItem.caseType || caseItem.format],
-    ["AI Stack", stack.slice(0, 4).join(", ")],
+    ["角色", caseItem.role],
+    ["状态", caseItem.status],
+    ["类型", caseItem.caseType || caseItem.format],
+    ["AI 栈", stack.slice(0, 4).join(", ")],
   ].filter(([, value]) => value);
 
   return (
@@ -146,7 +146,7 @@ function MetaRail({ caseItem }: { caseItem: CaseItem }) {
       {caseItem.tags?.length ? (
         <div>
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Tags
+            标签
           </h3>
           <div className="flex flex-wrap gap-2">
             {caseItem.tags.map((tag) => (
@@ -164,7 +164,7 @@ function MetaRail({ caseItem }: { caseItem: CaseItem }) {
       {caseItem.links?.length ? (
         <div>
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            Links
+            链接
           </h3>
           <div className="space-y-2">
             {caseItem.links.map((link) => (
@@ -231,7 +231,7 @@ export default async function CaseDetailPage({ params }: Props) {
 
       <DossierSection
         eyebrow="Problem"
-        title="What needed to change"
+        title="要解决的问题"
         items={caseItem.problem}
         fallback={fallbackProblem}
         Icon={Network}
@@ -239,7 +239,7 @@ export default async function CaseDetailPage({ params }: Props) {
 
       <DossierSection
         eyebrow="System Overview"
-        title="How the system is framed"
+        title="系统如何被组织"
         items={caseItem.systemOverview}
         fallback={caseItem.readmePlainExcerpt}
         Icon={Boxes}
@@ -247,7 +247,7 @@ export default async function CaseDetailPage({ params }: Props) {
 
       <DossierSection
         eyebrow="Workflow"
-        title="AI orchestration and automation flow"
+        title="AI 协作与自动化流程"
         items={[...(caseItem.aiOrchestration ?? []), ...(caseItem.automation ?? [])]}
         fallback={caseItem.workflows?.join(", ")}
         Icon={Workflow}
@@ -257,7 +257,7 @@ export default async function CaseDetailPage({ params }: Props) {
 
       <DossierSection
         eyebrow="Results"
-        title="What became reusable"
+        title="沉淀出的结果"
         items={caseItem.results}
         fallback={caseItem.repoDescription}
         Icon={GitBranch}
@@ -265,7 +265,7 @@ export default async function CaseDetailPage({ params }: Props) {
 
       <DossierSection
         eyebrow="Learnings"
-        title="AI Native workflow notes"
+        title="AI Native 工作流思考"
         items={caseItem.learnings}
         Icon={BrainCircuit}
       />
@@ -279,7 +279,7 @@ export default async function CaseDetailPage({ params }: Props) {
                 <span>Source</span>
               </div>
               <h2 className="mt-3 text-xl font-semibold tracking-tight text-foreground">
-                README source record
+                README 源记录
               </h2>
             </div>
             <article

@@ -312,7 +312,7 @@ export function NavbarCentered() {
                     className="shrink-0 rounded-sm"
                   />
                 ) : null}
-                <span className="text-base font-semibold leading-none tracking-tight sm:text-lg">
+                <span className="text-base font-semibold leading-none tracking-tight text-foreground sm:text-lg">
                   {logo.label}
                 </span>
               </a>
@@ -352,7 +352,7 @@ export function NavbarCentered() {
                     className="shrink-0 rounded-sm"
                   />
                 ) : null}
-                <span className="text-base font-semibold leading-none tracking-tight sm:text-lg">
+                <span className="text-base font-semibold leading-none tracking-tight text-foreground sm:text-lg">
                   {logo.label}
                 </span>
               </Link>
@@ -542,7 +542,7 @@ export function NavbarCentered() {
                   href={primaryCta.href}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="rounded-md border border-accent bg-accent px-3.5 py-1.5 text-xs font-semibold text-slate-50 shadow-sm transition-transform transition-colors hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md md:text-sm"
+                  className="rounded-md border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground shadow-sm transition-colors hover:border-foreground/30 hover:bg-muted md:text-sm"
                   onMouseEnter={() => {
                     cancelCloseDesktop();
                     setOpenDropdownKey(null);
@@ -555,7 +555,7 @@ export function NavbarCentered() {
                 <Link
                   href={primaryCta.href}
                   scroll={true}
-                  className="rounded-md border border-accent bg-accent px-3.5 py-1.5 text-xs font-semibold text-slate-50 shadow-sm transition-transform transition-colors hover:-translate-y-0.5 hover:bg-accent/90 hover:shadow-md md:text-sm"
+                  className="rounded-md border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground shadow-sm transition-colors hover:border-foreground/30 hover:bg-muted md:text-sm"
                   onMouseEnter={() => {
                     cancelCloseDesktop();
                     setOpenDropdownKey(null);

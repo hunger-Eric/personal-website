@@ -1,11 +1,10 @@
 ﻿import type { Metadata } from "next";
 
 import { CasesPageClient } from "@/components/cases/CasesPageClient";
-import { siteConfig } from "@/config/siteConfig";
 import { loadCases } from "@/config/cases";
 
 export const metadata: Metadata = {
-  title: `AI Native Lab | ${siteConfig.name}`,
+  title: "AI Native Lab",
   description: "System records for AI workflow, automation, and AI-assisted development.",
   alternates: { canonical: "/projects" },
 };

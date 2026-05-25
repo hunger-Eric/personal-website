@@ -378,8 +378,8 @@ export function ContributionGraphCard({
       </div>
 
       <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-stretch md:gap-8">
-        <div className="text-foreground">
-          <div className="overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
+        <div className="min-w-0 max-w-full text-foreground">
+          <div className="max-w-full overflow-x-auto pb-2 lg:overflow-x-visible lg:pb-0">
             <div className="inline-block pt-1">
               <div className="flex justify-start gap-[2px] text-[0.65rem] leading-tight text-muted-foreground/70 sm:gap-[3.5px] sm:text-[0.85rem]">
                 {Array.from({ length: weekCount }).map((_, weekIndex) => {

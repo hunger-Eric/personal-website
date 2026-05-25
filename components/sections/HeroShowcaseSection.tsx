@@ -31,14 +31,14 @@ function getLabSignals(locale: "zh" | "en"): LabSignal[] {
     return [
       { label: "方向", value: "AI Native Lab" },
       { label: "方法", value: "workflow first" },
-      { label: "输出", value: "systems, not slides only" },
+      { label: "输出", value: "可运行系统" },
     ];
   }
 
   return [
     { label: "Mode", value: "AI Native Lab" },
     { label: "Method", value: "workflow first" },
-    { label: "Output", value: "systems, not slides only" },
+    { label: "Output", value: "runnable systems" },
   ];
 }
 

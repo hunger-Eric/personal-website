@@ -29,7 +29,7 @@ export function CaseCard({ caseItem, featured = false }: CaseCardProps) {
       <Link href={href} className="group block">
         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           <GitBranch className="h-4 w-4" />
-          <span>{featured ? copy.cases.featuredBadge : locale === "zh" ? "系统记录" : "System record"}</span>
+          <span>{locale === "zh" ? "系统记录" : "System record"}</span>
           <span className="text-border">/</span>
           <span>{caseItem.status || "Archive"}</span>
         </div>
