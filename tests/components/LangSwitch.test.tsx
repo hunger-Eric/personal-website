@@ -47,14 +47,14 @@ describe("LangSwitch", () => {
   it("has correct aria-label for zh locale", async () => {
     const { LangSwitch } = await import("@/components/LangSwitch");
     render(React.createElement(LangSwitch));
-    expect(screen.getByRole("button")).toHaveAttribute("aria-label", "Switch to English");
+    expect(screen.getByRole("button")).toHaveAttribute("aria-label", "切换到 English");
   });
 
   it("has correct aria-label for en locale", async () => {
     mockUseLocale.mockReturnValue({ locale: "en", toggleLocale: mockToggleLocale });
     const { LangSwitch } = await import("@/components/LangSwitch");
     render(React.createElement(LangSwitch));
-    expect(screen.getByRole("button")).toHaveAttribute("aria-label", "切换到中文");
+    expect(screen.getByRole("button")).toHaveAttribute("aria-label", "Switch to 中文");
   });
 
   it("calls toggleLocale on click", async () => {

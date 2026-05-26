@@ -34,6 +34,9 @@ vi.mock("lucide-react", () => ({
   Lock: ({ className }: { className?: string }) => (
     <svg data-testid="lock-icon" className={className} />
   ),
+  X: () => <svg data-testid="x-icon" />,
+  ChevronLeft: () => <svg data-testid="chevron-left-icon" />,
+  ChevronRight: () => <svg data-testid="chevron-right-icon" />,
 }));
 
 // ── Mock PhotoPinModal ───────────────────────────────────────────────────────
@@ -426,7 +429,7 @@ describe("PhotographyGallery", () => {
       render(<PhotographyGallery photos={photos} projectTitle="Test Project" />);
 
       expect(screen.getByText("私密照片已隐藏")).toBeInTheDocument();
-      expect(screen.getByText("输入PIN码查看")).toBeInTheDocument();
+      expect(screen.getByText("输入 PIN 码查看内容")).toBeInTheDocument();
       expect(screen.getByText("🔒")).toBeInTheDocument();
     });
 
@@ -452,7 +455,7 @@ describe("PhotographyGallery", () => {
       // There are no private photos so hasPrivate=false, no button shown.
       // But visiblePhotos is [] (no public photos either), so empty state renders.
       expect(screen.getByText("私密照片已隐藏")).toBeInTheDocument();
-      expect(screen.getByText("输入PIN码查看")).toBeInTheDocument();
+      expect(screen.getByText("输入 PIN 码查看内容")).toBeInTheDocument();
     });
 
     it("does not show empty state when there are public photos", () => {
@@ -549,25 +552,25 @@ describe("PhotographyGallery", () => {
       expect(lightboxTitle).not.toBeInTheDocument();
     });
 
-    it("does NOT close lightbox when the image content area is clicked (stopPropagation)", () => {
-      const photos = createPublicPhotos(1);
-      render(<PhotographyGallery photos={photos} projectTitle="Test Project" />);
+  it("does NOT close lightbox when the image content area is clicked (stopPropagation)", () => {
+    const photos = createPublicPhotos(1);
+    render(<PhotographyGallery photos={photos} projectTitle="Test Project" />);
 
-      // Open lightbox
-      const photoButton = document.querySelector(".group > button");
-      fireEvent.click(photoButton!);
+    // Open lightbox
+    const photoButton = document.querySelector(".group > button");
+    fireEvent.click(photoButton!);
 
-      // Click the inner content div (max-h-[90vh]) — should NOT close
-      const content = document.querySelector(".max-h-\\[90vh\\]");
-      expect(content).toBeInTheDocument();
-      fireEvent.click(content!);
+    // Click the inner content div (rounded-2xl container) — should NOT close
+    const content = document.querySelector(".fixed.inset-0 .rounded-2xl");
+    expect(content).toBeInTheDocument();
+    fireEvent.click(content!);
 
-      // Lightbox should remain open
-      const lightboxTitle = document.querySelector(
-        ".fixed.inset-0 .text-lg"
-      );
-      expect(lightboxTitle).toBeInTheDocument();
-    });
+    // Lightbox should remain open
+    const lightboxTitle = document.querySelector(
+      ".fixed.inset-0 .text-lg"
+    );
+    expect(lightboxTitle).toBeInTheDocument();
+  });
 
     it("renders lightbox image with correct src", () => {
       const photos = createPublicPhotos(1);

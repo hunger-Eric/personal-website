@@ -22,8 +22,8 @@ describe("ContributionGraphCard", () => {
       "@/components/ContributionGraphCard"
     );
     const { container } = render(React.createElement(ContributionGraphCard));
-    // The component renders a section with the title
-    expect(screen.getByText(/Contribution Graph/i)).toBeInTheDocument();
+    // The component renders a section with the title "Work Rhythm"
+    expect(screen.getByText(/Work Rhythm/i)).toBeInTheDocument();
     // Verify the section is in the DOM
     const section = container.querySelector("section");
     expect(section).toBeInTheDocument();

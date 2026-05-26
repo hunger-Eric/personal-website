@@ -1,0 +1,2708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>第十二章 智能体性能评估 — 深度解析</title>
+  <meta name="description" content="核心指标、基准测试与评估框架——如何科学地衡量一个智能体“到底行不行”。" />
+  <meta property="og:title" content="第十二章 智能体性能评估" />
+  <meta property="og:description" content="核心指标、基准测试与评估框架——如何科学地衡量一个智能体“到底行不行”。" />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="/images/articles/hello-agents-ch12.png" />
+  <link rel="icon" href="/favicon.ico" />
+  <style>
+
+/* === Base: paper-analyzer template === */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Noto Sans SC", "PingFang SC", "Source Han Sans SC", sans-serif;
+  line-height: 1.9;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  color: #2c2c2c;
+  background: #faf8f5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === Cover / Header (paper-analyzer: 封面区) === */
+header {
+  text-align: center;
+  padding: 50px 20px 36px;
+  position: relative;
+}
+header::before {
+  content: "✧";
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;
+  color: #d4a574;
+  opacity: 0.7;
+}
+header .chapter-badge {
+  display: inline-block;
+  background: #d4a574;
+  color: #fff;
+  padding: 5px 18px;
+  border-radius: 20px;
+  font-size: 0.82em;
+  font-weight: 600;
+  margin-bottom: 18px;
+  letter-spacing: 0.5px;
+}
+header .cover-img {
+  width: 100%;
+  max-width: 720px;
+  border-radius: 14px;
+  margin: 0 auto 24px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  border: 2px solid #e8e0d8;
+  display: block;
+}
+header h1 {
+  font-size: 2em;
+  margin-bottom: 10px;
+  color: #1a1a2e;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.35;
+}
+header .meta {
+  color: #888;
+  font-size: 0.88em;
+  margin-bottom: 4px;
+}
+header .abstract {
+  font-size: 1.05em;
+  color: #444;
+  margin: 20px auto;
+  line-height: 1.7;
+  max-width: 680px;
+  text-align: left;
+  background: #f0ebe4;
+  border-radius: 14px;
+  padding: 20px 26px;
+  border-left: 4px solid #d4a574;
+  position: relative;
+}
+header .abstract::before {
+  content: "📌";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  font-size: 18px;
+}
+header .tags { margin: 18px 0 0; text-align: center; }
+.tag {
+  display: inline-block;
+  background: #e8e3dc;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 0.78em;
+  margin: 4px;
+  color: #666;
+}
+
+/* === Sketch Divider === */
+.sketch-divider {
+  text-align: center;
+  margin: 44px 0;
+  color: #ccc;
+  font-size: 22px;
+  letter-spacing: 8px;
+}
+.sketch-divider::before,
+.sketch-divider::after {
+  content: "";
+  display: inline-block;
+  width: 80px;
+  height: 2px;
+  background: #ddd;
+  vertical-align: middle;
+  margin: 0 12px;
+}
+
+/* === Article Body === */
+article { padding-top: 8px; }
+article h2 {
+  margin-top: 48px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid #e0d8c8;
+  color: #1a1a2e;
+  font-size: 1.4em;
+  font-weight: 700;
+  position: relative;
+}
+article h2::before {
+  content: "✦";
+  color: #d4a574;
+  margin-right: 8px;
+  font-size: 0.8em;
+}
+article h3 {
+  margin-top: 32px;
+  color: #2d3436;
+  font-size: 1.15em;
+  font-weight: 600;
+}
+article h4 {
+  margin-top: 24px;
+  color: #3a3a3a;
+  font-size: 1.05em;
+  font-weight: 600;
+}
+article p { margin: 18px 0; color: #3a3a3a; }
+article strong { color: #1a1a2e; font-weight: 600; }
+article em { color: #666; }
+
+/* === Insight Card (paper-illustrate style highlight) === */
+.insight-card {
+  background: #f6f2ec;
+  border-radius: 14px;
+  padding: 22px 26px;
+  margin: 24px 0;
+  border-left: 4px solid #6c8eab;
+}
+.insight-card p:first-child strong { color: #2c5f7c; }
+
+/* === Highlight Box === */
+.highlight-box {
+  background: linear-gradient(135deg, #f5f0eb, #faf6f0);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 24px 0;
+  border: 1px solid #e8e0d8;
+}
+.highlight-box strong { color: #c0392b; }
+
+/* === Data Point === */
+.data-point {
+  display: inline-block;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+/* === Stat Row === */
+.stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 28px 0;
+  flex-wrap: wrap;
+}
+.stat-item {
+  text-align: center;
+  padding: 16px 24px;
+  background: #f0ebe4;
+  border-radius: 14px;
+  min-width: 120px;
+}
+.stat-item .num {
+  display: block;
+  font-size: 1.6em;
+  font-weight: 700;
+  color: #d4a574;
+}
+.stat-item .label {
+  font-size: 0.78em;
+  color: #888;
+  margin-top: 4px;
+}
+
+/* === Tables (paper-analyzer spec) === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 0.9em;
+  display: block;
+  overflow-x: auto;
+}
+th, td {
+  padding: 12px 16px;
+  border: 1px solid #e0d8c8;
+  text-align: left;
+}
+th {
+  background: #f0ebe4;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+td { background: #fff; }
+
+/* === Blockquote (paper-analyzer spec) === */
+blockquote {
+  border-left: 4px solid #d4a574;
+  margin: 24px 0;
+  padding: 16px 24px;
+  background: #f6f2ec;
+  border-radius: 0 12px 12px 0;
+  color: #555;
+  font-style: italic;
+}
+
+/* === Lists === */
+ul, ol { margin: 16px 0; padding-left: 28px; }
+li { margin: 8px 0; color: #3a3a3a; }
+li::marker { color: #d4a574; }
+
+/* === Code (paper-analyzer spec) === */
+code {
+  background: #f0ebe4;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.88em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  color: #c0392b;
+}
+pre {
+  background: #1a1a2e;
+  color: #e8e0d8;
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin: 24px 0;
+  overflow-x: auto;
+  font-size: 0.88em;
+  line-height: 1.6;
+}
+pre code { background: none; color: inherit; padding: 0; }
+
+/* === Images (paper-illustrate: figure + caption) === */
+article img {
+  max-width: 90%;
+  display: block;
+  margin: 20px auto;
+  border-radius: 12px;
+  border: 2px solid #e8e0d8;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+article p > em:only-child {
+  /* Image captions */
+  display: block;
+  text-align: center;
+  color: #999;
+  font-size: 0.82em;
+  margin-top: -8px;
+  margin-bottom: 20px;
+}
+
+/* === Sections (paper-analyzer: <section> 划分章节) === */
+section { margin-bottom: 8px; }
+.section-break {
+  margin: 36px 0;
+  border: none;
+  border-top: 2px dashed #e0d8c8;
+}
+
+/* === Footer (paper-analyzer spec) === */
+footer {
+  margin-top: 60px;
+  padding: 24px 0;
+  text-align: center;
+  color: #999;
+  font-size: 0.82em;
+  border-top: 1px solid #e0d8c8;
+}
+footer a { color: #d4a574; text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+footer .footer-links {
+  margin: 12px 0;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+footer .footer-links a {
+  color: #888;
+  font-size: 0.9em;
+}
+
+/* === Navigation === */
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 40px;
+  padding: 12px 20px;
+  background: #f0ebe4;
+  border-radius: 12px;
+  color: #1a1a2e;
+  text-decoration: none;
+  font-size: 0.9em;
+  transition: background 0.2s;
+}
+.nav-back:hover { background: #e8e0d8; }
+
+/* === Responsive === */
+@media (max-width: 640px) {
+  body { padding: 12px; }
+  header h1 { font-size: 1.5em; }
+  header .cover-img { border-radius: 10px; }
+  .stat-row { gap: 12px; }
+  .stat-item { min-width: 90px; padding: 12px; }
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- paper-analyzer: 封面区 -->
+  <header>
+    <img class="cover-img" src="/images/articles/hello-agents-ch12.png" alt="第十二章 智能体性能评估" />
+    <div class="chapter-badge">第十二章</div>
+    <h1>第十二章 智能体性能评估</h1>
+    <p class="meta">Hello-Agents · 从零开始构建智能体</p>
+    <div class="abstract">
+      <p>核心指标、基准测试与评估框架——如何科学地衡量一个智能体“到底行不行”。</p>
+    </div>
+    <div class="tags"><span class="tag">#AI</span> <span class="tag">#Agent</span> <span class="tag">#评估</span> <span class="tag">#基准测试</span> <span class="tag">#性能</span></div>
+  </header>
+
+  <div class="sketch-divider">· · · · ·</div>
+
+  <!-- paper-analyzer: 正文 -->
+  <article>
+  <section><h1 id="_1">第十二章 智能体性能评估</h1>
+<p>在前面的章节中，我们构建了 HelloAgents 框架的核心功能，实现了多种智能体范式、工具系统、记忆机制和强化学习训练等。在构建智能体系统时，我们还需要解决一个核心问题：<strong>如何客观地评估智能体的性能？</strong> 具体来说，我们需要回答以下问题：</p>
+<ol>
+<li>智能体是否具备预期的能力？</li>
+<li>在不同任务上的表现如何？</li>
+<li>与其他智能体相比处于什么水平？</li>
+</ol>
+<p>本章将为 HelloAgents 增加<strong>性能评估系统（Evaluation System）</strong>。我们将深入理解智能体评估的理论基础，并实现评估的工具。</p>
+</section><hr class="section-break"><section><h2 id="121">12.1 智能体评估基础</h2>
+<h3 id="1211">12.1.1 为何需要智能体评估</h3>
+<p>我们现在的 SimpleAgent，它已经具备了强大的推理和工具调用能力。让我们看一个典型的使用场景：</p>
+<pre><code class="language-python">from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools import SearchTool
+
+# 创建LLM和智能体
+llm = HelloAgentsLLM()
+
+# 创建一个强调工具使用的系统提示词
+system_prompt = &quot;&quot;&quot;你是一个AI助手，可以使用搜索工具来获取最新信息。
+
+当需要搜索信息时，请使用以下格式：
+[TOOL_CALL:search:搜索关键词]
+
+例如：
+- [TOOL_CALL:search:最新AI新闻]
+- [TOOL_CALL:search:Python编程教程]
+
+请在回答问题前先使用搜索工具获取最新信息。&quot;&quot;&quot;
+
+agent = SimpleAgent(name=&quot;AI助手&quot;, llm=llm, system_prompt=system_prompt)
+
+# 添加搜索工具
+agent.add_tool(SearchTool())
+
+# 示例：使用搜索工具回答问题
+response = agent.run(&quot;最新的AI技术发展趋势是什么？&quot;)
+print(f&quot;\n回答：{response}&quot;)
+</code></pre>
+<p>这个智能体能正常工作，但我们面临一个核心问题：如何客观地评估它的性能？当我们优化提示词或更换 LLM 模型后，如何知道是否真的有改进？在部署到生产环境前，如何保证智能体的可靠性？这些问题都需要通过系统化的评估来解决。</p>
+<p>智能体评估的核心价值在于提供标准化的方法来衡量智能体的能力。通过评估，我们可以用具体的数字指标量化智能体的表现，客观比较不同设计方案的优劣，及时发现智能体在特定场景下的弱点，并向用户证明智能体的可靠性。</p>
+<p>与传统软件测试不同，智能体评估面临着独特的挑战。首先是输出的不确定性，同一问题可能有多个正确答案，很难用简单的对错来判断。其次是评估标准的多样性，不同任务需要不同的评估方法，工具调用需要检查函数签名，问答任务需要评估语义相似度。最后是评估成本的高昂，每次评估都需要大量的 API 调用，成本可能达到数百元甚至更多。</p>
+<p>为了应对这些挑战，学术界和工业界提出了多个标准化的<strong>评估基准（Benchmark）</strong>。这些基准提供了统一的数据集、评估指标和评分方法，使我们能够在相同的标准下评估和对比不同的智能体系统。</p>
+<h3 id="1212">12.1.2 主流评估基准概览</h3>
+<p>智能体评估领域已经涌现出多个具有影响力的基准测试。下面介绍一些主流的评估基准和指标：</p>
+<p><strong>（1）工具调用能力评估</strong></p>
+<p>工具调用是智能体的核心能力之一。智能体需要理解用户意图，选择合适的工具，并正确构造函数调用。相关的评估基准包括：</p>
+<ul>
+<li><strong>BFCL (Berkeley Function Calling Leaderboard)</strong>^[1]：UC Berkeley 推出，包含 1120+测试样本，涵盖 simple、multiple、parallel、irrelevance 四个类别，使用 AST 匹配算法评估，数据集规模适中，社区活跃。</li>
+<li><strong>ToolBench</strong>^[2]：清华大学推出，包含 16000+真实 API 调用场景，覆盖真实世界的复杂工具使用场景。</li>
+<li><strong>API-Bank</strong>^[3]：Microsoft Research 推出，包含 53 个常用 API 工具，专注于评估智能体对 API 文档的理解和调用能力。</li>
+</ul>
+<p><strong>（2）通用能力评估</strong></p>
+<p>评估智能体在真实世界任务中的综合表现，包括多步推理、知识运用、多模态理解等能力：</p>
+<ul>
+<li><strong>GAIA (General AI Assistants)</strong>^[4]：Meta AI 和 Hugging Face 联合推出，包含 466 个真实世界问题，分为 Level 1/2/3 三个难度级别，评估多步推理、工具使用、文件处理、网页浏览等能力，使用准精确匹配（Quasi Exact Match）算法，任务真实且综合性强。</li>
+<li><strong>AgentBench</strong>^[5]：清华大学推出，包含 8 个不同领域的任务，全面评估智能体的通用能力。</li>
+<li><strong>WebArena</strong>^[6]：CMU 推出，评估智能体在真实网页环境中的任务完成能力和网页交互能力。</li>
+</ul>
+<p><strong>（3）多智能体协作评估</strong></p>
+<p>评估多个智能体协同工作的能力：</p>
+<ul>
+<li><strong>ChatEval</strong>^[7]：评估多智能体对话系统的质量。</li>
+<li><strong>SOTOPIA</strong>^[8]：评估智能体在社交场景中的互动能力。</li>
+<li><strong>自定义协作场景</strong>：根据具体应用场景设计的评估任务。</li>
+</ul>
+<p><strong>（4）常用评估指标</strong></p>
+<p>不同基准使用不同的评估指标，常见的包括：</p>
+<ul>
+<li><strong>准确性指标</strong>：Accuracy（准确率）、Exact Match（精确匹配）、F1 Score（F1 分数），用于衡量答案的正确性。</li>
+<li><strong>效率指标</strong>：Response Time（响应时间）、Token Usage（Token 使用量），用于衡量执行效率。</li>
+<li><strong>鲁棒性指标</strong>：Error Rate（错误率）、Failure Recovery（故障恢复），用于衡量容错能力。</li>
+<li><strong>协作指标</strong>：Communication Efficiency（通信效率）、Task Completion（任务完成度），用于衡量协作效果。</li>
+</ul>
+<h3 id="1213-helloagents">12.1.3 HelloAgents 评估体系设计</h3>
+<p>考虑到学习曲线和实用性，本章将重点介绍以下评估场景：</p>
+<ol>
+<li><strong>BFCL</strong>：评估工具调用能力</li>
+<li>选择理由：数据集规模适中，评估指标清晰，社区活跃</li>
+<li>
+<p>适用场景：评估智能体的函数调用准确性</p>
+</li>
+<li>
+<p><strong>GAIA</strong>：评估通用 AI 助手能力</p>
+</li>
+<li>选择理由：任务真实，难度分级，综合性强</li>
+<li>
+<p>适用场景：评估智能体的综合问题解决能力</p>
+</li>
+<li>
+<p><strong>数据生成质量评估</strong>：评估 LLM 生成数据质量</p>
+</li>
+<li>选择理由：通过这个案例可以完整体验如何使用 Agent 创造数据，评估数据的完整演示。</li>
+<li>适用场景：评估生成的训练数据、测试数据的质量</li>
+<li>评估方法：LLM Judge、Win Rate、人工验证</li>
+</ol>
+<p>通过这三个评估场景，我们将构建一个完整的评估体系，如图 12.1 展示了我们的评估系统构建思路。</p>
+<p><img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-1.png" />
+  <em>图 12.1 HelloAgents 评估体系架构图</em></p>
+<h3 id="1214">12.1.4 本章学习目标与快速体验</h3>
+<p>让我们先看看第十二章的学习内容：</p>
+<pre><code>hello_agents/
+├── evaluation/                         # 评估模块
+│   └── benchmarks/                     # 评估基准实现
+│       ├── bfcl/                       # BFCL评估实现
+│       │   ├── dataset.py              # BFCL数据集加载器
+│       │   ├── evaluator.py            # BFCL评估器（AST匹配）
+│       │   ├── metrics.py              # BFCL专用指标
+│       │   └── ast_matcher.py          # AST匹配算法
+│       ├── gaia/                       # GAIA评估实现
+│       │   ├── dataset.py              # GAIA数据集加载器
+│       │   ├── evaluator.py            # GAIA评估器（准精确匹配）
+│       │   ├── metrics.py              # GAIA专用指标
+│       │   └── quasi_exact_match.py    # 准精确匹配算法
+│       └── data_generation/            # 数据生成评估实现
+│           ├── dataset.py              # AIME数据集加载器
+│           ├── llm_judge.py            # LLM Judge评估器
+│           └── win_rate.py             # Win Rate评估器
+└── tools/builtin/                      # 内置工具模块
+    ├── bfcl_evaluation_tool.py         # BFCL评估工具
+    ├── gaia_evaluation_tool.py         # GAIA评估工具
+    ├── llm_judge_tool.py               # LLM Judge工具
+    └── win_rate_tool.py                # Win Rate工具
+</code></pre>
+<p>对于这一章的内容，学习目标是掌握应用评估工具的能力。让我们先准备好开发环境：</p>
+<pre><code class="language-bash"># 安装HelloAgents框架（第12章版本）
+pip install &quot;hello-agents[evaluation]==0.2.7&quot;
+
+# 设置环境变量
+export HF_TOKEN=&quot;your_huggingface_token&quot;     # 用于GAIA数据集(后续也会有设置步骤)
+
+# 由于 `bfcl-eval` 官方包强制要求 numpy&lt;=2.0.0, 和HelloAgents 主依赖版本存在冲突,因此需要单独安装
+pip install &quot;numpy==1.26.4&quot; bfcl-eval
+</code></pre>
+<p>在接下来的章节中，我们将深入学习每种评估方法的详细用法和介绍。</p>
+</section><hr class="section-break"><section><h2 id="122-bfcl">12.2 BFCL：工具调用能力评估</h2>
+<h3 id="1221-bfcl">12.2.1 BFCL 基准介绍</h3>
+<p>BFCL (Berkeley Function Calling Leaderboard) 是由加州大学伯克利分校推出的函数调用能力评估基准^[1]。在智能体系统中，工具调用（Tool Calling）是核心能力之一。智能体需要完成以下任务：</p>
+<ol>
+<li><strong>理解任务需求</strong>：从用户的自然语言描述中提取关键信息</li>
+<li><strong>选择合适工具</strong>：从可用工具集中选择最适合的工具</li>
+<li><strong>构造函数调用</strong>：正确填写函数名和参数</li>
+<li><strong>处理复杂场景</strong>：支持多函数调用、并行调用等高级场景</li>
+</ol>
+<p>BFCL 基准包含四个评估类别，难度递增。从最基础的单函数调用（Simple）开始，逐步增加到需要调用多个函数的场景（Multiple），再到需要并行调用多个函数的复杂场景（Parallel），最后是需要判断是否需要调用函数的场景（Irrelevance）。这四个类别覆盖了智能体在实际应用中可能遇到的各种工具调用场景，如表 12.1 所示：</p>
+<p>表 12.1 BFCL 基准中的四个评估类别</p>
+<p><img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-table-1.png" /></p>
+<p>BFCL 的评估流程遵循标准的基准测试流程：首先加载数据集并选择评估类别，然后运行智能体获取预测结果，接着将预测结果解析为抽象语法树（AST），最后通过 AST 匹配算法判断预测是否正确。整个流程会遍历所有测试样本，最终计算出准确率等评估指标并生成评估报告。完整的评估流程如图 12.2 所示：</p>
+<p><img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-2.png" />
+  <em>图 12.2 BFCL 评估流程图</em></p>
+<p><strong>（1）BFCL 数据集结构</strong></p>
+<p>BFCL 数据集采用 JSON 格式，每个测试样本包含以下字段：</p>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;simple_001&quot;,
+  &quot;question&quot;: &quot;What's the weather like in Beijing today?&quot;,
+  &quot;function&quot;: [
+    {
+      &quot;name&quot;: &quot;get_weather&quot;,
+      &quot;description&quot;: &quot;Get the current weather for a location&quot;,
+      &quot;parameters&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;properties&quot;: {
+          &quot;location&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;The city name&quot;
+          }
+        },
+        &quot;required&quot;: [&quot;location&quot;]
+      }
+    }
+  ],
+  &quot;ground_truth&quot;: [
+    {
+      &quot;name&quot;: &quot;get_weather&quot;,
+      &quot;arguments&quot;: {
+        &quot;location&quot;: &quot;Beijing&quot;
+      }
+    }
+  ]
+}
+</code></pre>
+<p><strong>关键字段说明：</strong></p>
+<ul>
+<li><code>question</code>: 用户的自然语言请求</li>
+<li><code>function</code>: 可用的函数列表（包含函数签名和描述）</li>
+<li><code>ground_truth</code>: 标准答案（期望的函数调用）</li>
+</ul>
+<p><strong>（2）AST 匹配说明</strong></p>
+<p>BFCL 使用<strong>AST 匹配（Abstract Syntax Tree Matching）</strong>作为核心评估算法，因此下文可以了解一下评估的策略。</p>
+<p>BFCL 使用抽象语法树（AST）进行智能匹配，而不是简单的字符串匹配。AST 匹配的核心思想是：<strong>将函数调用解析为语法树，然后比较树的结构和节点值</strong>。</p>
+<p>给定预测的函数调用 $P$ 和标准答案 $G$，AST 匹配函数定义为：</p>
+<p>$$
+\text{AST_Match}(P, G) = \begin{cases}
+1 &amp; \text{if } \text{AST}(P) \equiv \text{AST}(G) \
+0 &amp; \text{otherwise}
+\end{cases}
+$$</p>
+<p>其中 $\text{AST}(x)$ 表示将函数调用解析为抽象语法树，$\equiv$ 表示语法树等价。</p>
+<p>两个语法树等价需要满足三个核心条件：函数名必须完全一致（精确匹配），参数键值对集合相等（忽略顺序），以及每个参数的值在语义上等价（例如 <code>2+3</code> 等价于 <code>5</code>）。在具体的匹配过程中，函数名匹配要求字符串精确匹配，例如 <code>get_weather</code> 和 <code>get_temperature</code> 被视为不同的函数。参数匹配则使用 AST 进行智能比较，允许参数顺序不同（<code>f(a=1, b=2)</code> 等价于 <code>f(b=2, a=1)</code>），允许等价表达式（<code>f(x=2+3)</code> 等价于 <code>f(x=5)</code>），也允许不同的字符串表示（<code>f(s="hello")</code> 等价于 <code>f(s='hello')</code>）。对于多函数调用的场景，匹配算法要求调用相同数量的函数，每个函数调用都必须匹配，但调用顺序可以不同（使用集合匹配）。</p>
+<p><strong>AST 匹配示例：</strong></p>
+<pre><code class="language-python"># 示例1：参数顺序不同（匹配成功）
+预测: get_weather(city=&quot;Beijing&quot;, unit=&quot;celsius&quot;)
+标准: get_weather(unit=&quot;celsius&quot;, city=&quot;Beijing&quot;)
+结果: ✅ 匹配成功
+
+# 示例2：等价表达式（匹配成功）
+预测: calculate(x=2+3)
+标准: calculate(x=5)
+结果: ✅ 匹配成功
+
+# 示例3：函数名错误（匹配失败）
+预测: get_temperature(city=&quot;Beijing&quot;)
+标准: get_weather(city=&quot;Beijing&quot;)
+结果: ❌ 匹配失败
+
+# 示例4：参数值错误（匹配失败）
+预测: get_weather(city=&quot;Shanghai&quot;)
+标准: get_weather(city=&quot;Beijing&quot;)
+结果: ❌ 匹配失败
+</code></pre>
+<p><strong>（3）BFCL 评估指标</strong></p>
+<p>BFCL 使用以下指标评估智能体性能：</p>
+<p><strong>1. 准确率 (Accuracy)</strong></p>
+<p>准确率是最核心的指标，定义为 AST 匹配成功的样本比例：</p>
+<p>$$
+\text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} \text{AST_Match}(P_i, G_i)
+$$</p>
+<p>其中：
+- $N$ 是总样本数
+- $P_i$ 是第 $i$ 个样本的预测结果
+- $G_i$ 是第 $i$ 个样本的标准答案
+- $\text{AST_Match}(P_i, G_i) \in {0, 1}$ 是 AST 匹配函数</p>
+<p><strong>2. AST 匹配率 (AST Match Rate)</strong></p>
+<p>与准确率相同，强调使用 AST 匹配算法：</p>
+<p>$$
+\text{AST Match Rate} = \text{Accuracy}
+$$</p>
+<p><strong>3. 分类准确率 (Category-wise Accuracy)</strong></p>
+<p>对于每个类别 $c \in {\text{simple}, \text{multiple}, \text{parallel}, \ldots}$，计算该类别的准确率：</p>
+<p>$$
+\text{Accuracy}<em D_c="D_c" _in="\in" i="i">c = \frac{1}{|D_c|} \sum</em>(P_i, G_i)
+$$} \text{AST_Match</p>
+<p>其中 $D_c$ 是类别 $c$ 的样本集合，$|D_c|$ 是该类别的样本数。</p>
+<p><strong>4. 加权准确率 (Weighted Accuracy)</strong></p>
+<p>考虑不同类别的难度权重：</p>
+<p>$$
+\text{Weighted Accuracy} = \sum_{c} w_c \cdot \text{Accuracy}_c
+$$</p>
+<p>其中 $w_c$ 是类别 $c$ 的权重，满足 $\sum_c w_c = 1$。</p>
+<p><strong>5. 错误率 (Error Rate)</strong></p>
+<p>未能正确调用函数的样本比例：</p>
+<p>$$
+\text{Error Rate} = 1 - \text{Accuracy} = \frac{1}{N} \sum_{i=1}^{N} (1 - \text{AST_Match}(P_i, G_i))
+$$</p>
+<p><strong>指标解释：</strong></p>
+<ul>
+<li><strong>Accuracy = 1.0</strong>：所有样本都完全正确</li>
+<li><strong>Accuracy = 0.8</strong>：80%的样本正确，20%的样本错误</li>
+<li><strong>Accuracy = 0.0</strong>：所有样本都错误</li>
+</ul>
+<p><strong>分类准确率示例：</strong></p>
+<pre><code class="language-python"># 假设评估结果
+simple_accuracy = 0.95      # Simple类别：95%正确
+multiple_accuracy = 0.82    # Multiple类别：82%正确
+parallel_accuracy = 0.68    # Parallel类别：68%正确
+
+# 加权准确率（假设权重相等）
+weighted_accuracy = (0.95 + 0.82 + 0.68) / 3 = 0.817
+</code></pre>
+<p><strong>（4）BFCL 官方评估工具</strong></p>
+<p>BFCL 提供官方 CLI 工具进行评估：</p>
+<pre><code class="language-bash"># 安装BFCL评估工具
+pip install bfcl
+
+# 运行官方评估
+bfcl evaluate \
+    --model-result-path ./results.json \
+    --test-category simple_python
+</code></pre>
+<p>使用官方评估工具的优势在于：它使用官方的 AST 匹配算法，评估结果与排行榜完全一致，支持所有 BFCL v4 类别，并且能够自动生成详细的评估报告。</p>
+<h3 id="1222-bfcl">12.2.2 获取 BFCL 数据集</h3>
+<p>BFCL 数据集可以通过以下方式获取：</p>
+<p><strong>方法 1：从官方 GitHub 仓库克隆（推荐）</strong></p>
+<p>这是最可靠的方式，可以获取完整的数据集和 ground truth：</p>
+<pre><code class="language-bash"># 克隆BFCL仓库
+git clone https://github.com/ShishirPatil/gorilla.git temp_gorilla
+cd temp_gorilla/berkeley-function-call-leaderboard
+
+# 查看BFCL v4数据集
+ls bfcl_eval/data/
+# 输出: BFCL_v4_simple_python.json  BFCL_v4_multiple.json  BFCL_v4_parallel.json  ...
+
+# 查看ground truth
+ls bfcl_eval/data/possible_answer/
+# 输出: BFCL_v4_simple_python.json  BFCL_v4_multiple.json  ...
+</code></pre>
+<p>推荐这种方式的原因是：它包含完整的 ground truth（标准答案），数据格式与官方评估工具完全一致，可以直接使用官方评估脚本，并且支持 BFCL v4 最新版本。</p>
+<p><strong>方法 2：使用 HelloAgents 加载官方数据</strong></p>
+<p>克隆仓库后，使用 HelloAgents 加载数据：</p>
+<pre><code class="language-python">from hello_agents.evaluation import BFCLDataset
+
+# 加载BFCL官方数据
+dataset = BFCLDataset(
+    bfcl_data_dir=&quot;./temp_gorilla/berkeley-function-call-leaderboard/bfcl_eval/data&quot;,
+    category=&quot;simple_python&quot;  # BFCL v4类别
+)
+
+# 加载数据（包括测试数据和ground truth）
+data = dataset.load()
+
+print(f&quot;✅ 加载了 {len(data)} 个测试样本&quot;)
+print(f&quot;✅ 加载了 {len(dataset.ground_truth)} 个ground truth&quot;)
+# 输出:
+# ✅ 加载了 400 个测试样本
+# ✅ 加载了 400 个ground truth
+</code></pre>
+<p>这个加载器的工作原理是：首先从<code>bfcl_eval/data/</code>加载测试数据，然后从<code>bfcl_eval/data/possible_answer/</code>加载 ground truth，接着自动合并测试数据和 ground truth，最后保留原始 BFCL 数据格式。其中 BFCL v4 数据集类别可以在表 12.2 查看。</p>
+<p>表 12.2 BFCL 基准中的四个评估类别</p>
+<p><img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-table-2.png" /></p>
+<p>当然也可以通过代码查看可用类别：</p>
+<pre><code class="language-python"># 获取所有支持的类别
+categories = dataset.get_available_categories()
+print(f&quot;支持的类别: {categories}&quot;)
+# 输出: ['simple_python', 'simple_java', 'simple_javascript', 'multiple', ...]
+</code></pre>
+<h3 id="1223-helloagents-bfcl">12.2.3 在 HelloAgents 中实现 BFCL 评估</h3>
+<p>现在让我们看看如何在 HelloAgents 框架中实现 BFCL 评估。我们提供了三种使用方式：</p>
+<p><strong>方式 1：使用 BFCLEvaluationTool（推荐）</strong></p>
+<p>这是最简单的方式，一行代码完成评估、报告生成和官方评估：</p>
+<pre><code class="language-python">from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools import BFCLEvaluationTool
+
+# 1. 创建要评估的智能体
+llm = HelloAgentsLLM()
+agent = SimpleAgent(name=&quot;TestAgent&quot;, llm=llm)
+
+# 2. 创建BFCL评估工具
+bfcl_tool = BFCLEvaluationTool()
+
+# 3. 运行评估（自动完成所有步骤）
+results = bfcl_tool.run(
+    agent=agent,
+    category=&quot;simple_python&quot;,  # 评估类别
+    max_samples=5              # 评估样本数（0表示全部）
+)
+
+# 4. 查看结果
+print(f&quot;准确率: {results['overall_accuracy']:.2%}&quot;)
+print(f&quot;正确数: {results['correct_samples']}/{results['total_samples']}&quot;)
+</code></pre>
+<p><strong>运行输出：</strong></p>
+<pre><code>============================================================
+BFCL一键评估
+============================================================
+
+配置:
+   评估类别: simple_python
+   样本数量: 5
+   智能体: TestAgent
+
+============================================================
+步骤1: 运行HelloAgents评估
+============================================================
+✅ BFCL数据集加载完成
+   数据目录: ./temp_gorilla/berkeley-function-call-leaderboard/bfcl_eval/data
+   类别: simple_python
+   样本数: 400
+   Ground truth数: 400
+
+🔧 开始 BFCL 评估...
+   进度: 1/5
+   进度: 5/5
+
+✅ BFCL 评估完成
+   总体准确率: 100.00%
+   simple_python: 100.00% (5/5)
+
+📊 评估结果:
+   准确率: 100.00%
+   正确数: 5/5
+
+============================================================
+步骤2: 导出BFCL格式结果
+============================================================
+✅ BFCL格式结果已导出
+   输出文件: ./evaluation_results/bfcl_official/BFCL_v4_simple_python_result.json
+
+============================================================
+步骤3: 运行BFCL官方评估
+============================================================
+✅ 结果文件已复制到: ./result/Qwen_Qwen3-8B/BFCL_v4_simple_python_result.json
+
+🔄 运行命令: bfcl evaluate --model Qwen/Qwen3-8B --test-category simple_python --partial-eval
+
+============================================================
+BFCL官方评估结果
+============================================================
+📊 评估结果汇总:
+Model,Overall Acc,simple_python
+Qwen/Qwen3-8B,100.00,100.00
+
+🎯 最终结果:
+   准确率: 100.00%
+   正确数: 5/5
+
+============================================================
+步骤4: 生成评估报告
+============================================================
+📄 报告已生成: ./evaluation_reports/bfcl_report_20251011_005938.md
+
+准确率: 100.00%
+正确数: 5/5
+</code></pre>
+<p><strong>自动生成的 Markdown 报告：</strong></p>
+<p>评估完成后，会自动生成一份详细的 Markdown 报告，包含：</p>
+<pre><code class="language-markdown"># BFCL评估报告
+**生成时间**: 2025-10-11 00:59:38
+
+## 📊 评估概览
+
+- **智能体**: TestAgent
+- **评估类别**: simple_python
+- **总体准确率**: 100.00%
+- **正确样本数**: 5/5
+
+## 📈 详细指标
+
+### 分类准确率
+
+- **simple_python**: 100.00% (5/5)
+
+## 📝 样本详情
+
+| 样本ID | 问题 | 预测结果 | 正确答案 | 是否正确 |
+|--------|------|----------|----------|----------|
+| simple_python_0 | Find the area of a triangle... | [{'name': 'calculate_triangle_area'...}] | [{'function_name': {'base': [10]...}}] | ✅ |
+| simple_python_1 | Calculate the factorial of 5... | [{'name': 'calculate_factorial'...}] | [{'function_name': {'number': [5]}}] | ✅ |
+...
+
+## 📊 准确率可视化
+准确率: ██████████████████████████████████████████████████ 100.00%
+
+## 💡 建议
+- ✅ 表现优秀！智能体在工具调用方面表现出色。
+</code></pre>
+<p><strong>方式 2：使用一键评估脚本</strong></p>
+<p>适合命令行快速评估，在这一章配套的代码案例里，我们提供了<code>04_run_bfcl_evaluation.py</code>，支持直接命令行调用测评：</p>
+<pre><code class="language-bash"># 运行评估脚本
+python chapter12/04_run_bfcl_evaluation.py --category simple_python --samples 10
+
+# 指定模型名称（用于BFCL官方评估）
+python examples/04_run_bfcl_evaluation.py \
+    --category simple_python \
+    --samples 10 \
+    --model-name &quot;Qwen/Qwen3-8B&quot;
+</code></pre>
+<p>脚本支持三个参数：<code>--category</code>指定评估类别（默认 simple_python），<code>--samples</code>指定评估样本数（默认 5，0 表示全部），<code>--model-name</code>指定模型名称用于 BFCL 官方评估（默认 Qwen/Qwen3-8B）。</p>
+<p><strong>方式 3：直接使用 Dataset 和 Evaluator</strong></p>
+<p>适合需要自定义评估流程的场景：</p>
+<pre><code class="language-python">from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.evaluation import BFCLDataset, BFCLEvaluator
+
+# 1. 创建智能体
+llm = HelloAgentsLLM()
+agent = SimpleAgent(name=&quot;TestAgent&quot;, llm=llm)
+
+# 2. 加载数据集
+dataset = BFCLDataset(
+    bfcl_data_dir=&quot;./temp_gorilla/berkeley-function-call-leaderboard/bfcl_eval/data&quot;,
+    category=&quot;simple_python&quot;
+)
+data = dataset.load()
+
+# 3. 创建评估器
+evaluator = BFCLEvaluator(
+    dataset=dataset,
+    category=&quot;simple_python&quot;,
+    evaluation_mode=&quot;ast&quot;  # 使用AST匹配模式
+)
+
+# 4. 运行评估
+results = evaluator.evaluate(agent, max_samples=10)
+
+# 5. 查看结果
+print(f&quot;准确率: {results['overall_accuracy']:.2%}&quot;)
+print(f&quot;正确数: {results['correct_samples']}/{results['total_samples']}&quot;)
+
+# 6. 导出BFCL格式结果（可选）
+evaluator.export_to_bfcl_format(
+    results,
+    output_path=&quot;./evaluation_results/my_results.json&quot;
+)
+</code></pre>
+<p>通过以上三种方式，我们可以根据不同的需求选择合适的评估方法。如果只是想快速了解智能体的表现，使用 BFCLEvaluationTool 的一键评估最为便捷；如果需要批量评估或集成到 CI/CD 流程，使用命令行脚本更加合适；如果需要深度定制评估流程或集成到自己的系统中，直接使用 Dataset 和 Evaluator 提供了最大的灵活性。</p>
+<h3 id="1224-bfcl">12.2.4 BFCL 官方评估工具集成</h3>
+<p>前面我们学习了如何使用 HelloAgents 内置的评估功能。实际上，<code>BFCLEvaluationTool</code>已经<strong>自动集成了 BFCL 官方评估工具</strong>，让你能够获得权威的、可对比的评估结果。</p>
+<p>整个评估流程包括四个步骤：首先从 BFCL v4 数据集加载测试数据，然后使用 HelloAgents 运行评估获取智能体的预测结果，接着将结果导出为 BFCL 官方格式（JSONL），最后使用官方评估脚本计算最终分数。这个流程确保了评估结果与 BFCL 排行榜完全一致，如图 12.3 所示：</p>
+<p><img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-3.png" />
+  <em>图 12.3 Helloagents 载入 BFCL 评估过程</em></p>
+<p>使用<code>BFCLEvaluationTool</code>时，官方评估会<strong>自动运行</strong>（默认启用）：</p>
+<pre><code class="language-python">from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools import BFCLEvaluationTool
+
+# 创建智能体
+llm = HelloAgentsLLM()
+agent = SimpleAgent(name=&quot;TestAgent&quot;, llm=llm)
+
+# 创建评估工具
+bfcl_tool = BFCLEvaluationTool()
+
+# 运行评估（自动运行官方评估）
+results = bfcl_tool.run(
+    agent=agent,
+    category=&quot;simple_python&quot;,
+    max_samples=5,
+    # run_official_eval=True  # 默认为True，可以省略
+    model_name=&quot;Qwen/Qwen3-8B&quot;  # 可选，指定模型名称
+)
+</code></pre>
+<p>工具会自动执行完整的评估流程：首先运行 HelloAgents 评估获取预测结果，然后将结果导出为 BFCL 格式并保存到<code>evaluation_results/bfcl_official/</code>目录，接着复制结果文件到<code>result/{model_name}/</code>目录以符合官方评估工具的要求，随后运行 BFCL 官方评估命令计算分数，最后显示官方评估结果并生成 Markdown 格式的评估报告。</p>
+<p><strong>官方评估输出示例：</strong></p>
+<pre><code>============================================================
+步骤3: 运行BFCL官方评估
+============================================================
+
+✅ 结果文件已复制到:
+   ./result/Qwen_Qwen3-8B/BFCL_v4_simple_python_result.json
+
+🔄 运行命令: bfcl evaluate --model Qwen/Qwen3-8B --test-category simple_python --partial-eval
+
+============================================================
+BFCL官方评估结果
+============================================================
+
+📊 评估结果汇总:
+Model,Overall Acc,simple_python
+Qwen/Qwen3-8B,100.00,100.00
+
+🎯 最终结果:
+   准确率: 100.00%
+   正确数: 5/5
+</code></pre>
+<p>如果你想手动控制评估流程，可以禁用自动官方评估：</p>
+<pre><code class="language-python"># 禁用官方评估
+results = bfcl_tool.run(
+    agent=agent,
+    category=&quot;simple_python&quot;,
+    max_samples=5,
+    run_official_eval=False  # 禁用官方评估
+)
+
+# 然后手动运行官方评估
+import subprocess
+subprocess.run([
+    &quot;bfcl&quot;, &quot;evaluate&quot;,
+    &quot;--model&quot;, &quot;Qwen/Qwen3-8B&quot;,
+    &quot;--test-category&quot;, &quot;simple_python&quot;,
+    &quot;--partial-eval&quot;
+])
+</code></pre>
+<p>你也可以手动生成报告：</p>
+<pre><code class="language-python"># 运行评估
+results = bfcl_tool.run(agent, category=&quot;simple_python&quot;, max_samples=5)
+
+# 手动生成报告
+report = bfcl_tool.generate_report(
+    results,
+    output_file=&quot;./my_reports/custom_report.md&quot;
+)
+
+# 打印报告内容
+print(report)
+</code></pre>
+<h3 id="1225">12.2.5 核心组件实现细节</h3>
+<p>在前面的小节中，我们学习了如何使用 BFCL 评估工具。现在让我们深入了解 HelloAgents 评估系统的核心组件是如何实现的。理解这些实现细节不仅能帮助你更好地使用评估系统，还能让你根据自己的需求进行定制和扩展。</p>
+<p><strong>（1）BFCLDataset：数据集加载器</strong></p>
+<p>BFCLDataset 负责加载和管理 BFCL 数据集：</p>
+<pre><code class="language-python">class BFCLDataset:
+    &quot;&quot;&quot;BFCL数据集加载器&quot;&quot;&quot;
+
+    def __init__(self, category: str = &quot;simple&quot;, local_data_path: Optional[str] = None):
+        self.category = category
+        self.local_data_path = local_data_path
+        self.data = []
+
+    def load(self) -&gt; List[Dict[str, Any]]:
+        &quot;&quot;&quot;加载数据集&quot;&quot;&quot;
+        # 优先从本地加载
+        if self.local_data_path:
+            return self._load_from_local()
+        # 否则从Hugging Face加载
+        return self._load_from_huggingface()
+</code></pre>
+<p>因为 BFCL 的数据集就在官方的仓库内，所以这里建议的方式是直接在本地 clone 一份进行测评。当找不到时才到 huggingface 进行加载。</p>
+<p><strong>（2）BFCLEvaluator：评估执行器</strong></p>
+<p>BFCLEvaluator 负责执行评估流程。它的核心是<code>evaluate()</code>方法，该方法协调整个评估过程：</p>
+<pre><code class="language-python">class BFCLEvaluator:
+    &quot;&quot;&quot;BFCL评估器&quot;&quot;&quot;
+
+    def evaluate(self, agent: Any, max_samples: Optional[int] = None) -&gt; Dict[str, Any]:
+        &quot;&quot;&quot;执行评估&quot;&quot;&quot;
+        results = []
+
+        for item in self.dataset[:max_samples]:
+            # 1. 构造提示词
+            prompt = self._build_prompt(item)
+
+            # 2. 调用智能体
+            response = agent.run(prompt)
+
+            # 3. 提取函数调用
+            predicted_calls = self._extract_function_calls(response)
+
+            # 4. 与标准答案对比
+            is_correct = self._compare_calls(predicted_calls, item[&quot;ground_truth&quot;])
+
+            results.append({
+                &quot;id&quot;: item[&quot;id&quot;],
+                &quot;prediction&quot;: predicted_calls,
+                &quot;ground_truth&quot;: item[&quot;ground_truth&quot;],
+                &quot;is_correct&quot;: is_correct
+            })
+
+        return {&quot;results&quot;: results, &quot;total_samples&quot;: len(results)}
+</code></pre>
+<p>这个评估器的设计包含三个核心要点：首先是提示词构造，需要将数据集中的问题和函数定义转换为智能体可理解的提示词；其次是函数调用提取，需要从智能体的响应中提取函数调用，并支持多种格式（JSON、代码块等）；最后是 AST 匹配，使用抽象语法树进行函数调用对比，这比简单的字符串匹配更准确。</p>
+<p>让我们看看函数调用提取的实现：</p>
+<pre><code class="language-python">def _extract_function_calls(self, response: str) -&gt; List[Dict[str, Any]]:
+    &quot;&quot;&quot;从响应中提取函数调用
+
+    支持多种格式：
+    1. JSON格式：{&quot;name&quot;: &quot;func&quot;, &quot;arguments&quot;: {...}}
+    2. 代码块格式：```python\nfunc(arg1=val1)\n```
+    3. 纯文本格式：func(arg1=val1)
+    &quot;&quot;&quot;
+    calls = []
+
+    # 尝试JSON解析
+    try:
+        json_match = re.search(r'\{.*\}', response, re.DOTALL)
+        if json_match:
+            data = json.loads(json_match.group())
+            if isinstance(data, dict) and &quot;name&quot; in data:
+                calls.append(data)
+            elif isinstance(data, list):
+                calls.extend(data)
+    except json.JSONDecodeError:
+        pass
+
+    # 尝试代码块提取
+    code_blocks = re.findall(r'```(?:python)?\n(.*?)\n```', response, re.DOTALL)
+    for code in code_blocks:
+        # 解析Python函数调用
+        parsed_calls = self._parse_python_calls(code)
+        calls.extend(parsed_calls)
+
+    return calls
+</code></pre>
+<p><strong>（3）BFCLMetrics：指标计算器</strong></p>
+<p>BFCLMetrics 负责计算各种评估指标：</p>
+<pre><code class="language-python">class BFCLMetrics:
+    &quot;&quot;&quot;BFCL指标计算器&quot;&quot;&quot;
+
+    def compute_metrics(self, results: List[Dict[str, Any]]) -&gt; Dict[str, Any]:
+        &quot;&quot;&quot;计算所有指标&quot;&quot;&quot;
+        return {
+            &quot;accuracy&quot;: self._compute_accuracy(results),
+            &quot;ast_match_rate&quot;: self._compute_ast_match_rate(results),
+            &quot;parameter_accuracy&quot;: self._compute_parameter_accuracy(results),
+            &quot;f1_score&quot;: self._compute_f1_score(results),
+            &quot;category_statistics&quot;: self._compute_category_stats(results)
+        }
+</code></pre>
+<p><strong>AST 匹配的实现</strong>：</p>
+<p>AST 匹配是 BFCL 评估的核心技术。它比简单的字符串匹配更智能，能够识别语义等价的函数调用：</p>
+<pre><code class="language-python">def _ast_match(self, pred_call: Dict, true_call: Dict) -&gt; bool:
+    &quot;&quot;&quot;使用AST匹配函数调用
+
+    AST匹配的优势：
+    1. 忽略参数顺序：func(a=1, b=2) 等价于 func(b=2, a=1)
+    2. 识别等价表达式：2+3 等价于 5
+    3. 忽略空格和格式差异
+    &quot;&quot;&quot;
+    # 1. 函数名必须完全匹配
+    if pred_call.get(&quot;name&quot;) != true_call.get(&quot;name&quot;):
+        return False
+
+    # 2. 将参数转换为AST节点
+    pred_args = self._args_to_ast(pred_call.get(&quot;arguments&quot;, {}))
+    true_args = self._args_to_ast(true_call.get(&quot;arguments&quot;, {}))
+
+    # 3. 比较AST节点
+    return ast.dump(pred_args) == ast.dump(true_args)
+
+def _args_to_ast(self, args: Dict[str, Any]) -&gt; ast.AST:
+    &quot;&quot;&quot;将参数字典转换为AST节点&quot;&quot;&quot;
+    # 构造一个虚拟的函数调用
+    code = f&quot;func({', '.join(f'{k}={repr(v)}' for k, v in args.items())})&quot;
+    tree = ast.parse(code)
+    return tree.body[0].value  # 返回Call节点
+</code></pre>
+<p><strong>（4）工具化封装：BFCLEvaluationTool</strong></p>
+<p>最后，我们将这些组件封装成一个 Tool，让它可以被智能体直接调用：</p>
+<pre><code class="language-python">class BFCLEvaluationTool(Tool):
+    &quot;&quot;&quot;BFCL评估工具&quot;&quot;&quot;
+
+    def __init__(self, local_data_path: Optional[str] = None):
+        super().__init__(
+            name=&quot;bfcl_evaluation&quot;,
+            description=&quot;评估智能体的工具调用能力&quot;
+        )
+        self.dataset = None
+        self.evaluator = None
+        self.metrics_calculator = BFCLMetrics()
+
+    def run(self, parameters: Dict[str, Any]) -&gt; str:
+        &quot;&quot;&quot;执行评估&quot;&quot;&quot;
+        # 1. 加载数据集
+        self.dataset = BFCLDataset(...)
+
+        # 2. 创建评估器
+        self.evaluator = BFCLEvaluator(...)
+
+        # 3. 运行评估
+        results = self.evaluator.evaluate(...)
+
+        # 4. 计算指标
+        metrics = self.metrics_calculator.compute_metrics(...)
+
+        # 5. 返回JSON结果
+        return json.dumps(results, ensure_ascii=False)
+</code></pre>
+<p>这个工具的设计遵循三个核心原则：首先继承 Tool 基类以遵循 HelloAgents 的工具规范，确保与框架的无缝集成；其次进行严格的参数验证，检查必需参数并提供友好的错误提示，提升用户体验；最后对结果进行格式化，返回 JSON 字符串以便于解析和展示。通过这种模块化的设计，我们实现了一个既易用又灵活的评估系统，用户可以直接使用高层的 Tool 接口快速完成评估，也可以深入到底层组件进行定制以满足特殊需求。</p>
+<h3 id="1226">12.2.6 扩展与优化建议</h3>
+<p>通过前面的学习，我们已经掌握了如何使用 HelloAgents 进行 BFCL 评估。需要注意的是，我们目前的实现是基于 SimpleAgent 的简单复现，主要完成了 BFCL 评估的基础功能。在实际应用中，BFCL 基准包含多个难度级别和场景，要在排行榜上获得更高的分数，还需要进一步的优化和扩展。</p>
+<p><strong>（1）当前实现的局限性</strong></p>
+<p>我们当前的 SimpleAgent 实现主要聚焦于评估流程的搭建，在工具调用能力上还有提升空间。SimpleAgent 使用自定义的工具调用格式<code>[TOOL_CALL:tool_name:parameters]</code>，这种格式需要 LLM 主动学习和使用，在复杂场景下的表现可能不如使用原生函数调用（Function Calling）的智能体。此外，我们目前只测试了 simple_python 等基础类别，对于 multiple、parallel、irrelevance 等更复杂的场景，还需要针对性的优化。</p>
+<p><strong>（2）提升 BFCL 分数的方向</strong></p>
+<p>要进一步提升 BFCL 评估分数，可以从以下几个方向入手。首先是优化智能体的工具调用能力，可以考虑使用支持原生函数调用的 LLM（如 GPT-4、Claude 等），或者改进提示词让 LLM 更好地理解工具调用格式。其次是扩展工具库，BFCL 测试中涉及各种类型的函数，可以根据测试数据集的特点，预先实现常用的工具类型，提高智能体的工具覆盖率。第三是针对不同难度级别设计不同的策略，例如在 multiple 场景下需要智能体能够规划多步骤的工具调用序列，在 parallel 场景下需要识别可以并行执行的工具调用，在 irrelevance 场景下需要判断是否真的需要调用工具。</p>
+<p><strong>（3）实践建议</strong></p>
+<p>对于想要在 BFCL 上取得更好成绩的开发者，建议采用以下实践策略。首先，从 simple 类别开始，确保基础的单函数调用能够稳定工作，这是后续优化的基础。然后，逐步测试 multiple、parallel 等更复杂的类别，分析失败案例，找出智能体的薄弱环节。在优化过程中，可以参考 BFCL 排行榜上的高分模型，学习它们的设计思路和优化技巧。同时，建议使用官方评估工具进行验证，确保优化后的结果与排行榜标准一致。</p>
+<p>这里总结一些评估时可以进一步处理的建议：</p>
+<p><strong>1. 渐进式评估</strong></p>
+<p>从小样本开始，逐步增加样本数：</p>
+<pre><code class="language-python"># 第一步：快速测试（5个样本）
+results_quick = bfcl_tool.run(agent, category=&quot;simple_python&quot;, max_samples=5)
+
+# 第二步：中等规模测试（50个样本）
+if results_quick['overall_accuracy'] &gt; 0.8:
+    results_medium = bfcl_tool.run(agent, category=&quot;simple_python&quot;, max_samples=50)
+
+# 第三步：完整评估（全部样本）
+if results_medium['overall_accuracy'] &gt; 0.8:
+    results_full = bfcl_tool.run(agent, category=&quot;simple_python&quot;, max_samples=0)
+</code></pre>
+<p><strong>2. 多类别评估</strong></p>
+<p>评估不同难度的任务：</p>
+<pre><code class="language-python">categories = [&quot;simple_python&quot;, &quot;multiple&quot;, &quot;parallel&quot;, &quot;irrelevance&quot;]
+
+for category in categories:
+    print(f&quot;\n评估类别: {category}&quot;)
+    results = bfcl_tool.run(agent, category=category, max_samples=10)
+    print(f&quot;准确率: {results['overall_accuracy']:.2%}&quot;)
+</code></pre>
+<p><strong>3. 对比评估</strong></p>
+<p>对比不同配置的智能体：</p>
+<pre><code class="language-python"># 配置1：默认提示词
+agent1 = SimpleAgent(name=&quot;Agent-Default&quot;, llm=llm)
+results1 = bfcl_tool.run(agent1, category=&quot;simple_python&quot;, max_samples=10)
+
+# 配置2：优化提示词
+agent2 = SimpleAgent(name=&quot;Agent-Optimized&quot;, llm=llm)
+# ... 设置优化的系统提示词 ...
+results2 = bfcl_tool.run(agent2, category=&quot;simple_python&quot;, max_samples=10)
+
+# 对比结果
+print(f&quot;默认配置准确率: {results1['overall_accuracy']:.2%}&quot;)
+print(f&quot;优化配置准确率: {results2['overall_accuracy']:.2%}&quot;)
+</code></pre>
+<p>如果你的评估结果很好，可以考虑提交到 BFCL 官方排行榜！</p>
+<p><strong>步骤 1：准备提交材料</strong></p>
+<ol>
+<li>模型描述文档</li>
+<li>评估结果文件（所有类别）</li>
+<li>模型访问方式（API 或开源链接）</li>
+</ol>
+<p><strong>步骤 2：提交到 GitHub</strong></p>
+<p>访问 BFCL 官方仓库，按照说明提交 Pull Request：</p>
+<ul>
+<li>仓库地址：https://github.com/ShishirPatil/gorilla</li>
+<li>提交指南：参考<code>CONTRIBUTING.md</code></li>
+</ul>
+<p><strong>步骤 3：等待审核</strong></p>
+<p>BFCL 团队会审核你的提交，验证结果的准确性。审核通过后，你的模型将出现在官方排行榜上！</p>
+</section><hr class="section-break"><section><h2 id="123-gaia-ai">12.3 GAIA：通用 AI 助手能力评估</h2>
+<h3 id="1231-gaia">12.3.1 GAIA 基准介绍</h3>
+<p>GAIA (General AI Assistants) 是由 Meta AI 和 Hugging Face 联合推出的评估基准，专注于评估 AI 助手的<strong>通用能力</strong>^[2]。与 BFCL 专注于工具调用不同，GAIA 评估的是智能体在真实世界任务中的综合表现。</p>
+<p>GAIA 的设计理念是：<strong>真实世界的问题往往需要多种能力的综合运用</strong>。一个优秀的 AI 助手不仅需要调用工具，还需要：</p>
+<ul>
+<li><strong>多步推理</strong>：将复杂问题分解为多个子问题</li>
+<li><strong>知识运用</strong>：利用内置知识和外部知识库</li>
+<li><strong>多模态理解</strong>：处理文本、图片、文件等多种输入</li>
+<li><strong>网页浏览</strong>：从互联网获取最新信息</li>
+<li><strong>文件操作</strong>：读取和处理各种格式的文件</li>
+</ul>
+<p><strong>（1）GAIA 数据集结构</strong></p>
+<p>了解 GAIA 的评估理念后，让我们深入了解 GAIA 数据集的具体结构。GAIA 包含 466 个精心设计的真实世界问题，这些问题按照复杂度和所需推理步骤分为三个难度级别，从简单的零步推理任务到需要多步复杂推理的困难任务，全面覆盖了智能体在实际应用中可能遇到的各种场景，如表 12.3 所示：</p>
+<p>表 12.3 GAIA 数据集难度级别分布</p>
+<p><img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-table-3.png" /></p>
+<p>关于 GAIA 数据集的样本示例可以参考下面的代码片段：</p>
+<pre><code class="language-json">{
+  &quot;task_id&quot;: &quot;gaia_001&quot;,
+  &quot;Question&quot;: &quot;What is the total population of the top 3 most populous cities in California?&quot;,
+  &quot;Level&quot;: 2,
+  &quot;Final answer&quot;: &quot;12847521&quot;,
+  &quot;file_name&quot;: &quot;&quot;,
+  &quot;file_path&quot;: &quot;&quot;,
+  &quot;Annotator Metadata&quot;: {
+    &quot;Steps&quot;: [
+      &quot;Search for most populous cities in California&quot;,
+      &quot;Get population data for top 3 cities&quot;,
+      &quot;Sum the populations&quot;
+    ],
+    &quot;Number of steps&quot;: 3,
+    &quot;How long did this take?&quot;: &quot;5 minutes&quot;,
+    &quot;Tools&quot;: [&quot;web_search&quot;, &quot;calculator&quot;]
+  }
+}
+</code></pre>
+<p><strong>关键字段说明：</strong>
+- <code>Question</code>: 问题描述
+- <code>Level</code>: 难度级别（1-3）
+- <code>Final answer</code>: 标准答案（可能是数字、文本或文件）
+- <code>file_name/file_path</code>: 附件文件（如果有）
+- <code>Annotator Metadata</code>: 标注者提供的元数据（推理步骤、所需工具等）</p>
+<p><strong>（2）准精确匹配介绍</strong></p>
+<p>GAIA 使用<strong>准精确匹配（Quasi Exact Match）</strong>评估算法，这是 GAIA 官方定义的评估标准。该算法的核心思想是：<strong>先对答案进行归一化处理，然后进行精确匹配</strong>。</p>
+<p>给定预测答案 $A_{\text{pred}}$ 和标准答案 $A_{\text{true}}$，准精确匹配函数定义为：</p>
+<p>$$
+\text{Quasi_Exact_Match}(A_{\text{pred}}, A_{\text{true}}) = \begin{cases}
+1 &amp; \text{if } \mathcal{N}(A_{\text{pred}}) = \mathcal{N}(A_{\text{true}}) \
+0 &amp; \text{otherwise}
+\end{cases}
+$$</p>
+<p>其中 $\mathcal{N}(\cdot)$ 是归一化函数，根据答案类型应用不同的规则。</p>
+<p>归一化函数根据答案类型应用不同的规则。对于数字类型，需要移除逗号分隔符（<code>1,000</code> → <code>1000</code>）和单位符号（<code>$100</code> → <code>100</code>，<code>50%</code> → <code>50</code>），例如<code>"$1,234.56"</code>归一化为<code>"1234.56"</code>。对于字符串类型，需要转换为小写（<code>"Apple"</code> → <code>"apple"</code>）、移除冠词（<code>"the apple"</code> → <code>"apple"</code>）、移除多余空格（<code>"hello  world"</code> → <code>"hello world"</code>）和移除末尾标点（<code>"hello."</code> → <code>"hello"</code>），例如<code>"The United States"</code>归一化为<code>"united states"</code>。对于列表类型，需要按逗号分隔元素，对每个元素应用字符串归一化，按字母顺序排序后重新连接，例如<code>"Paris, London, Berlin"</code>归一化为<code>"berlin,london,paris"</code>。</p>
+<p><strong>归一化示例：</strong></p>
+<pre><code class="language-python"># 数字答案
+原始答案: &quot;$1,234.56&quot;
+归一化后: &quot;1234.56&quot;
+
+# 字符串答案
+原始答案: &quot;The United States of America&quot;
+归一化后: &quot;united states of america&quot;
+
+# 列表答案
+原始答案: &quot;Paris, London, Berlin&quot;
+归一化后: &quot;berlin, london, paris&quot;
+</code></pre>
+<p><strong>（3）GAIA 评估指标</strong></p>
+<p>GAIA 使用以下指标评估智能体性能：</p>
+<p><strong>1. 精确匹配率 (Exact Match Rate)</strong></p>
+<p>精确匹配率是 GAIA 的核心指标，定义为准精确匹配成功的样本比例：</p>
+<p>$$
+\text{Exact Match Rate} = \frac{1}{N} \sum_{i=1}^{N} \text{Quasi_Exact_Match}(A_{\text{pred},i}, A_{\text{true},i})
+$$</p>
+<p>其中：
+- $N$ 是总样本数
+- $A_{\text{pred},i}$ 是第 $i$ 个样本的预测答案
+- $A_{\text{true},i}$ 是第 $i$ 个样本的标准答案
+- $\text{Quasi_Exact_Match}(\cdot, \cdot) \in {0, 1}$ 是准精确匹配函数</p>
+<p><strong>2. 分级准确率 (Level-wise Accuracy)</strong></p>
+<p>对于每个难度级别 $\ell \in {1, 2, 3}$，计算该级别的准确率：</p>
+<p>$$
+\text{Accuracy}<em>\ell = \frac{1}{|D</em>\ell|} \sum_{i \in D_\ell} \text{Quasi_Exact_Match}(A_{\text{pred},i}, A_{\text{true},i})
+$$</p>
+<p>其中 $D_\ell$ 是难度级别 $\ell$ 的样本集合，$|D_\ell|$ 是该级别的样本数。</p>
+<p><strong>3. 难度递进下降率 (Difficulty Progression Drop Rate)</strong></p>
+<p>衡量智能体在难度增加时的性能衰减：</p>
+<p>$$
+\text{Drop Rate}<em>{\ell \to \ell+1} = \frac{\text{Accuracy}</em>\ell - \text{Accuracy}<em>{\ell+1}}{\text{Accuracy}</em>\ell}
+$$</p>
+<ul>
+<li>$\text{Drop Rate}_{1 \to 2}$：从 Level 1 到 Level 2 的下降率</li>
+<li>$\text{Drop Rate}_{2 \to 3}$：从 Level 2 到 Level 3 的下降率</li>
+</ul>
+<p><strong>4. 平均推理步骤数 (Average Reasoning Steps)</strong></p>
+<p>评估智能体完成任务所需的平均步骤数：</p>
+<p>$$
+\text{Avg Steps} = \frac{1}{N_{\text{correct}}} \sum_{i \in \text{Correct}} \text{steps}_i
+$$</p>
+<p>其中 $N_{\text{correct}}$ 是正确回答的样本数，$\text{steps}_i$ 是第 $i$ 个样本的推理步骤数。</p>
+<p><strong>指标解释：</strong></p>
+<ul>
+<li><strong>Exact Match Rate = 1.0</strong>：所有样本都完全正确</li>
+<li><strong>Exact Match Rate = 0.5</strong>：50%的样本正确，50%的样本错误</li>
+<li><strong>Drop Rate = 0.3</strong>：难度增加导致准确率下降 30%</li>
+<li><strong>Drop Rate = 0.0</strong>：难度增加不影响准确率（理想情况）</li>
+</ul>
+<p><strong>评估示例：</strong></p>
+<p>假设我们评估了 10 个样本，结果可以参考表 12.4 所示：</p>
+<p>表 12.4 GAIA 数据集难度级别分布</p>
+<p><img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-table-4.png" /></p>
+<p>如果要计算这个案例的指标的话，可以参考下面的 Python 脚本。</p>
+<pre><code class="language-python"># 1. 精确匹配率
+total_samples = 10
+correct_samples = 7  # 样本1,2,3,5,6,8,9
+exact_match_rate = correct_samples / total_samples = 0.70  # 70%
+
+# 2. 分级准确率
+level_1_correct = 3  # 样本1,2,3
+level_1_total = 3
+level_1_accuracy = 3 / 3 = 1.00  # 100%
+
+level_2_correct = 2  # 样本5,6
+level_2_total = 3
+level_2_accuracy = 2 / 3 = 0.67  # 67%
+
+level_3_correct = 2  # 样本8,9
+level_3_total = 4
+level_3_accuracy = 2 / 4 = 0.50  # 50%
+
+# 3. 难度递进下降率
+drop_rate_1_to_2 = (1.00 - 0.67) / 1.00 = 0.33  # 33%
+drop_rate_2_to_3 = (0.67 - 0.50) / 0.67 = 0.25  # 25%
+
+print(f&quot;精确匹配率: {exact_match_rate:.2%}&quot;)  # 70.00%
+print(f&quot;Level 1准确率: {level_1_accuracy:.2%}&quot;)  # 100.00%
+print(f&quot;Level 2准确率: {level_2_accuracy:.2%}&quot;)  # 66.67%
+print(f&quot;Level 3准确率: {level_3_accuracy:.2%}&quot;)  # 50.00%
+print(f&quot;Level 1→2 下降率: {drop_rate_1_to_2:.2%}&quot;)  # 33.00%
+print(f&quot;Level 2→3 下降率: {drop_rate_2_to_3:.2%}&quot;)  # 25.00%
+</code></pre>
+<p><strong>结果分析：</strong></p>
+<ul>
+<li><strong>整体表现</strong>：70%的精确匹配率，表现良好</li>
+<li><strong>难度敏感性</strong>：从 Level 1 到 Level 2 下降 33%，说明智能体在中等难度任务上有明显衰减</li>
+<li><strong>能力边界</strong>：Level 3 准确率为 50%，说明智能体在复杂任务上仍有提升空间</li>
+</ul>
+<p>下降率越大，说明智能体在处理复杂任务时的能力衰减越明显。</p>
+<p><strong>（4）GAIA 官方系统提示词</strong></p>
+<p>GAIA 要求使用特定的系统提示词，确保模型输出符合评估格式：</p>
+<pre><code class="language-python">GAIA_SYSTEM_PROMPT = &quot;&quot;&quot;You are a general AI assistant. I will ask you a question. Report your thoughts, and finish your answer with the following template: FINAL ANSWER: [YOUR FINAL ANSWER].
+
+YOUR FINAL ANSWER should be a number OR as few words as possible OR a comma separated list of numbers and/or strings.
+
+If you are asked for a number, don't use comma to write your number neither use units such as $ or percent sign unless specified otherwise.
+
+If you are asked for a string, don't use articles, neither abbreviations (e.g. for cities), and write the digits in plain text unless specified otherwise.
+
+If you are asked for a comma separated list, apply the above rules depending of whether the element to be put in the list is a number or a string.&quot;&quot;&quot;
+</code></pre>
+<p>GAIA 对答案格式有严格的要求：答案必须以<code>FINAL ANSWER: [答案]</code>的格式给出；对于数字类型的答案，不使用逗号分隔符和单位符号；对于字符串类型的答案，不使用冠词和缩写；对于列表类型的答案，使用逗号分隔并按字母顺序排列。</p>
+<h3 id="1232-gaia">12.3.2 获取 GAIA 数据集</h3>
+<p><strong>重要提示</strong>：GAIA 是<strong>受限数据集（Gated Dataset）</strong>，需要先在 HuggingFace 上申请访问权限。</p>
+<p><strong>步骤 1：申请访问权限</strong></p>
+<ol>
+<li>访问 https://huggingface.co/datasets/gaia-benchmark/GAIA</li>
+<li>点击"Request access"按钮</li>
+<li>填写申请表单（通常会在几秒内批准）</li>
+<li>获取你的 HuggingFace Token：https://huggingface.co/settings/tokens</li>
+</ol>
+<p><strong>步骤 2：配置环境变量</strong></p>
+<p>在<code>.env</code>文件中添加你的 HuggingFace Token：</p>
+<pre><code class="language-bash"># HuggingFace API 配置
+HF_TOKEN=hf_your_token_here
+</code></pre>
+<p><strong>方法 1：使用 HelloAgents 自动下载（推荐）</strong></p>
+<p>HelloAgents 会自动处理 GAIA 数据集的下载和缓存：</p>
+<pre><code class="language-python">from hello_agents.evaluation import GAIADataset
+import os
+
+# 确保设置了HF_TOKEN，如果设置了.env无需这一行
+os.environ[&quot;HF_TOKEN&quot;] = &quot;hf_your_token_here&quot;
+
+# 自动下载到 ./data/gaia/
+dataset = GAIADataset(
+    dataset_name=&quot;gaia-benchmark/GAIA&quot;,
+    split=&quot;validation&quot;,  # 或 &quot;test&quot;
+    level=1  # 可选: 1, 2, 3, None(全部)
+)
+items = dataset.load()
+
+print(f&quot;加载了 {len(items)} 个测试样本&quot;)
+# 输出: 加载了 53 个测试样本 (Level 1)
+</code></pre>
+<p><strong>工作原理</strong>：</p>
+<ul>
+<li>首次运行时，使用<code>snapshot_download</code>下载整个数据集到<code>./data/gaia/</code></li>
+<li>数据集包含 114 个文件（问题、图片、PDF 等材料）</li>
+<li>后续使用直接从本地加载，速度很快</li>
+</ul>
+<p><strong>数据集目录结构</strong>：</p>
+<pre><code>./data/gaia/
+├── 2023/
+│   ├── validation/
+│   │   ├── metadata.jsonl  (165个问题)
+│   │   ├── *.png, *.pdf, *.csv, *.xlsx  (附件文件)
+│   └── test/
+│       ├── metadata.jsonl  (301个问题)
+│       └── ... (附件文件)
+├── GAIA.py
+└── README.md
+</code></pre>
+<p><strong>方法 2：手动下载</strong></p>
+<p>如果你想手动下载数据集：</p>
+<pre><code class="language-python">from huggingface_hub import snapshot_download
+import os
+
+# 设置Token
+os.environ[&quot;HF_TOKEN&quot;] = &quot;hf_your_token_here&quot;
+
+# 下载数据集
+snapshot_download(
+    repo_id=&quot;gaia-benchmark/GAIA&quot;,
+    repo_type=&quot;dataset&quot;,
+    local_dir=&quot;./data/gaia&quot;,
+    token=os.getenv(&quot;HF_TOKEN&quot;)
+)
+</code></pre>
+<p><strong>查看数据集统计</strong>：</p>
+<pre><code class="language-python"># 查看数据集统计
+stats = dataset.get_statistics()
+print(f&quot;总样本数: {stats['total_samples']}&quot;)
+print(f&quot;级别分布: {stats['level_distribution']}&quot;)
+# 输出:
+# 总样本数: 165
+# 级别分布: {1: 53, 2: 62, 3: 50}
+</code></pre>
+<h3 id="1233-helloagents-gaia">12.3.3 在 HelloAgents 中实现 GAIA 评估</h3>
+<p>与 BFCL 类似，我们提供两种评估方式，推荐使用<strong>方式 1</strong>。</p>
+<p><strong>方式 1：使用 GAIAEvaluationTool 一键评估</strong></p>
+<p>这是最简单的方式，自动完成数据集下载、评估执行、结果导出和报告生成：</p>
+<pre><code class="language-python">from hello_agents import SimpleAgent, HelloAgentsLLM
+from hello_agents.tools import GAIAEvaluationTool
+
+# GAIA官方系统提示词（来自论文）
+GAIA_SYSTEM_PROMPT = &quot;&quot;&quot;You are a general AI assistant. I will ask you a question. Report your thoughts, and finish your answer with the following template: FINAL ANSWER: [YOUR FINAL ANSWER].
+
+YOUR FINAL ANSWER should be a number OR as few words as possible OR a comma separated list of numbers and/or strings.
+
+If you are asked for a number, don't use comma to write your number neither use units such as $ or percent sign unless specified otherwise.
+
+If you are asked for a string, don't use articles, neither abbreviations (e.g. for cities), and write the digits in plain text unless specified otherwise.
+
+If you are asked for a comma separated list, apply the above rules depending of whether the element to be put in the list is a number or a string.&quot;&quot;&quot;
+
+# 1. 创建智能体（使用GAIA官方系统提示词）
+llm = HelloAgentsLLM()
+agent = SimpleAgent(
+    name=&quot;TestAgent&quot;,
+    llm=llm,
+    system_prompt=GAIA_SYSTEM_PROMPT  # 关键：使用GAIA官方提示词
+)
+
+# 2. 创建GAIA评估工具
+gaia_tool = GAIAEvaluationTool()
+
+# 3. 一键运行评估
+results = gaia_tool.run(
+    agent=agent,
+    level=1,  # Level 1: 简单任务
+    max_samples=5,  # 评估5个样本
+    export_results=True,  # 导出GAIA格式结果
+    generate_report=True  # 生成评估报告
+)
+
+# 4. 查看结果
+print(f&quot;精确匹配率: {results['exact_match_rate']:.2%}&quot;)
+print(f&quot;部分匹配率: {results['partial_match_rate']:.2%}&quot;)
+print(f&quot;正确数: {results['exact_matches']}/{results['total_samples']}&quot;)
+</code></pre>
+<p><strong>运行结果：</strong></p>
+<pre><code>============================================================
+GAIA一键评估
+============================================================
+
+配置:
+   智能体: TestAgent
+   难度级别: 1
+   样本数量: 5
+
+============================================================
+步骤1: 运行HelloAgents评估
+============================================================
+   正在从HuggingFace下载: gaia-benchmark/GAIA
+   📥 下载GAIA数据集...
+   ✓ 数据集下载完成
+   ✓ 加载了 165 个样本
+✅ GAIA数据集加载完成
+   数据源: gaia-benchmark/GAIA
+   分割: validation
+   级别: 1
+   样本数: 53
+
+🌟 开始 GAIA 评估...
+   样本数量: 5
+   进度: 5/5
+✅ GAIA 评估完成
+   精确匹配率: 80.00%
+   部分匹配率: 80.00%
+
+============================================================
+步骤2: 导出GAIA格式结果
+============================================================
+✅ GAIA格式结果已导出
+   输出文件: evaluation_results\gaia_official\gaia_level1_result_20251011_012648.jsonl
+   样本数: 5
+   包含推理轨迹: True
+📄 提交说明已生成: evaluation_results\gaia_official\SUBMISSION_GUIDE_20251011_012648.md
+
+============================================================
+步骤3: 生成评估报告
+============================================================
+📄 报告已生成: evaluation_reports\gaia_report_20251011_012648.md
+
+============================================================
+🎯 最终结果
+============================================================
+   精确匹配率: 80.00%
+   部分匹配率: 80.00%
+   正确数: 4/5
+</code></pre>
+<p>评估完成后会自动生成三类文件：首先是 GAIA 格式结果文件（<code>evaluation_results/gaia_official/gaia_level1_result_*.jsonl</code>），采用 JSONL 格式（每行一个 JSON 对象），可直接用于提交到 GAIA 排行榜；其次是提交说明文件（<code>evaluation_results/gaia_official/SUBMISSION_GUIDE_*.md</code>），包含详细的提交步骤、结果文件格式说明和注意事项；最后是评估报告（<code>evaluation_reports/gaia_report_*.md</code>），包含评估结果摘要、详细指标、样本详情和可视化图表。</p>
+<p><strong>注意</strong>：如果你发现生成的评估结果不理想（例如准确率较低），这是正常现象。虽然 Level 1 是一步推理任务，但仍然需要智能体具备工具调用能力（如搜索引擎、计算器等）才能正确回答问题。我们当前使用的 SimpleAgent 主要用于演示评估流程，在工具调用能力上还有提升空间。</p>
+<p><strong>方式 2：使用 Dataset + Evaluator（灵活定制）</strong></p>
+<p>如果需要更细粒度的控制，可以直接使用底层组件：</p>
+<pre><code class="language-python">from hello_agents.evaluation import GAIADataset, GAIAEvaluator
+
+# 1. 加载数据集
+dataset = GAIADataset(level=1)
+items = dataset.load()
+print(f&quot;加载了 {len(items)} 个样本&quot;)
+
+# 2. 创建评估器
+evaluator = GAIAEvaluator(dataset=dataset, level=1)
+
+# 3. 运行评估
+results = evaluator.evaluate(agent, max_samples=5)
+
+# 4. 导出GAIA格式结果
+evaluator.export_to_gaia_format(
+    results,
+    &quot;gaia_results.jsonl&quot;,
+    include_reasoning=True
+)
+</code></pre>
+<p>生成的评估报告（<code>gaia_report_*.md</code>）可参考下面的文件：</p>
+<pre><code class="language-markdown"># GAIA评估报告
+
+**生成时间**: 2025-10-11 01:26:48
+
+## 📊 评估概览
+
+- **智能体**: TestAgent
+- **难度级别**: 1
+- **总样本数**: 2
+- **精确匹配数**: 1
+- **部分匹配数**: 1
+- **精确匹配率**: 50.00%
+- **部分匹配率**: 50.00%
+
+## 📈 详细指标
+
+### 分级准确率
+
+- **Level 1**: 50.00% 精确 / 50.00% 部分 (1/2)
+
+## 📝 样本详情（前10个）
+
+| 任务ID | 级别 | 预测答案 | 正确答案 | 精确匹配 | 部分匹配 |
+|--------|------|----------|----------|----------|----------|
+| e1fc63a2-da7a-432f-be78-7c4a95598703 | 1 | 24000 | 17 | ❌ | ❌ |
+| 8e867cd7-cff9-4e6c-867a-ff5ddc2550be | 1 | 3 | 3 | ✅ | ✅ |
+
+## 📊 准确率可视化
+
+精确匹配: █████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░ 50.00%
+部分匹配: █████████████████████████░░░░░░░░░░░░░░░░░░░░░░░░░ 50.00%
+
+
+## 💡 建议
+
+- ⚠️ 表现一般，需要改进。
+- 💡 建议检查工具使用和多步推理能力。
+</code></pre>
+<p><strong>生成的 GAIA 格式结果（<code>gaia_level1_result_*.jsonl</code>）：</strong></p>
+<pre><code class="language-json">{&quot;task_id&quot;: &quot;e1fc63a2-da7a-432f-be78-7c4a95598703&quot;, &quot;model_answer&quot;: &quot;24000&quot;, &quot;reasoning_trace&quot;: &quot;24000&quot;}
+{&quot;task_id&quot;: &quot;8e867cd7-cff9-4e6c-867a-ff5ddc2550be&quot;, &quot;model_answer&quot;: &quot;3&quot;, &quot;reasoning_trace&quot;: &quot;3&quot;}
+</code></pre>
+<h3 id="1234-gaia">12.3.4 提交结果到 GAIA 官方排行榜</h3>
+<p>使用 GAIAEvaluationTool 运行评估后，会在<code>evaluation_results/gaia_official/</code>目录下生成提交所需的文件和详细的提交说明。</p>
+<ol>
+<li>
+<p><strong>GAIA 格式结果文件</strong>：<code>gaia_level1_result_*.jsonl</code>
+   <code>json
+   {"task_id": "xxx", "model_answer": "答案", "reasoning_trace": "推理过程"}
+   {"task_id": "yyy", "model_answer": "答案", "reasoning_trace": "推理过程"}</code></p>
+</li>
+<li>
+<p><strong>提交说明文件</strong>：<code>SUBMISSION_GUIDE_*.md</code></p>
+</li>
+</ol>
+<p>打开自动生成的<code>SUBMISSION_GUIDE_*.md</code>文件，里面包含完整的提交指南：</p>
+<p>具体来说，打开浏览器，访问：</p>
+<pre><code>https://huggingface.co/spaces/gaia-benchmark/leaderboard
+</code></pre>
+<p>如图 12.4 所示，提交表单中填写信息即可：</p>
+<p><img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-4.png" />
+  <em>图 12.4 BFCL 评估流程图</em></p>
+<p>提交前，可以手动检查生成的 JSON 文件：</p>
+<pre><code class="language-python">import json
+
+# 读取结果文件
+with open(&quot;evaluation_results/gaia_official/gaia_level1_result_*.jsonl&quot;, &quot;r&quot;) as f:
+    for line in f:
+        result = json.loads(line)
+        print(f&quot;Task ID: {result['task_id']}&quot;)
+        print(f&quot;Answer: {result['model_answer']}&quot;)
+        print(f&quot;Reasoning: {result['reasoning_trace']}&quot;)
+        print(&quot;-&quot; * 50)
+</code></pre>
+<h3 id="1235">12.3.5 核心组件实现细节</h3>
+<p>GAIA 评估系统的实现与 BFCL 类似，但针对通用能力评估有一些特殊的设计。</p>
+<p><strong>（1）GAIADataset：支持多模态的数据加载器</strong></p>
+<p>GAIA 数据集的特殊之处在于它包含多模态数据（文本、文件、图片等）：</p>
+<pre><code class="language-python">class GAIADataset:
+    &quot;&quot;&quot;GAIA数据集加载器
+
+    支持从HuggingFace加载GAIA数据集（受限数据集）
+    &quot;&quot;&quot;
+
+    def __init__(
+        self,
+        level: Optional[int] = None,
+        split: str = &quot;validation&quot;,
+        local_data_dir: Optional[str] = None
+    ):
+        self.level = level
+        self.split = split
+        self.local_data_dir = local_data_dir or &quot;./data/gaia&quot;
+        self.data = []
+
+    def load(self) -&gt; List[Dict[str, Any]]:
+        &quot;&quot;&quot;加载数据集&quot;&quot;&quot;
+        # 从HuggingFace下载
+        items = self._load_from_huggingface()
+
+        # 按级别过滤
+        if self.level:
+            items = [item for item in items if item.get(&quot;level&quot;) == self.level]
+
+        self.data = items
+        return items
+
+    def _load_from_huggingface(self) -&gt; List[Dict[str, Any]]:
+        &quot;&quot;&quot;从HuggingFace下载GAIA数据集&quot;&quot;&quot;
+        from huggingface_hub import snapshot_download
+        import json
+
+        # 下载数据集
+        repo_id = &quot;gaia-benchmark/GAIA&quot;
+        local_dir = snapshot_download(
+            repo_id=repo_id,
+            repo_type=&quot;dataset&quot;,
+            local_dir=self.local_data_dir,
+            local_dir_use_symlinks=False
+        )
+
+        # 加载JSONL文件
+        data_file = Path(local_dir) / &quot;2023&quot; / self.split / &quot;metadata.jsonl&quot;
+        items = []
+        with open(data_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                item = json.loads(line)
+                items.append(self._standardize_item(item))
+
+        return items
+</code></pre>
+<p><strong>（2）GAIAEvaluator：实现 GAIA 官方评估算法</strong></p>
+<p>GAIA 的评估使用<strong>准精确匹配（Quasi Exact Match）</strong>算法，需要特殊的答案归一化和匹配逻辑：</p>
+<pre><code class="language-python">class GAIAEvaluator:
+    &quot;&quot;&quot;GAIA评估器
+
+    实现GAIA官方的准精确匹配（Quasi Exact Match）评估算法
+    &quot;&quot;&quot;
+
+    def evaluate(self, agent: Any, max_samples: Optional[int] = None) -&gt; Dict[str, Any]:
+        &quot;&quot;&quot;执行评估&quot;&quot;&quot;
+        dataset_items = self.dataset.load()
+
+        if max_samples:
+            dataset_items = dataset_items[:max_samples]
+
+        results = []
+        for i, item in enumerate(dataset_items, 1):
+            # 1. 构造提示词
+            prompt = self._build_prompt(item[&quot;question&quot;], item)
+
+            # 2. 调用智能体
+            response = agent.run(prompt)
+
+            # 3. 提取答案（GAIA格式：FINAL ANSWER: [答案]）
+            predicted_answer = self._extract_answer(response)
+
+            # 4. 归一化答案（GAIA官方规则）
+            normalized_pred = self._normalize_answer(predicted_answer)
+            normalized_truth = self._normalize_answer(item[&quot;final_answer&quot;])
+
+            # 5. 准精确匹配
+            exact_match = (normalized_pred == normalized_truth)
+
+            results.append({
+                &quot;task_id&quot;: item[&quot;task_id&quot;],
+                &quot;predicted&quot;: predicted_answer,
+                &quot;expected&quot;: item[&quot;final_answer&quot;],
+                &quot;exact_match&quot;: exact_match,
+                &quot;level&quot;: item.get(&quot;level&quot;, 0)
+            })
+
+        return self._format_results(results)
+</code></pre>
+<p>GAIA 使用特定的归一化规则来处理不同类型的答案：</p>
+<pre><code class="language-python">def _normalize_answer(self, answer: str) -&gt; str:
+    &quot;&quot;&quot;标准化答案字符串（GAIA官方标准化规则）
+
+    规则：
+    1. 数字：移除逗号分隔符和单位符号
+    2. 字符串：移除冠词、转小写、移除多余空格
+    3. 列表：逗号分隔，按字母顺序排序
+    &quot;&quot;&quot;
+    if not answer:
+        return &quot;&quot;
+
+    answer = answer.strip()
+
+    # 检查是否是逗号分隔的列表
+    if ',' in answer:
+        parts = [self._normalize_single_answer(p.strip()) for p in answer.split(',')]
+        parts.sort()  # GAIA要求按字母顺序排序
+        return ','.join(parts)
+    else:
+        return self._normalize_single_answer(answer)
+
+def _normalize_single_answer(self, answer: str) -&gt; str:
+    &quot;&quot;&quot;标准化单个答案（不包含逗号的答案）&quot;&quot;&quot;
+    answer = answer.strip().lower()
+
+    # 移除常见的冠词
+    articles = ['the', 'a', 'an']
+    words = answer.split()
+    if words and words[0] in articles:
+        words = words[1:]
+        answer = ' '.join(words)
+
+    # 移除货币符号和百分号
+    answer = answer.replace('$', '').replace('%', '').replace('€', '').replace('£', '')
+
+    # 移除数字中的逗号分隔符
+    answer = re.sub(r'(\d),(\d)', r'\1\2', answer)
+
+    # 移除多余空格
+    answer = ' '.join(answer.split())
+
+    # 移除末尾的标点符号
+    answer = answer.rstrip('.,;:!?')
+
+    return answer
+</code></pre>
+<p>GAIA 要求模型输出格式为<code>FINAL ANSWER: [答案]</code>：</p>
+<pre><code class="language-python">def _extract_answer(self, response: str) -&gt; str:
+    &quot;&quot;&quot;从响应中提取答案（GAIA格式）
+
+    GAIA要求答案格式为：FINAL ANSWER: [答案]
+    &quot;&quot;&quot;
+    # 首先尝试提取GAIA官方格式的答案
+    final_answer_pattern = r'FINAL ANSWER:\s*(.+?)(?:\n|$)'
+    match = re.search(final_answer_pattern, response, re.IGNORECASE | re.MULTILINE)
+    if match:
+        answer = match.group(1).strip()
+        # 移除可能的方括号
+        answer = answer.strip('[]')
+        return answer
+
+    # 备用方案：查找其他答案标记
+    answer_patterns = [
+        r'答案[：:]\s*(.+)',
+        r'最终答案[：:]\s*(.+)',
+        r'Final answer[：:]\s*(.+)',
+        r'Answer[：:]\s*(.+)',
+    ]
+
+    for pattern in answer_patterns:
+        match = re.search(pattern, response, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+
+    # 如果没有找到标记，返回最后一个非空行
+    lines = response.strip().split('\n')
+    for line in reversed(lines):
+        line = line.strip()
+        if line and not line.startswith('#'):
+            return line
+
+    return response.strip()
+</code></pre>
+<p>评估完成后，可以导出为 GAIA 官方要求的 JSONL 格式：</p>
+<pre><code class="language-python">def export_to_gaia_format(
+    self,
+    results: Dict[str, Any],
+    output_path: Union[str, Path],
+    include_reasoning: bool = True
+) -&gt; None:
+    &quot;&quot;&quot;导出为GAIA官方格式（JSONL）
+
+    GAIA要求的格式：
+    {&quot;task_id&quot;: &quot;xxx&quot;, &quot;model_answer&quot;: &quot;答案&quot;, &quot;reasoning_trace&quot;: &quot;推理过程&quot;}
+    &quot;&quot;&quot;
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_path, 'w', encoding='utf-8') as f:
+        for result in results.get(&quot;detailed_results&quot;, []):
+            entry = {
+                &quot;task_id&quot;: result[&quot;task_id&quot;],
+                &quot;model_answer&quot;: result[&quot;predicted&quot;]
+            }
+
+            if include_reasoning:
+                entry[&quot;reasoning_trace&quot;] = result.get(&quot;response&quot;, result[&quot;predicted&quot;])
+
+            f.write(json.dumps(entry, ensure_ascii=False) + '\n')
+</code></pre>
+<p><strong>（3）GAIAEvaluationTool：一键评估工具</strong></p>
+<p>GAIAEvaluationTool 封装了完整的评估流程，提供一键评估功能：</p>
+<pre><code class="language-python">class GAIAEvaluationTool(Tool):
+    &quot;&quot;&quot;GAIA评估工具
+
+    提供一键评估功能：
+    1. 运行HelloAgents评估
+    2. 导出GAIA格式结果
+    3. 生成评估报告
+    4. 生成提交说明
+    &quot;&quot;&quot;
+
+    def run(
+        self,
+        agent: Any,
+        level: Optional[int] = None,
+        max_samples: Optional[int] = None,
+        local_data_dir: Optional[str] = None,
+        export_results: bool = True,
+        generate_report: bool = True
+    ) -&gt; Dict[str, Any]:
+        &quot;&quot;&quot;执行GAIA一键评估&quot;&quot;&quot;
+        # 步骤1: 运行HelloAgents评估
+        results = self._run_evaluation(agent, level, max_samples, local_data_dir)
+
+        # 步骤2: 导出GAIA格式结果
+        if export_results:
+            self._export_results(results)
+
+        # 步骤3: 生成评估报告
+        if generate_report:
+            self.generate_report(results)
+
+        return results
+</code></pre>
+<p>GAIAEvaluationTool 会自动生成评估报告：</p>
+<pre><code class="language-python">def generate_report(
+    self,
+    results: Dict[str, Any],
+    output_file: Optional[Union[str, Path]] = None
+) -&gt; str:
+    &quot;&quot;&quot;生成评估报告&quot;&quot;&quot;
+    report = f&quot;&quot;&quot;# GAIA评估报告
+
+**生成时间**: {datetime.now().strftime(&quot;%Y-%m-%d %H:%M:%S&quot;)}
+
+## 📊 评估概览
+
+- **智能体**: {results.get(&quot;agent_name&quot;, &quot;Unknown&quot;)}
+- **难度级别**: {results.get(&quot;level_filter&quot;) or '全部'}
+- **总样本数**: {results.get(&quot;total_samples&quot;, 0)}
+- **精确匹配数**: {results.get(&quot;exact_matches&quot;, 0)}
+- **精确匹配率**: {results.get(&quot;exact_match_rate&quot;, 0):.2%}
+
+## 📈 详细指标
+
+### 分级准确率
+
+{self._format_level_metrics(results.get(&quot;level_metrics&quot;, {}))}
+
+## 📝 样本详情（前10个）
+
+{self._format_sample_details(results.get(&quot;detailed_results&quot;, [])[:10])}
+
+## 📊 准确率可视化
+
+{self._format_visualization(results.get(&quot;exact_match_rate&quot;, 0))}
+
+## 💡 建议
+
+{self._format_suggestions(results.get(&quot;exact_match_rate&quot;, 0))}
+&quot;&quot;&quot;
+
+    # 保存报告
+    if output_file is None:
+        output_dir = Path(&quot;./evaluation_reports&quot;)
+        output_dir.mkdir(parents=True, exist_ok=True)
+        output_file = output_dir / f&quot;gaia_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.md&quot;
+
+    with open(output_file, 'w', encoding='utf-8') as f:
+        f.write(report)
+
+    return report
+</code></pre>
+</section><hr class="section-break"><section><h2 id="124">12.4 数据生成质量评估</h2>
+<p>在 AI 系统开发中，高质量的训练数据是系统性能的基础。本节介绍如何使用 HelloAgents 框架评估生成数据的质量，以 AIME（美国数学邀请赛）^[9]风格的数学题目生成为例。</p>
+<p>AIME 是美国数学协会（MAA）主办的中等难度数学竞赛，介于 AMC 10/12 和美国数学奥林匹克（USAMO）之间。AIME 题目具有鲜明的特点：每道题的答案都是 0 到 999 之间的整数，题目涵盖代数、几何、数论、组合、概率等多个数学领域，需要多步推理但不涉及高深理论，难度适中（相当于 AIME 第 6-9 题的水平）。这些特点使得 AIME 题目成为评估数学题目生成质量的理想基准：答案格式统一便于自动化评估，题目难度适中适合大规模生成。我们使用 HuggingFace 上的<code>TianHongZXY/aime-1983-2025</code>数据集作为参考，该数据集包含从 1983 年到 2025 年的 900 多道 AIME 真题，为我们的生成和评估提供了丰富的参考样本。</p>
+<h3 id="1241">12.4.1 评估方法概述</h3>
+<p>在数据生成质量评估中，我们采用三种互补的评估方法：LLM Judge、Win Rate 和人工打分。选择这三种方法有两个重要原因。首先，从方法论角度来看，这些是当前智能体领域常用的自动化测评方案，也是许多学术论文中的主流做法，具有广泛的认可度和实践基础。其次，从适用性角度来看，这三种方法天然适合我们的评估场景：LLM Judge 和 Win Rate 用于评估题目生成质量（从正确性、清晰度、难度匹配等维度进行多维度评估），而人工打分用于评估答案生成质量（通过人类专家验证答案的准确性），这种分工非常合理且易于理解。</p>
+<p>下面我们详细介绍这三种评估方法的具体实现。整个案例的实现流程如图 12.5 所示：</p>
+<p><img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-5.png" />
+  <em>图 12.5 数据生成质量评估流程图</em></p>
+<p><strong>（1）LLM Judge 评估</strong></p>
+<p><strong>设计动机</strong>：在数据生成质量评估中，我们需要对大量生成的题目进行快速、一致的质量评估。传统的人工评估虽然准确，但成本高、效率低，难以应对大规模数据生成的需求。LLM Judge 通过使用大语言模型作为评委，可以自动化地从多个维度评估生成数据的质量，不仅大幅提升评估效率，还能保持评估标准的一致性。更重要的是，LLM Judge 可以提供详细的评分理由和改进建议，帮助我们理解生成数据的优缺点，为后续优化提供方向。</p>
+<p>在我们的实现中，LLM Judge 从四个关键维度评估 AIME 题目的质量：</p>
+<p>表 12.5 LLM Judge 评估 AIME 题目的维度</p>
+<p><img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-table-5.png" /></p>
+<p>有了四个维度的评分后，我们需要将这些评分汇总成整体的评估指标。我们定义了三个关键指标来衡量生成题目的质量水平：</p>
+<p><strong>评估指标</strong>：</p>
+<p><strong>1. 平均分（Average Score）</strong>：计算所有题目在四个维度上的平均得分，反映生成题目的整体质量水平。
+$$
+\text{Average Score} = \frac{1}{N} \sum_{i=1}^{N} \frac{\sum_{d=1}^{4} S_{i,d}}{4}
+$$</p>
+<p><strong>2. 及格率（Pass Rate）</strong>：统计平均分达到 3.5 分及以上的题目比例，反映生成题目的基本质量保障。</p>
+<p>$$
+\text{Pass Rate} = \frac{|{i : \text{Score}_i \geq 3.5}|}{N}
+$$</p>
+<p><strong>3. 优秀率（Excellent Rate）</strong>：统计平均分达到 4.5 分及以上的题目比例，反映生成题目的高质量占比。</p>
+<p>$$
+\text{Excellent Rate} = \frac{|{i : \text{Score}_i \geq 4.5}|}{N}
+$$</p>
+<p>其中：
+- $N$ 是评估的题目总数
+- $S_{i,d}$ 是第 $i$ 个题目在第 $d$ 个维度的得分（1-5 分）
+- $\text{Score}_i$ 是第 $i$ 个题目的平均分（四个维度得分的平均值）</p>
+<p>这三个指标从不同角度反映生成质量：平均分给出整体水平，及格率保证基本质量，优秀率衡量高质量产出能力。</p>
+<p><strong>（2）Win Rate 评估</strong></p>
+<p><strong>设计动机</strong>：虽然 LLM Judge 可以提供多维度的绝对评分，但我们还需要一个相对评估指标来衡量生成题目与真题的质量差距。Win Rate 评估通过成对对比的方式，让 LLM 直接判断生成题目和真题哪个更好，这种相对比较比绝对评分更符合人类的判断习惯，也更容易发现生成题目的相对优势和劣势。理想情况下，如果生成题目的质量接近真题，Win Rate 应该在 50%左右（即生成题目和真题各有 50%的胜率）。这个指标简单直观，可以快速判断生成系统的整体质量水平。</p>
+<p>在我们的实现中，Win Rate 评估通过以下图 12.6 所示流程进行评估：</p>
+<p><img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-6.png" />
+  <em>图 12.6 数据生成质量评估流程图</em></p>
+<p>在成对对比评估中，每次比较会产生三种可能的结果：生成题目获胜（Win）、真题获胜（Loss）或平局（Tie）。我们通过统计这三种结果的比例来评估生成题目的质量：</p>
+<p><strong>评估指标</strong>：</p>
+<p><strong>1. 胜率（Win Rate）</strong>：生成题目被判定为更好的比例，反映生成题目相对于真题的优势。</p>
+<p>$$
+\text{Win Rate} = \frac{\text{Wins}}{\text{Total Comparisons}}
+$$</p>
+<p><strong>2. 败率（Loss Rate）</strong>：真题被判定为更好的比例，反映生成题目相对于真题的劣势。</p>
+<p>$$
+\text{Loss Rate} = \frac{\text{Losses}}{\text{Total Comparisons}}
+$$</p>
+<p><strong>3. 平局率（Tie Rate）</strong>：两者被判定为质量相当的比例，反映生成题目与真题的相似程度。</p>
+<p>$$
+\text{Tie Rate} = \frac{\text{Ties}}{\text{Total Comparisons}}
+$$</p>
+<p>其中，Total Comparisons 是总的对比次数，Wins、Losses 和 Ties 分别是生成题目获胜、失败和平局的次数。这三个指标满足：Win Rate + Loss Rate + Tie Rate = 100%。</p>
+<p><strong>理想结果</strong>：Win Rate ≈ 50%（说明生成质量接近真题）。如果 Win Rate 显著低于 50%，说明生成题目质量不如真题，需要优化生成策略；如果 Win Rate 显著高于 50%，可能说明生成题目在某些方面超越了真题，或者评估标准存在偏差。</p>
+<p><strong>（3）人工验证</strong></p>
+<p><strong>设计动机</strong>：尽管 LLM Judge 和 Win Rate 可以自动化评估题目质量，但对于数学题目这种需要严格逻辑推理的内容，人工验证仍然是不可或缺的。特别是在评估答案生成质量时，需要人类专家验证答案的准确性、解答步骤的完整性和数学推理的严密性。此外，人工验证还可以发现自动化评估可能遗漏的问题，如题目的创新性、趣味性等主观因素。为了提高人工验证的效率和体验，我们开发了基于 Gradio 的 Web 界面，让验证者可以方便地浏览题目、评分、标注状态和添加评论，大大降低了人工验证的门槛。</p>
+<p>在我们的实现中，人工验证通过以下步骤进行：</p>
+<ol>
+<li>阅读题目、答案、解答</li>
+<li>评分（1-5 分）：正确性、清晰度、难度匹配、完整性</li>
+<li>标注状态：</li>
+<li>✅ approved（通过）</li>
+<li>❌ rejected（拒绝）</li>
+<li>🔄 needs_revision（需修改）</li>
+<li>添加评论</li>
+</ol>
+<h3 id="1242">12.4.2 系统架构</h3>
+<p>数据生成与评估系统采用模块化设计：</p>
+<pre><code>data_generation/
+├── aime_generator.py              # AIME题目生成器
+├── human_verification_ui.py       # 人工验证界面
+├── run_complete_evaluation.py     # 完整评估流程
+│
+├── generated_data/                # 生成的数据
+│   ├── aime_generated_XXXXXX.json
+│   └── generation_report_XXXXXX.md
+│
+└── evaluation_results/            # 评估结果
+    └── XXXXXX/
+        ├── llm_judge/
+        ├── win_rate/
+        └── comprehensive_report.md
+</code></pre>
+<p>系统包含四个核心组件：首先是 AIMEGenerator（题目生成器），使用 HelloAgents 框架生成 AIME 风格题目，支持批量生成和进度保存，并能自动处理 API 速率限制；其次是 LLMJudgeTool（LLM Judge 评估工具），提供 4 维度质量评估，自动生成 JSON 结果和 Markdown 报告；第三是 WinRateTool（Win Rate 评估工具），通过成对对比评估计算胜率、败率和平局率；最后是 HumanVerificationUI（人工验证界面），基于 Gradio Web 界面，支持评分和状态标注。</p>
+<h3 id="1243-aime">12.4.3 AIME 题目生成器实现</h3>
+<pre><code class="language-python">class AIMEGenerator:
+    &quot;&quot;&quot;AIME Problem Generator&quot;&quot;&quot;
+
+    def __init__(
+        self,
+        llm: HelloAgentsLLM = None,
+        delay_seconds: float = 1.0,
+        use_reference_examples: bool = True,
+        reference_dataset: str = &quot;TianHongZXY/aime-1983-2025&quot;
+    ):
+        self.llm = llm or HelloAgentsLLM()
+        self.agent = SimpleAgent(
+            name=&quot;AIME Generator&quot;,
+            llm=self.llm,
+            system_prompt=&quot;You are a professional mathematics competition problem designer.&quot;
+        )
+        self.delay_seconds = delay_seconds
+        self.use_reference_examples = use_reference_examples
+
+        # Load reference examples from 900+ AIME problems (1983-2025)
+        if use_reference_examples:
+            dataset = load_dataset(reference_dataset, split=&quot;test&quot;)
+            self.reference_examples = list(dataset)
+</code></pre>
+<p>我们的目标是生成类似风格的数据集，所以从 900+道 AIME 真题（1983-2025）中随机选择参考样例</p>
+<p>生成提示词设计（英文）：</p>
+<pre><code class="language-python">GENERATION_PROMPT = &quot;&quot;&quot;You are a professional mathematics competition problem designer, skilled in creating AIME (American Invitational Mathematics Examination) style problems.
+
+【Reference Example】(For style reference only, please generate a completely different problem)
+Problem: {example_problem}
+Answer: {example_answer}
+
+AIME Problem Characteristics:
+1. Answer: An integer between 0 and 999
+2. Topics: Algebra, Geometry, Number Theory, Combinatorics, Probability, etc.
+3. Style: Requires multi-step reasoning, but no advanced theory
+4. Difficulty: Medium to hard (similar to AIME problems 6-9)
+
+Please generate a **completely different** AIME-style mathematics problem, including:
+1. Problem statement (clear and complete, different from the reference)
+2. Answer (an integer between 0 and 999, different from the reference)
+3. Detailed solution (including all reasoning steps)
+4. Topic classification (Algebra/Geometry/Number Theory/Combinatorics/Probability)
+
+Please output in the following JSON format:
+{
+    &quot;problem&quot;: &quot;Problem statement in English&quot;,
+    &quot;answer&quot;: 123,
+    &quot;solution&quot;: &quot;Detailed solution steps in English&quot;,
+    &quot;topic&quot;: &quot;Algebra&quot;
+}
+&quot;&quot;&quot;
+</code></pre>
+<p>我们选择使用英文生成题目有四个重要原因：首先是与 AIME 真题保持一致（AIME 是英文竞赛，生成英文题目更合理），其次是确保评估的公平性（LLM Judge 评估时英文 vs 英文更公平），第三是便于国际化（英文题目可以被更广泛使用），最后是避免翻译问题（不需要担心中英文翻译的准确性）。</p>
+<p>批量生成实现：</p>
+<pre><code class="language-python">def generate_and_save(self, num_problems: int = 30, output_dir: str = &quot;data_generation/generated_data&quot;):
+    &quot;&quot;&quot;Generate and save problems with intelligent delay&quot;&quot;&quot;
+    # Clean old checkpoints
+    for file in os.listdir(output_dir):
+        if file.startswith(&quot;checkpoint_&quot;) and file.endswith(&quot;.json&quot;):
+            os.remove(os.path.join(output_dir, file))
+
+    # Generate with tqdm progress bar
+    with tqdm(total=num_problems, desc=&quot;Generating AIME problems&quot;, unit=&quot;problem&quot;) as pbar:
+        last_call_time = 0
+
+        for i in range(num_problems):
+            # Ensure minimum delay between API calls
+            if last_call_time &gt; 0:
+                elapsed = time.time() - last_call_time
+                if elapsed &lt; self.delay_seconds:
+                    wait_time = self.delay_seconds - elapsed
+                    time.sleep(wait_time)
+
+            # Generate problem (randomly select reference example)
+            start_time = time.time()
+            problem = self.generate_single()
+            last_call_time = time.time()
+            generation_time = last_call_time - start_time
+
+            # Update progress bar
+            pbar.set_postfix({
+                &quot;topic&quot;: problem.get('topic', 'N/A'),
+                &quot;answer&quot;: problem.get('answer', 'N/A'),
+                &quot;time&quot;: f&quot;{generation_time:.1f}s&quot;
+            })
+            pbar.update(1)
+
+    return generated_data_path
+</code></pre>
+<p>LaTeX 数学公式支持：</p>
+<p>生成的 AIME 题目包含 LaTeX 数学公式（如 <code>$\frac{a}{b}$</code>、<code>$\sqrt{x}$</code>），需要特殊处理 JSON 解析：</p>
+<pre><code class="language-python">def _parse_response(self, response: str) -&gt; Dict[str, Any]:
+    &quot;&quot;&quot;解析LLM响应（支持LaTeX数学公式）&quot;&quot;&quot;
+    import re
+
+    # 提取JSON部分
+    if &quot;```json&quot; in response:
+        json_str = response.split(&quot;```json&quot;)[1].split(&quot;```&quot;)[0].strip()
+    else:
+        json_str = response.strip()
+
+    try:
+        problem_data = json.loads(json_str)
+    except json.JSONDecodeError:
+        # 修复LaTeX转义问题：将 \frac 转为 \\frac
+        # 正则表达式：找到未转义的反斜杠
+        fixed_json_str = re.sub(r'(?&lt;!\\)\\(?![&quot;\\/bfnrtu])', r'\\\\', json_str)
+        problem_data = json.loads(fixed_json_str)
+
+    return problem_data
+</code></pre>
+<p>LaTeX 公式中的反斜杠（如 <code>\frac</code>、<code>\sqrt</code>）在 JSON 中是非法的转义字符，会导致解析失败：</p>
+<pre><code>Invalid \escape: line 4 column 185 (char 375)
+</code></pre>
+<p>通过正则表达式将未转义的反斜杠替换为双反斜杠，使其在 JSON 中合法。</p>
+<h3 id="1244-llm-judge">12.4.4 LLM Judge 评估工具</h3>
+<p>LLM Judge 工具使用 LLM 作为评委，对生成的题目进行多维度评估。</p>
+<pre><code class="language-python">class LLMJudgeTool(Tool):
+    &quot;&quot;&quot;LLM Judge评估工具&quot;&quot;&quot;
+
+    def run(self, params: Dict[str, Any]) -&gt; str:
+        &quot;&quot;&quot;运行LLM Judge评估&quot;&quot;&quot;
+        # 1. 加载生成数据
+        gen_dataset = AIDataset(dataset_type=&quot;generated&quot;, data_path=params[&quot;generated_data_path&quot;])
+        gen_problems = gen_dataset.load()
+
+        # 2. 加载参考数据（AIME 2025）
+        ref_dataset = AIDataset(dataset_type=&quot;real&quot;, year=2025)
+        ref_problems = ref_dataset.load()
+
+        # 3. 创建评估器
+        evaluator = LLMJudgeEvaluator(llm=self.llm, judge_model=params.get(&quot;judge_model&quot;, &quot;gpt-4o&quot;))
+
+        # 4. 运行评估
+        results = evaluator.evaluate_batch(gen_problems, max_samples=params.get(&quot;max_samples&quot;))
+
+        # 5. 保存结果
+        evaluator.export_results(results, result_file)
+
+        # 6. 生成报告
+        self._generate_report(results, report_file)
+
+        return json.dumps({&quot;status&quot;: &quot;success&quot;, &quot;metrics&quot;: results[&quot;metrics&quot;]})
+</code></pre>
+<p><strong>评估提示词</strong>：</p>
+<pre><code class="language-python">EVALUATION_PROMPT = &quot;&quot;&quot;请评估以下AIME数学题目的质量。
+
+题目：
+{problem}
+
+答案：{answer}
+
+解答：
+{solution}
+
+请从以下4个维度评分（1-5分）：
+
+1. **正确性 (Correctness)**：数学逻辑是否正确，答案是否准确
+2. **清晰度 (Clarity)**：问题表述是否清晰，解答是否易懂
+3. **难度匹配 (Difficulty Match)**：难度是否符合AIME标准（中等偏难）
+4. **完整性 (Completeness)**：解答步骤是否完整，是否包含必要的推理
+
+请按以下JSON格式输出：
+{
+    &quot;correctness&quot;: 5,
+    &quot;clarity&quot;: 4,
+    &quot;difficulty_match&quot;: 4,
+    &quot;completeness&quot;: 5,
+    &quot;comments&quot;: &quot;评价理由&quot;
+}
+&quot;&quot;&quot;
+</code></pre>
+<p><strong>评估报告示例</strong>：</p>
+<pre><code class="language-markdown"># LLM Judge评估报告
+
+## 总体评分
+
+- **平均总分**: 4.2/5.0
+- **通过率**: 85.0% (≥3.5分)
+- **优秀率**: 40.0% (≥4.5分)
+
+## 各维度评分
+
+| 维度 | 平均分 | 评级 |
+|------|--------|------|
+| 正确性 | 4.3/5.0 | 良好 ⭐⭐⭐⭐ |
+| 清晰度 | 4.1/5.0 | 良好 ⭐⭐⭐⭐ |
+| 难度匹配 | 4.0/5.0 | 良好 ⭐⭐⭐⭐ |
+| 完整性 | 4.4/5.0 | 良好 ⭐⭐⭐⭐ |
+</code></pre>
+<h3 id="1245-win-rate">12.4.5 Win Rate 评估工具</h3>
+<p>Win Rate 工具通过成对对比评估生成数据相对于真题的质量。</p>
+<pre><code class="language-python">class WinRateTool(Tool):
+    &quot;&quot;&quot;Win Rate评估工具&quot;&quot;&quot;
+
+    def run(self, params: Dict[str, Any]) -&gt; str:
+        &quot;&quot;&quot;运行Win Rate评估&quot;&quot;&quot;
+        # 1. 加载生成数据
+        gen_dataset = AIDataset(dataset_type=&quot;generated&quot;, data_path=params[&quot;generated_data_path&quot;])
+        gen_problems = gen_dataset.load()
+
+        # 2. 加载参考数据（AIME 2025）
+        ref_dataset = AIDataset(dataset_type=&quot;real&quot;, year=2025)
+        ref_problems = ref_dataset.load()
+
+        # 3. 创建评估器
+        evaluator = WinRateEvaluator(llm=self.llm, judge_model=params.get(&quot;judge_model&quot;, &quot;gpt-4o&quot;))
+
+        # 4. 运行评估
+        results = evaluator.evaluate_win_rate(gen_problems, ref_problems, num_comparisons=params.get(&quot;num_comparisons&quot;))
+
+        # 5. 保存结果和报告
+        evaluator.export_results(results, result_file)
+        self._generate_report(results, report_file)
+
+        return json.dumps({&quot;status&quot;: &quot;success&quot;, &quot;metrics&quot;: results[&quot;metrics&quot;]})
+</code></pre>
+<p>AIDataset 负责加载生成数据和 AIME 真题数据，支持两种数据类型：</p>
+<pre><code class="language-python">class AIDataset:
+    &quot;&quot;&quot;AI数据集加载器
+
+    支持两种数据类型：
+    1. generated: 生成的数据（JSON格式）
+    2. real: AIME真题（从HuggingFace加载）
+    &quot;&quot;&quot;
+
+    def __init__(
+        self,
+        dataset_type: str = &quot;generated&quot;,
+        data_path: Optional[str] = None,
+        year: Optional[int] = None
+    ):
+        self.dataset_type = dataset_type
+        self.data_path = data_path
+        self.year = year  # 仅用于real类型，默认2025
+
+    def load(self) -&gt; List[Dict[str, Any]]:
+        &quot;&quot;&quot;加载数据集&quot;&quot;&quot;
+        if self.dataset_type == &quot;generated&quot;:
+            return self._load_generated_data()
+        elif self.dataset_type == &quot;real&quot;:
+            return self._load_real_data()
+
+    def _load_real_data(self) -&gt; List[Dict[str, Any]]:
+        &quot;&quot;&quot;从HuggingFace加载AIME 2025真题&quot;&quot;&quot;
+        from huggingface_hub import snapshot_download
+
+        # 使用AIME 2025数据集
+        repo_id = &quot;math-ai/aime25&quot;
+
+        # 下载数据集
+        local_dir = snapshot_download(
+            repo_id=repo_id,
+            repo_type=&quot;dataset&quot;
+        )
+
+        # 读取JSONL文件
+        data_file = list(Path(local_dir).glob(&quot;*.jsonl&quot;))[0]
+        data = []
+        with open(data_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.strip():
+                    data.append(json.loads(line))
+
+        # 统一数据格式（AIME 2025使用小写字段名）
+        problems = []
+        for idx, item in enumerate(data):
+            problem = {
+                &quot;problem_id&quot;: item.get(&quot;id&quot;, f&quot;aime_2025_{idx}&quot;),
+                &quot;problem&quot;: item.get(&quot;problem&quot;, &quot;&quot;),
+                &quot;answer&quot;: item.get(&quot;answer&quot;, &quot;&quot;),
+                &quot;solution&quot;: item.get(&quot;solution&quot;, &quot;&quot;),  # AIME 2025没有solution字段
+            }
+            problems.append(problem)
+
+        return problems
+</code></pre>
+<p>我们选择只使用 AIME 2025 数据集有四个原因：首先是数据的时效性（2025 年是最新的 AIME 竞赛数据），其次是简化维护（只维护一个数据集，代码更简洁），第三是格式统一（JSONL 格式，字段名统一为小写），最后是代表性充分（30 道题目足以评估生成质量）。</p>
+<p><strong>对比提示词</strong>：</p>
+<pre><code class="language-python">COMPARISON_PROMPT = &quot;&quot;&quot;请比较以下两个AIME数学题目的质量，判断哪个更好。
+
+【题目A - 生成题目】
+问题：{problem_a}
+答案：{answer_a}
+解答：{solution_a}
+
+【题目B - AIME真题】
+问题：{problem_b}
+答案：{answer_b}
+解答：{solution_b}
+
+请从以下方面比较：
+1. 数学逻辑的严谨性
+2. 问题表述的清晰度
+3. 难度的合理性
+4. 解答的完整性
+
+请按以下JSON格式输出：
+{
+    &quot;winner&quot;: &quot;A&quot; 或 &quot;B&quot; 或 &quot;Tie&quot;,
+    &quot;reason&quot;: &quot;判断理由&quot;
+}
+&quot;&quot;&quot;
+</code></pre>
+<p><strong>评估报告示例</strong>：</p>
+<pre><code class="language-markdown"># Win Rate评估报告
+
+## 胜率统计
+
+| 指标 | 数值 | 百分比 |
+|------|------|--------|
+| 生成数据胜出 | 9次 | 45.0% |
+| AIME真题胜出 | 8次 | 40.0% |
+| 平局 | 3次 | 15.0% |
+
+**Win Rate**: 45.0%
+
+✅ **良好**: 生成数据质量接近参考数据（差距&lt;10%）。
+</code></pre>
+<h3 id="1246">12.4.6 人工验证界面</h3>
+<p>使用 Gradio 创建 Web 界面，支持人工验证生成的题目。</p>
+<pre><code class="language-python">class HumanVerificationUI:
+    &quot;&quot;&quot;人工验证界面&quot;&quot;&quot;
+
+    def launch(self, share: bool = False):
+        &quot;&quot;&quot;启动Gradio界面&quot;&quot;&quot;
+        with gr.Blocks(title=&quot;AIME题目人工验证&quot;) as demo:
+            gr.Markdown(&quot;# 🎯 AIME题目人工验证系统&quot;)
+
+            with gr.Row():
+                with gr.Column(scale=2):
+                    # 题目显示区域
+                    problem_text = gr.Textbox(label=&quot;问题描述&quot;, lines=5, interactive=False)
+                    answer_text = gr.Textbox(label=&quot;答案&quot;, interactive=False)
+                    solution_text = gr.Textbox(label=&quot;解答过程&quot;, lines=10, interactive=False)
+
+                with gr.Column(scale=1):
+                    # 评分区域
+                    correctness_slider = gr.Slider(1, 5, value=3, step=1, label=&quot;正确性&quot;)
+                    clarity_slider = gr.Slider(1, 5, value=3, step=1, label=&quot;清晰度&quot;)
+                    difficulty_slider = gr.Slider(1, 5, value=3, step=1, label=&quot;难度匹配&quot;)
+                    completeness_slider = gr.Slider(1, 5, value=3, step=1, label=&quot;完整性&quot;)
+
+                    # 状态选择
+                    status_radio = gr.Radio(
+                        choices=[&quot;approved&quot;, &quot;rejected&quot;, &quot;needs_revision&quot;],
+                        value=&quot;approved&quot;,
+                        label=&quot;状态&quot;
+                    )
+
+                    # 验证按钮
+                    verify_btn = gr.Button(&quot;✅ 提交验证&quot;, variant=&quot;primary&quot;)
+
+            demo.launch(share=share, server_name=&quot;127.0.0.1&quot;, server_port=7860)
+</code></pre>
+<p><strong>使用方法</strong>：</p>
+<pre><code class="language-bash"># 启动人工验证界面
+python data_generation/human_verification_ui.py data_generation/generated_data/aime_generated_XXXXXX.json
+
+# 打开浏览器访问
+http://127.0.0.1:7860
+</code></pre>
+<p>最终效果可以参考图 12.7 所示，对于题目的正确性，最好人工打标 Review：
+<img alt="" src="https://raw.githubusercontent.com/datawhalechina/Hello-Agents/main/docs/images/12-figures/12-7.png" />
+  <em>图 12.7 AIME 试题人工验证页面</em></p>
+<p><strong>验证流程</strong>：</p>
+<ol>
+<li>浏览器打开验证界面</li>
+<li>阅读题目、答案、解答</li>
+<li>从 4 个维度评分（1-5 分）</li>
+<li>选择验证状态（approved/rejected/needs_revision）</li>
+<li>添加评论（可选）</li>
+<li>点击"提交验证"</li>
+<li>查看下一题</li>
+</ol>
+<p><strong>验证结果保存</strong>：</p>
+<p>验证结果自动保存为 <code>&lt;data_path&gt;_verifications.json</code>：</p>
+<pre><code class="language-json">{
+  &quot;gen_aime_1&quot;: {
+    &quot;problem_id&quot;: &quot;gen_aime_1&quot;,
+    &quot;scores&quot;: {
+      &quot;correctness&quot;: 5,
+      &quot;clarity&quot;: 4,
+      &quot;difficulty_match&quot;: 4,
+      &quot;completeness&quot;: 5
+    },
+    &quot;total_score&quot;: 4.5,
+    &quot;status&quot;: &quot;approved&quot;,
+    &quot;comments&quot;: &quot;题目质量很好，逻辑严谨&quot;,
+    &quot;verified_at&quot;: &quot;2025-01-10T12:00:00&quot;
+  }
+}
+</code></pre>
+<h3 id="1247">12.4.7 完整评估流程</h3>
+<p>将所有评估方法整合到一个完整的流程中。</p>
+<pre><code class="language-python">def run_complete_evaluation(
+    num_problems: int = 30,
+    delay_seconds: float = 3.0
+):
+    &quot;&quot;&quot;
+    运行完整评估流程
+
+    Args:
+        num_problems: 生成题目数量
+        delay_seconds: 每次生成之间的延迟（秒），避免API速率限制
+    &quot;&quot;&quot;
+    # 步骤1: 生成AIME题目
+    generator = AIMEGenerator(delay_seconds=delay_seconds)
+    generated_data_path = generator.generate_and_save(
+        num_problems=num_problems,
+        output_dir=&quot;data_generation/generated_data&quot;
+    )
+
+    # 步骤2: 评估
+    # 创建评估结果目录
+    timestamp = datetime.now().strftime(&quot;%Y%m%d_%H%M%S&quot;)
+    evaluation_dir = f&quot;data_generation/evaluation_results/{timestamp}&quot;
+    os.makedirs(evaluation_dir, exist_ok=True)
+    os.makedirs(os.path.join(evaluation_dir, &quot;llm_judge&quot;), exist_ok=True)
+    os.makedirs(os.path.join(evaluation_dir, &quot;win_rate&quot;), exist_ok=True)
+
+    # 创建LLM
+    llm = HelloAgentsLLM()
+
+    # 步骤2.1: LLM Judge评估
+    llm_judge_result = None
+    try:
+        llm_judge_tool = LLMJudgeTool(llm=llm)
+        llm_judge_result_json = llm_judge_tool.run({
+            &quot;generated_data_path&quot;: generated_data_path,
+            &quot;reference_year&quot;: 2025,
+            &quot;max_samples&quot;: num_problems,
+            &quot;output_dir&quot;: os.path.join(evaluation_dir, &quot;llm_judge&quot;),
+            &quot;judge_model&quot;: &quot;gpt-4o&quot;
+        })
+        llm_judge_result = json.loads(llm_judge_result_json)
+    except Exception as e:
+        print(f&quot;❌ LLM Judge评估失败: {e}&quot;)
+
+    # 步骤2.2: Win Rate评估
+    win_rate_result = None
+    try:
+        win_rate_tool = WinRateTool(llm=llm)
+        win_rate_result_json = win_rate_tool.run({
+            &quot;generated_data_path&quot;: generated_data_path,
+            &quot;reference_year&quot;: 2025,
+            &quot;num_comparisons&quot;: min(num_problems, 20),
+            &quot;output_dir&quot;: os.path.join(evaluation_dir, &quot;win_rate&quot;),
+            &quot;judge_model&quot;: &quot;gpt-4o&quot;
+        })
+        win_rate_result = json.loads(win_rate_result_json)
+    except Exception as e:
+        print(f&quot;❌ Win Rate评估失败: {e}&quot;)
+
+    # 步骤3: 生成综合报告
+    comprehensive_report_path = None
+    if llm_judge_result or win_rate_result:
+        comprehensive_report_path = os.path.join(evaluation_dir, &quot;comprehensive_report.md&quot;)
+        report = generate_comprehensive_report(
+            generated_data_path,
+            llm_judge_result,
+            win_rate_result
+        )
+        with open(comprehensive_report_path, 'w', encoding='utf-8') as f:
+            f.write(report)
+
+    return {
+        &quot;generated_data_path&quot;: generated_data_path,
+        &quot;llm_judge_result&quot;: llm_judge_result,
+        &quot;win_rate_result&quot;: win_rate_result,
+        &quot;comprehensive_report_path&quot;: comprehensive_report_path
+    }
+</code></pre>
+<p><strong>运行方法</strong>：</p>
+<pre><code class="language-bash"># 基本用法（默认3秒延迟）
+python data_generation/run_complete_evaluation.py 30
+
+# 自定义延迟（推荐3-5秒，避免API速率限制）
+python data_generation/run_complete_evaluation.py 30 3.0
+
+# 参数说明：
+# - 30: 生成题目数量
+# - 3.0: 每次生成之间的延迟（秒）
+
+# 说明：
+# - 生成阶段：从900+道AIME真题（1983-2025）中随机选择参考样例
+# - 评估阶段：与AIME 2025年真题进行质量对比
+# - 数据集来源：math-ai/aime25（JSONL格式）
+</code></pre>
+<p><strong>输出示例</strong>：</p>
+<pre><code>================================================================================
+🚀 AIME数据生成与评估完整流程
+================================================================================
+
+配置信息:
+  - 生成题目数量: 30
+  - API延迟: 3.0秒/题
+  - 生成参考数据: TianHongZXY/aime-1983-2025（900+道题）
+  - 评估参考: AIME 2025真题
+
+================================================================================
+📝 步骤1: 生成AIME题目
+================================================================================
+📚 加载AIME真题数据集: TianHongZXY/aime-1983-2025
+   ✓ 已加载 963 道参考题目
+
+🎯 开始生成AIME题目
+   目标数量: 30
+   生成模型: gpt-4o
+   延迟设置: 3.0秒/题
+
+生成AIME题目:  100%|██████████| 30/30 [01:30&lt;00:00, 3.00s/题, 主题=Algebra, 答案=123, 耗时=3.0s]
+
+✅ 步骤1完成！生成数据保存在: data_generation/generated_data/aime_generated_20250110_120000.json
+
+🎯 步骤2.1: LLM Judge评估 (vs AIME 2025)
+
+✅ LLM Judge评估完成！
+   平均总分: 4.2/5.0
+   通过率: 85.0%
+
+🏆 步骤2.2: Win Rate评估 (vs AIME 2025)
+
+✅ Win Rate评估完成！
+   Win Rate: 45.0%
+
+================================================================================
+📊 步骤3: 生成综合报告
+================================================================================
+
+✅ 综合报告已保存: data_generation/evaluation_results/20250110_120000/comprehensive_report.md
+
+================================================================================
+🎉 完整评估流程完成！
+================================================================================
+
+📁 输出文件:
+   - 生成数据: data_generation/generated_data/aime_generated_20250110_120000.json
+   - 评估结果目录: data_generation/evaluation_results/20250110_120000
+   - LLM Judge报告: data_generation/evaluation_results/20250110_120000/llm_judge/llm_judge_report_20250110_120000.md
+   - Win Rate报告: data_generation/evaluation_results/20250110_120000/win_rate/win_rate_report_20250110_120000.md
+   - 综合报告: data_generation/evaluation_results/20250110_120000/comprehensive_report.md
+
+💡 下一步:
+   1. 查看综合报告: data_generation/evaluation_results/20250110_120000/comprehensive_report.md
+   2. 运行人工验证: python data_generation/human_verification_ui.py data_generation/generated_data/aime_generated_20250110_120000.json
+</code></pre>
+<h3 id="1248">12.4.8 综合评估报告</h3>
+<p>系统自动生成综合评估报告，汇总所有评估结果。以下是示例报告：</p>
+<pre><code class="language-markdown"># AIME数据生成与评估综合报告
+
+## 1. 基本信息
+
+- **生成时间**: 2025-01-10 12:00:00
+- **生成题目数量**: 30
+- **参考AIME年份**: 2025
+
+## 2. 数据生成统计
+
+### 主题分布
+
+| 主题 | 数量 | 占比 |
+|------|------|------|
+| 代数 | 10 | 33.3% |
+| 几何 | 8 | 26.7% |
+| 数论 | 7 | 23.3% |
+| 组合 | 3 | 10.0% |
+| 概率 | 2 | 6.7% |
+
+## 3. LLM Judge评估结果
+
+### 总体评分
+
+- **平均总分**: 4.2/5.0
+- **通过率**: 85.0% (≥3.5分)
+- **优秀率**: 40.0% (≥4.5分)
+
+### 各维度评分
+
+| 维度 | 平均分 | 评级 |
+|------|--------|------|
+| 正确性 | 4.3/5.0 | 良好 ⭐⭐⭐⭐ |
+| 清晰度 | 4.1/5.0 | 良好 ⭐⭐⭐⭐ |
+| 难度匹配 | 4.0/5.0 | 良好 ⭐⭐⭐⭐ |
+| 完整性 | 4.4/5.0 | 良好 ⭐⭐⭐⭐ |
+
+## 4. Win Rate评估结果
+
+### 胜率统计
+
+| 指标 | 数值 | 百分比 |
+|------|------|--------|
+| 生成数据胜出 | 9次 | 45.0% |
+| AIME真题胜出 | 8次 | 40.0% |
+| 平局 | 3次 | 15.0% |
+
+**Win Rate**: 45.0%
+
+✅ **良好**: 生成数据质量接近参考数据（差距&lt;10%）。
+
+## 5. 综合结论
+
+基于LLM Judge和Win Rate两种评估方法的结果：
+
+1. **LLM Judge评估**: 生成数据的平均质量为 **4.2/5.0**
+2. **Win Rate评估**: 生成数据相对于AIME 2025真题的胜率为 **45.0%**
+
+✅ **结论**: 生成数据质量**优秀**，达到或超过AIME真题水平。可以用于实际应用。
+
+## 6. 改进建议
+
+- ✅ 继续保持当前的生成策略
+- ✅ 可以考虑增加生成数量
+- ✅ 建议进行人工验证以确保质量
+
+## 7. 下一步行动
+
+1. **人工验证**: 运行 `python data_generation/human_verification_ui.py &lt;data_path&gt;` 进行人工验证
+2. **查看详细结果**:
+   - LLM Judge详细报告
+   - Win Rate详细报告
+3. **数据使用**: 如果质量满意，可以将生成的数据用于训练或测试
+</code></pre>
+<p>基于实际使用经验，总结以下内容：</p>
+<p>在数据生成方面，应该使用合适的延迟时间（2-3 秒）避免 API 速率限制，启用检查点保存以避免中断损失，先小批量测试（10 个）确认无问题后再大批量生成，并定期检查生成质量及时调整提示词。在评估策略上，建议结合 LLM Judge 和 Win Rate 两种方法，其中 LLM Judge 用于绝对质量评估，Win Rate 用于相对质量对比，人工验证用于最终质量把关。质量标准方面，建议 LLM Judge 平均分达到 4.0/5.0 以上，Win Rate 达到 45%以上（接近 50%），通过率达到 80%以上，人工验证通过率达到 90%以上。在迭代优化过程中，应根据评估结果调整生成提示词，分析低分题目的共同问题，参考高分题目的优点，持续改进生成策略。</p>
+<p>通过本节的学习，我们掌握了如何使用 HelloAgents 框架进行数据生成质量评估，包括 LLM Judge 评估、Win Rate 评估和人工验证三种方法。这套完整的评估体系可以确保生成数据的高质量，为 AI 系统的训练和测试提供可靠的数据支持。</p>
+<p>对于 LLM Judge 和 Win Rate 评估，HelloAgents 也进行了工具集成，并提供了完整的示例代码。如果你对这两种评估方法的具体实现细节感兴趣，同样可以参考示例代码。</p>
+</section><hr class="section-break"><section><h2 id="125">12.5 本章小结</h2>
+<p>在本章中，我们为 HelloAgents 框架构建了一个完整的性能评估系统。让我们回顾一下学到的核心内容：</p>
+<p><strong>（1）评估体系概览</strong></p>
+<p>我们建立了一个三层评估体系，全面覆盖智能体的不同能力维度。首先是工具调用能力评估（BFCL），专注于评估智能体的函数调用准确性，包含 simple、multiple、parallel、irrelevance 四个类别，使用 AST 匹配技术进行精确评估。其次是通用能力评估（GAIA），评估智能体的综合问题解决能力，包含三个难度级别共 466 个真实世界问题，关注多步推理、工具使用、文件处理等能力。第三是数据生成质量评估（AIME），评估 LLM 生成数据的质量，使用 LLM Judge 和 Win Rate 两种方法，支持人工验证和综合报告生成，确保生成数据达到参考数据的质量标准。</p>
+<p><strong>（2）核心技术要点</strong></p>
+<p>在技术实现上，我们采用了六个核心技术要点。首先是模块化设计，评估系统采用三层架构：数据层（Dataset 负责数据加载和管理）、评估层（Evaluator 负责执行评估流程）和指标层（Metrics 负责计算各种评估指标）。其次是工具化封装，所有评估功能都封装成 Tool，可以被智能体直接调用、集成到工作流中或通过统一接口使用。第三是 AST 匹配技术，使用抽象语法树匹配函数调用，比简单字符串匹配更智能，能够忽略参数顺序、识别等价表达式和忽略格式差异。第四是多模态支持，GAIA 评估支持文本问题、附件文件和图片输入等多模态数据。第五是 LLM Judge 评估，使用 LLM 作为评委评估生成数据质量，提供多维度评分（正确性、清晰度、难度匹配、完整性）、自动化评估流程、详细评估报告，并支持自定义评估维度和标准。第六是 Win Rate 对比评估，通过成对对比评估生成质量（生成数据 vs 参考数据），由 LLM 判断哪个更好并计算胜率统计，接近 50%表示质量相当。</p>
+<p><strong>（3）扩展方向</strong></p>
+<p>基于本章的评估系统，你可以在四个方向上进行扩展。首先是添加新的评估基准，可以参考 BFCL 和 GAIA 的实现模式，实现 Dataset、Evaluator、Metrics 三个组件，并封装成 Tool 供使用。其次是自定义评估指标，在 Metrics 类中添加新的指标计算方法，根据具体应用场景设计指标。第三是集成到 CI/CD 流程，在代码提交时自动运行评估，设置性能阈值防止性能退化，生成评估报告并归档。第四是扩展数据生成评估，支持更多数据类型（代码、对话、文档等），添加更多评估维度（创新性、多样性等），集成更多参考数据集，支持多模型对比评估。</p>
+<p><strong>恭喜你完成了第十二章的学习！</strong> 🎉</p>
+<p>评估是智能体开发的重要环节，它让我们能够：</p>
+<ul>
+<li>客观衡量智能体的能力</li>
+<li>发现和修复问题</li>
+<li>持续改进系统</li>
+</ul>
+<p>在下一章中，我们将探讨如何将 HelloAgents 框架应用于实际项目中。</p>
+<p><strong>继续加油！</strong> 💪</p>
+</section><hr class="section-break"><section><h2 id="_2">习题</h2>
+<blockquote>
+<p><strong>提示</strong>：部分习题没有标准答案，重点在于培养学习者对智能体性能评估的综合理解和实践能力。</p>
+</blockquote>
+<ol>
+<li>
+<p>本章介绍了多个智能体评估基准。请分析：</p>
+</li>
+<li>
+<p>在 12.1.2 节中介绍了 BFCL、GAIA、AgentBench 等评估基准。请对比 BFCL 和 GAIA：它们分别评估智能体的哪些核心能力？为什么 BFCL 使用 AST 匹配算法，而 GAIA 使用准精确匹配（Quasi Exact Match）？这两种评估方法各有什么优缺点？</p>
+</li>
+<li>假设你要构建一个"智能客服系统"，需要评估以下能力：（1）理解用户意图的准确性；（2）调用后台 API 的正确性；（3）回答的友好性和专业性；（4）处理异常情况的鲁棒性。请为每个能力选择或设计合适的评估指标和方法。</li>
+<li>
+<p>在 12.1.1 节中提到，智能体评估面临"输出不确定性"、"评估标准多样性"、"评估成本高昂"三大挑战。请针对每个挑战提出具体的解决方案，并分析方案的可行性和局限性。</p>
+</li>
+<li>
+<p>BFCL（Berkeley Function Calling Leaderboard）是评估工具调用能力的重要基准。基于 12.2 节的内容，请深入思考：</p>
+</li>
+</ol>
+<blockquote>
+<p><strong>提示</strong>：这是一道动手实践题，建议实际操作</p>
+</blockquote>
+<ul>
+<li>在 12.2.3 节的 AST 匹配算法中，我们通过比较抽象语法树来判断函数调用是否正确。请分析：为什么 AST 匹配比简单的字符串匹配更合适？在什么情况下 AST 匹配可能会产生误判（假阳性或假阴性）？如何改进 AST 匹配算法来提高准确性？</li>
+<li>BFCL 数据集包含 simple、multiple、parallel、irrelevance 四个类别。请为每个类别设计 2-3 个新的测试样本，要求能够测试智能体在该类别下的边界情况或容易出错的场景。</li>
+<li>
+<p>请基于 12.2.4 节的代码，扩展 BFCL 评估器，添加以下功能：（1）支持评估工具调用的执行顺序（对于有依赖关系的多个工具调用）；（2）评估工具调用的效率（如是否使用了最少的调用次数）；（3）生成详细的错误分析报告（如哪些类型的错误最常见）。</p>
+</li>
+<li>
+<p>GAIA（General AI Assistants）评估智能体的综合能力。基于 12.3 节的内容，请完成以下扩展实践：</p>
+</li>
+</ul>
+<blockquote>
+<p><strong>提示</strong>：这是一道动手实践题，建议实际操作</p>
+</blockquote>
+<ul>
+<li>在 12.3.2 节中介绍了 GAIA 的三个难度级别（Level 1/2/3）。请分析：这三个级别在任务复杂度、所需能力、评估标准等方面有什么差异？如果要设计 Level 4（超高难度），应该包含什么类型的任务？</li>
+<li>GAIA 使用"准精确匹配"算法来评估答案的正确性。请分析：这种方法如何处理答案的多样性（如"42"、"四十二"、"42.0"都应该被认为是正确的）？在什么情况下准精确匹配可能不够用？请设计一个更智能的答案匹配算法，能够处理语义等价的答案。</li>
+<li>
+<p>请基于 12.3.4 节的代码，实现一个"自定义 GAIA 评估集"：选择一个特定领域（如医疗、法律、金融），设计 10 个真实世界问题，并实现完整的评估流程。要求问题涵盖不同难度级别，并提供标准答案和评分标准。</p>
+</li>
+<li>
+<p>LLM Judge 是使用大语言模型进行评估的新兴方法。基于 12.4 节的内容，请深入分析：</p>
+</li>
+<li>
+<p>在 12.4.2 节中，我们使用 GPT-4 作为评判者来评估智能体的回答质量。请分析：LLM Judge 相比传统的规则匹配或指标计算有什么优势？它存在哪些潜在的偏见或局限性（如对某些回答风格的偏好、对长度的敏感性）？</p>
+</li>
+<li>LLM Judge 的评分标准设计至关重要。请为以下三个不同的评估场景设计详细的评分标准（包括评分维度、权重、示例）：（1）代码生成质量评估；（2）创意写作质量评估；（3）技术文档质量评估。</li>
+<li>
+<p>在 12.4.3 节中提到，可以使用多个 LLM Judge 进行"评审团"式评估。请设计一个"多评委评估系统"：使用 3-5 个不同的 LLM（如 GPT-4、Claude、Qwen）作为评委，如何聚合它们的评分？如何处理评委之间的分歧？如何检测和过滤异常评分？</p>
+</li>
+<li>
+<p>智能体评估的实践应用需要考虑多个方面。请思考：</p>
+</li>
+<li>
+<p>在实际项目中，评估往往需要在"评估成本"和"评估质量"之间权衡。请设计一个"分层评估策略"：（1）快速评估（低成本，用于日常开发迭代）；（2）标准评估（中等成本，用于版本发布前）；（3）全面评估（高成本，用于重大更新或对外发布）。每层应该包含哪些评估项目？如何设计评估流程？</p>
+</li>
+<li>智能体的性能可能随时间变化（如依赖的外部 API 变化、用户需求变化）。请设计一个"持续评估系统"：能够定期自动运行评估，监控智能体性能的变化趋势，并在性能下降时及时告警。这个系统应该包含哪些组件？如何设计告警规则？</li>
+<li>评估结果需要以清晰的方式呈现给不同的受众（如开发者、产品经理、用户）。请设计一个"评估报告生成系统"：能够根据受众类型自动生成不同详细程度的报告。开发者报告应该包含哪些技术细节？产品经理报告应该突出哪些业务指标？用户报告应该如何简化和可视化？</li>
+</ul>
+</section><hr class="section-break"><section><h2 id="_3">参考文献</h2>
+<p>[1] Patil, S. G., Zhang, T., Wang, X., &amp; Gonzalez, J. E. (2023). Gorilla: Large Language Model Connected with Massive APIs. arXiv preprint arXiv:2305.15334.</p>
+<p>[2] Qin, Y., Liang, S., Ye, Y., Zhu, K., Yan, L., Lu, Y., ... &amp; Sun, M. (2023). ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs. arXiv preprint arXiv:2307.16789.</p>
+<p>[3] Li, M., Zhao, Y., Yu, B., Song, F., Li, H., Yu, H., ... &amp; Li, Y. (2023). Api-bank: A comprehensive benchmark for tool-augmented llms. arXiv preprint arXiv:2304.08244.</p>
+<p>[4] Mialon, G., Dessì, R., Lomeli, M., Nalmpantis, C., Pasunuru, R., Raileanu, R., ... &amp; Scialom, T. (2023). GAIA: a benchmark for General AI Assistants. arXiv preprint arXiv:2311.12983.</p>
+<p>[5] Liu, X., Yu, H., Zhang, H., Xu, Y., Lei, X., Lai, H., ... &amp; Zhang, D. (2023). AgentBench: Evaluating LLMs as Agents. arXiv preprint arXiv:2308.03688.</p>
+<p>[6] Zhou, S., Xu, F. F., Zhu, H., Zhou, X., Lo, R., Sridhar, A., ... &amp; Neubig, G. (2023). WebArena: A Realistic Web Environment for Building Autonomous Agents. arXiv preprint arXiv:2307.13854.</p>
+<p>[7] Chan, C. M., Chen, W., Su, Y., Yu, J., Xue, W., Zhang, S., ... &amp; Liu, Z. (2023). ChatEval: Towards Better LLM-based Evaluators through Multi-Agent Debate. arXiv preprint arXiv:2308.07201.</p>
+<p>[8] Zhou, X., Zhu, H., Mathur, L., Zhang, R., Yu, H., Qi, Z., ... &amp; Neubig, G. (2023). SOTOPIA: Interactive Evaluation for Social Intelligence in Language Agents. arXiv preprint arXiv:2310.11667.</p>
+<p>[9] Mathematical Association of America. (2024). American Invitational Mathematics Examination (AIME). Retrieved from https://www.maa.org/math-competitions/invitational-competitions/aime</p></section>
+  </article>
+
+  <div class="sketch-divider">· · · · ·</div>
+
+  <!-- paper-analyzer: 页脚 -->
+  <footer>
+    <div style="background:#f6f2ec;border-radius:14px;padding:24px;margin-bottom:20px;">
+      <p style="font-size:1.05em;color:#1a1a2e;margin-bottom:8px;"><strong>延伸阅读</strong></p>
+      <p style="font-size:0.88em;color:#666;margin:4px 0;">
+        Hello-Agents 开源项目：<a href="https://github.com/datawhalechina/Hello-Agents">GitHub</a>
+        &nbsp;·&nbsp;
+        在线阅读：<a href="https://datawhalechina.github.io/hello-agents/">GitBook</a>
+      </p>
+    </div>
+    <div class="footer-links">
+      <a href="/articles/hello-agents.html">📖 全部章节</a>
+      <a href="/articles">← 返回文章列表</a>
+    </div>
+    <p style="margin-top:12px;">基于 paper-craft-skills · Hello-Agents · Datawhale</p>
+  </footer>
+
+</body>
+</html>

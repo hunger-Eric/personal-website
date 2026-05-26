@@ -2,6 +2,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
+import { LocaleProvider } from "@/components/LocaleProvider";
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
 
@@ -14,174 +15,159 @@ vi.mock("next/link", () => ({
 }));
 
 vi.mock("lucide-react", () => ({
-  FileText: () => React.createElement("svg"),
-  Mail: () => React.createElement("svg"),
-  ArrowUpRight: () => React.createElement("svg"),
-  Coffee: () => React.createElement("svg"),
-  GraduationCap: () => React.createElement("svg"),
-  AtSign: () => React.createElement("svg"),
-  MoreHorizontal: () => React.createElement("svg"),
-}));
-
-vi.mock("@/components/Typewriter", () => ({
-  Typewriter: (props: any) =>
-    React.createElement("span", { "data-testid": "typewriter", "data-text": props.text }, props.text),
+  ArrowRight: () => React.createElement("svg", { "data-testid": "icon-arrow-right" }),
+  Blocks: () => React.createElement("svg", { "data-testid": "icon-blocks" }),
+  Bot: () => React.createElement("svg", { "data-testid": "icon-bot" }),
+  BrainCircuit: () => React.createElement("svg", { "data-testid": "icon-brain-circuit" }),
+  FileText: () => React.createElement("svg", { "data-testid": "icon-file-text" }),
+  GitBranch: () => React.createElement("svg", { "data-testid": "icon-git-branch" }),
+  Workflow: () => React.createElement("svg", { "data-testid": "icon-workflow" }),
 }));
 
 vi.mock("@/components/ContributionGraphCard", () => ({
-  ContributionGraphCard: () =>
-    React.createElement("div", { "data-testid": "contribution-graph" }, "Graph"),
+  ContributionGraphCard: (props: any) =>
+    React.createElement("div", { "data-testid": "contribution-graph" }, props.title || "Graph"),
 }));
 
-// Mutable state for siteConfig
-const mockConfigState = vi.hoisted(() => ({
-  socials: {} as Record<string, string>,
-  socialsList: [] as any[],
-  name: "",
+// ── Mock contentCopy ───────────────────────────────────────────────────────
+
+vi.mock("@/config/contentCopy", () => ({
+  getSiteCopy: (locale: string) => ({
+    hero: {
+      line: locale === "zh" ? "AI Native 独立开发者" : "AI Native Independent Developer",
+      description:
+        locale === "zh"
+          ? "构建 AI 驱动的系统、工作流与数字产品。从自动化、知识库到 AI 内容创作，让想法快速变成真正可运行的系统。"
+          : "I build AI-powered systems, workflows, and digital products, from automation pipelines and knowledge systems to AI-assisted creative experiences.",
+    },
+  }),
 }));
 
-vi.mock("@/config/siteConfig", () => ({
-  siteConfig: {
-    get name() { return mockConfigState.name; },
-    get socials() { return mockConfigState.socials; },
-    get socialsList() { return mockConfigState.socialsList; },
-  },
-}));
+// ── Helper ─────────────────────────────────────────────────────────────────
+
+function renderWithLocale(ui: React.ReactElement) {
+  return render(
+    React.createElement(LocaleProvider, null, ui)
+  );
+}
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("HeroShowcaseSection", () => {
-  it("renders the typewriter heading with siteConfig name", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = { github: "https://github.com/test" };
-    mockConfigState.socialsList = [{ key: "email", href: "mailto:test@example.com" }];
+  it("renders hero heading from contentCopy (zh locale)", async () => {
     const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    const { container } = render(React.createElement(HeroShowcaseSection));
-    const tw = container.querySelector('[data-testid="typewriter"]');
-    expect(tw).toBeTruthy();
-    expect(tw?.getAttribute("data-text")).toContain("Kevin");
+    renderWithLocale(React.createElement(HeroShowcaseSection));
+    expect(screen.getByText("AI Native 独立开发者")).toBeTruthy();
   });
 
-  it("renders social links for configured platforms", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = {
-      github: "https://github.com/KevinTrinhDev",
-      linkedin: "https://linkedin.com/in/KevinTrinhDev",
-      tiktok: "https://tiktok.com/@KevinTrinhDev",
-      youtube: "https://youtube.com/@KevinTrinhDev",
-      instagram: "https://instagram.com/KevinTrinhDev",
-    };
-    mockConfigState.socialsList = [{ key: "email", href: "mailto:test@example.com" }];
+  it("renders hero description from contentCopy (zh locale)", async () => {
     const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    const { container } = render(React.createElement(HeroShowcaseSection));
-    const links = container.querySelectorAll('a[target="_blank"]');
-    const hrefs = Array.from(links).map((a) => a.getAttribute("href"));
-    expect(hrefs).toContain("https://github.com/KevinTrinhDev");
-    expect(hrefs).toContain("https://linkedin.com/in/KevinTrinhDev");
-    expect(hrefs).toContain("https://youtube.com/@KevinTrinhDev");
+    renderWithLocale(React.createElement(HeroShowcaseSection));
+    expect(
+      screen.getByText(/构建 AI 驱动的系统、工作流与数字产品/i)
+    ).toBeTruthy();
   });
 
-  it("skips social links with href='#' (unconfigured)", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = { github: "#", linkedin: "#" };
-    mockConfigState.socialsList = [];
+  it("renders AI Native badge", async () => {
     const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    const { container } = render(React.createElement(HeroShowcaseSection));
-    const links = container.querySelectorAll('a[target="_blank"]');
-    expect(links.length).toBe(0);
+    const { container } = renderWithLocale(React.createElement(HeroShowcaseSection));
+    const badge = container.querySelector("span");
+    expect(badge?.textContent).toBe("AI Native 系统构建者");
   });
 
-  it("renders the 'More' mobile link", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = { github: "https://github.com/test" };
-    mockConfigState.socialsList = [{ key: "email", href: "mailto:test@example.com" }];
+  it("renders Bot icon in badge", async () => {
     const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    const { container } = render(React.createElement(HeroShowcaseSection));
-    const moreLink = container.querySelector('a[href="/links"]');
-    expect(moreLink).toBeTruthy();
-    expect(moreLink?.getAttribute("aria-label")).toBe("See all my links");
+    const { container } = renderWithLocale(React.createElement(HeroShowcaseSection));
+    expect(container.querySelector('[data-testid="icon-bot"]')).toBeTruthy();
   });
 
-  it("renders the CTA contact button", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = { github: "https://github.com/test" };
-    mockConfigState.socialsList = [{ key: "email", href: "mailto:test@example.com" }];
+  it("renders CTA link to /projects", async () => {
     const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    const { container } = render(React.createElement(HeroShowcaseSection));
-    const cta = container.querySelector('a[href="mailto:test@example.com"]');
-    expect(cta).toBeTruthy();
-    expect(cta?.textContent).toContain("联系我");
+    const { container } = renderWithLocale(React.createElement(HeroShowcaseSection));
+    const projectsLink = container.querySelector('a[href="/projects"]');
+    expect(projectsLink).toBeTruthy();
+    expect(projectsLink?.textContent).toContain("进入案例档案");
   });
 
-  it("uses # fallback when email is not in socialsList", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = { github: "https://github.com/test" };
-    mockConfigState.socialsList = [];
+  it("renders FileText icon in /projects CTA", async () => {
     const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    const { container } = render(React.createElement(HeroShowcaseSection));
-    const cta = container.querySelector('a[href="#"]');
-    expect(cta).toBeTruthy();
+    const { container } = renderWithLocale(React.createElement(HeroShowcaseSection));
+    expect(container.querySelector('[data-testid="icon-file-text"]')).toBeTruthy();
   });
 
-  it("renders mobile avatar image", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = { github: "https://github.com/test" };
-    mockConfigState.socialsList = [{ key: "email", href: "mailto:test@example.com" }];
+  it("renders ArrowRight icon in /projects CTA", async () => {
     const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    const { container } = render(React.createElement(HeroShowcaseSection));
-    const avatar = Array.from(container.querySelectorAll("img")).find(
-      (img) => img.getAttribute("src") === "/avatar.jpg"
-    );
-    expect(avatar).toBeTruthy();
-    expect(avatar?.getAttribute("alt")).toBe("Kevin");
+    const { container } = renderWithLocale(React.createElement(HeroShowcaseSection));
+    expect(container.querySelector('[data-testid="icon-arrow-right"]')).toBeTruthy();
   });
 
-  it("renders the contribution graph", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = { github: "https://github.com/test" };
-    mockConfigState.socialsList = [{ key: "email", href: "mailto:test@example.com" }];
+  it("renders CTA link to /#about", async () => {
     const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    const { container } = render(React.createElement(HeroShowcaseSection));
+    const { container } = renderWithLocale(React.createElement(HeroShowcaseSection));
+    const aboutLink = container.querySelector('a[href="/#about"]');
+    expect(aboutLink).toBeTruthy();
+    expect(aboutLink?.textContent).toContain("查看工作方式");
+  });
+
+  it("renders lab signals (方向, 方法, 输出)", async () => {
+    const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
+    renderWithLocale(React.createElement(HeroShowcaseSection));
+    expect(screen.getByText("方向")).toBeTruthy();
+    expect(screen.getByText("AI Native Lab")).toBeTruthy();
+    expect(screen.getByText("方法")).toBeTruthy();
+    expect(screen.getByText("工作流优先")).toBeTruthy();
+    expect(screen.getByText("输出")).toBeTruthy();
+    expect(screen.getByText("可运行系统")).toBeTruthy();
+  });
+
+  it("renders capabilities section with 4 items", async () => {
+    const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
+    renderWithLocale(React.createElement(HeroShowcaseSection));
+    
+    // Capability titles
+    expect(screen.getByText("AI 工作流工程")).toBeTruthy();
+    expect(screen.getByText("自动化系统")).toBeTruthy();
+    expect(screen.getByText("知识库与 RAG 系统")).toBeTruthy();
+    expect(screen.getByText("AI 辅助内容生产")).toBeTruthy();
+  });
+
+  it("renders capability descriptions", async () => {
+    const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
+    renderWithLocale(React.createElement(HeroShowcaseSection));
+    
+    expect(
+      screen.getByText(/多模型协同、AI 辅助开发/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/Docker、n8n、API/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/本地知识库、多源检索/i)
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/AI 内容创作、视觉表达/i)
+    ).toBeTruthy();
+  });
+
+  it("renders capability icons (GitBranch, Workflow, BrainCircuit, Blocks)", async () => {
+    const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
+    const { container } = renderWithLocale(React.createElement(HeroShowcaseSection));
+    
+    expect(container.querySelector('[data-testid="icon-git-branch"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="icon-workflow"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="icon-brain-circuit"]')).toBeTruthy();
+    expect(container.querySelector('[data-testid="icon-blocks"]')).toBeTruthy();
+  });
+
+  it("renders contribution graph", async () => {
+    const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
+    const { container } = renderWithLocale(React.createElement(HeroShowcaseSection));
     expect(container.querySelector('[data-testid="contribution-graph"]')).toBeTruthy();
   });
 
-  it("renders description paragraph", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = { github: "https://github.com/test" };
-    mockConfigState.socialsList = [{ key: "email", href: "mailto:test@example.com" }];
+  it("renders contribution graph title (zh)", async () => {
     const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    render(React.createElement(HeroShowcaseSection));
-    expect(screen.getByText(/全栈程序猿/)).toBeTruthy();
-  });
-
-  it("handles null socials gracefully", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = {} as any;
-    mockConfigState.socialsList = [];
-    const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    const { container } = render(React.createElement(HeroShowcaseSection));
-    expect(container.querySelector("h1")).toBeTruthy();
-  });
-
-  it("renders all configured social items", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = { github: "https://github.com/test", linkedin: "https://linkedin.com/in/test" };
-    mockConfigState.socialsList = [{ key: "email", href: "mailto:test@example.com" }];
-    const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    const { container } = render(React.createElement(HeroShowcaseSection));
-    // github and linkedin should appear
-    expect(container.querySelector('a[href="https://github.com/test"]')).toBeTruthy();
-    expect(container.querySelector('a[href="https://linkedin.com/in/test"]')).toBeTruthy();
-  });
-
-  it("handles email social type correctly", async () => {
-    mockConfigState.name = "Kevin";
-    mockConfigState.socials = { email: "mailto:hello@test.com" };
-    mockConfigState.socialsList = [{ key: "email", href: "mailto:hello@test.com" }];
-    const { HeroShowcaseSection } = await import("@/components/sections/HeroShowcaseSection");
-    const { container } = render(React.createElement(HeroShowcaseSection));
-    // Although email isn't in the SOCIALS array, the CTA button should use it
-    const cta = container.querySelector('a[href="mailto:hello@test.com"]');
-    expect(cta).toBeTruthy();
+    renderWithLocale(React.createElement(HeroShowcaseSection));
+    expect(screen.getByText("工作节奏")).toBeTruthy();
   });
 });

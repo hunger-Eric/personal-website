@@ -97,8 +97,14 @@ export default async function ArticlePage({
   }
 
   // Custom-styled articles redirect to their standalone HTML
-  if (article.slug === "arc-agi-progress-towards-agi") {
-    redirect("/articles/arc-agi.html");
+  const CUSTOM_HTML_SLUGS = new Set([
+    "arc-agi-progress-towards-agi",
+    "hello-agents-preface",
+    ...Array.from({ length: 16 }, (_, i) => `hello-agents-ch${String(i + 1).padStart(2, "0")}`),
+  ]);
+
+  if (CUSTOM_HTML_SLUGS.has(article.slug)) {
+    redirect(`/articles/${article.slug}.html`);
   }
 
   const relatedArticles = await getRelatedArticles(slug, 3);

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello-Agents：从零开始构建智能体 — 深度解析</title>
+  <meta name="description" content="如果说2024年是百模大战的元年，那么2025年无疑开启了Agent元年。本教程带你从零开始，理论与实战并重，系统构建智能体应用。" />
+  <meta property="og:title" content="Hello-Agents：从零开始构建智能体" />
+  <meta property="og:description" content="如果说2024年是百模大战的元年，那么2025年无疑开启了Agent元年。本教程带你从零开始，理论与实战并重，系统构建智能体应用。" />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="/images/articles/hello-agents-preface.png" />
+  <link rel="icon" href="/favicon.ico" />
+  <style>
+
+/* === Base: paper-analyzer template === */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Noto Sans SC", "PingFang SC", "Source Han Sans SC", sans-serif;
+  line-height: 1.9;
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  color: #2c2c2c;
+  background: #faf8f5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* === Cover / Header (paper-analyzer: 封面区) === */
+header {
+  text-align: center;
+  padding: 50px 20px 36px;
+  position: relative;
+}
+header::before {
+  content: "✧";
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;
+  color: #d4a574;
+  opacity: 0.7;
+}
+header .chapter-badge {
+  display: inline-block;
+  background: #d4a574;
+  color: #fff;
+  padding: 5px 18px;
+  border-radius: 20px;
+  font-size: 0.82em;
+  font-weight: 600;
+  margin-bottom: 18px;
+  letter-spacing: 0.5px;
+}
+header .cover-img {
+  width: 100%;
+  max-width: 720px;
+  border-radius: 14px;
+  margin: 0 auto 24px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  border: 2px solid #e8e0d8;
+  display: block;
+}
+header h1 {
+  font-size: 2em;
+  margin-bottom: 10px;
+  color: #1a1a2e;
+  font-weight: 700;
+  letter-spacing: 1px;
+  line-height: 1.35;
+}
+header .meta {
+  color: #888;
+  font-size: 0.88em;
+  margin-bottom: 4px;
+}
+header .abstract {
+  font-size: 1.05em;
+  color: #444;
+  margin: 20px auto;
+  line-height: 1.7;
+  max-width: 680px;
+  text-align: left;
+  background: #f0ebe4;
+  border-radius: 14px;
+  padding: 20px 26px;
+  border-left: 4px solid #d4a574;
+  position: relative;
+}
+header .abstract::before {
+  content: "📌";
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  font-size: 18px;
+}
+header .tags { margin: 18px 0 0; text-align: center; }
+.tag {
+  display: inline-block;
+  background: #e8e3dc;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 0.78em;
+  margin: 4px;
+  color: #666;
+}
+
+/* === Sketch Divider === */
+.sketch-divider {
+  text-align: center;
+  margin: 44px 0;
+  color: #ccc;
+  font-size: 22px;
+  letter-spacing: 8px;
+}
+.sketch-divider::before,
+.sketch-divider::after {
+  content: "";
+  display: inline-block;
+  width: 80px;
+  height: 2px;
+  background: #ddd;
+  vertical-align: middle;
+  margin: 0 12px;
+}
+
+/* === Article Body === */
+article { padding-top: 8px; }
+article h2 {
+  margin-top: 48px;
+  padding-bottom: 12px;
+  border-bottom: 3px solid #e0d8c8;
+  color: #1a1a2e;
+  font-size: 1.4em;
+  font-weight: 700;
+  position: relative;
+}
+article h2::before {
+  content: "✦";
+  color: #d4a574;
+  margin-right: 8px;
+  font-size: 0.8em;
+}
+article h3 {
+  margin-top: 32px;
+  color: #2d3436;
+  font-size: 1.15em;
+  font-weight: 600;
+}
+article h4 {
+  margin-top: 24px;
+  color: #3a3a3a;
+  font-size: 1.05em;
+  font-weight: 600;
+}
+article p { margin: 18px 0; color: #3a3a3a; }
+article strong { color: #1a1a2e; font-weight: 600; }
+article em { color: #666; }
+
+/* === Insight Card (paper-illustrate style highlight) === */
+.insight-card {
+  background: #f6f2ec;
+  border-radius: 14px;
+  padding: 22px 26px;
+  margin: 24px 0;
+  border-left: 4px solid #6c8eab;
+}
+.insight-card p:first-child strong { color: #2c5f7c; }
+
+/* === Highlight Box === */
+.highlight-box {
+  background: linear-gradient(135deg, #f5f0eb, #faf6f0);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin: 24px 0;
+  border: 1px solid #e8e0d8;
+}
+.highlight-box strong { color: #c0392b; }
+
+/* === Data Point === */
+.data-point {
+  display: inline-block;
+  background: #1a1a2e;
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-size: 0.9em;
+  font-weight: 600;
+}
+
+/* === Stat Row === */
+.stat-row {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin: 28px 0;
+  flex-wrap: wrap;
+}
+.stat-item {
+  text-align: center;
+  padding: 16px 24px;
+  background: #f0ebe4;
+  border-radius: 14px;
+  min-width: 120px;
+}
+.stat-item .num {
+  display: block;
+  font-size: 1.6em;
+  font-weight: 700;
+  color: #d4a574;
+}
+.stat-item .label {
+  font-size: 0.78em;
+  color: #888;
+  margin-top: 4px;
+}
+
+/* === Tables (paper-analyzer spec) === */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 0.9em;
+  display: block;
+  overflow-x: auto;
+}
+th, td {
+  padding: 12px 16px;
+  border: 1px solid #e0d8c8;
+  text-align: left;
+}
+th {
+  background: #f0ebe4;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+td { background: #fff; }
+
+/* === Blockquote (paper-analyzer spec) === */
+blockquote {
+  border-left: 4px solid #d4a574;
+  margin: 24px 0;
+  padding: 16px 24px;
+  background: #f6f2ec;
+  border-radius: 0 12px 12px 0;
+  color: #555;
+  font-style: italic;
+}
+
+/* === Lists === */
+ul, ol { margin: 16px 0; padding-left: 28px; }
+li { margin: 8px 0; color: #3a3a3a; }
+li::marker { color: #d4a574; }
+
+/* === Code (paper-analyzer spec) === */
+code {
+  background: #f0ebe4;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.88em;
+  font-family: "JetBrains Mono", "Fira Code", monospace;
+  color: #c0392b;
+}
+pre {
+  background: #1a1a2e;
+  color: #e8e0d8;
+  padding: 20px 24px;
+  border-radius: 12px;
+  margin: 24px 0;
+  overflow-x: auto;
+  font-size: 0.88em;
+  line-height: 1.6;
+}
+pre code { background: none; color: inherit; padding: 0; }
+
+/* === Images (paper-illustrate: figure + caption) === */
+article img {
+  max-width: 90%;
+  display: block;
+  margin: 20px auto;
+  border-radius: 12px;
+  border: 2px solid #e8e0d8;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+article p > em:only-child {
+  /* Image captions */
+  display: block;
+  text-align: center;
+  color: #999;
+  font-size: 0.82em;
+  margin-top: -8px;
+  margin-bottom: 20px;
+}
+
+/* === Sections (paper-analyzer: <section> 划分章节) === */
+section { margin-bottom: 8px; }
+.section-break {
+  margin: 36px 0;
+  border: none;
+  border-top: 2px dashed #e0d8c8;
+}
+
+/* === Footer (paper-analyzer spec) === */
+footer {
+  margin-top: 60px;
+  padding: 24px 0;
+  text-align: center;
+  color: #999;
+  font-size: 0.82em;
+  border-top: 1px solid #e0d8c8;
+}
+footer a { color: #d4a574; text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+footer .footer-links {
+  margin: 12px 0;
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+footer .footer-links a {
+  color: #888;
+  font-size: 0.9em;
+}
+
+/* === Navigation === */
+.nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 40px;
+  padding: 12px 20px;
+  background: #f0ebe4;
+  border-radius: 12px;
+  color: #1a1a2e;
+  text-decoration: none;
+  font-size: 0.9em;
+  transition: background 0.2s;
+}
+.nav-back:hover { background: #e8e0d8; }
+
+/* === Responsive === */
+@media (max-width: 640px) {
+  body { padding: 12px; }
+  header h1 { font-size: 1.5em; }
+  header .cover-img { border-radius: 10px; }
+  .stat-row { gap: 12px; }
+  .stat-item { min-width: 90px; padding: 12px; }
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- paper-analyzer: 封面区 -->
+  <header>
+    <img class="cover-img" src="/images/articles/hello-agents-preface.png" alt="Hello-Agents：从零开始构建智能体" />
+    <div class="chapter-badge">Hello-Agents</div>
+    <h1>Hello-Agents：从零开始构建智能体</h1>
+    <p class="meta">Hello-Agents · 从零开始构建智能体</p>
+    <div class="abstract">
+      <p>如果说2024年是百模大战的元年，那么2025年无疑开启了Agent元年。本教程带你从零开始，理论与实战并重，系统构建智能体应用。</p>
+    </div>
+    <div class="tags"><span class="tag">#AI</span> <span class="tag">#Agent</span> <span class="tag">#智能体</span> <span class="tag">#教程</span></div>
+  </header>
+
+  <div class="sketch-divider">· · · · ·</div>
+
+  <!-- paper-analyzer: 正文 -->
+  <article>
+  <section><h1 id="_1">前言</h1>
+<p>自 2022 年底以来，以 ChatGPT 为代表的大语言模型（Large Language Model, LLM）如同一场技术海啸，彻底改变了我们与人工智能交互的方式。LLM 强大的自然语言理解和生成能力，让我们看到了通往通用人工智能（AGI）的曙光。然而，当最初的惊艳沉淀下来，开发者们开始探索下一个前沿：如何让 AI 不仅仅是一个“有问必答”的工具，而是成为一个能自主规划、调用工具、解决复杂问题的“行动者”？</p>
+<p>答案，就是 智能体（Agent）。</p>
+<p>如果说 2024 年是“百模大战”的元年，那么 2025 年无疑开启了“Agent 元年”。我们看到，技术的焦点正从训练更大、更强的基础模型，转向如何构建更聪明、更高效的智能体应用。单个智能体已经能胜任特定领域的任务，而由多个智能体分工、协作、甚至辩论，共同完成一个宏大目标的多智能体系统（Multi-Agent System, MAS），则被视为释放 LLM 全部潜能、解决真实世界复杂问题的关键钥匙。</p>
+<p>然而，当前的生态中存在一个明显的断层：一方面是层出不穷的 Agent 框架和应用，令人眼花缭乱；另一方面，却是系统性知识的极度匮乏。大多数教程聚焦于某个特定框架的 API 调用，学习者往往“知其然，而不知其所以然”，在面对复杂需求时，依然感到力不从心。我们缺少一本能够穿透框架表象，从第一性原理出发，系统讲解智能体设计、构建与协作的实战指南。</p>
+<p>鉴于此，我们发起了 Hello-Agents 项目，希望能为社区提供一本从零开始、理论与实战并重的智能体系统构建指南。我们不仅会带你领略智能体领域最前沿的技术，更会引导你深入其核心架构，理解其经典范式，并最终亲手构建起属于自己的多智能体应用。</p>
+<p>我们相信，最好的学习方式就是动手实践。希望这本教程能成为你探索智能体世界的起点，能够从一名大语言模型的"使用者"，蜕变为一名智能体系统的"构建者"。</p>
+</section><hr class="section-break"><section><h2 id="_2">写给读者的建议</h2>
+<p>欢迎你，未来的智能系统构建者！在开启这段激动人心的旅程之前，请允许我们给你一些小小的建议。</p>
+<p>在阅读项目之前，我们希望你：</p>
+<ul>
+<li>
+<p>具备基础的 Python 编程能力。</p>
+</li>
+<li>
+<p>对大语言模型有基本的概念性了解（例如，知道如何获取 LLM 的 API）。</p>
+</li>
+<li>
+<p>请放心，你无需具备深厚的算法或模型训练背景，项目的重点是应用与构建。</p>
+</li>
+</ul>
+<p>本项目分为五部分，覆盖基础到实战，循序渐进，层层相扣：</p>
+<p>第一部分（基础篇）： 我们将为你铺垫人工智能与 LLM 的核心知识，让你对智能体的诞生背景有宏观的认识。</p>
+<p>第二部分（单体篇）： 这是你动手实践的开始。我们将带你从零开始，构建一个功能完备的单体智能，深入理解其内部的“心智”结构。</p>
+<p>第三部分（高级篇）： 在这里，你的智能体将“学会”思考、拥有记忆和工具，并掌握智能体之间的通信协议，最终完成评估的闭环。</p>
+<p>第四部分（实战篇）： 这是项目的核心价值所在。你将通过一系列精心设计的综合案例，将所学知识融会贯通，在实战中淬炼真金。</p>
+<p>第五部分（展望篇）： 旅程的终点是新的起点。你将亲手打造属于你的“毕业作品”，为你的学习之旅画上一个圆满的句号。</p>
+<p>纸上得来终觉浅，绝知此事要躬行。为了获得最佳的学习效果，我们在项目的<code>code</code>文件夹内提供了配套的全部代码，强烈建议你将理论与实践相结合。请务必亲手运行、调试甚至修改项目里提供的每一份代码。我们鼓励你举一反三，将所学技术应用到自己感兴趣的真实场景中，这才是学习的最终目的。</p>
+<p>最后，作为一个开源项目，我们热忱欢迎你的参与和贡献。当你遇到问题时，可以在我们的社区中提问；当你有了新的想法或发现时，也欢迎你随时加入到项目的共建中来。</p>
+<p>感谢你选择阅读 Hello-agents，祝你学习愉快，探索无限！</p></section>
+  </article>
+
+  <div class="sketch-divider">· · · · ·</div>
+
+  <!-- paper-analyzer: 页脚 -->
+  <footer>
+    <div style="background:#f6f2ec;border-radius:14px;padding:24px;margin-bottom:20px;">
+      <p style="font-size:1.05em;color:#1a1a2e;margin-bottom:8px;"><strong>延伸阅读</strong></p>
+      <p style="font-size:0.88em;color:#666;margin:4px 0;">
+        Hello-Agents 开源项目：<a href="https://github.com/datawhalechina/Hello-Agents">GitHub</a>
+        &nbsp;·&nbsp;
+        在线阅读：<a href="https://datawhalechina.github.io/hello-agents/">GitBook</a>
+      </p>
+    </div>
+    <div class="footer-links">
+      <a href="/articles/hello-agents.html">📖 全部章节</a>
+      <a href="/articles">← 返回文章列表</a>
+    </div>
+    <p style="margin-top:12px;">基于 paper-craft-skills · Hello-Agents · Datawhale</p>
+  </footer>
+
+</body>
+</html>
