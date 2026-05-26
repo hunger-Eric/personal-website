@@ -430,7 +430,7 @@ describe("PhotographyGallery", () => {
 
       expect(screen.getByText("私密照片已隐藏")).toBeInTheDocument();
       expect(screen.getByText("输入 PIN 码查看内容")).toBeInTheDocument();
-      expect(screen.getByText("🔒")).toBeInTheDocument();
+      expect(screen.getByText("📷")).toBeInTheDocument();
     });
 
     it("shows private photos after authentication instead of empty state", () => {

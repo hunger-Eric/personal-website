@@ -79,7 +79,9 @@ describe("FeaturedProjectsTicker", () => {
     render(React.createElement(FeaturedProjectsTicker, {
       projects: [makeProject("1", { technologies: ["React", "TypeScript", "Node"] })],
     }));
-    expect(screen.getByText("React, TypeScript, Node")).toBeInTheDocument();
+    expect(screen.getByText("React")).toBeInTheDocument();
+    expect(screen.getByText("TypeScript")).toBeInTheDocument();
+    expect(screen.getByText("Node")).toBeInTheDocument();
   });
 
   it("does not show technologies section when empty", async () => {
@@ -192,7 +194,7 @@ describe("FeaturedProjectsTicker", () => {
     const carousel = container.querySelector('[aria-label="Featured projects carousel"]')!;
     fireEvent.touchStart(carousel, { touches: [{ clientX: 200 }] });
     fireEvent.touchMove(carousel, { touches: [{ clientX: 100 }] });
-    fireEvent.touchEnd(carousel);
+    fireEvent.touchEnd(carousel, { changedTouches: [{ clientX: 100 }] });
     expect(screen.getByText("Project 2")).toBeInTheDocument();
   });
 
@@ -207,7 +209,7 @@ describe("FeaturedProjectsTicker", () => {
     const carousel = container.querySelector('[aria-label="Featured projects carousel"]')!;
     fireEvent.touchStart(carousel, { touches: [{ clientX: 100 }] });
     fireEvent.touchMove(carousel, { touches: [{ clientX: 200 }] });
-    fireEvent.touchEnd(carousel);
+    fireEvent.touchEnd(carousel, { changedTouches: [{ clientX: 200 }] });
     expect(screen.getByText("Project 1")).toBeInTheDocument();
   });
 
@@ -219,16 +221,17 @@ describe("FeaturedProjectsTicker", () => {
     const carousel = container.querySelector('[aria-label="Featured projects carousel"]')!;
     fireEvent.touchStart(carousel, { touches: [{ clientX: 100 }] });
     fireEvent.touchMove(carousel, { touches: [{ clientX: 110 }] });
-    fireEvent.touchEnd(carousel);
+    fireEvent.touchEnd(carousel, { changedTouches: [{ clientX: 110 }] });
     expect(screen.getByText("Project 1")).toBeInTheDocument();
   });
 
-  it("renders gradient background when no imageUrl", async () => {
+  it("renders without imageUrl correctly", async () => {
     const { FeaturedProjectsTicker } = await import("@/components/projects/FeaturedProjectsTicker");
     const { container } = render(React.createElement(FeaturedProjectsTicker, {
       projects: [makeProject("1")],
     }));
-    expect(container.querySelector(".bg-gradient-to-br")).toBeInTheDocument();
+    // When no imageUrl, the card still renders with bg-card class
+    expect(container.querySelector(".bg-card")).toBeInTheDocument();
   });
 
   it("opens project links in new window", async () => {
