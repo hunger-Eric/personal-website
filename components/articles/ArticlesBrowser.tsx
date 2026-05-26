@@ -75,15 +75,17 @@ function ChapterAccordion({
         />
       </button>
       <div
-        className={`transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0"
+        className={`grid transition-all duration-300 ease-in-out ${
+          isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         }`}
       >
-        <div className="border-t border-border bg-muted/30 p-5">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {articles.map((article) => (
-              <ArticleCard key={article.slug} article={article} />
-            ))}
+        <div className="overflow-hidden">
+          <div className="border-t border-border bg-muted/30 p-5">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {articles.map((article) => (
+                <ArticleCard key={article.slug} article={article} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -138,7 +140,7 @@ function CategoryGroup({
 export function ArticlesBrowser({ articles }: Props) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
-  const [openChapters, setOpenChapters] = useState<Set<number>>(new Set([1])); // Default to first chapter open
+  const [openChapters, setOpenChapters] = useState<Set<number>>(new Set()); // All collapsed by default
 
   const { preface, chapters, nonChapterArticles } = useMemo(() => {
     const prefaceArticle = articles.find((a) => a.chapter === 0);
