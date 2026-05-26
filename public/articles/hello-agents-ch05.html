@@ -74,19 +74,6 @@ header .meta {
   font-size: 0.88em;
   margin-bottom: 4px;
 }
-header .abstract {
-  font-size: 1.05em;
-  color: #444;
-  margin: 20px auto;
-  line-height: 1.7;
-  max-width: 680px;
-  text-align: left;
-  background: #f0ebe4;
-  border-radius: 14px;
-  padding: 20px 26px;
-  border-left: 4px solid #d4a574;
-  position: relative;
-}
 header .abstract::before {
   content: "📌";
   position: absolute;
@@ -1085,92 +1072,7 @@ Arxiv插件配置
 - <strong>深度业务集成、自动化流程</strong>: 优先选择 n8n</p>
 <p>值得强调的是，低代码平台并非要取代代码开发，而是提供了一种互补的选择。在实际项目中，我们完全可以根据不同阶段的需求灵活切换:用低代码平台快速验证想法，用代码实现精细化控制;用平台处理标准化流程，用代码处理特殊逻辑。这种"混合开发"的思维，才是智能体工程化的最佳实践。</p>
 <p>下一章，我们将进一步探讨更加底层的智能体框架，帮助读者构建更加可靠、有趣的应用。</p>
-</section><hr class="section-break"><section><h2 id="_2">习题</h2>
-<ol>
-<li>
-<p>本章介绍了三个各具特色的低代码平台：<code>Coze</code>、<code>Dify</code> 和 <code>n8n</code>。请分析：</p>
-</li>
-<li>
-<p>这三个平台在核心定位和设计理念上有什么区别？它们分别解决了智能体开发中的哪些痛点？</p>
-</li>
-<li>
-<p>低代码平台与纯代码开发各有优劣，此外，也有部分功能用平台实现，部分功能用代码实现的"混合开发"模式。思考三种开发模式分别适合哪些场景？请举例说明。</p>
-</li>
-<li>
-<p>在5.2节的 <code>Coze</code> 案例中，我们构建了一个"每日AI简报"智能体。请基于此案例进行扩展思考：</p>
-</li>
-</ol>
-<blockquote>
-<p><strong>提示</strong>：这是一道动手实践题，建议实际操作</p>
-</blockquote>
-<ul>
-<li>当前的简报生成是被动触发的（用户主动询问）。如何改造这个智能体，使其能够每天早上8点自动生成简报并推送到指定的飞书群或微信公众号？</li>
-<li>简报的质量高度依赖于提示词设计。请尝试优化5.2.2节中的提示词，使生成的简报更加专业、结构更清晰，或者增加"热点分析"、"趋势预测"等新功能。</li>
-<li>
-<p><code>Coze</code> 当前不支持 <code>MCP</code> 协议被认为是一个重要局限（在习题的写作过程中，<code>feature-mcp</code> 虽然在 <a href="https://github.com/coze-dev/coze-studio/issues/2218"><code>Coze Studio Q4 2025 Product Roadmap</code></a> 中了，但是还尚未实现）。请简述，什么是 <code>MCP</code> 协议？它为什么重要？如果 <code>Coze</code> 未来支持 <code>MCP</code>，会带来哪些新的可能性？</p>
-</li>
-<li>
-<p>在5.3节的 <code>Dify</code> 案例中，我们构建了一个功能全面的"超级智能体个人助手"。请深入分析：</p>
-</li>
-<li>
-<p>案例中使用了"问题分类器"进行智能路由，将不同类型的请求分发到不同的子智能体。这种多智能体架构有什么优势？如果不使用分类器，而是让一个单一的智能体处理所有任务，会遇到什么问题？</p>
-</li>
-<li>数据查询模块需要为大模型提供清晰的表结构信息。如果数据库有50张表、每张表有20个字段，直接将所有 <code>DDL</code> 语句放入提示词会导致上下文过长。请设计一个更智能的方案来解决这个问题。</li>
-<li>
-<p><code>Dify</code> 支持本地部署和云端部署两种模式。请对比这两种模式在数据安全、成本、性能、维护难度等方面的差异，并说明各自适用的场景。</p>
-</li>
-<li>
-<p>在5.4节的 <code>n8n</code> 案例中，我们构建了一个"智能邮件助手"。请思考以下问题：</p>
-</li>
-</ul>
-<blockquote>
-<p><strong>提示</strong>：这是一道动手实践题，建议实际操作</p>
-</blockquote>
-<ul>
-<li>案例中使用的 <code>Simple Vector Store</code> 和 <code>Simple Memory</code> 都是基于内存的，服务重启后数据会丢失。请查阅 <code>n8n</code> 文档，尝试将其替换为持久化存储方案（如 <code>Pinecone</code>、<code>Redis</code> 等），并说明配置过程。</li>
-<li>当前的邮件助手只能处理文本邮件。如果用户发送的邮件中包含附件（如 <code>PDF</code> 文档、图片），你会如何扩展这个工作流，使智能体能够理解附件内容并做出相应回复？</li>
-<li>
-<p><code>n8n</code> 的核心优势在于"连接"能力。请设计一个更复杂的自动化场景：当客户在电商平台下单后，自动触发一系列操作（发送确认邮件、更新库存数据库、通知物流系统、在 <code>CRM</code> 中记录客户信息）。请画出工作流的节点连接图并说明关键配置。</p>
-</li>
-<li>
-<p>提示词工程在低代码平台中同样至关重要。本章展示了多个平台的提示词设计案例。请分析：</p>
-</li>
-<li>
-<p>对比5.2.2节（<code>Coze</code>）、5.3.2节（<code>Dify</code>）和5.4.4节（<code>n8n</code>）中的提示词设计，它们在结构、风格和侧重点上有什么不同？这些差异是否与平台特性相关？</p>
-</li>
-<li>
-<p>在 <code>Dify</code> 的"文案优化模块"中，提示词要求输出"超过500字"。这种对输出长度的硬性要求是否合理？在什么情况下应该限制输出长度，什么情况下应该让模型自由发挥？</p>
-</li>
-<li>
-<p>工具和插件是低代码平台的核心能力扩展方式。请思考：</p>
-</li>
-<li>
-<p><code>Coze</code> 拥有丰富的插件商店，<code>Dify</code> 拥有8000+的插件市场，<code>n8n</code> 拥有数百个预置节点。如果这三个平台都没有你需要的某个特定工具（如"连接公司内部系统的 <code>API</code>"），你会如何解决？</p>
-</li>
-<li>在5.3.2节中，我们使用了 <code>MCP</code> 协议集成了高德地图、饮食推荐等服务。请调研并说明：<code>MCP</code> 协议与传统的 <code>RESTful API</code> 以及 <code>Tool Calling</code> 有哪些区别？为什么说 <code>MCP</code> 是智能体工具调用的"新标准"？</li>
-<li>
-<p>假设你要为 <code>Dify</code> 开发一个自定义插件，使其能够调用你公司的内部知识库系统。请查阅 <code>Dify</code> 的插件开发文档，概述开发流程和关键技术点。</p>
-</li>
-<li>
-<p>平台选型是智能体产品成功的关键决策之一。假设你是一家初创公司的技术负责人，公司计划开发以下三个AI应用，请为每个应用选择最合适的平台（<code>Coze</code>、<code>Dify</code>、<code>n8n</code> 或纯代码开发），并详细说明理由：</p>
-</li>
-</ul>
-<p><strong>应用A</strong>：面向C端用户的"AI写作助手"小程序，需要快速上线验证市场需求，预算有限，团队中只有1名前端工程师和1名产品经理。</p>
-<p><strong>应用B</strong>：面向企业客户的"智能合同审核系统"，需要处理敏感的法律文档，要求数据不能离开客户的私有环境，需要与客户现有的OA系统、文档管理系统深度集成。</p>
-<p><strong>应用C</strong>：内部使用的"研发效能提升工具"，需要自动化处理代码审查、测试报告生成、Bug跟踪、项目进度同步等多个研发流程环节，团队有较强的技术实力。</p>
-<p>对于每个应用，请从以下维度（包括但不限于）进行分析：</p>
-<blockquote>
-<p><strong>提示</strong>：平台能力是否满足需求，多快能上线，开发成本、运营成本，后续迭代的难度，未来功能扩展的空间</p>
-</blockquote>
-<ul>
-<li>技术可行性</li>
-<li>开发效率</li>
-<li>成本控制</li>
-<li>可维护性</li>
-<li>可扩展性</li>
-<li>数据安全与合规性</li>
-</ul>
-</section><hr class="section-break"><section><h2 id="_3">参考文献</h2>
+</section><hr class="section-break"><section></section><hr class="section-break"><section><h2 id="_3">参考文献</h2>
 <p>[1] Coze - 新一代 AI 应用开发平台. https://www.coze.cn/</p>
 <p>[2] Dify - 开源的 LLM 应用开发平台. https://dify.ai/</p>
 <p>[3] n8n - 工作流自动化工具. https://n8n.io/</p></section>

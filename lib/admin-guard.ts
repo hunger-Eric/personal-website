@@ -9,8 +9,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 
-/** Master switch: disable admin entirely by removing ENABLE_ADMIN env var */
+/** Master switch: admin is only available in local development.
+ *  On Vercel (VERCEL=1), admin is completely disabled — all routes
+ *  return 404 regardless of env vars.  This prevents the admin panel
+ *  and API from being exposed on the public internet.
+ */
 export function isAdminEnabled(): boolean {
+  if (process.env.VERCEL === "1") return false;
   return process.env.ENABLE_ADMIN === "true";
 }
 

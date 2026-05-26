@@ -74,19 +74,6 @@ header .meta {
   font-size: 0.88em;
   margin-bottom: 4px;
 }
-header .abstract {
-  font-size: 1.05em;
-  color: #444;
-  margin: 20px auto;
-  line-height: 1.7;
-  max-width: 680px;
-  text-align: left;
-  background: #f0ebe4;
-  border-radius: 14px;
-  padding: 20px 26px;
-  border-left: 4px solid #d4a574;
-  position: relative;
-}
 header .abstract::before {
   content: "📌";
   position: absolute;
@@ -359,7 +346,7 @@ footer .footer-links a {
     <h1>第八章 记忆与检索</h1>
     <p class="meta">Hello-Agents · 从零开始构建智能体 · 第三部分：高级知识扩展</p>
     <div class="abstract">
-      <p>为智能体赋予“记忆”——从短期到长期，从RAG检索到存储系统，让Agent不再健忘。</p>
+      <p>为智能体赋予记忆——从短期记忆到长期记忆，从RAG检索到存储系统，让Agent不再健忘。</p>
     </div>
     <div class="tags"><span class="tag">#AI</span> <span class="tag">#Agent</span> <span class="tag">#记忆</span> <span class="tag">#RAG</span> <span class="tag">#检索</span></div>
   </header>
@@ -2133,67 +2120,7 @@ def generate_report(self, save_to_file: bool = True) -&gt; Dict[str, Any]:
   <em>图 8.11 Hello-agents第八章知识总结</em></p>
 <p>本章展示了HelloAgents框架记忆系统和RAG技术的能力，我们成功构建了一个具有真正"智能"的学习助手。这种架构可以轻松扩展到其他应用场景，如客户服务、技术支持、个人助理等领域。</p>
 <p>在下一章中，我们将继续探索如何通过上下文工程进一步提升智能体的对话质量和用户体验，敬请期待！</p>
-</section><hr class="section-break"><section><h2 id="_2">习题</h2>
-<blockquote>
-<p><strong>提示</strong>：部分习题没有标准答案，重点在于培养学习者对记忆系统和RAG技术的综合理解和实践能力。</p>
-</blockquote>
-<ol>
-<li>
-<p>本章介绍了四种记忆类型：工作记忆、情景记忆、语义记忆和感知记忆。请分析：</p>
-</li>
-<li>
-<p>在8.2.5节中，每种记忆类型都有独特的评分公式。请对比情景记忆和语义记忆的评分机制，解释为什么情景记忆更强调"时间近因性"（权重0.2），而语义记忆更强调"图检索"（权重0.3）？</p>
-</li>
-<li>如果要设计一个"个人健康管理助手"（需要记录用户的饮食、运动、睡眠数据，并提供健康建议），你会如何组合使用这四种记忆类型？请为每种记忆类型设计具体的应用场景。</li>
-<li>
-<p>工作记忆采用TTL（Time To Live）机制自动清理过期数据。请思考：在什么情况下，重要的工作记忆应该被"整合"（consolidate）为长期记忆？如何设计一个自动整合的触发条件？</p>
-</li>
-<li>
-<p>在8.3节的RAG系统中，我们使用MarkItDown将各种格式文档统一转换为Markdown。请深入思考：</p>
-</li>
-</ol>
-<blockquote>
-<p><strong>提示</strong>：这是一道动手实践题，建议实际操作</p>
-</blockquote>
-<ul>
-<li>当前的智能分块策略基于Markdown的标题层次（#、##、###）进行分割。如果处理的是没有明确标题结构的文档（如小说、法律条文），应该如何优化分块策略？请尝试实现一个基于"语义边界"的分块算法。</li>
-<li>在8.3.5节中介绍了MQE（多查询扩展）和HyDE（假设文档嵌入）两种高级检索策略。请选择一个实际场景（如技术文档问答、医疗知识检索），对比基础检索、MQE和HyDE三种方法的效果差异，并分析各自的适用场景。</li>
-<li>
-<p>RAG系统的检索质量很大程度上取决于嵌入模型的选择。请对比本章提到的三种嵌入方案（百炼API、本地Transformer、TF-IDF），从准确性、速度、成本、离线部署等维度进行评估，并给出选型建议。</p>
-</li>
-<li>
-<p>记忆系统的"遗忘"机制是模拟人类认知的重要设计。基于8.2.3节的MemoryTool，请完成以下扩展实践：</p>
-</li>
-</ul>
-<blockquote>
-<p><strong>提示</strong>：这是一道动手实践题，建议实际操作</p>
-</blockquote>
-<ul>
-<li>当前提供了三种遗忘策略：基于重要性、基于时间、基于容量。请设计并实现一个"智能遗忘"策略，综合考虑重要性、访问频率、时间衰减等多个因素，使用加权评分来决定哪些记忆应该被遗忘。</li>
-<li>在长期运行的智能体系统中，记忆数据库可能会积累大量数据。请设计一个"记忆归档"机制：将长期不用但可能有价值的记忆转移到冷存储，需要时再恢复。这个机制应该如何与现有的四种记忆类型集成？</li>
-<li>
-<p>思考：如果智能体需要"忘记"某些敏感信息（如用户隐私数据），仅仅从数据库删除是否足够？在使用向量数据库和图数据库的情况下，如何确保数据被彻底清除？</p>
-</li>
-<li>
-<p>在8.4节的"智能学习助手"案例中，我们结合了MemoryTool和RAGTool。请深入分析：</p>
-</li>
-<li>
-<p>案例中的<code>ask_question()</code>方法同时使用了RAG检索和记忆检索。请分析：在什么情况下应该优先使用RAG？在什么情况下应该优先使用Memory？如何设计一个"智能路由"机制来自动选择最合适的检索方式？</p>
-</li>
-<li>当前的学习报告（<code>generate_report()</code>）只包含统计信息。请扩展这个功能，设计一个更智能的学习报告生成器：能够分析用户的学习轨迹、识别知识盲点、推荐下一步学习内容。这需要用到哪些记忆类型和检索策略？</li>
-<li>
-<p>假设你要将这个学习助手部署为多用户的Web服务，每个用户都有独立的记忆和知识库。请设计数据隔离方案：如何在Qdrant和Neo4j中实现用户级别的数据隔离？如何优化多用户场景下的检索性能？</p>
-</li>
-<li>
-<p>语义记忆使用了Neo4j图数据库来存储知识图谱。请思考：</p>
-</li>
-<li>
-<p>在8.2.5节的语义记忆实现中，系统会自动提取实体和关系构建知识图谱。请分析：这种自动提取的准确性如何？在什么情况下可能会提取出错误的实体或关系？如何设计一个"知识图谱质量评估"机制？</p>
-</li>
-<li>知识图谱的一个重要优势是支持复杂的关系推理。请设计一个查询场景，充分利用Neo4j的图查询能力（如多跳关系、路径查找），实现纯向量检索无法完成的任务。</li>
-<li>对比语义记忆的"向量检索+图检索"混合策略与纯向量检索：在什么类型的查询中，图检索能够带来显著的性能提升？请用具体例子说明。</li>
-</ul>
-</section><hr class="section-break"><section><h2 id="_3">参考文献</h2>
+</section><hr class="section-break"><section></section><hr class="section-break"><section><h2 id="_3">参考文献</h2>
 <p>[1] Atkinson, R. C., &amp; Shiffrin, R. M. (1968). Human memory: A proposed system and its control processes. In <em>Psychology of learning and motivation</em> (Vol. 2, pp. 89-195). Academic press.</p></section>
   </article>
 

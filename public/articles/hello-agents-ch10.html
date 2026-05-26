@@ -74,19 +74,6 @@ header .meta {
   font-size: 0.88em;
   margin-bottom: 4px;
 }
-header .abstract {
-  font-size: 1.05em;
-  color: #444;
-  margin: 20px auto;
-  line-height: 1.7;
-  max-width: 680px;
-  text-align: left;
-  background: #f0ebe4;
-  border-radius: 14px;
-  padding: 20px 26px;
-  border-left: 4px solid #d4a574;
-  position: relative;
-}
 header .abstract::before {
   content: "📌";
   position: absolute;
@@ -2418,67 +2405,7 @@ agent.add_tool(ANPTool(...))
 </ol>
 <p><strong>恭喜你完成第十章的学习！</strong></p>
 <p>你现在已经掌握了智能体通信协议的核心知识。继续加油！🚀</p>
-</section><hr class="section-break"><section><h2 id="_2">习题</h2>
-<blockquote>
-<p><strong>提示</strong>：部分习题没有标准答案，重点在于培养学习者对智能体通信协议的综合理解和实践能力。</p>
-</blockquote>
-<ol>
-<li>
-<p>本章介绍了三种智能体通信协议：MCP、A2A 和 ANP。请分析：</p>
-</li>
-<li>
-<p>在 10.1.2 节中对比了三种协议的设计理念。请深入分析：为什么 MCP 强调"上下文共享"，A2A 强调"对话式协作"，而 ANP 强调"网络拓扑"？这些设计理念分别解决了什么核心问题？</p>
-</li>
-<li>假设你要构建一个"智能客服系统"，需要以下功能：（1）访问客户数据库和订单系统；（2）多个专业客服智能体协作处理复杂问题；（3）支持大规模并发用户请求。请为每个功能选择最合适的协议，并说明理由。</li>
-<li>
-<p>三种协议是否可以组合使用？请设计一个实际应用场景，展示如何同时使用 MCP、A2A 和 ANP 来构建一个完整的智能体系统。画出系统架构图并说明各协议的职责。</p>
-</li>
-<li>
-<p>MCP（Model Context Protocol）是智能体与工具通信的标准协议。基于 10.2 节的内容，请深入思考：</p>
-</li>
-</ol>
-<blockquote>
-<p><strong>提示</strong>：这是一道动手实践题，建议实际操作</p>
-</blockquote>
-<ul>
-<li>在 10.2.3 节的 MCP 服务器实现中，我们定义了<code>list_tools</code>、<code>call_tool</code>等核心方法。请扩展这个实现，添加一个新的 MCP 服务器，提供以下工具：（1）数据库查询工具；（2）数据可视化工具；（3）报表生成工具。要求工具之间能够协作完成复杂的数据分析任务。</li>
-<li>MCP 协议支持"资源"（Resources）和"提示"（Prompts）两个重要概念，但本章主要聚焦于"工具"（Tools）。请查阅 MCP 官方文档，了解 Resources 和 Prompts 的设计目的，并设计一个应用场景，展示如何利用这三个核心概念构建更强大的智能体系统。</li>
-<li>
-<p>MCP 使用 JSON-RPC 2.0 作为底层通信协议，通过 stdio 进行进程间通信。请分析：这种设计有什么优势和局限性？如果需要支持远程 MCP 服务器（通过 HTTP/WebSocket 访问），应该如何扩展当前的实现？</p>
-</li>
-<li>
-<p>A2A（Agent-to-Agent Protocol）支持智能体间的对话式协作。基于 10.3 节的内容，请完成以下扩展实践：</p>
-</li>
-</ul>
-<blockquote>
-<p><strong>提示</strong>：这是一道动手实践题，建议实际操作</p>
-</blockquote>
-<ul>
-<li>在 10.3.4 节的"研究团队"案例中，研究员和撰写员通过 A2A 协议协作完成论文写作。请扩展这个案例，添加第三个智能体"审稿人"（Reviewer），它能够评审论文质量并提出修改建议。设计三个智能体之间的协作流程，并实现完整的代码。</li>
-<li>A2A 协议定义了<code>task</code>、<code>task_result</code>等消息类型。请分析：如果协作过程中出现冲突（如两个智能体对同一问题有不同意见），应该如何设计冲突解决机制？请扩展 A2A 协议，添加"协商"（negotiation）和"投票"（voting）等消息类型。</li>
-<li>
-<p>对比 A2A 协议与第六章介绍的 AutoGen、CAMEL 等多智能体框架：A2A 作为标准协议，与这些框架的关系是什么？它们能否互相替代？请设计一个方案，让基于 A2A 协议的智能体能够与 AutoGen 框架中的智能体进行通信。</p>
-</li>
-<li>
-<p>ANP（Agent Network Protocol）支持大规模智能体网络。基于 10.4 节的内容，请深入分析：</p>
-</li>
-<li>
-<p>在 10.4.2 节中介绍了 ANP 的网络拓扑设计，包括星型、网状、分层等结构。请分析：在什么场景下应该选择哪种拓扑结构？如果网络规模从 10 个智能体扩展到 1000 个智能体，拓扑结构应该如何演进？</p>
-</li>
-<li>ANP 协议支持"路由"（routing）和"发现"（discovery）机制，让智能体能够动态找到合适的协作伙伴。请设计一个"智能路由算法"：根据任务类型、智能体能力、网络负载等因素，自动选择最优的消息路由路径。</li>
-<li>
-<p>在 10.4.4 节的"智能城市"案例中，多个智能体协作管理城市系统。请思考：如果某个关键智能体（如交通管理智能体）出现故障，整个系统应该如何应对？请设计一个"容错机制"，包括故障检测、备份切换、状态恢复等功能。</p>
-</li>
-<li>
-<p>智能体通信协议的安全性和隐私保护是实际应用中的关键问题。请思考：</p>
-</li>
-<li>
-<p>在 10.2.4 节的 MCP 客户端实现中，智能体可以调用 MCP 服务器提供的任何工具。请分析：这种设计存在什么安全风险？如果 MCP 服务器提供了危险操作（如删除文件、执行系统命令），应该如何设计权限控制机制？</p>
-</li>
-<li>A2A 和 ANP 协议涉及多个智能体之间的通信，可能包含敏感信息（如用户隐私数据、商业机密）。请设计一个"端到端加密"方案：确保消息在传输过程中不被窃听或篡改，同时支持智能体身份认证和访问控制。</li>
-<li>在大规模智能体网络中，恶意智能体可能会发送虚假信息、发起拒绝服务攻击或窃取其他智能体的数据。请设计一个"信任评估系统"：根据智能体的历史行为、协作质量、社区评价等因素，动态评估每个智能体的可信度，并据此调整通信策略。</li>
-</ul>
-</section><hr class="section-break"><section><h2 id="_3">参考文献</h2>
+</section><hr class="section-break"><section></section><hr class="section-break"><section><h2 id="_3">参考文献</h2>
 <p>[1] Anthropic. (2024). <em>Model Context Protocol</em>. Retrieved October 7, 2025, from https://modelcontextprotocol.io/</p>
 <p>[2] The A2A Project. (2025). <em>A2A Protocol: An open protocol for agent-to-agent communication</em>. Retrieved October 7, 2025, from https://a2a-protocol.org/</p>
 <p>[3] Chang, G., Lin, E., Yuan, C., Cai, R., Chen, B., Xie, X., &amp; Zhang, Y. (2025). <em>Agent Network Protocol technical white paper</em>. arXiv. https://doi.org/10.48550/arXiv.2508.00007</p></section>

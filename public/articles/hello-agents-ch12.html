@@ -74,19 +74,6 @@ header .meta {
   font-size: 0.88em;
   margin-bottom: 4px;
 }
-header .abstract {
-  font-size: 1.05em;
-  color: #444;
-  margin: 20px auto;
-  line-height: 1.7;
-  max-width: 680px;
-  text-align: left;
-  background: #f0ebe4;
-  border-radius: 14px;
-  padding: 20px 26px;
-  border-left: 4px solid #d4a574;
-  position: relative;
-}
 header .abstract::before {
   content: "📌";
   position: absolute;
@@ -359,7 +346,7 @@ footer .footer-links a {
     <h1>第十二章 智能体性能评估</h1>
     <p class="meta">Hello-Agents · 从零开始构建智能体</p>
     <div class="abstract">
-      <p>核心指标、基准测试与评估框架——如何科学地衡量一个智能体“到底行不行”。</p>
+      <p>核心指标、基准测试与评估框架——如何科学地衡量一个智能体到底行不行。</p>
     </div>
     <div class="tags"><span class="tag">#AI</span> <span class="tag">#Agent</span> <span class="tag">#评估</span> <span class="tag">#基准测试</span> <span class="tag">#性能</span></div>
   </header>
@@ -2613,67 +2600,7 @@ python data_generation/run_complete_evaluation.py 30 3.0
 </ul>
 <p>在下一章中，我们将探讨如何将 HelloAgents 框架应用于实际项目中。</p>
 <p><strong>继续加油！</strong> 💪</p>
-</section><hr class="section-break"><section><h2 id="_2">习题</h2>
-<blockquote>
-<p><strong>提示</strong>：部分习题没有标准答案，重点在于培养学习者对智能体性能评估的综合理解和实践能力。</p>
-</blockquote>
-<ol>
-<li>
-<p>本章介绍了多个智能体评估基准。请分析：</p>
-</li>
-<li>
-<p>在 12.1.2 节中介绍了 BFCL、GAIA、AgentBench 等评估基准。请对比 BFCL 和 GAIA：它们分别评估智能体的哪些核心能力？为什么 BFCL 使用 AST 匹配算法，而 GAIA 使用准精确匹配（Quasi Exact Match）？这两种评估方法各有什么优缺点？</p>
-</li>
-<li>假设你要构建一个"智能客服系统"，需要评估以下能力：（1）理解用户意图的准确性；（2）调用后台 API 的正确性；（3）回答的友好性和专业性；（4）处理异常情况的鲁棒性。请为每个能力选择或设计合适的评估指标和方法。</li>
-<li>
-<p>在 12.1.1 节中提到，智能体评估面临"输出不确定性"、"评估标准多样性"、"评估成本高昂"三大挑战。请针对每个挑战提出具体的解决方案，并分析方案的可行性和局限性。</p>
-</li>
-<li>
-<p>BFCL（Berkeley Function Calling Leaderboard）是评估工具调用能力的重要基准。基于 12.2 节的内容，请深入思考：</p>
-</li>
-</ol>
-<blockquote>
-<p><strong>提示</strong>：这是一道动手实践题，建议实际操作</p>
-</blockquote>
-<ul>
-<li>在 12.2.3 节的 AST 匹配算法中，我们通过比较抽象语法树来判断函数调用是否正确。请分析：为什么 AST 匹配比简单的字符串匹配更合适？在什么情况下 AST 匹配可能会产生误判（假阳性或假阴性）？如何改进 AST 匹配算法来提高准确性？</li>
-<li>BFCL 数据集包含 simple、multiple、parallel、irrelevance 四个类别。请为每个类别设计 2-3 个新的测试样本，要求能够测试智能体在该类别下的边界情况或容易出错的场景。</li>
-<li>
-<p>请基于 12.2.4 节的代码，扩展 BFCL 评估器，添加以下功能：（1）支持评估工具调用的执行顺序（对于有依赖关系的多个工具调用）；（2）评估工具调用的效率（如是否使用了最少的调用次数）；（3）生成详细的错误分析报告（如哪些类型的错误最常见）。</p>
-</li>
-<li>
-<p>GAIA（General AI Assistants）评估智能体的综合能力。基于 12.3 节的内容，请完成以下扩展实践：</p>
-</li>
-</ul>
-<blockquote>
-<p><strong>提示</strong>：这是一道动手实践题，建议实际操作</p>
-</blockquote>
-<ul>
-<li>在 12.3.2 节中介绍了 GAIA 的三个难度级别（Level 1/2/3）。请分析：这三个级别在任务复杂度、所需能力、评估标准等方面有什么差异？如果要设计 Level 4（超高难度），应该包含什么类型的任务？</li>
-<li>GAIA 使用"准精确匹配"算法来评估答案的正确性。请分析：这种方法如何处理答案的多样性（如"42"、"四十二"、"42.0"都应该被认为是正确的）？在什么情况下准精确匹配可能不够用？请设计一个更智能的答案匹配算法，能够处理语义等价的答案。</li>
-<li>
-<p>请基于 12.3.4 节的代码，实现一个"自定义 GAIA 评估集"：选择一个特定领域（如医疗、法律、金融），设计 10 个真实世界问题，并实现完整的评估流程。要求问题涵盖不同难度级别，并提供标准答案和评分标准。</p>
-</li>
-<li>
-<p>LLM Judge 是使用大语言模型进行评估的新兴方法。基于 12.4 节的内容，请深入分析：</p>
-</li>
-<li>
-<p>在 12.4.2 节中，我们使用 GPT-4 作为评判者来评估智能体的回答质量。请分析：LLM Judge 相比传统的规则匹配或指标计算有什么优势？它存在哪些潜在的偏见或局限性（如对某些回答风格的偏好、对长度的敏感性）？</p>
-</li>
-<li>LLM Judge 的评分标准设计至关重要。请为以下三个不同的评估场景设计详细的评分标准（包括评分维度、权重、示例）：（1）代码生成质量评估；（2）创意写作质量评估；（3）技术文档质量评估。</li>
-<li>
-<p>在 12.4.3 节中提到，可以使用多个 LLM Judge 进行"评审团"式评估。请设计一个"多评委评估系统"：使用 3-5 个不同的 LLM（如 GPT-4、Claude、Qwen）作为评委，如何聚合它们的评分？如何处理评委之间的分歧？如何检测和过滤异常评分？</p>
-</li>
-<li>
-<p>智能体评估的实践应用需要考虑多个方面。请思考：</p>
-</li>
-<li>
-<p>在实际项目中，评估往往需要在"评估成本"和"评估质量"之间权衡。请设计一个"分层评估策略"：（1）快速评估（低成本，用于日常开发迭代）；（2）标准评估（中等成本，用于版本发布前）；（3）全面评估（高成本，用于重大更新或对外发布）。每层应该包含哪些评估项目？如何设计评估流程？</p>
-</li>
-<li>智能体的性能可能随时间变化（如依赖的外部 API 变化、用户需求变化）。请设计一个"持续评估系统"：能够定期自动运行评估，监控智能体性能的变化趋势，并在性能下降时及时告警。这个系统应该包含哪些组件？如何设计告警规则？</li>
-<li>评估结果需要以清晰的方式呈现给不同的受众（如开发者、产品经理、用户）。请设计一个"评估报告生成系统"：能够根据受众类型自动生成不同详细程度的报告。开发者报告应该包含哪些技术细节？产品经理报告应该突出哪些业务指标？用户报告应该如何简化和可视化？</li>
-</ul>
-</section><hr class="section-break"><section><h2 id="_3">参考文献</h2>
+</section><hr class="section-break"><section></section><hr class="section-break"><section><h2 id="_3">参考文献</h2>
 <p>[1] Patil, S. G., Zhang, T., Wang, X., &amp; Gonzalez, J. E. (2023). Gorilla: Large Language Model Connected with Massive APIs. arXiv preprint arXiv:2305.15334.</p>
 <p>[2] Qin, Y., Liang, S., Ye, Y., Zhu, K., Yan, L., Lu, Y., ... &amp; Sun, M. (2023). ToolLLM: Facilitating Large Language Models to Master 16000+ Real-world APIs. arXiv preprint arXiv:2307.16789.</p>
 <p>[3] Li, M., Zhao, Y., Yu, B., Song, F., Li, H., Yu, H., ... &amp; Li, Y. (2023). Api-bank: A comprehensive benchmark for tool-augmented llms. arXiv preprint arXiv:2304.08244.</p>
