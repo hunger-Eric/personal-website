@@ -98,7 +98,6 @@ export default async function ArticlePage({
 
   // Custom-styled articles redirect to their standalone HTML
   const CUSTOM_HTML_SLUGS = new Set([
-    "arc-agi-progress-towards-agi",
     "hello-agents-preface",
     ...Array.from({ length: 16 }, (_, i) => `hello-agents-ch${String(i + 1).padStart(2, "0")}`),
   ]);
@@ -188,17 +187,7 @@ export default async function ArticlePage({
 
         {/* Body — single column, no TOC sidebar */}
         <article className="min-w-0">
-          {article.slug === "arc-agi-progress-towards-agi" ? (
-            <>
-              <link rel="stylesheet" href="/css/arc-agi-article.css" />
-              <div
-                className="arc-agi-article"
-                dangerouslySetInnerHTML={{ __html: article.content }}
-              />
-            </>
-          ) : (
-            <MdxRenderer source={article.content} />
-          )}
+          <MdxRenderer source={article.content} />
         </article>
 
         {/* Back to all */}
