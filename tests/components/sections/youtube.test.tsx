@@ -151,4 +151,12 @@ describe("getYouTubeEmbedUrl", () => {
     const result = fn("not-a-valid-url");
     expect(result).toBe("not-a-valid-url");
   });
+
+  it("handles youtu.be URL with empty path (line 190 branch)", async () => {
+    const mod = await import("@/components/sections/YouTube");
+    const fn = (mod as any).getYouTubeEmbedUrl;
+    const result = fn("https://youtu.be/");
+    // Empty id falls through to return original URL
+    expect(result).toBe("https://youtu.be/");
+  });
 });
