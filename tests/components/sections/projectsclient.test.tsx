@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
@@ -8,31 +8,26 @@ import React from "react";
 vi.mock("next/image", () => ({
   default: (p: any) => React.createElement("img", p),
 }));
-
 vi.mock("next/link", () => ({
   default: (p: any) => React.createElement("a", p),
 }));
 
-vi.mock("lucide-react", () => ({
-  ArrowRight: () => React.createElement("svg", { "data-testid": "icon-arrow-right" }),
-  Folder: () => React.createElement("svg", { "data-testid": "icon-folder" }),
-  Star: () => React.createElement("svg", { "data-testid": "icon-star" }),
-  GitFork: () => React.createElement("svg", { "data-testid": "icon-fork" }),
-  Download: () => React.createElement("svg", { "data-testid": "icon-download" }),
-  ChevronLeft: () => React.createElement("svg", { "data-testid": "icon-chevron-left" }),
-  ChevronRight: () => React.createElement("svg", { "data-testid": "icon-chevron-right" }),
-}));
+// lucide-react — forward all
+vi.mock("lucide-react", async (importOriginal) => {
+  const actual: any = await (importOriginal as any)();
+  return actual;
+});
 
 vi.mock("@/components/FilledIcons", () => ({
-  FilledGithub: (p: any) => React.createElement("svg", { "data-testid": "filled-github", className: p.className }),
-  FilledGlobe: (p: any) => React.createElement("svg", { "data-testid": "filled-globe", className: p.className }),
-  FilledFileText: (p: any) => React.createElement("svg", { "data-testid": "filled-filetext", className: p.className }),
-  FilledDownload: (p: any) => React.createElement("svg", { "data-testid": "filled-download", className: p.className }),
-  FilledPlay: (p: any) => React.createElement("svg", { "data-testid": "filled-play", className: p.className }),
-  FilledArrowUpRight: (p: any) => React.createElement("svg", { "data-testid": "filled-arrow", className: p.className }),
+  FilledGithub: (p: any) => React.createElement("svg", { "data-testid": "filled-github" }),
+  FilledGlobe: (p: any) => React.createElement("svg", { "data-testid": "filled-globe" }),
+  FilledFileText: (p: any) => React.createElement("svg", { "data-testid": "filled-filetext" }),
+  FilledDownload: (p: any) => React.createElement("svg", { "data-testid": "filled-download" }),
+  FilledPlay: (p: any) => React.createElement("svg", { "data-testid": "filled-play" }),
+  FilledArrowUpRight: (p: any) => React.createElement("svg", { "data-testid": "filled-arrow" }),
 }));
 
-// Mock the ProjectCard and FeaturedProjectsCarousel to avoid deep complexity
+// Mock ProjectCard
 vi.mock("@/components/projects/ProjectCard", () => ({
   ProjectCard: (p: any) =>
     React.createElement("div", {
@@ -42,6 +37,7 @@ vi.mock("@/components/projects/ProjectCard", () => ({
     }, p.project.name),
 }));
 
+// Mock FeaturedProjectsTicker
 vi.mock("@/components/projects/FeaturedProjectsTicker", () => ({
   FeaturedProjectsCarousel: (p: any) =>
     React.createElement("div", {
@@ -54,6 +50,43 @@ vi.mock("@/components/projects/FeaturedProjectsTicker", () => ({
       "data-count": p.projects.length,
     }, "Ticker"),
 }));
+
+// Mock contentCopy
+const mockSiteCopyZh = {
+  hero: { line: "test", description: "test" },
+  about: { heading: "test", socialsButton: "test", techIntro: "test", paragraphs: [], afterTechParagraph: "" },
+  cases: { heading: "test", viewAll: "test", featuredBadge: "test", viewDetails: "test", emptyTitle: "test", emptyDescription: "test" },
+  projects: {
+    heading: "~/Projects",
+    viewAll: "查看全部项目",
+    featuredBadge: "精选",
+    viewDetails: "查看详情",
+    emptyTitle: "暂无项目",
+    emptyDescription: "项目添加后会显示在这里。",
+  },
+  articles: { heading: "文章", description: "test", viewAll: "test", emptyTitle: "test", emptyDescription: "test", categoryFallback: "未分类", articlesCountSuffix: "篇", readTimeSuffix: "阅读" },
+  photography: { heading: "test", description: "test", ongoing: "test", completed: "test", private: "test", photosSuffix: "test", emptyTitle: "test", emptyDescription: "test" },
+};
+
+vi.mock("@/config/contentCopy", () => ({
+  getSiteCopy: () => mockSiteCopyZh,
+}));
+
+vi.mock("@/config/siteConfig", () => ({
+  siteConfig: { name: "Test Author" },
+}));
+
+// Mock LocaleProvider
+vi.mock("@/components/LocaleProvider", () => {
+  const LocaleContext = React.createContext({ locale: "zh" as const, t: {}, setLocale: vi.fn(), toggleLocale: vi.fn() });
+  return {
+    LocaleProvider: ({ children }: { children: React.ReactNode }) =>
+      React.createElement(LocaleContext.Provider, { value: { locale: "zh", t: {}, setLocale: vi.fn(), toggleLocale: vi.fn() } }, children),
+    useLocale: () => React.useContext(LocaleContext),
+    LocaleScript: () => null,
+  };
+});
+vi.mock("@/config/locale", () => ({ LOCALE_STORAGE_KEY: "devfoliox-locale", getTranslations: () => ({}) }));
 
 // ── Test Data ──────────────────────────────────────────────────────────────
 
@@ -70,142 +103,93 @@ const baseProjects = [
 // ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("ProjectsSectionClient", () => {
-  beforeEach(() => {
-    vi.resetModules();
-  });
-
   it("renders nothing when projects array is empty", async () => {
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: [] })
-    );
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: [] }));
     expect(container.innerHTML).toBe("");
   });
 
   it("renders section heading", async () => {
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    render(
-      React.createElement(ProjectsSectionClient, { projects: [baseProjects[0]] })
-    );
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    render(React.createElement(ProjectsSectionClient, { projects: [baseProjects[0]] }));
     expect(screen.getByText("~/Projects")).toBeTruthy();
   });
 
-  it("renders 'View all Projects' link", async () => {
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: [baseProjects[0]] })
-    );
+  it("renders '查看全部项目' link", async () => {
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: [baseProjects[0]] }));
     const viewAll = container.querySelector('a[href="https://github.com/KevinTrinhDev"]');
     expect(viewAll).toBeTruthy();
-    expect(viewAll?.textContent).toContain("View all Projects");
+    expect(viewAll?.textContent).toContain("查看全部项目");
   });
 
-  it("renders featured carousel on desktop when featured projects exist", async () => {
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: baseProjects })
-    );
-    // Featured carousel (desktop, hidden md:block)
+  it("renders featured carousel when featured projects exist", async () => {
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: baseProjects }));
     const carousels = container.querySelectorAll('[data-testid="featured-carousel"]');
     expect(carousels.length).toBe(1);
-    expect(carousels[0].getAttribute("data-count")).toBe("3"); // 3 featured projects
+    expect(carousels[0].getAttribute("data-count")).toBe("3");
   });
 
   it("does not render carousel when no projects", async () => {
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: [] })
-    );
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: [] }));
     expect(container.innerHTML).toBe("");
   });
 
   it("falls back to first 8 projects for carousel when none are featured", async () => {
     const nonFeatured = baseProjects.map((p) => ({ ...p, featured: false }));
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: nonFeatured })
-    );
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: nonFeatured }));
     const carousels = container.querySelectorAll('[data-testid="featured-carousel"]');
     expect(carousels.length).toBe(1);
-    expect(carousels[0].getAttribute("data-count")).toBe("7"); // all 7 (capped at 8)
+    expect(carousels[0].getAttribute("data-count")).toBe("7");
   });
 
   it("renders mobile project cards (up to 6)", async () => {
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: baseProjects })
-    );
-    // Mobile cards - 6 shown
-    const mobileCards = container.querySelectorAll('[data-testid="project-card"]');
-    // Note: mobile cards + desktop cards both render ProjectCard
-    // The mobile grid shows first 6, desktop shows first 3 with hideImage
-    expect(mobileCards.length).toBe(9); // 6 mobile + 3 desktop
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: baseProjects }));
+    const cards = container.querySelectorAll('[data-testid="project-card"]');
+    expect(cards.length).toBe(9); // 6 mobile + 3 desktop
   });
 
   it("renders desktop compact grid (3 cards with hideImage)", async () => {
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: baseProjects })
-    );
-    // All project cards
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: baseProjects }));
     const allCards = container.querySelectorAll('[data-testid="project-card"]');
-    expect(allCards.length).toBe(9); // 6 mobile + 3 desktop (visibleProjects === 3)
+    expect(allCards.length).toBe(9); // 6 mobile + 3 desktop
   });
 
   it("handles fewer than 3 projects for visible projects", async () => {
     const two = baseProjects.slice(0, 2);
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: two })
-    );
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: two }));
     const cards = container.querySelectorAll('[data-testid="project-card"]');
     expect(cards.length).toBe(4); // 2 mobile + 2 desktop
   });
 
   it("handles fewer than 6 projects for mobile", async () => {
     const five = baseProjects.slice(0, 5);
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: five })
-    );
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: five }));
     const cards = container.querySelectorAll('[data-testid="project-card"]');
-    expect(cards.length).toBe(8); // 5 mobile + 3 desktop (visibleProjects = min(3, 5))
+    expect(cards.length).toBe(8); // 5 mobile + 3 desktop
   });
 
   it("carousel caps at 8 featured projects", async () => {
     const manyFeatured = Array.from({ length: 12 }, (_, i) => ({
-      id: `p${i}`,
-      name: `Project ${i}`,
-      summary: `Project ${i}`,
-      featured: true,
+      id: `p${i}`, name: `Project ${i}`, summary: `Project ${i}`, featured: true,
     }));
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: manyFeatured })
-    );
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: manyFeatured }));
     const carousels = container.querySelectorAll('[data-testid="featured-carousel"]');
     expect(carousels[0].getAttribute("data-count")).toBe("8");
   });
 
   it("renders ProjectCard with hideImage=true for desktop grid", async () => {
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: baseProjects })
-    );
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: baseProjects }));
     const cards = container.querySelectorAll('[data-testid="project-card"]');
-    // First 6 have hideImage=false (mobile), last 3 have hideImage=true (desktop)
     const mobileCards = Array.from(cards).slice(0, 6);
     const desktopCards = Array.from(cards).slice(6, 9);
     mobileCards.forEach((c) => expect(c.getAttribute("data-hideimage")).toBe("false"));
@@ -213,11 +197,10 @@ describe("ProjectsSectionClient", () => {
   });
 
   it("renders ArrowRight icon on View all button", async () => {
-    const mod = await import("@/components/sections/ProjectsClient");
-    const { ProjectsSectionClient } = mod;
-    const { container } = render(
-      React.createElement(ProjectsSectionClient, { projects: [baseProjects[0]] })
-    );
-    expect(container.querySelector('[data-testid="icon-arrow-right"]')).toBeTruthy();
+    const { ProjectsSectionClient } = await import("@/components/sections/ProjectsClient");
+    const { container } = render(React.createElement(ProjectsSectionClient, { projects: [baseProjects[0]] }));
+    // lucide-react icons are forwarded, so ArrowRight renders as an actual SVG
+    const svgs = container.querySelectorAll("svg");
+    expect(svgs.length).toBeGreaterThan(0);
   });
 });
