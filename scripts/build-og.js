@@ -94,9 +94,9 @@ function tiktokGlyph() {
 
 function socialsRow(y) {
   const items = [
-    { glyph: linkedInGlyph(), handle: "in/KevinTrinhDev" },
-    { glyph: tiktokGlyph(), handle: "@KevinTrinhDev" },
-    { glyph: youtubeGlyph(), handle: "@KevinTrinhDev" },
+    { glyph: linkedInGlyph(), handle: "in/hunger-Eric" },
+    { glyph: tiktokGlyph(), handle: "@hunger-Eric" },
+    { glyph: youtubeGlyph(), handle: "@hunger-Eric" },
   ];
   // Horizontal layout per cell: glyph on the left with the handle text
   // sitting to its right and vertically centred against the glyph.
@@ -141,7 +141,7 @@ function avatarBlock(centerY) {
 function svg({ eyebrow = "", title, subtitle = "" }) {
   const [sub1, sub2] = splitSubtitle(subtitle, 56);
 
-  // Eyebrow is a breadcrumb-style label ("Kevin Trinh / Articles"), kept
+  // Eyebrow is a breadcrumb-style label ("fengc / Articles"), kept
   // in source case rather than uppercased so the slash reads naturally.
   const eyebrowBlock = eyebrow
     ? `<text x="${PAD}" y="160" font-family="${FONT}" font-size="22" font-weight="600"
@@ -225,7 +225,7 @@ title: "fengc",
     file: "projects.png",
     eyebrow: "",
     title: "Things I've built",
-    subtitle: "Open source apps, tools, and side projects by Kevin Trinh.",
+    subtitle: "Open source apps, tools, and side projects by fengc.",
   },
 ];
 

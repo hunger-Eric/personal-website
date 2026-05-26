@@ -52,7 +52,7 @@ describe("YouTubeSection", () => {
     const mod = await import("@/components/sections/YouTube");
     const Component = mod["YouTubeSection"];
     render(React.createElement(Component));
-    expect(screen.getByText("KevinTrinhDev")).toBeInTheDocument();
+    expect(screen.getByText("hunger-Eric")).toBeInTheDocument();
   });
 
   it("renders the featured video section", async () => {

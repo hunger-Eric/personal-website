@@ -220,7 +220,7 @@ const resumeDelivery: ResumeDelivery = {
   source: data.resume?.source || "google",
   googleDocId: data.resume?.googleDocId || "",
   file: data.resume?.file || { path: "Kevin_Trinh_Resume.pdf", url: "" },
-  filename: data.resume?.filename || "Kevin_Trinh_Resume.pdf",
+    filename: data.resume?.filename || "fengc_Resume.pdf",
   cacheSeconds: Number.isFinite(Number(data.resume?.cacheSeconds))
     ? Number(data.resume?.cacheSeconds)
     : 3600,
@@ -242,12 +242,12 @@ const defaultSections = {
 };
 
 export const siteConfig = {
-  name: data.name || "Kevin Trinh",
-  title: data.title || "CS Student @ University of Houston",
+  name: data.name || "fengc",
+  title: data.title || "AI Native 独立开发者",
   tagline:
     data.tagline ||
-    "Full-stack developer & CS student at the University of Houston. Building thoughtful, fast software.",
-  location: data.location || "Houston, TX",
+    "构建 AI 驱动的系统、工作流与数字产品。",
+  location: data.location || "",
 
   // Back-compat map used by some components
   socials: socialsFlat,
@@ -290,7 +290,7 @@ export const siteConfig = {
   // Sponsor
   sponsor: data.sponsor || {
     enabled: true,
-    url: "https://github.com/sponsors/KevinTrinhDev",
+    url: "",
   },
 
   // Featured content (landing-page Content section)

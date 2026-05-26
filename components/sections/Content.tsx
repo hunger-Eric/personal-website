@@ -123,7 +123,7 @@ export function ContentSection() {
                   </span>
                 </div>
                 <div className="mt-0.5 text-xs text-muted-foreground">
-                  youtube.com/@KevinTrinhDev
+                  youtube.com/@hunger-Eric
                 </div>
               </div>
               <ArrowUpRight className="h-5 w-5 flex-none text-muted-foreground transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-accent" />

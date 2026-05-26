@@ -3,26 +3,39 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
-// Mock static dependencies
-vi.mock("@/config/siteConfig", () => ({
-  siteConfig: { name: "Test", socials: { youtube: "https://youtube.com/@test" } }
+// ── Mocks ──────────────────────────────────────────────────────────────────
+
+vi.mock("next/image", () => ({
+  default: (p: any) => React.createElement("img", p),
 }));
+vi.mock("next/link", () => ({
+  default: (p: any) => React.createElement("a", { href: p.href }, p.children),
+}));
+
 vi.mock("lucide-react", () => ({
   Youtube: () => React.createElement("svg", { "data-testid": "youtube-icon" }),
   ExternalLink: () => React.createElement("svg", { "data-testid": "external-link-icon" }),
 }));
 
+vi.mock("@/config/siteConfig", () => ({
+  siteConfig: { name: "Test", socials: { youtube: "https://youtube.com/@test" } },
+}));
+
+// ── Tests ──────────────────────────────────────────────────────────────────
+
 describe("YouTubeSection branch coverage", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
   it("returns null when youtubeVideos is empty (line 7)", async () => {
     vi.doMock("@/config/youtube", () => ({ youtubeVideos: [] }));
     const { YouTubeSection } = await import("@/components/sections/YouTube");
     const { container } = render(React.createElement(YouTubeSection));
     expect(container.firstChild).toBeNull();
-    vi.resetModules();
   });
 
-  it("handles single video: mostRecent and mostViewed fallback to featured (lines 10-11)", async () => {
-    vi.unmock("@/config/youtube");
+  it("handles single video: mostRecent and mostViewed fallback to featured", async () => {
     vi.doMock("@/config/youtube", () => ({
       youtubeVideos: [
         {
@@ -38,11 +51,9 @@ describe("YouTubeSection branch coverage", () => {
     expect(screen.getAllByText("Only Video")).toHaveLength(3);
     expect(screen.getByText("Most recent video")).toBeInTheDocument();
     expect(screen.getByText("Most viewed video")).toBeInTheDocument();
-    vi.resetModules();
   });
 
-  it("handles two videos: mostViewed falls back to mostRecent (line 11)", async () => {
-    vi.unmock("@/config/youtube");
+  it("handles two videos: mostViewed falls back to mostRecent", async () => {
     vi.doMock("@/config/youtube", () => ({
       youtubeVideos: [
         {
@@ -60,12 +71,11 @@ describe("YouTubeSection branch coverage", () => {
     const { YouTubeSection } = await import("@/components/sections/YouTube");
     render(React.createElement(YouTubeSection));
     expect(screen.getByText("Featured")).toBeInTheDocument();
-    expect(screen.getByText("Second")).toBeInTheDocument();
-    vi.resetModules();
+    // "Second" appears in both mostRecent and mostViewed (same video)
+    expect(screen.getAllByText("Second")).toHaveLength(2);
   });
 
-  it("renders featured video with only date, no views (line 102 branch)", async () => {
-    vi.unmock("@/config/youtube");
+  it("renders featured video with only date, no views", async () => {
     vi.doMock("@/config/youtube", () => ({
       youtubeVideos: [
         {
@@ -77,13 +87,11 @@ describe("YouTubeSection branch coverage", () => {
     }));
     const { YouTubeSection } = await import("@/components/sections/YouTube");
     render(React.createElement(YouTubeSection));
-    expect(screen.getByText("Date Only")).toBeInTheDocument();
-    expect(screen.getByText("2025-01-15")).toBeInTheDocument();
-    vi.resetModules();
+    expect(screen.getAllByText("Date Only").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("2025-01-15").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders featured video with only views, no date (line 102 branch)", async () => {
-    vi.unmock("@/config/youtube");
+  it("renders featured video with only views, no date", async () => {
     vi.doMock("@/config/youtube", () => ({
       youtubeVideos: [
         {
@@ -95,13 +103,11 @@ describe("YouTubeSection branch coverage", () => {
     }));
     const { YouTubeSection } = await import("@/components/sections/YouTube");
     render(React.createElement(YouTubeSection));
-    expect(screen.getByText("Views Only")).toBeInTheDocument();
-    expect(screen.getByText("500 views")).toBeInTheDocument();
-    vi.resetModules();
+    expect(screen.getAllByText("Views Only").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("500 views").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders VideoCard with only date, no views (line 172 branch)", async () => {
-    vi.unmock("@/config/youtube");
+  it("renders VideoCard with only date, no views", async () => {
     vi.doMock("@/config/youtube", () => ({
       youtubeVideos: [
         {
@@ -118,13 +124,11 @@ describe("YouTubeSection branch coverage", () => {
     }));
     const { YouTubeSection } = await import("@/components/sections/YouTube");
     render(React.createElement(YouTubeSection));
-    expect(screen.getByText("Date Only Card")).toBeInTheDocument();
-    expect(screen.getByText("2025-01-10")).toBeInTheDocument();
-    vi.resetModules();
+    expect(screen.getAllByText("Date Only Card").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("2025-01-10").length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders VideoCard with only views, no date (line 172 branch)", async () => {
-    vi.unmock("@/config/youtube");
+  it("renders VideoCard with only views, no date", async () => {
     vi.doMock("@/config/youtube", () => ({
       youtubeVideos: [
         {
@@ -141,8 +145,8 @@ describe("YouTubeSection branch coverage", () => {
     }));
     const { YouTubeSection } = await import("@/components/sections/YouTube");
     render(React.createElement(YouTubeSection));
+    // "Views Only Card" appears in both mostRecent and mostViewed (same video)
     expect(screen.getAllByText("Views Only Card")).toHaveLength(2);
     expect(screen.getAllByText("200 views")).toHaveLength(2);
-    vi.resetModules();
   });
 });

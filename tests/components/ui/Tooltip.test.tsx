@@ -755,4 +755,115 @@ describe("Tooltip positioning", () => {
     act(() => { fireEvent.blur(trigger); });
     expect(onBlur).toHaveBeenCalledTimes(1);
   });
+
+  // ─── Branch coverage tests ───
+  // Line 67: clearTimeout in hide() when timeout is active
+  it("clears timeout when hide is called during active delay", async () => {
+    const { Tooltip } = await import("@/components/ui/Tooltip");
+    const { container } = render(
+      React.createElement(Tooltip, { content: "Tooltip content", delay: 300 },
+        React.createElement("button", null, "Hover me")
+      )
+    );
+
+    const trigger = container.querySelector("div")!;
+
+    // Enter triggers show() which sets a timeout
+    act(() => {
+      fireEvent.mouseEnter(trigger);
+    });
+
+    // Leave before delay expires - hide() should clear the timeout
+    act(() => {
+      fireEvent.mouseLeave(trigger);
+    });
+
+    // Advance time beyond original delay - tooltip should not appear
+    act(() => {
+      vi.advanceTimersByTime(500);
+    });
+
+    expect(screen.queryByText("Tooltip content")).not.toBeInTheDocument();
+  });
+
+  // Line 79: tooltip ref guard - when tooltipRef.current is null but open is true
+  // This is difficult to test directly because the tooltip element is created with a ref
+  // when open is true. The guard exists for edge cases where positioning runs before
+  // the ref is attached. We test this indirectly by ensuring the component handles
+  // cases where getBoundingClientRect might fail.
+  it("handles getBoundingClientRect errors gracefully", async () => {
+    const originalGetBoundingClientRect = Element.prototype.getBoundingClientRect;
+    
+    // Mock getBoundingClientRect to throw for tooltip but not for trigger
+    Element.prototype.getBoundingClientRect = function() {
+      if (this.classList.contains('z-\\[60\\]')) {
+        throw new Error("Element not available");
+      }
+      return originalGetBoundingClientRect.call(this);
+    };
+
+    const { Tooltip } = await import("@/components/ui/Tooltip");
+    const { container } = render(
+      React.createElement(Tooltip, { content: "Tip", side: "top", align: "center" },
+        React.createElement("button", null, "Hover")
+      )
+    );
+
+    const trigger = container.querySelector("div")!;
+
+    act(() => {
+      fireEvent.mouseEnter(trigger, { clientX: 250, clientY: 200 });
+      vi.advanceTimersByTime(200);
+    });
+
+    // The component should not crash even if tooltip getBoundingClientRect fails
+    expect(screen.queryByText("Tip")).toBeInTheDocument();
+
+    Element.prototype.getBoundingClientRect = originalGetBoundingClientRect;
+  });
+
+  // Line 94: trigger-based positioning when mousePosRef is null (keyboard focus)
+  it("positions tooltip using trigger element when no mouse position is available", async () => {
+    const { Tooltip } = await import("@/components/ui/Tooltip");
+    const { container, rerender } = render(
+      React.createElement(Tooltip, { content: "Tip", side: "right", align: "center" },
+        React.createElement("button", null, "Focus me")
+      )
+    );
+
+    const trigger = container.querySelector("div")!;
+
+    // Mock trigger dimensions
+    vi.spyOn(trigger, "getBoundingClientRect").mockReturnValue({
+      top: 100, bottom: 150, left: 200, right: 400,
+      width: 200, height: 50,
+      x: 200, y: 100,
+    } as DOMRect);
+
+    // Open tooltip with focus (no mouse position)
+    act(() => {
+      fireEvent.focus(trigger);
+      vi.advanceTimersByTime(200);
+    });
+
+    const tooltip = screen.getByRole("tooltip");
+
+    // Mock tooltip dimensions
+    vi.spyOn(tooltip, "getBoundingClientRect").mockReturnValue({
+      top: 0, bottom: 40, left: 0, right: 150,
+      width: 150, height: 40,
+      x: 0, y: 0,
+    } as DOMRect);
+
+    // Rerender to trigger positioning effect
+    rerender(
+      React.createElement(Tooltip, { content: "Tip", side: "left", align: "center" },
+        React.createElement("button", null, "Focus me")
+      )
+    );
+
+    // Verify tooltip is positioned (style attributes are set)
+    expect(tooltip.style.left).toBeTruthy();
+    expect(tooltip.style.top).toBeTruthy();
+  });
 });

@@ -58,7 +58,7 @@ export const metadata: Metadata = {
 
 const BEACONS_MEDIA_KIT = "https://beacons.ai/kevintrinh/mediakit";
 
-// Compact handle (e.g. "@KevinTrinhDev") derived from a profile URL when the
+// Compact handle (e.g. "@hunger-Eric") derived from a profile URL when the
 // config doesn't already provide one. Keeps the cards visually consistent.
 function handleFromUrl(href: string, fallback = ""): string {
   try {
@@ -88,25 +88,25 @@ export default async function ContentPage() {
 
   const linkedinHref =
     socialMap.get("linkedin")?.href ||
-    "https://www.linkedin.com/in/KevinTrinhDev";
+    "https://www.linkedin.com/in/hunger-Eric";
   const youtubeHref =
     socialMap.get("youtube")?.href ||
-    "https://www.youtube.com/@KevinTrinhDev";
+    "https://www.youtube.com/@hunger-Eric";
   const instagramHref =
     socialMap.get("instagram")?.href ||
-    "https://www.instagram.com/KevinTrinhDev/";
+    "https://www.instagram.com/hunger-Eric/";
   const tiktokHref =
-    socialMap.get("tiktok")?.href || "https://www.tiktok.com/@KevinTrinhDev";
+    socialMap.get("tiktok")?.href || "https://www.tiktok.com/@hunger-Eric";
   const mediumHref =
-    socialMap.get("medium")?.href || "https://medium.com/@KevinTrinhDev";
+    socialMap.get("medium")?.href || "https://medium.com/@hunger-Eric";
   const githubHref =
-    socialMap.get("github")?.href || "https://github.com/KevinTrinhDev";
+    socialMap.get("github")?.href || "https://github.com/hunger-Eric";
 
   const platforms: PlatformCard[] = [
     {
       key: "youtube",
       label: "YouTube",
-      handle: "@KevinTrinhDev",
+      handle: "@hunger-Eric",
       href: youtubeHref,
       Glyph: YoutubeGlyph,
       blurb: "Tutorials, dev logs, and project demos",
@@ -114,7 +114,7 @@ export default async function ContentPage() {
     {
       key: "instagram",
       label: "Instagram",
-      handle: handleFromUrl(instagramHref, "@KevinTrinhDev"),
+      handle: handleFromUrl(instagramHref, "@hunger-Eric"),
       href: instagramHref,
       Glyph: InstagramGlyph,
       blurb: "Behind-the-scenes & build moments",
@@ -122,7 +122,7 @@ export default async function ContentPage() {
     {
       key: "tiktok",
       label: "TikTok",
-      handle: handleFromUrl(tiktokHref, "@KevinTrinhDev"),
+      handle: handleFromUrl(tiktokHref, "@hunger-Eric"),
       href: tiktokHref,
       Glyph: TikTokGlyph,
       blurb: "Short clips, dev tips, and demos",
@@ -130,7 +130,7 @@ export default async function ContentPage() {
     {
       key: "linkedin",
       label: "LinkedIn",
-      handle: "in/KevinTrinhDev",
+      handle: "in/hunger-Eric",
       href: linkedinHref,
       Glyph: LinkedInGlyph,
       blurb: "Career updates and longer-form takes",
@@ -138,7 +138,7 @@ export default async function ContentPage() {
     {
       key: "medium",
       label: "Medium",
-      handle: handleFromUrl(mediumHref, "@KevinTrinhDev"),
+      handle: handleFromUrl(mediumHref, "@hunger-Eric"),
       href: mediumHref,
       Glyph: MediumGlyph,
       blurb: "Long-form articles & deep dives",
@@ -146,7 +146,7 @@ export default async function ContentPage() {
     {
       key: "github",
       label: "GitHub",
-      handle: handleFromUrl(githubHref, "@KevinTrinhDev"),
+      handle: handleFromUrl(githubHref, "@hunger-Eric"),
       href: githubHref,
       Glyph: GithubGlyph,
       blurb: "Open-source projects & code",
@@ -363,7 +363,7 @@ export default async function ContentPage() {
 
       {/* Footer — two lines, matches /links */}
       <div className="mt-auto flex flex-col items-center gap-1 pt-12 text-center text-xs text-slate-500">
-        <span>Built &amp; Designed by Kevin Trinh</span>
+        <span>Built by fengc</span>
         <span>© {year} All rights reserved</span>
       </div>
     </main>

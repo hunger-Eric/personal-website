@@ -128,4 +128,33 @@ describe("LocaleProvider", () => {
     expect(localeValue).toBe("en");
     expect(screen.getByText("en")).toBeInTheDocument();
   });
+
+  it("handles localStorage.setItem throw gracefully", async () => {
+    mockSetItem.mockImplementationOnce(() => { throw new Error("storage full"); });
+    store["devfoliox-locale"] = "en";
+
+    const { LocaleProvider, useLocale } = await import("@/components/LocaleProvider");
+
+    let localeValue: string | undefined;
+    const Consumer = () => {
+      const ctx = useLocale();
+      localeValue = ctx.locale;
+      return null;
+    };
+
+    render(React.createElement(LocaleProvider, null, React.createElement(Consumer)));
+    expect(localeValue).toBe("en");
+  });
+});
+
+// ── LocaleScript ──────────────────────────────────────────────────────────
+
+describe("LocaleScript", () => {
+  it("renders a script tag with inline code", async () => {
+    const { LocaleScript } = await import("@/components/LocaleProvider");
+    const { container } = render(React.createElement(LocaleScript));
+    const script = container.querySelector("script");
+    expect(script).toBeInTheDocument();
+    expect(script?.innerHTML).toContain("localStorage.getItem");
+  });
 });

@@ -59,6 +59,29 @@ export interface Article extends ArticleFrontmatter {
 
 export interface ArticlePreview extends ArticleFrontmatter {
   readingTime: number;
+  chapter?: number; // 0 for preface, 1-16 for chapters
+}
+
+/**
+ * Extract chapter number from slug.
+ * - Slugs containing "preface" are chapter 0 (preface)
+ * - Slugs matching pattern like "hello-agents-ch01" extract the number (1-16)
+ * Returns undefined if not a chapter article
+ */
+export function extractChapterFromSlug(slug: string): number | undefined {
+  // Check for preface
+  if (slug.toLowerCase().includes("preface")) {
+    return 0;
+  }
+  // Check for chapter pattern like ch01, ch02, etc.
+  const match = slug.match(/ch(\d+)$/i);
+  if (match) {
+    const num = parseInt(match[1], 10);
+    if (num >= 1 && num <= 16) {
+      return num;
+    }
+  }
+  return undefined;
 }
 
 /**
@@ -158,10 +181,12 @@ export async function getArticles(): Promise<ArticlePreview[]> {
     }
 
     const { time } = calculateReadingTime(content);
+    const chapter = extractChapterFromSlug(frontmatter.slug);
 
     articles.push({
       ...frontmatter,
       readingTime: time,
+      chapter,
     });
   }
 

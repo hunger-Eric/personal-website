@@ -112,6 +112,50 @@ describe("CodeBlock", () => {
     const code = container.querySelector("code");
     expect(code?.className).toBe("");
   });
+
+  it("falls back to children when codeRef.current is null", async () => {
+    const { CodeBlock } = await import("@/components/mdx/CodeBlock");
+    // Render with a ref that we'll manipulate to be null
+    const ref = { current: null };
+    const { container } = render(
+      React.createElement(CodeBlock, { children: "fallback code content" })
+    );
+    // Get the pre element and simulate the ref being null by directly testing the copy behavior
+    // The component uses codeRef.current?.textContent || children
+    // We can trigger the fallback by clearing the textContent of the pre element
+    const pre = container.querySelector("pre");
+    if (pre) {
+      // Temporarily clear textContent to simulate codeRef.current being null/undefined
+      Object.defineProperty(pre, 'textContent', {
+        get: () => null,
+        configurable: true
+      });
+    }
+
+    const copyBtn = screen.getByLabelText("Copy code");
+    fireEvent.click(copyBtn);
+    // Should fall back to children prop when codeRef.current is null/undefined
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith("fallback code content");
+  });
+
+  it("renders line numbers with empty lines in code", async () => {
+    const { CodeBlock } = await import("@/components/mdx/CodeBlock");
+    // Code with an empty line (two consecutive newlines)
+    const codeWithEmptyLine = "line1\n\nline3";
+    const { container } = render(
+      React.createElement(CodeBlock, {
+        children: codeWithEmptyLine,
+        showLineNumbers: true,
+      })
+    );
+    const pre = container.querySelector("pre");
+    // Should contain the line numbers 1, 2, 3
+    expect(pre?.textContent).toContain("1");
+    expect(pre?.textContent).toContain("2");
+    expect(pre?.textContent).toContain("3");
+    // Empty line should render as space (not empty string)
+    expect(pre?.textContent).toContain(" ");
+  });
 });
 
 describe("InlineCode", () => {

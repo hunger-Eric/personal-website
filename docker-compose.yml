@@ -1,0 +1,17 @@
+services:
+  personal-website:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        ENABLE_ADMIN: "true"
+        ADMIN_TOKEN: "local-admin-token-2026"
+        ADMIN_PASSWORD: "local-admin-pass-2026"
+    container_name: personal-website
+    ports:
+      - "3100:3100"
+    environment:
+      - ENABLE_ADMIN=true
+      - ADMIN_TOKEN=local-admin-token-2026
+      - ADMIN_PASSWORD=local-admin-pass-2026
+    restart: unless-stopped

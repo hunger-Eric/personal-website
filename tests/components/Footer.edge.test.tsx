@@ -32,7 +32,7 @@ describe("Footer edge cases", () => {
     const { Footer } = await import("@/components/Footer");
     const { container } = render(React.createElement(Footer));
     const year = new Date().getFullYear();
-    expect(container.textContent).toContain(`© ${year} Kevin Trinh`);
+    expect(container.textContent).toContain(`© ${year} fengc`);
   });
 
   it("renders social links with aria-labels", async () => {

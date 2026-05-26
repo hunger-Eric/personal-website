@@ -33,7 +33,7 @@ interface ProjectsSectionClientProps {
   projects: Project[];
 }
 
-const GITHUB_URL = "https://github.com/KevinTrinhDev";
+const GITHUB_URL = "https://github.com/hunger-Eric";
 const DESKTOP_VISIBLE = 3;
 const MOBILE_VISIBLE = 6;
 const CAROUSEL_CAP = 8;

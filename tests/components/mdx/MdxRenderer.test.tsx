@@ -18,4 +18,11 @@ describe("MdxRenderer", () => {
     const { container } = render(React.createElement(MdxRenderer, { source: "# Hello\n\nThis is a test." }));
     expect(container).toBeTruthy();
   });
+
+  it("renders without prose classes when prose=false", async () => {
+    const { MdxRenderer } = await import("@/components/mdx/MdxRenderer");
+    const { container } = render(React.createElement(MdxRenderer, { source: "Plain text", prose: false }));
+    expect(container).toBeTruthy();
+    expect(container.querySelector('[class*="prose"]')).toBeNull();
+  });
 });

@@ -47,6 +47,7 @@ export default async function ArticlesPage() {
     imageAlt: a.imageAlt,
     readingTime: a.readingTime,
     author: a.author,
+    chapter: a.chapter,
   }));
 
   return <ArticlesPageClient articles={items} />;

@@ -46,7 +46,7 @@ function iconFor(key: string) {
 export function Footer() {
   const year = new Date().getFullYear();
   const socials = getSocials();
-  const name = siteConfig.name || "Kevin Trinh";
+  const name = siteConfig.name || "fengc";
 
   return (
     <footer className="mt-12 bg-transparent">

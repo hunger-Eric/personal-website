@@ -15,13 +15,13 @@ export function YouTubeSection() {
 
   const youtubeProfile = {
     avatarUrl: "/images/codertrinh-avatar.jpg",
-    name: "KevinTrinhDev",
+    name: "hunger-Eric",
     description:
-      "Software dev, CS student, and content creator sharing projects, tutorials, and dev logs.",
+      "Software dev and content creator sharing projects, tutorials, and dev logs.",
     stats: {
-      videos: "3",
-      subscribers: "250",
-      views: "3.6K",
+      videos: "0",
+      subscribers: "0",
+      views: "0",
     },
   };
 
