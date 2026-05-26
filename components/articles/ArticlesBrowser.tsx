@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ChevronDown, ChevronLeft, FileText, BookOpen } from "lucide-react";
+import { useMemo, useCallback } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { ChevronLeft, FileText, BookOpen } from "lucide-react";
 
 import { useLocale } from "@/components/LocaleProvider";
 import { getSiteCopy } from "@/config/contentCopy";
@@ -212,7 +213,25 @@ function CategoryDetail({
 export function ArticlesBrowser({ articles }: Props) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Read category from URL ?category=xxx — survives browser back/forward
+  const activeCategory = searchParams.get("category");
+
+  const selectCategory = useCallback(
+    (category: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("category", category);
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [searchParams, router, pathname]
+  );
+
+  const clearCategory = useCallback(() => {
+    router.push(pathname);
+  }, [router, pathname]);
 
   // Group articles by category
   const groups = useMemo(() => {
@@ -256,14 +275,15 @@ export function ArticlesBrowser({ articles }: Props) {
   if (activeCategory) {
     const group = groups.find((g) => g.category === activeCategory);
     if (!group) {
-      setActiveCategory(null);
+      // Category not found — clear URL param
+      clearCategory();
       return null;
     }
     return (
       <CategoryDetail
         category={group.category}
         articles={group.items}
-        onBack={() => setActiveCategory(null)}
+        onBack={clearCategory}
       />
     );
   }
@@ -277,7 +297,7 @@ export function ArticlesBrowser({ articles }: Props) {
           category={category}
           count={items.length}
           coverImage={getCoverImage(items)}
-          onClick={() => setActiveCategory(category)}
+          onClick={() => selectCategory(category)}
         />
       ))}
     </div>

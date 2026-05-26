@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useLocale } from "@/components/LocaleProvider";
 import { getSiteCopy } from "@/config/contentCopy";
 import { ArticlesBrowser, type ArticleListItem } from "./ArticlesBrowser";
@@ -7,6 +8,14 @@ import { ArticlesBrowser, type ArticleListItem } from "./ArticlesBrowser";
 type Props = {
   articles: ArticleListItem[];
 };
+
+function ArticlesBrowserFallback() {
+  return (
+    <div className="flex items-center justify-center py-20">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-primary" />
+    </div>
+  );
+}
 
 export function ArticlesPageClient({ articles }: Props) {
   const { locale } = useLocale();
@@ -23,7 +32,9 @@ export function ArticlesPageClient({ articles }: Props) {
         </p>
       </header>
 
-      <ArticlesBrowser articles={articles} />
+      <Suspense fallback={<ArticlesBrowserFallback />}>
+        <ArticlesBrowser articles={articles} />
+      </Suspense>
     </div>
   );
 }
