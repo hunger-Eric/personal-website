@@ -83,8 +83,8 @@ const zh: SiteCopy = {
   cases: zhCases,
   projects: zhCases,
   articles: {
-    heading: "文章",
-    description: "分享软件开发、产品实践与个人学习过程中的思考。",
+    heading: "~/文章",
+    description: "把 AI 组织进工作流与产品系统的实践记录。从智能体构建、自动化到工程思考，写下来，让想法变成可迭代的系统。",
     viewAll: "查看全部文章",
     emptyTitle: "还没有文章",
     emptyDescription: "发布后会显示在这里。",
@@ -124,8 +124,8 @@ const en: SiteCopy = {
   cases: enCases,
   projects: enCases,
   articles: {
-    heading: "Articles",
-    description: "Thoughts on software development, product practice, and personal learning.",
+    heading: "~/Articles",
+    description: "Notes on organizing AI into workflows and product systems. From agent building and automation to engineering thinking — write it down, turn ideas into iterable systems.",
     viewAll: "View all articles",
     emptyTitle: "No articles yet",
     emptyDescription: "New posts will show up here after publishing.",
