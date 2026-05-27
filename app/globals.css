@@ -6,13 +6,13 @@
   --background: #050816;
   --foreground: #f4f4f5;
   --muted: #71717a;
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-light: #818cf8;
-  --selection-bg: #312e81;
+  --accent: #d97706;
+  --accent-hover: #b45309;
+  --accent-light: #f59e0b;
+  --selection-bg: #78350f;
 
   /* Font families - set by next/font */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system,
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: var(--font-mono), ui-monospace, SFMono-Regular, "SF Mono", Menlo,
     Consolas, "Liberation Mono", monospace;
@@ -30,10 +30,10 @@
   --background: #ffffff;
   --foreground: #1f2937;
   --muted: #6b7280;
-  --accent: #4f46e5;
-  --accent-hover: #4338ca;
-  --accent-light: #818cf8;
-  --selection-bg: #c7d2fe;
+  --accent: #d97706;
+  --accent-hover: #b45309;
+  --accent-light: #f59e0b;
+  --selection-bg: #fbbf24;
   --card-bg: rgba(0, 0, 0, 0.02);
   --card-border: rgba(0, 0, 0, 0.08);
 }

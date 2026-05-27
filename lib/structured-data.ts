@@ -4,7 +4,7 @@
 
 import { siteConfig } from "@/config/siteConfig";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev";
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://me.itheheda.online";
 
 /**
  * Person schema - for the portfolio owner

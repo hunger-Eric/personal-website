@@ -1,7 +1,8 @@
 // app/layout.tsx
 import type { Metadata, Viewport } from "next";
 import Script from "next/script";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 import { siteConfig } from "@/config/siteConfig";
@@ -21,11 +22,7 @@ import {
 } from "@/lib/structured-data";
 
 // Configure fonts with display: swap to prevent FOUT
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
+const geistSans = GeistSans;
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -161,7 +158,7 @@ export default function RootLayout({
   return (
     <html
       lang="zh-CN"
-      className={`${inter.variable} ${jetbrainsMono.variable}`}
+      className={`${geistSans.className} ${jetbrainsMono.variable}`}
       suppressHydrationWarning
     >
       <head>

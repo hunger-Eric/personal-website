@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 import { blogPosts } from "@/config/articles";
 import photographyData from "@/config/photography.json";
@@ -71,7 +71,7 @@ function addDays(d: Date, days: number): Date {
   return result;
 }
 
-function buildActivityDays(): ActivityDay[] {
+function buildActivityDays(githubDays?: ActivityDay[]): ActivityDay[] {
   const map = new Map<string, number>();
   const bump = (date?: string, weight = 1) => {
     const key = parseDateKey(date);
@@ -79,10 +79,22 @@ function buildActivityDays(): ActivityDay[] {
     map.set(key, (map.get(key) ?? 0) + weight);
   };
 
+  // GitHub contributions (real commit data)
+  if (githubDays && githubDays.length > 0) {
+    for (const day of githubDays) {
+      const key = parseDateKey(day.date);
+      if (key) {
+        map.set(key, (map.get(key) ?? 0) + day.count);
+      }
+    }
+  }
+
+  // Blog posts
   for (const post of blogPosts) {
     bump(post.date, 1);
   }
 
+  // Photography projects
   const photographyProjects = Array.isArray((photographyData as any)?.projects)
     ? (photographyData as any).projects
     : [];
@@ -341,6 +353,36 @@ export function ContributionGraphCard({
   const [year, setYear] = useState(currentYear);
   const [rollingCurrentYear, setRollingCurrentYear] = useState(true);
 
+  // GitHub contributions data (fetched per visible year)
+  const [githubDays, setGithubDays] = useState<Record<number, ActivityDay[]>>({});
+
+  useEffect(() => {
+    const yearsToFetch = [currentYear, currentYear - 1, currentYear - 2, currentYear - 3, currentYear - 4];
+    let cancelled = false;
+
+    async function fetchYear(y: number) {
+      try {
+        const res = await fetch(`/api/github-contributions?username=hunger-Eric&year=${y}`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (data.days || []) as ActivityDay[];
+      } catch {
+        return [];
+      }
+    }
+
+    Promise.all(yearsToFetch.map(fetchYear)).then((results) => {
+      if (cancelled) return;
+      const merged: Record<number, ActivityDay[]> = {};
+      yearsToFetch.forEach((y, i) => {
+        if (results[i].length > 0) merged[y] = results[i];
+      });
+      setGithubDays((prev) => ({ ...prev, ...merged }));
+    });
+
+    return () => { cancelled = true; };
+  }, [currentYear]);
+
   const years = [
     currentYear,
     currentYear - 1,
@@ -351,12 +393,15 @@ export function ContributionGraphCard({
 
   const activityByYear = useMemo(() => {
     const buckets: Record<number, ActivityDay[]> = {};
-    for (const day of buildActivityDays()) {
-      const yearKey = new Date(`${day.date}T00:00:00Z`).getUTCFullYear();
-      (buckets[yearKey] ??= []).push(day);
+    for (const y of years) {
+      const days = buildActivityDays(githubDays[y]);
+      for (const day of days) {
+        const yearKey = new Date(`${day.date}T00:00:00Z`).getUTCFullYear();
+        (buckets[yearKey] ??= []).push(day);
+      }
     }
     return buckets;
-  }, []);
+  }, [githubDays, currentYear]);
 
   const useRolling = rollingCurrentYear && year === currentYear;
   const { cells, weekCount, monthLabelByWeek, summaryLabel } = useMemo(() => {
@@ -415,10 +460,10 @@ export function ContributionGraphCard({
                       }
 
                       let color = "bg-slate-300";
-                      if (cell.level === 1) color = "bg-indigo-200";
-                      if (cell.level === 2) color = "bg-indigo-300";
-                      if (cell.level === 3) color = "bg-indigo-400";
-                      if (cell.level === 4) color = "bg-indigo-500";
+                      if (cell.level === 1) color = "bg-amber-200";
+                      if (cell.level === 2) color = "bg-amber-300";
+                      if (cell.level === 3) color = "bg-amber-400";
+                      if (cell.level === 4) color = "bg-amber-500";
 
                       return (
                         <div
@@ -439,10 +484,10 @@ export function ContributionGraphCard({
               <span>Less</span>
               <div className="flex items-center gap-[3.5px]">
                 <span className="h-[12px] w-[12px] rounded-[3px] bg-slate-300" />
-                <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-200" />
-                <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-300" />
-                <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-400" />
-                <span className="h-[12px] w-[12px] rounded-[3px] bg-indigo-500" />
+                <span className="h-[12px] w-[12px] rounded-[3px] bg-amber-200" />
+                <span className="h-[12px] w-[12px] rounded-[3px] bg-amber-300" />
+                <span className="h-[12px] w-[12px] rounded-[3px] bg-amber-400" />
+                <span className="h-[12px] w-[12px] rounded-[3px] bg-amber-500" />
               </div>
               <span>More</span>
             </div>
