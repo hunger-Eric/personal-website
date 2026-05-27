@@ -235,7 +235,7 @@ const defaultSections = {
   projects: true,
   publications: true,
   articles: true,
-  youtube: true,
+  youtube: false,
   certifications: true,
   contact: true,
   resume: true,
