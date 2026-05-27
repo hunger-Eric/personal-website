@@ -5,6 +5,9 @@ import photographyData from "@/config/photography.json";
 import fs from "fs";
 import path from "path";
 
+// Photography data is locale-keyed: { zh: { projects: [...] }, en: { projects: [...] } }
+const allProjects = (photographyData as any).zh?.projects ?? (photographyData as any).projects ?? [];
+
 /** Maximum file size: 20MB */
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
@@ -43,7 +46,7 @@ export async function GET(
 
   // Find the photo in config to get its src
   let photoSrc: string | null = null;
-  for (const project of photographyData.projects) {
+  for (const project of allProjects) {
     for (const photo of project.photos) {
       if (photo.id === id && photo.private) {
         photoSrc = photo.src;

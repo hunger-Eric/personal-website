@@ -4,15 +4,18 @@ import photographyData from "@/config/photography.json";
 import { siteConfig } from "@/config/siteConfig";
 import { PhotographyIndexClient } from "@/components/photography/PhotographyIndexClient";
 
+const zhData = photographyData.zh;
+const enData = photographyData.en;
+
 export const metadata: Metadata = {
   title: `Photography | ${siteConfig.name}`,
-  description: photographyData.description,
+  description: enData?.description || zhData?.description,
   alternates: { canonical: "/photography" },
   openGraph: {
     type: "website",
     url: "/photography",
     title: `Photography | ${siteConfig.name}`,
-    description: photographyData.description,
+    description: enData?.description || zhData?.description,
     images: [
       {
         url: "/images/og/photography.png?v=1",
@@ -25,12 +28,18 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: `Photography | ${siteConfig.name}`,
-    description: photographyData.description,
+    description: enData?.description || zhData?.description,
     images: ["/images/og/photography.png?v=1"],
   },
 };
 
 export default function PhotographyPage() {
-  const { projects, description } = photographyData;
-  return <PhotographyIndexClient projects={projects} description={description} />;
+  return (
+    <PhotographyIndexClient
+      projectsZh={zhData?.projects || []}
+      projectsEn={enData?.projects || []}
+      descriptionZh={zhData?.description || ""}
+      descriptionEn={enData?.description || ""}
+    />
+  );
 }

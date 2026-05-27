@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 
 import { CasesPageClient } from "@/components/cases/CasesPageClient";
 import { loadCases } from "@/config/cases";
@@ -12,9 +12,10 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 export default async function CasesPage() {
-  const cases = await loadCases();
+  const [casesZh, casesEn] = await Promise.all([
+    loadCases("zh"),
+    loadCases("en"),
+  ]);
 
-  return <CasesPageClient cases={cases} />;
+  return <CasesPageClient casesZh={casesZh} casesEn={casesEn} />;
 }
-
-

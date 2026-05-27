@@ -7,17 +7,20 @@ import { siteConfig } from "@/config/siteConfig";
 import photographyData from "@/config/photography.json";
 import { PhotographyGallery } from "@/components/PhotographyGallery";
 
+// Photography data is locale-keyed: { zh: { projects: [...] }, en: { projects: [...] } }
+const projects = (photographyData as any).zh?.projects ?? (photographyData as any).projects ?? [];
+
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
 export async function generateStaticParams() {
-  return photographyData.projects.map((p) => ({ slug: p.slug }));
+  return projects.map((p: any) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const project = photographyData.projects.find((p) => p.slug === slug);
+  const project = projects.find((p: any) => p.slug === slug);
   if (!project) return {};
 
   return {
@@ -49,7 +52,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function ProjectPage({ params }: Props) {
   const { slug } = await params;
-  const project = photographyData.projects.find((p) => p.slug === slug);
+  const project = projects.find((p: any) => p.slug === slug);
   if (!project) notFound();
 
   const publicCount = project.photos.filter((p) => !p.private).length;

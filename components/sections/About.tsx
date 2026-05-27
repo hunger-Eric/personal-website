@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 import { getSiteCopy } from "@/config/contentCopy";
-import { aboutConfig } from "../../config/aboutConfig";
+import { getAboutConfig } from "../../config/aboutConfig";
 import { siteConfig } from "../../config/siteConfig";
 import { useLocale } from "../LocaleProvider";
 
@@ -105,7 +105,8 @@ export function AboutSection() {
 
   const capabilities = useMemo(() => getCapabilities(locale), [locale]);
   const audience = useMemo(() => getAudienceCopy(locale), [locale]);
-  const caseStudies = useMemo(() => aboutConfig.snapshot.cards.slice(0, 2), []);
+  const localizedAbout = useMemo(() => getAboutConfig(locale), [locale]);
+  const caseStudies = useMemo(() => localizedAbout.snapshot.cards.slice(0, 2), [localizedAbout]);
 
   return (
     <section id="about" className="scroll-mt-12 py-16 lg:py-24">

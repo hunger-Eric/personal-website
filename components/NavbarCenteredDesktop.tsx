@@ -8,7 +8,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { ChevronDown, Handshake } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
-import { navbarConfig, isExternalHref } from "@/config/navbarConfig";
+import { getNavbarConfig, isExternalHref } from "@/config/navbarConfig";
 import type { NavDropdownItemCfg } from "@/config/navbarConfig";
 import { LangSwitch } from "@/components/LangSwitch";
 import { useLocale } from "@/components/LocaleProvider";
@@ -76,7 +76,7 @@ function popPendingSection() {
 }
 
 export function NavbarCentered() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -191,6 +191,7 @@ export function NavbarCentered() {
   }, []);
 
   // Config
+  const navbarConfig = useMemo(() => getNavbarConfig(locale), [locale]);
   const logo = navbarConfig.logo;
   const items = navbarConfig.centerItems;
   const contactCta = navbarConfig.cta.contact;

@@ -11,7 +11,7 @@ import * as LucideIcons from "lucide-react";
 
 import { LangSwitch } from "./LangSwitch";
 import {
-  navbarConfig,
+  getNavbarConfig,
   isExternalHref,
   type NavDropdownItemCfg,
   type NavDropdownFooterCfg,
@@ -31,7 +31,7 @@ type NavItem = {
 };
 
 export default function NavbarCenteredMobile() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -55,6 +55,7 @@ export default function NavbarCenteredMobile() {
     (id && navLabelById[id]) || fallback;
 
   // Build mobile nav from navbarConfig (single source of truth)
+  const navbarConfig = useMemo(() => getNavbarConfig(locale), [locale]);
   const { items, contactLink, primaryCta, logo } = useMemo(() => {
     const centerItems: NavItem[] = (navbarConfig.centerItems || []).map(
       (it) => {

@@ -6,12 +6,14 @@ import type { CaseItem } from "../../config/cases";
 import { CasesBrowser } from "./CasesBrowser";
 
 type Props = {
-  cases: CaseItem[];
+  casesZh: CaseItem[];
+  casesEn: CaseItem[];
 };
 
-export function CasesPageClient({ cases }: Props) {
+export function CasesPageClient({ casesZh, casesEn }: Props) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
+  const cases = locale === "en" ? casesEn : casesZh;
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">

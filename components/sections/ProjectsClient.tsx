@@ -30,7 +30,8 @@ export interface Project {
 }
 
 interface ProjectsSectionClientProps {
-  projects: Project[];
+  projectsZh: Project[];
+  projectsEn: Project[];
 }
 
 const GITHUB_URL = "https://github.com/hunger-Eric";
@@ -44,10 +45,12 @@ function getProjectBlurb(project: Project): string {
 }
 
 export function ProjectsSectionClient({
-  projects,
+  projectsZh,
+  projectsEn,
 }: ProjectsSectionClientProps) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
+  const projects = locale === "en" ? projectsEn : projectsZh;
 
   const featuredProjects = useMemo(
     () => projects.filter((p) => p.featured),

@@ -25,8 +25,10 @@ type Project = {
 };
 
 type Props = {
-  projects: Project[];
-  description: string;
+  projectsZh: Project[];
+  projectsEn: Project[];
+  descriptionZh: string;
+  descriptionEn: string;
 };
 
 function getCoverPhotos(project: Project) {
@@ -90,13 +92,16 @@ function ProjectCover({ project }: { project: Project }) {
 }
 
 export function PhotographyIndexClient({
-  projects,
-  description,
+  projectsZh,
+  projectsEn,
+  descriptionZh,
+  descriptionEn,
 }: Props) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
-  const pageDescription =
-    locale === "zh" ? description || copy.photography.description : copy.photography.description;
+  const projects = locale === "en" ? projectsEn : projectsZh;
+  const description = locale === "en" ? descriptionEn : descriptionZh;
+  const pageDescription = description || copy.photography.description;
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">

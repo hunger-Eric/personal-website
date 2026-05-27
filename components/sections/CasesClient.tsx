@@ -23,7 +23,8 @@ import {
 import type { CaseItem } from "../../config/cases";
 
 interface CasesSectionClientProps {
-  cases: CaseItem[];
+  casesZh: CaseItem[];
+  casesEn: CaseItem[];
 }
 
 function metadataLabel(value?: string) {
@@ -172,10 +173,12 @@ function LabIndexRow({
   );
 }
 
-export function CasesSectionClient({ cases }: CasesSectionClientProps) {
+export function CasesSectionClient({ casesZh, casesEn }: CasesSectionClientProps) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
+  const cases = locale === "en" ? casesEn : casesZh;
   const display = getCaseDisplaySettings();
+
   const mode = resolveCaseDisplayMode(cases.length);
 
   const featuredCase = useMemo(

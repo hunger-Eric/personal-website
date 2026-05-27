@@ -5,6 +5,9 @@ import photographyData from "@/config/photography.json";
 
 const PIN = process.env.PRIVATE_PHOTO_PIN;
 
+// Photography data is locale-keyed: { zh: { projects: [...] }, en: { projects: [...] } }
+const allProjects = (photographyData as any).zh?.projects ?? (photographyData as any).projects ?? [];
+
 export async function POST(request: NextRequest) {
   // If no PIN is configured, private photos are effectively disabled
   if (!PIN) {
@@ -31,7 +34,7 @@ export async function POST(request: NextRequest) {
 
   // Collect all private photo IDs and sign each
   const privatePhotos: Array<{ id: string; token: string }> = [];
-  for (const project of photographyData.projects) {
+  for (const project of allProjects) {
     for (const photo of project.photos) {
       if (photo.private) {
         privatePhotos.push({

@@ -118,3 +118,11 @@ export type AboutConfig = {
 };
 
 export const aboutConfig = raw as AboutConfig satisfies AboutConfig;
+
+// i18n: merge locale-specific fields into flat config
+import { getLocalizedConfig } from "./i18n";
+import type { Locale } from "./locale";
+
+export function getAboutConfig(locale: Locale): AboutConfig {
+  return getLocalizedConfig(raw, locale);
+}

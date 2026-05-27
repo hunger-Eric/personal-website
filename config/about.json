@@ -1,168 +1,185 @@
 {
   "handle": "hunger-Eric",
   "displayName": "fengc",
-  "roleLine": "全栈程序猿，摄影爱好者。捣鼓 AI Agent 和自动化工具。",
-  "schoolName": "",
   "avatarUrl": "https://avatars.githubusercontent.com/u/41317851?v=4",
 
-  "cta": {
-    "primary": {
-      "label": "关于我",
-      "href": "/#about",
-      "external": false
+  "zh": {
+    "roleLine": "全栈程序猿，摄影爱好者。捣鼓 AI Agent 和自动化工具。",
+    "cta": {
+      "primary": { "label": "关于我", "href": "/#about", "external": false },
+      "secondary": { "label": "关于我", "href": "/#about", "external": true }
     },
-    "secondary": {
-      "label": "关于我",
-      "href": "/#about",
-      "external": true
+    "readme": {
+      "fileLabel": "README.md",
+      "paragraphs": [
+        "全栈程序猿，主要捣鼓 Next.js、Python、AI Agent 和自动化。GitHub 上搞了个 notebooklm-cn（NotebookLM 中文版克隆），还折腾 Hermes Agent 的各种自动化工作流。"
+      ],
+      "afterTechParagraph": "最近在探索如何用 AI 辅助摄影后期处理工作流。"
+    },
+    "snapshot": {
+      "title": "数字足迹",
+      "cards": [
+        {
+          "title": "notebooklm-cn",
+          "description": "NotebookLM 中文版克隆，Next.js 16 + Vercel 部署。",
+          "icon": "Globe",
+          "stats": [
+            { "icon": "Star", "label": "上线", "value": "✅" },
+            { "icon": "Globe", "label": "域名", "value": "notebooklm.itheheda.online" }
+          ]
+        },
+        {
+          "title": "Hermes Agent",
+          "description": "AI Agent 自动化工作流，效率工具。",
+          "icon": "Bot",
+          "stats": [
+            { "icon": "Zap", "label": "自动化", "value": "10+ 工作流" },
+            { "icon": "BookOpen", "label": "技能数", "value": "40+" }
+          ]
+        }
+      ]
+    },
+    "aboutPage": {
+      "hero": {
+        "headline": "写代码的，也拍照。",
+        "subheadline": "全栈程序猿 · AI Agent 玩家 · 摄影爱好者",
+        "portraitUrl": "https://avatars.githubusercontent.com/u/41317851?v=4",
+        "locationLabel": "",
+        "primaryCta": { "label": "项目", "href": "/#projects", "external": false, "icon": "ArrowRight" },
+        "secondaryCta": { "label": "文章", "href": "/articles", "external": false, "icon": "ExternalLink" }
+      },
+      "story": {
+        "paragraphs": [
+          "全栈程序猿，主要用 Next.js、Python，最近沉迷 AI Agent 和自动化工作流。GitHub 上搞了 notebooklm-cn（NotebookLM 中文版克隆），日常用 Hermes Agent 管理各种自动化任务。",
+          "摄影爱好者，喜欢扫街和风光。最近在试 AI 辅助后期处理——毕竟程序猿的本能就是把一切能自动化的都自动化。"
+        ]
+      },
+      "now": {
+        "title": "最近在忙什么",
+        "paragraphs": [
+          "技术方面：继续折腾 Hermes Agent 的自动化工作流，写各种 skills，探索 AI 编程的边界。刚完成了 NotebookLM 中文版的网站克隆和部署。",
+          "摄影方面：研究 AI 辅助 RAW 后期处理流程，探索计算摄影——把代码思维应用到图像处理上。"
+        ],
+        "imageUrl": "",
+        "imageAlt": "Currently working on"
+      },
+      "usage": {
+        "title": "常用工具栈",
+        "description": "代码和摄影日常。",
+        "technologies": ["Next.js", "Python", "TypeScript", "Tailwind CSS", "Vercel"],
+        "tools": ["VS Code", "Neovim", "Obsidian", "Hermes Agent"],
+        "platforms": ["GitHub", "Vercel", "Cloudflare"]
+      },
+      "setup": {
+        "title": "开发环境",
+        "paragraphs": [
+          "WSL + Neovim + Hermes Agent 的 AI 编程流。Obsidian 管理知识库（PARA + Zettelkasten）。",
+          "摄影后期用 Lightroom + AI 辅助插件。"
+        ],
+        "imageUrl": "",
+        "imageAlt": "Dev setup",
+        "caption": ""
+      },
+      "socialsSection": { "title": "Socials", "description": "Where to find me." },
+      "socials": {
+        "items": [
+          { "type": "github", "label": "GitHub", "href": "https://github.com/hunger-Eric" }
+        ]
+      },
+      "inspirations": { "title": "Inspirations", "description": "", "people": [] }
+    }
+  },
+
+  "en": {
+    "roleLine": "Full-stack developer, photography enthusiast. Building AI agents and automation tools.",
+    "cta": {
+      "primary": { "label": "About me", "href": "/#about", "external": false },
+      "secondary": { "label": "About me", "href": "/#about", "external": true }
+    },
+    "readme": {
+      "fileLabel": "README.md",
+      "paragraphs": [
+        "Full-stack developer working with Next.js, Python, AI agents, and automation. Built notebooklm-cn (NotebookLM Chinese clone) on GitHub, and working on various automation workflows with Hermes Agent."
+      ],
+      "afterTechParagraph": "Currently exploring AI-assisted photography post-processing workflows."
+    },
+    "snapshot": {
+      "title": "Digital Footprint",
+      "cards": [
+        {
+          "title": "notebooklm-cn",
+          "description": "NotebookLM Chinese clone, Next.js 16 + Vercel deployment.",
+          "icon": "Globe",
+          "stats": [
+            { "icon": "Star", "label": "Live", "value": "✅" },
+            { "icon": "Globe", "label": "Domain", "value": "notebooklm.itheheda.online" }
+          ]
+        },
+        {
+          "title": "Hermes Agent",
+          "description": "AI agent automation workflows, productivity tools.",
+          "icon": "Bot",
+          "stats": [
+            { "icon": "Zap", "label": "Automation", "value": "10+ workflows" },
+            { "icon": "BookOpen", "label": "Skills", "value": "40+" }
+          ]
+        }
+      ]
+    },
+    "aboutPage": {
+      "hero": {
+        "headline": "I write code, and I take photos.",
+        "subheadline": "Full-stack Developer · AI Agent Builder · Photography Enthusiast",
+        "portraitUrl": "https://avatars.githubusercontent.com/u/41317851?v=4",
+        "locationLabel": "",
+        "primaryCta": { "label": "Projects", "href": "/#projects", "external": false, "icon": "ArrowRight" },
+        "secondaryCta": { "label": "Articles", "href": "/articles", "external": false, "icon": "ExternalLink" }
+      },
+      "story": {
+        "paragraphs": [
+          "Full-stack developer, mainly working with Next.js and Python, recently deep into AI agents and automation workflows. Built notebooklm-cn (NotebookLM Chinese clone) on GitHub, and use Hermes Agent for daily automation tasks.",
+          "Photography enthusiast who loves street and landscape shooting. Currently experimenting with AI-assisted post-processing — after all, a developer's instinct is to automate everything."
+        ]
+      },
+      "now": {
+        "title": "What I'm up to",
+        "paragraphs": [
+          "Tech: Continuing to build Hermes Agent automation workflows, writing skills, and pushing the boundaries of AI-assisted coding. Just completed the NotebookLM Chinese clone website and deployment.",
+          "Photography: Exploring AI-assisted RAW post-processing workflows and computational photography — applying a coder's mindset to image processing."
+        ],
+        "imageUrl": "",
+        "imageAlt": "Currently working on"
+      },
+      "usage": {
+        "title": "Daily Tool Stack",
+        "description": "For code and photography.",
+        "technologies": ["Next.js", "Python", "TypeScript", "Tailwind CSS", "Vercel"],
+        "tools": ["VS Code", "Neovim", "Obsidian", "Hermes Agent"],
+        "platforms": ["GitHub", "Vercel", "Cloudflare"]
+      },
+      "setup": {
+        "title": "Dev Environment",
+        "paragraphs": [
+          "WSL + Neovim + Hermes Agent for AI-assisted coding. Obsidian for knowledge management (PARA + Zettelkasten).",
+          "Photography post-processing with Lightroom + AI-assisted plugins."
+        ],
+        "imageUrl": "",
+        "imageAlt": "Dev setup",
+        "caption": ""
+      },
+      "socialsSection": { "title": "Socials", "description": "Where to find me." },
+      "socials": {
+        "items": [
+          { "type": "github", "label": "GitHub", "href": "https://github.com/hunger-Eric" }
+        ]
+      },
+      "inspirations": { "title": "Inspirations", "description": "", "people": [] }
     }
   },
 
   "followers": { "followers": 0, "following": 0 },
-
   "profileLinks": [
-    {
-      "type": "github",
-      "label": "github.com/hunger-Eric",
-      "href": "https://github.com/hunger-Eric"
-    }
+    { "type": "github", "label": "github.com/hunger-Eric", "href": "https://github.com/hunger-Eric" }
   ],
-
-  "readme": {
-    "fileLabel": "README.md",
-    "paragraphs": [
-      "全栈程序猿，主要捣鼓 Next.js、Python、AI Agent 和自动化。GitHub 上搞了个 notebooklm-cn（NotebookLM 中文版克隆），还折腾 Hermes Agent 的各种自动化工作流。"
-    ],
-    "afterTechParagraph": "最近在探索如何用 AI 辅助摄影后期处理工作流。"
-  },
-
-  "techUsed": [
-    "Next.js",
-    "Python",
-    "TypeScript",
-    "Tailwind CSS",
-    "Git",
-    "AI Agent"
-  ],
-
-  "snapshot": {
-    "title": "数字足迹",
-    "cards": [
-      {
-        "title": "notebooklm-cn",
-        "description": "NotebookLM 中文版克隆，Next.js 16 + Vercel 部署。",
-        "icon": "Globe",
-        "stats": [
-          { "icon": "Star", "label": "上线", "value": "✅" },
-          { "icon": "Globe", "label": "域名", "value": "notebooklm.itheheda.online" }
-        ]
-      },
-      {
-        "title": "Hermes Agent",
-        "description": "AI Agent 自动化工作流，效率工具。",
-        "icon": "Bot",
-        "stats": [
-          { "icon": "Zap", "label": "自动化", "value": "10+ 工作流" },
-          { "icon": "BookOpen", "label": "技能数", "value": "40+" }
-        ]
-      }
-    ]
-  },
-
-  "aboutPage": {
-    "hero": {
-      "headline": "写代码的，也拍照。",
-      "subheadline": "全栈程序猿 · AI Agent 玩家 · 摄影爱好者",
-      "portraitUrl": "https://avatars.githubusercontent.com/u/41317851?v=4",
-      "locationLabel": "",
-
-      "primaryCta": {
-        "label": "项目",
-        "href": "/#projects",
-        "external": false,
-        "icon": "ArrowRight"
-      },
-      "secondaryCta": {
-        "label": "文章",
-        "href": "/articles",
-        "external": false,
-        "icon": "ExternalLink"
-      }
-    },
-
-    "story": {
-      "paragraphs": [
-        "全栈程序猿，主要用 Next.js、Python，最近沉迷 AI Agent 和自动化工作流。GitHub 上搞了 notebooklm-cn（NotebookLM 中文版克隆），日常用 Hermes Agent 管理各种自动化任务。",
-        "摄影爱好者，喜欢扫街和风光。最近在试 AI 辅助后期处理——毕竟程序猿的本能就是把一切能自动化的都自动化。"
-      ]
-    },
-
-    "now": {
-      "title": "最近在忙什么",
-      "paragraphs": [
-        "技术方面：继续折腾 Hermes Agent 的自动化工作流，写各种 skills，探索 AI 编程的边界。刚完成了 NotebookLM 中文版的网站克隆和部署。",
-        "摄影方面：研究 AI 辅助 RAW 后期处理流程，探索计算摄影——把代码思维应用到图像处理上。"
-      ],
-      "imageUrl": "",
-      "imageAlt": "Currently working on"
-    },
-
-    "usage": {
-      "title": "常用工具栈",
-      "description": "代码和摄影日常。",
-
-      "technologies": [
-        "Next.js",
-        "Python",
-        "TypeScript",
-        "Tailwind CSS",
-        "Vercel"
-      ],
-
-      "tools": [
-        "VS Code",
-        "Neovim",
-        "Obsidian",
-        "Hermes Agent"
-      ],
-
-      "platforms": [
-        "GitHub",
-        "Vercel",
-        "Cloudflare"
-      ]
-    },
-
-    "setup": {
-      "title": "开发环境",
-      "paragraphs": [
-        "WSL + Neovim + Hermes Agent 的 AI 编程流。Obsidian 管理知识库（PARA + Zettelkasten）。",
-        "摄影后期用 Lightroom + AI 辅助插件。"
-      ],
-      "imageUrl": "",
-      "imageAlt": "Dev setup",
-      "caption": ""
-    },
-
-    "socialsSection": {
-      "title": "Socials",
-      "description": "Where to find me."
-    },
-
-    "socials": {
-      "items": [
-        {
-          "type": "github",
-          "label": "GitHub",
-          "href": "https://github.com/hunger-Eric"
-        }
-      ]
-    },
-
-    "inspirations": {
-      "title": "Inspirations",
-      "description": "",
-      "people": []
-    }
-  }
+  "techUsed": ["Next.js", "Python", "TypeScript", "Tailwind CSS", "Git", "AI Agent"]
 }

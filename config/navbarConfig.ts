@@ -1,5 +1,6 @@
 // src/config/navbarConfig.ts
 import raw from "./navbar.json";
+import type { Locale } from "./locale";
 
 export type NavDropdownItemCfg = {
   id?: string;
@@ -60,7 +61,6 @@ function isExternalHref(href: string) {
   );
 }
 
-const data = (raw as unknown as NavbarJson) ?? ({} as NavbarJson);
 const PUBLIC_CONTACT_EMAIL = (process.env.NEXT_PUBLIC_CONTACT_EMAIL || "").trim();
 
 function normalizeCtaHref(href: string) {
@@ -70,46 +70,68 @@ function normalizeCtaHref(href: string) {
   return `mailto:${PUBLIC_CONTACT_EMAIL}`;
 }
 
-// Normalize + provide computed external defaults
-export const navbarConfig = {
-  logo: data.logo,
-  centerItems: (data.center?.items ?? [])
-    .filter((it) => it && it.show !== false)
-    .map((it) => ({
-      ...it,
-      external: it.external ?? isExternalHref(it.href),
-      children: (it.children ?? []).filter(Boolean).map((c) => ({
-        ...c,
-        external: c.external ?? isExternalHref(c.href),
+// Resolve locale-specific data from zh/en keys
+type RawWithLocale = typeof raw & {
+  zh?: { center?: NavbarJson["center"]; cta?: NavbarJson["cta"] };
+  en?: { center?: NavbarJson["center"]; cta?: NavbarJson["cta"] };
+};
+
+const data = raw as unknown as RawWithLocale;
+
+function getLocalizedNavData(locale: Locale): NavbarJson {
+  const localized = data[locale] || {};
+  const center = localized.center || (data as any).center || { items: [] };
+  const cta = localized.cta || (data as any).cta || {
+    contact: { label: "Email", href: "mailto:", show: false },
+    primary: { label: "Contact", href: "/links", show: true },
+  };
+  return { logo: data.logo, center, cta };
+}
+
+// Build computed navbar config for a given locale
+export function getNavbarConfig(locale: Locale = "zh") {
+  const navData = getLocalizedNavData(locale);
+
+  return {
+    logo: navData.logo,
+    centerItems: (navData.center?.items ?? [])
+      .filter((it) => it && it.show !== false)
+      .map((it) => ({
+        ...it,
+        external: it.external ?? isExternalHref(it.href),
+        children: (it.children ?? []).filter(Boolean).map((c) => ({
+          ...c,
+          external: c.external ?? isExternalHref(c.href),
+        })),
+        dropdownFooter: it.dropdownFooter
+          ? {
+              ...it.dropdownFooter,
+              external:
+                it.dropdownFooter.external ??
+                isExternalHref(it.dropdownFooter.href),
+            }
+          : undefined,
       })),
-      dropdownFooter: it.dropdownFooter
-        ? {
-            ...it.dropdownFooter,
-            external:
-              it.dropdownFooter.external ??
-              isExternalHref(it.dropdownFooter.href),
-          }
-        : undefined,
-    })),
 
-  cta: {
-    contact: {
-      ...data.cta.contact,
-      href: normalizeCtaHref(data.cta.contact?.href || ""),
-      show: data.cta.contact?.show !== false,
-      external:
-        data.cta.contact?.external ??
-        isExternalHref(normalizeCtaHref(data.cta.contact?.href || "")),
+    cta: {
+      contact: {
+        ...navData.cta.contact,
+        href: normalizeCtaHref(navData.cta.contact?.href || ""),
+        show: navData.cta.contact?.show !== false,
+        external:
+          navData.cta.contact?.external ??
+          isExternalHref(normalizeCtaHref(navData.cta.contact?.href || "")),
+      },
+      primary: {
+        ...navData.cta.primary,
+        show: navData.cta.primary?.show !== false,
+        external:
+          navData.cta.primary?.external ??
+          isExternalHref(navData.cta.primary?.href || ""),
+      },
     },
-    primary: {
-      ...data.cta.primary,
-      show: data.cta.primary?.show !== false,
-      external:
-        data.cta.primary?.external ??
-        isExternalHref(data.cta.primary?.href || ""),
-    },
-  },
-} as const;
+  } as const;
+}
 
-export type NavbarConfig = typeof navbarConfig;
+export type NavbarConfig = ReturnType<typeof getNavbarConfig>;
 export { isExternalHref };

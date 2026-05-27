@@ -412,7 +412,7 @@ function sortByPriority<T extends { _priority?: number }>(items: T[]) {
 
 // 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ main loader 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
-export async function loadCases(): Promise<CaseItem[]> {
+export async function loadCases(locale: "zh" | "en" = "zh"): Promise<CaseItem[]> {
   const revalidateSeconds = 60 * 60 * 3; // 3h
 
   // 1) GitHub-backed (metadata from README)
@@ -489,10 +489,19 @@ export async function loadCases(): Promise<CaseItem[]> {
           latestReleasePublishedAt = statResult.latestReleasePublishedAt;
         }
 
+        // Merge locale-specific fields from entry.zh / entry.en
+        const localized = (entry as any)[locale] || {};
+        const entrySummary = localized.summary ?? entry.summary;
+        const entryProblem = localized.problem ?? entry.problem;
+        const entrySystemOverview = localized.systemOverview ?? entry.systemOverview;
+        const entryAiOrchestration = localized.aiOrchestration ?? entry.aiOrchestration;
+        const entryResults = localized.results ?? entry.results;
+        const entryLearnings = localized.learnings ?? entry.learnings;
+
         return {
           id,
           name: entry.name ?? meta?.title ?? repo,
-          summary: entry.summary ?? meta?.summary ?? "GitHub project",
+          summary: entrySummary ?? meta?.summary ?? "GitHub project",
           description: entry.description ?? meta?.description,
           format: entry.format ?? meta?.format ?? meta?.case_format,
           start: entry.start ?? meta?.start ?? "",
@@ -509,12 +518,12 @@ export async function loadCases(): Promise<CaseItem[]> {
           aiStack: entry.aiStack,
           automation: entry.automation,
           experiments: entry.experiments,
-          problem: entry.problem,
-          systemOverview: entry.systemOverview,
-          aiOrchestration: entry.aiOrchestration,
+          problem: entryProblem,
+          systemOverview: entrySystemOverview,
+          aiOrchestration: entryAiOrchestration,
           architecture: entry.architecture,
-          results: entry.results,
-          learnings: entry.learnings,
+          results: entryResults,
+          learnings: entryLearnings,
           // Prefer the README's image_url; otherwise fall back to a locally
           // generated branded banner so the carousel never shows a broken
           // dark fallback.

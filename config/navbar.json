@@ -6,37 +6,33 @@
     "imageAlt": "fengc"
   },
 
-  "center": {
-    "items": [
-      { "id": "about", "label": "About", "href": "/#about", "show": true },
-      {
-        "id": "projects",
-        "label": "Projects",
-        "href": "/#projects",
-        "show": true
-      },
-      {
-        "id": "articles",
-        "label": "Articles",
-        "href": "/articles",
-        "show": true
-      },
-      {
-        "id": "photography",
-        "label": "Photography",
-        "href": "/photography",
-        "show": true
-      }
-    ]
+  "zh": {
+    "center": {
+      "items": [
+        { "id": "about", "label": "关于", "href": "/#about", "show": true },
+        { "id": "projects", "label": "案例", "href": "/#projects", "show": true },
+        { "id": "articles", "label": "文章", "href": "/articles", "show": true },
+        { "id": "photography", "label": "摄影", "href": "/photography", "show": true }
+      ]
+    },
+    "cta": {
+      "contact": { "label": "邮件联系", "href": "mailto:", "external": true, "show": false },
+      "primary": { "label": "联系我", "href": "/links", "external": false, "show": true }
+    }
   },
 
-  "cta": {
-    "contact": { "label": "Email me", "href": "mailto:", "external": true, "show": false },
-    "primary": {
-      "label": "Connect with me",
-      "href": "/links",
-      "external": false,
-      "show": true
+  "en": {
+    "center": {
+      "items": [
+        { "id": "about", "label": "About", "href": "/#about", "show": true },
+        { "id": "projects", "label": "Cases", "href": "/#projects", "show": true },
+        { "id": "articles", "label": "Articles", "href": "/articles", "show": true },
+        { "id": "photography", "label": "Photography", "href": "/photography", "show": true }
+      ]
+    },
+    "cta": {
+      "contact": { "label": "Email me", "href": "mailto:", "external": true, "show": false },
+      "primary": { "label": "Connect with me", "href": "/links", "external": false, "show": true }
     }
   }
 }
