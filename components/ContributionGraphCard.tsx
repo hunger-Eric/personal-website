@@ -95,9 +95,12 @@ function buildActivityDays(githubDays?: ActivityDay[]): ActivityDay[] {
   }
 
   // Photography projects
-  const photographyProjects = Array.isArray((photographyData as any)?.projects)
-    ? (photographyData as any).projects
-    : [];
+  // Photography projects (date data only for contribution graph)
+  const photographyProjects = Array.isArray((photographyData as any)?.zh?.projects)
+    ? (photographyData as any).zh.projects
+    : Array.isArray((photographyData as any)?.projects)
+      ? (photographyData as any).projects
+      : [];
 
   for (const project of photographyProjects) {
     bump(project?.date, 1);
