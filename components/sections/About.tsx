@@ -6,7 +6,6 @@ import {
   ArrowUpRight,
   Bot,
   BrainCircuit,
-  FileText,
   GitBranch,
   Layers3,
   Link2,
@@ -177,18 +176,6 @@ export function AboutSection() {
                   </span>
                 ))}
               </div>
-            </div>
-
-            <div className="rounded-xl border border-border bg-card/70 p-5">
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                <FileText className="h-4 w-4" />
-                <span>{locale === "zh" ? "案例形式" : "Case formats"}</span>
-              </div>
-              <p className="mt-4 text-sm leading-6 text-foreground/85">
-                {locale === "zh"
-                  ? "案例会以网站、PPT、文档、自动化流程和系统档案呈现，重点是说明它解决了什么问题，以及系统如何运转。"
-                  : "Cases can appear as websites, decks, documents, automation flows, and system records. The point is what problem they solve and how the system works."}
-              </p>
             </div>
 
             <div className="rounded-xl border border-border bg-card/70 p-5">
