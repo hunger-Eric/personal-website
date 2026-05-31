@@ -2,27 +2,26 @@
 import { MetadataRoute } from "next";
 import { siteConfig } from "@/config/siteConfig";
 import { getArticles } from "@/lib/mdx/mdx";
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev";
+import { SITE_URL } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const staticPages: MetadataRoute.Sitemap = [
     {
-      url: BASE_URL,
+      url: SITE_URL,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 1.0,
     },
     {
-      url: `${BASE_URL}/resume`,
+      url: `${SITE_URL}/resume`,
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
-      url: `${BASE_URL}/links`,
+      url: `${SITE_URL}/links`,
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.6,
@@ -31,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   if (siteConfig.sections?.articles) {
     staticPages.push({
-      url: `${BASE_URL}/articles`,
+      url: `${SITE_URL}/articles`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.8,
@@ -48,7 +47,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const lastModSource = article.updated || article.date;
         const parsed = new Date(lastModSource);
         return {
-          url: `${BASE_URL}/articles/${article.slug}`,
+          url: `${SITE_URL}/articles/${article.slug}`,
           lastModified: Number.isNaN(parsed.getTime()) ? now : parsed,
           changeFrequency: "monthly" as const,
           priority: 0.6,

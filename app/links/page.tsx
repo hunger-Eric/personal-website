@@ -7,12 +7,9 @@ import { ArrowUpRight, Mail } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
 import { ShareButton } from "@/components/ShareButton";
 import { JsonLd } from "@/components/JsonLd";
+import { SITE_URL } from "@/lib/site-url";
 import { FilledMapPin } from "@/components/FilledIcons";
 import { GithubGlyph } from "@/components/BrandGlyphs";
-
-const BASE_URL = (
-  process.env.NEXT_PUBLIC_BASE_URL || "https://me.itheheda.online"
-).replace(/\/$/, "");
 
 const LINKS_DESCRIPTION = `${siteConfig.name} 的个人主页 — GitHub、文章和摄影作品集`;
 
@@ -50,8 +47,8 @@ function isExternal(href: string): boolean {
   if (href.startsWith("#")) return false;
   if (href.startsWith("mailto:") || href.startsWith("tel:")) return false;
   try {
-    const u = new URL(href, BASE_URL);
-    return u.host !== new URL(BASE_URL).host;
+    const u = new URL(href, SITE_URL);
+    return u.host !== new URL(SITE_URL).host;
   } catch {
     return false;
   }
@@ -133,13 +130,13 @@ export default async function LinksPage() {
   const profileJsonLd = {
     "@context": "https://schema.org",
     "@type": "ProfilePage",
-    url: `${BASE_URL}/links`,
+    url: `${SITE_URL}/links`,
     name: `${siteConfig.name} · Links`,
     description: LINKS_DESCRIPTION,
     mainEntity: {
       "@type": "Person",
       name: siteConfig.name,
-      url: BASE_URL,
+      url: SITE_URL,
       jobTitle: siteConfig.title,
       ...(siteConfig.location && {
         address: {

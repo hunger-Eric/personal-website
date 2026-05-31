@@ -2,7 +2,7 @@
 // Tests for lib/structured-data.ts — all branches
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const BASE_URL = "https://kevintrinh.dev";
+const BASE_URL = "https://me.itheheda.online";
 
 describe("generatePersonSchema", () => {
   beforeEach(() => { vi.resetModules(); });

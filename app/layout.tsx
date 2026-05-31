@@ -20,6 +20,7 @@ import {
   generateWebSiteSchema,
   generateProfilePageSchema,
 } from "@/lib/structured-data";
+import { SITE_URL } from "@/lib/site-url";
 
 // Configure fonts with display: swap to prevent FOUT
 const geistSans = GeistSans;
@@ -31,8 +32,6 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 // Base URL for canonical URLs and OG images
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://me.itheheda.online";
-
 // Cloudflare Web Analytics token (privacy-friendly, no cookies). Optional —
 // the beacon is only injected when the env var is present so previews and
 // local dev stay quiet.
@@ -51,7 +50,7 @@ export const viewport: Viewport = {
 
 // Enhanced metadata
 export const metadata: Metadata = {
-  metadataBase: new URL(BASE_URL),
+  metadataBase: new URL(SITE_URL),
 
   // Basic metadata
   title: {
@@ -70,7 +69,7 @@ export const metadata: Metadata = {
     "Next.js",
     "TypeScript",
   ],
-  authors: [{ name: siteConfig.name, url: BASE_URL }],
+  authors: [{ name: siteConfig.name, url: SITE_URL }],
   creator: siteConfig.name,
   publisher: siteConfig.name,
 
@@ -92,7 +91,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "zh_CN",
-    url: BASE_URL,
+    url: SITE_URL,
     siteName: `${siteConfig.name} Website`,
     title: `${siteConfig.name} – ${siteConfig.title}`,
     description: siteConfig.tagline,
@@ -135,13 +134,13 @@ export const metadata: Metadata = {
 
   // Alternates: feeds + canonical
   alternates: {
-    canonical: BASE_URL,
+    canonical: SITE_URL,
     types: {
       "application/rss+xml": [
-        { url: `${BASE_URL}/feed.xml`, title: `${siteConfig.name} — Articles` },
+        { url: `${SITE_URL}/feed.xml`, title: `${siteConfig.name} — Articles` },
       ],
       "application/feed+json": [
-        { url: `${BASE_URL}/feed.json`, title: `${siteConfig.name} — Articles` },
+        { url: `${SITE_URL}/feed.json`, title: `${siteConfig.name} — Articles` },
       ],
     },
   },

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="Notebooklm Cn">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630" role="img" aria-label="上下文工程">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#eef2ff"/>
+      <stop offset="0%" stop-color="#ecfdf5"/>
       <stop offset="100%" stop-color="#ffffff"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.85" cy="0.15" r="0.7">
-      <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.18"/>
-      <stop offset="60%" stop-color="#4f46e5" stop-opacity="0.04"/>
-      <stop offset="100%" stop-color="#4f46e5" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#059669" stop-opacity="0.18"/>
+      <stop offset="60%" stop-color="#059669" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#059669" stop-opacity="0"/>
     </radialGradient>
   </defs>
 
@@ -16,17 +16,17 @@
   <rect width="1200" height="630" fill="url(#glow)"/>
 
   <!-- subtle dot grid in the bottom-right -->
-  <g fill="#a5b4fc" opacity="0.55">
+  <g fill="#6ee7b7" opacity="0.55">
     <circle cx="760" cy="380" r="3"/><circle cx="810" cy="380" r="3"/><circle cx="860" cy="380" r="3"/><circle cx="910" cy="380" r="3"/><circle cx="960" cy="380" r="3"/><circle cx="1010" cy="380" r="3"/><circle cx="1060" cy="380" r="3"/><circle cx="1110" cy="380" r="3"/><circle cx="760" cy="420" r="3"/><circle cx="810" cy="420" r="3"/><circle cx="860" cy="420" r="3"/><circle cx="910" cy="420" r="3"/><circle cx="960" cy="420" r="3"/><circle cx="1010" cy="420" r="3"/><circle cx="1060" cy="420" r="3"/><circle cx="1110" cy="420" r="3"/><circle cx="760" cy="460" r="3"/><circle cx="810" cy="460" r="3"/><circle cx="860" cy="460" r="3"/><circle cx="910" cy="460" r="3"/><circle cx="960" cy="460" r="3"/><circle cx="1010" cy="460" r="3"/><circle cx="1060" cy="460" r="3"/><circle cx="1110" cy="460" r="3"/><circle cx="760" cy="500" r="3"/><circle cx="810" cy="500" r="3"/><circle cx="860" cy="500" r="3"/><circle cx="910" cy="500" r="3"/><circle cx="960" cy="500" r="3"/><circle cx="1010" cy="500" r="3"/><circle cx="1060" cy="500" r="3"/><circle cx="1110" cy="500" r="3"/><circle cx="760" cy="540" r="3"/><circle cx="810" cy="540" r="3"/><circle cx="860" cy="540" r="3"/><circle cx="910" cy="540" r="3"/><circle cx="960" cy="540" r="3"/><circle cx="1010" cy="540" r="3"/><circle cx="1060" cy="540" r="3"/><circle cx="1110" cy="540" r="3"/><circle cx="760" cy="580" r="3"/><circle cx="810" cy="580" r="3"/><circle cx="860" cy="580" r="3"/><circle cx="910" cy="580" r="3"/><circle cx="960" cy="580" r="3"/><circle cx="1010" cy="580" r="3"/><circle cx="1060" cy="580" r="3"/><circle cx="1110" cy="580" r="3"/>
   </g>
 
   <!-- accent bar -->
-  <rect x="80" y="80" width="64" height="6" rx="3" fill="#4f46e5"/>
+  <rect x="80" y="80" width="64" height="6" rx="3" fill="#059669"/>
 
-  <text x="80" y="124" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="600" fill="#4f46e5" letter-spacing="3">PROJECT</text>
+  <text x="80" y="124" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="600" fill="#059669" letter-spacing="3">HELLO-AGENTS</text>
 
   <text font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="78" font-weight="800" fill="#0f172a" letter-spacing="-1.5">
-    <tspan x="80" y="341">Notebooklm Cn</tspan>
+    <tspan x="80" y="341">上下文工程</tspan>
   </text>
 
   <text x="80" y="560" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="600" fill="#475569" letter-spacing="1">me.itheheda.online</text>

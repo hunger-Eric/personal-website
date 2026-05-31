@@ -219,7 +219,7 @@ const lastCommitDateFormatted = formatDateOnly(
 const resumeDelivery: ResumeDelivery = {
   source: data.resume?.source || "google",
   googleDocId: data.resume?.googleDocId || "",
-  file: data.resume?.file || { path: "Kevin_Trinh_Resume.pdf", url: "" },
+  file: data.resume?.file || { path: "fengc_Resume.pdf", url: "" },
     filename: data.resume?.filename || "fengc_Resume.pdf",
   cacheSeconds: Number.isFinite(Number(data.resume?.cacheSeconds))
     ? Number(data.resume?.cacheSeconds)

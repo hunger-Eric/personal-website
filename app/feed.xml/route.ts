@@ -2,14 +2,11 @@
 import { NextResponse } from "next/server";
 import { getArticles } from "@/lib/mdx/mdx";
 import { siteConfig } from "@/config/siteConfig";
+import { SITE_URL } from "@/lib/site-url";
 
 export const runtime = "nodejs";
 export const dynamic = "force-static";
 export const revalidate = 21600; // 6h — articles are static, no need to be hot
-
-const BASE_URL = (
-  process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev"
-).replace(/\/$/, "");
 
 function escapeXml(s: string): string {
   return s
@@ -35,7 +32,7 @@ export async function GET() {
 
   const items = articles
     .map((a) => {
-      const link = `${BASE_URL}/articles/${a.slug}`;
+      const link = `${SITE_URL}/articles/${a.slug}`;
       const cats = (a.tags ?? []).map(
         (t) => `    <category>${escapeXml(t)}</category>`
       );
@@ -52,7 +49,7 @@ export async function GET() {
           ? `    <description>${escapeXml(a.summary)}</description>`
           : "",
         a.author
-          ? `    <author>noreply@kevintrinh.dev (${escapeXml(a.author)})</author>`
+          ? `    <author>noreply@itheheda.online (${escapeXml(a.author)})</author>`
           : "",
         ...cats,
         "  </item>",
@@ -66,8 +63,8 @@ export async function GET() {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
   <title>${escapeXml(siteConfig.name)} — Articles</title>
-  <link>${BASE_URL}/articles</link>
-  <atom:link href="${BASE_URL}/feed.xml" rel="self" type="application/rss+xml" />
+  <link>${SITE_URL}/articles</link>
+  <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />
   <description>${escapeXml(
     `关于 ${siteConfig.name} 的文章、教程与写作。`
   )}</description>

@@ -21,10 +21,7 @@ import {
   MediumGlyph,
 } from "@/components/BrandGlyphs";
 import { loadLatestYouTubeVideos } from "@/config/youtubeFeed";
-
-const BASE_URL = (
-  process.env.NEXT_PUBLIC_BASE_URL || "https://kevintrinh.dev"
-).replace(/\/$/, "");
+import { SITE_URL } from "@/lib/site-url";
 
 const PAGE_DESCRIPTION = `${siteConfig.name}'s content hub — every social, every channel, in one place. View live stats and follow on each platform.`;
 
@@ -189,13 +186,13 @@ export default async function ContentPage() {
   const profileJsonLd = {
     "@context": "https://schema.org",
     "@type": "ProfilePage",
-    url: `${BASE_URL}/content`,
+    url: `${SITE_URL}/content`,
     name: `${siteConfig.name} · Content & Socials`,
     description: PAGE_DESCRIPTION,
     mainEntity: {
       "@type": "Person",
       name: siteConfig.name,
-      url: BASE_URL,
+      url: SITE_URL,
       sameAs: platforms.map((p) => p.href),
     },
   };

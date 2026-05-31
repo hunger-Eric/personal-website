@@ -85,6 +85,11 @@ async function main() {
   await check("RSS 内容可读", `${BASE}/feed.xml`, ({ body }) => body.includes("<rss") || body.includes("<feed") || body.includes("<item>") || body.includes("<entry>"));
   await check("JSON Feed 解析有效", `${BASE}/feed.json`, ({ body }) => { try { JSON.parse(body); return true; } catch { return false; } });
   await check("Sitemap 含 URL 条目", `${BASE}/sitemap.xml`, ({ body }) => body.includes("<url>"));
+  await check("LLMs.txt 可读", `${BASE}/llms.txt`, ({ status, headers, body }) =>
+    status === 200 &&
+    (headers.get("content-type") || "").includes("text/plain") &&
+    body.includes("# fengc")
+  );
   await check("首页含 <h1> 标题", `${BASE}/`, ({ body }) => body.includes("<h1") || body.includes("<h2"));
   await check("首页含社交图标", `${BASE}/`, ({ body }) => /GitHub|github|social/i.test(body));
   await check("首页 Body > 5KB", `${BASE}/`, ({ body }) => body.length > 5000);
@@ -115,6 +120,7 @@ async function main() {
   process.stdout.write("\n── 6. SEO / 元数据 ──\n");
   await check("Sitemap.xml", `${BASE}/sitemap.xml`, ({ status }) => status === 200);
   await check("Robots.txt", `${BASE}/robots.txt`, ({ status }) => status === 200);
+  await check("LLMs.txt", `${BASE}/llms.txt`, ({ status }) => status === 200);
   await check("RSS Feed.xml", `${BASE}/feed.xml`, ({ status }) => status === 200);
   await check("JSON Feed.json", `${BASE}/feed.json`, ({ status }) => status === 200);
   await check("favicon", `${BASE}/images/favicon.png`, ({ status, headers }) =>

@@ -1,5 +1,5 @@
 // app/discord/route.ts
-// Vanity redirect: kevintrinh.dev/discord → current Discord server invite.
+// Vanity redirect: me.itheheda.online/discord -> current Discord server invite.
 // Keeping the canonical URL on our domain means the invite link in any old
 // posts/links can be rotated without breaking those.
 import { NextResponse } from "next/server";

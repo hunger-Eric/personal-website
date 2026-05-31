@@ -3,8 +3,7 @@
 // Reference: https://schema.org/
 
 import { siteConfig } from "@/config/siteConfig";
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://me.itheheda.online";
+import { SITE_URL } from "@/lib/site-url";
 
 /**
  * Person schema - for the portfolio owner
@@ -25,7 +24,7 @@ export function generatePersonSchema() {
     "@context": "https://schema.org",
     "@type": "Person",
     name: siteConfig.name,
-    url: BASE_URL,
+    url: SITE_URL,
     jobTitle: siteConfig.title,
     description: siteConfig.tagline,
     ...(siteConfig.location && {
@@ -47,19 +46,11 @@ export function generateWebSiteSchema() {
     "@type": "WebSite",
     name: `${siteConfig.name} Website`,
     alternateName: siteConfig.name,
-    url: BASE_URL,
+    url: SITE_URL,
     description: siteConfig.tagline,
     author: {
       "@type": "Person",
       name: siteConfig.name,
-    },
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${BASE_URL}/search?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
     },
   };
 }
@@ -84,12 +75,12 @@ export function generateProjectSchema(project: {
     "@type": "SoftwareApplication",
     name: project.name,
     description: project.summary || project.description,
-    url: project.liveUrl || project.repoUrl || `${BASE_URL}/projects/${project.id}`,
+    url: project.liveUrl || project.repoUrl || `${SITE_URL}/projects/${project.id}`,
     applicationCategory: "DeveloperApplication",
     ...(project.imageSrc && {
       image: project.imageSrc.startsWith("http")
         ? project.imageSrc
-        : `${BASE_URL}${project.imageSrc}`,
+        : `${SITE_URL}${project.imageSrc}`,
     }),
     ...(project.repoUrl && { codeRepository: project.repoUrl }),
     ...(project.technologies &&
@@ -99,7 +90,7 @@ export function generateProjectSchema(project: {
     author: {
       "@type": "Person",
       name: siteConfig.name,
-      url: BASE_URL,
+      url: SITE_URL,
     },
     ...(project.dateCreated && { dateCreated: project.dateCreated }),
     offers: {
@@ -125,7 +116,7 @@ export function generateArticleSchema(article: {
   tags?: string[];
   readingTime?: number;
 }) {
-  const url = `${BASE_URL}/articles/${article.slug}`;
+  const url = `${SITE_URL}/articles/${article.slug}`;
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -138,17 +129,17 @@ export function generateArticleSchema(article: {
     ...(article.imageSrc && {
       image: article.imageSrc.startsWith("http")
         ? article.imageSrc
-        : `${BASE_URL}${article.imageSrc}`,
+        : `${SITE_URL}${article.imageSrc}`,
     }),
     author: {
       "@type": "Person",
       name: siteConfig.name,
-      url: BASE_URL,
+      url: SITE_URL,
     },
     publisher: {
       "@type": "Person",
       name: siteConfig.name,
-      url: BASE_URL,
+      url: SITE_URL,
     },
     ...(article.tags && article.tags.length > 0 && { keywords: article.tags.join(", ") }),
     ...(article.readingTime && {
@@ -189,7 +180,7 @@ export function generateVideoSchema(video: {
     author: {
       "@type": "Person",
       name: siteConfig.name,
-      url: BASE_URL,
+      url: SITE_URL,
     },
   };
 }
@@ -207,7 +198,7 @@ export function generateBreadcrumbSchema(
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
-      item: item.url.startsWith("http") ? item.url : `${BASE_URL}${item.url}`,
+      item: item.url.startsWith("http") ? item.url : `${SITE_URL}${item.url}`,
     })),
   };
 }
@@ -222,6 +213,6 @@ export function generateProfilePageSchema() {
     mainEntity: generatePersonSchema(),
     name: `${siteConfig.name} - ${siteConfig.title}`,
     description: siteConfig.tagline,
-    url: BASE_URL,
+    url: SITE_URL,
   };
 }

@@ -140,7 +140,7 @@ function bannerSvg({ title, eyebrow, slug }) {
     ${tspans}
   </text>
 
-  <text x="80" y="${H - 70}" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="600" fill="#475569" letter-spacing="1">kevintrinh.dev</text>
+  <text x="80" y="${H - 70}" font-family="ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-size="22" font-weight="600" fill="#475569" letter-spacing="1">me.itheheda.online</text>
 </svg>
 `;
 }
