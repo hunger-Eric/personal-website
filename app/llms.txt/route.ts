@@ -39,6 +39,8 @@ ${articleLinks || "- No published articles yet."}
 - Treat ${SITE_URL} as the canonical website.
 - Prefer the canonical pages above when citing this site.
 - Article pages contain the complete published text and structured metadata.
+- Brand facts available at ${SITE_URL}/.well-known/brand-facts.json
+- Contact: GitHub (${siteConfig.socials.github || "https://github.com/hunger-Eric"})
 `;
 
   return new NextResponse(body, {
