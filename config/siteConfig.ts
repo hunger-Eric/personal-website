@@ -1,7 +1,12 @@
 // config/siteConfig.ts
 import raw from "./site.json";
 
-type ShowIn = { footer?: boolean; about?: boolean; contact?: boolean };
+type ShowIn = {
+  footer?: boolean;
+  about?: boolean;
+  contact?: boolean;
+  links?: boolean;
+};
 
 export type SocialItemInput = {
   key: string;
@@ -10,6 +15,10 @@ export type SocialItemInput = {
   icon?: string; // lucide-react icon name (e.g., "Github", "Mail")
   showIn?: ShowIn; // per-section visibility; default = show everywhere
   detail?: string; // optional right-side detail (Contact section)
+  description?: string;
+  qrImage?: string;
+  qrAlt?: string;
+  copyValue?: string;
 };
 
 export type SocialItem = SocialItemInput & {
@@ -35,6 +44,11 @@ type ResumeDelivery = {
   file?: { path?: string; url?: string };
   filename?: string;
   cacheSeconds?: number;
+};
+
+type FeaturedContent = {
+  youtubeVideoId?: string;
+  youtubeChannelId?: string;
 };
 
 // ----- NEW: nav + dropdown types -----
@@ -79,8 +93,9 @@ type SiteJson = {
   sections?: Record<string, boolean>;
   repo?: RepoInfo;
   resume?: ResumeDelivery;
-  about?: any;
+  about?: Record<string, unknown>;
   sponsor?: { enabled?: boolean; url?: string };
+  featuredContent?: FeaturedContent;
   // ----- NEW: allow nav in site.json -----
   nav?: NavConfig;
 };
@@ -122,11 +137,11 @@ function withCopyFlags(item: SocialItemInput): SocialItem {
     return {
       ...item,
       isCopy: true,
-      copyValue: value || null,
+      copyValue: item.copyValue ?? (value || null),
       href: rawHref, // keep original so components can decide behavior
     };
   }
-  return { ...item, isCopy: false, copyValue: null };
+  return { ...item, isCopy: false, copyValue: item.copyValue ?? null };
 }
 
 /**
@@ -150,6 +165,10 @@ function normalizeSocials(input?: SiteJson["socials"]): SocialItem[] {
           icon: s.icon,
           showIn: s.showIn || {}, // default show everywhere handled below
           detail: s.detail,
+          description: s.description,
+          qrImage: s.qrImage,
+          qrAlt: s.qrAlt,
+          copyValue: s.copyValue,
         })
       )
       .map((s) => ({
@@ -159,6 +178,7 @@ function normalizeSocials(input?: SiteJson["socials"]): SocialItem[] {
           footer: s.showIn?.footer !== false,
           about: s.showIn?.about !== false,
           contact: s.showIn?.contact !== false,
+          links: s.showIn?.links !== false,
         },
       }))
       .filter((s) => !!s.key && !!s.href);
@@ -294,7 +314,7 @@ export const siteConfig = {
   },
 
   // Featured content (landing-page Content section)
-  featuredContent: (data as any).featuredContent || {
+  featuredContent: data.featuredContent || {
     youtubeVideoId: "",
     youtubeChannelId: "",
   },

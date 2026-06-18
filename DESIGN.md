@@ -32,6 +32,13 @@ The site should feel like:
 
 The visual language is clean, restrained, and information-dense. It should feel like a system design archive, not a Dribbble portfolio.
 
+Unified public surface language:
+
+- Homepage, `/projects`, case detail pages, and `/links` must feel like one AI Native Lab system, not separate templates.
+- Use warm paper backgrounds, graphite panels, restrained amber accents, low-contrast hairlines, compact mono labels, and quiet system-status controls.
+- Avoid cool blue contact-page treatments, isolated dark demo blocks inside unrelated light shells, or sudden palette shifts between sections.
+- Interactive demos may use dark graphite canvases, but the surrounding page must share the same accent, border rhythm, button geometry, and typography cadence.
+
 Avoid:
 
 - heavy animation
@@ -162,6 +169,17 @@ Homepage case behavior:
 - with few cases, show a featured lab note plus a compact index
 - when cases grow beyond the configured threshold, switch to catalog/index mode
 - catalog mode groups by tags, workflows, AI stack, and status rather than only by date
+
+Interactive case demo style:
+
+- Project demos should read as one integrated system surface, not a stack of unrelated modules.
+- The React controls, chapter rail, artifact panel, and embedded animation assets must share the same palette and UI language.
+- Use graphite canvas, warm paper text, restrained amber accent, fine hairline borders, compact mono labels, and dark panel surfaces for film-style demos.
+- Avoid mixing a light outer shell with dark animation assets, or any palette shift that makes the page feel stitched together.
+- Archive/filter areas are appendix surfaces and should stay visually quieter than the main demo stage.
+- Mobile demos must show the animation/artifact before long explanatory rails; navigation compresses into tabs or segmented controls.
+- Case detail pages should lead with problem, system takeover, client artifact, and transferability. Technical implementation details belong in a quieter appendix.
+- Animation assets must pass HyperFrames lint, inspect, and validate checks before handoff unless a warning is intentionally documented.
 
 ## 7. Admin Direction
 

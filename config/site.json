@@ -1,1 +1,59 @@
-{"name":"fengc"}
+{
+  "name": "fengc",
+  "title": "AI Native 构建者",
+  "tagline": "把 AI、自动化、知识系统和业务流程组织成可运行的系统。",
+  "location": "Shenzhen, China",
+  "socials": [
+    {
+      "key": "github",
+      "label": "GitHub",
+      "href": "https://github.com/hunger-Eric",
+      "icon": "Github",
+      "description": "Open source projects, system experiments, and build logs.",
+      "showIn": { "footer": true, "about": true, "contact": true, "links": true }
+    },
+    {
+      "key": "email",
+      "label": "Email",
+      "href": "mailto:itheheda@gmail.com",
+      "icon": "Mail",
+      "description": "For collaboration, project inquiries, and longer notes.",
+      "copyValue": "itheheda@gmail.com",
+      "showIn": { "footer": true, "about": true, "contact": true, "links": true }
+    },
+    {
+      "key": "wechat-official",
+      "label": "独立系统",
+      "href": "copy:独立系统",
+      "icon": "MessageCircle",
+      "description": "微信公众号，记录 AI Native 系统、自动化和独立开发实践。",
+      "qrImage": "/images/contact/wechat-official.jpg",
+      "qrAlt": "微信公众号「独立系统」二维码",
+      "copyValue": "独立系统",
+      "showIn": { "footer": false, "about": true, "contact": true, "links": true }
+    },
+    {
+      "key": "wechat",
+      "label": "WeChat",
+      "href": "copy:404",
+      "icon": "MessageCircle",
+      "description": "个人微信，可公开添加。备注来意会更快对上频道。",
+      "qrImage": "/images/contact/wechat-personal.jpg",
+      "qrAlt": "fengc 个人微信二维码",
+      "copyValue": "404",
+      "showIn": { "footer": false, "about": true, "contact": true, "links": true }
+    }
+  ],
+  "sections": {
+    "hero": true,
+    "about": true,
+    "education": true,
+    "experience": true,
+    "projects": true,
+    "articles": true,
+    "youtube": false,
+    "certifications": true,
+    "contact": false,
+    "resume": true
+  }
+}

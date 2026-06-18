@@ -1,7 +1,15 @@
 // components/Footer.tsx
-import { Github, Linkedin, Instagram, Youtube, Music2 } from "lucide-react";
+import {
+  Github,
+  Instagram,
+  Linkedin,
+  Mail,
+  MessageCircle,
+  Music2,
+  Youtube,
+} from "lucide-react";
 
-import { siteConfig } from "../config/siteConfig";
+import { siteConfig, type SocialItem } from "../config/siteConfig";
 
 type SocialEntry = {
   key: string;
@@ -9,11 +17,20 @@ type SocialEntry = {
   href: string;
 };
 
-const SOCIAL_ORDER = ["github", "linkedin", "tiktok", "youtube", "instagram"];
+const SOCIAL_ORDER = [
+  "github",
+  "email",
+  "wechat-official",
+  "wechat",
+  "linkedin",
+  "tiktok",
+  "youtube",
+  "instagram",
+];
 
 function getSocials(): SocialEntry[] {
-  const list: any[] = (siteConfig as any).socialsList ?? [];
-  const byKey = new Map<string, any>();
+  const list: SocialItem[] = siteConfig.socialsList ?? [];
+  const byKey = new Map<string, SocialItem>();
   for (const item of list) {
     if (item?.key && item?.href) byKey.set(String(item.key), item);
   }
@@ -30,6 +47,11 @@ function iconFor(key: string) {
   switch (key) {
     case "github":
       return Github;
+    case "email":
+      return Mail;
+    case "wechat":
+    case "wechat-official":
+      return MessageCircle;
     case "linkedin":
       return Linkedin;
     case "tiktok":

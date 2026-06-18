@@ -1,35 +1,41 @@
 "use client";
 
-import type { ReactNode } from "react";
 import Link from "next/link";
-import { ArrowUpRight, BrainCircuit, GitBranch, Workflow } from "lucide-react";
+import { ArrowUpRight, FileOutput, GitBranch, Workflow } from "lucide-react";
 
 import { useLocale } from "@/components/LocaleProvider";
-import { getSiteCopy } from "@/config/contentCopy";
 import type { CaseItem } from "../../config/cases";
 
 interface CaseCardProps {
   caseItem: CaseItem;
-  iconFor?: (type?: string) => ReactNode;
-  featured?: boolean;
 }
 
 function firstLine(caseItem: CaseItem) {
-  return caseItem.problem?.[0] || caseItem.description?.[0] || caseItem.summary;
+  return caseItem.customerStory?.publicScenario ||
+    caseItem.problem?.[0] ||
+    caseItem.description?.[0] ||
+    caseItem.summary;
 }
 
-export function CaseCard({ caseItem, featured = false }: CaseCardProps) {
+function resultLine(caseItem: CaseItem) {
+  return caseItem.customerStory?.artifactLabel ||
+    caseItem.results?.[0] ||
+    caseItem.demo?.result.label ||
+    caseItem.format ||
+    "Case result";
+}
+
+export function CaseCard({ caseItem }: CaseCardProps) {
   const { locale } = useLocale();
-  const copy = getSiteCopy(locale);
   const href = `/projects/${encodeURIComponent(caseItem.id)}`;
-  const aiStack = (caseItem.aiStack ?? caseItem.technologies ?? []).slice(0, 3);
+  const tags = (caseItem.tags ?? [caseItem.caseType ?? "case"]).slice(0, 3);
 
   return (
-    <article className="h-full border-y border-border py-5">
-      <Link href={href} className="group block">
+    <article className="h-full rounded-md border border-border bg-card p-5 transition-colors hover:border-foreground/30">
+      <Link href={href} className="group flex h-full flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-accent">
         <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           <GitBranch className="h-4 w-4" />
-          <span>{locale === "zh" ? "系统记录" : "System record"}</span>
+          <span>{locale === "zh" ? "案例记录" : "Case record"}</span>
           <span className="text-border">/</span>
           <span>{caseItem.status || "Archive"}</span>
         </div>
@@ -41,32 +47,36 @@ export function CaseCard({ caseItem, featured = false }: CaseCardProps) {
           {firstLine(caseItem)}
         </p>
 
-        <div className="mt-5 grid gap-3 text-xs text-muted-foreground">
-          <div className="flex items-center gap-2">
-            <Workflow className="h-4 w-4" />
-            <span className="truncate">
-              {caseItem.workflows?.[0] || caseItem.aiOrchestration?.[0] || "AI workflow"}
+        <div className="mt-5 grid gap-2 border-t border-border pt-4 text-xs text-muted-foreground sm:grid-cols-2">
+          <div className="rounded-md border border-border bg-background/70 p-3">
+            <span className="mb-1 flex items-center gap-1.5 font-semibold uppercase tracking-[0.14em] text-foreground">
+              <Workflow className="h-3.5 w-3.5 text-accent" />
+              {locale === "zh" ? "解决的问题" : "Problem"}
             </span>
+            <p className="line-clamp-2 leading-5">{caseItem.caseType || caseItem.format}</p>
           </div>
-          <div className="flex items-center gap-2">
-            <BrainCircuit className="h-4 w-4" />
-            <span className="truncate">{aiStack.join(", ") || "AI-assisted system"}</span>
+          <div className="rounded-md border border-border bg-background/70 p-3">
+            <span className="mb-1 flex items-center gap-1.5 font-semibold uppercase tracking-[0.14em] text-foreground">
+              <FileOutput className="h-3.5 w-3.5 text-accent" />
+              {locale === "zh" ? "交付结果" : "Outcome"}
+            </span>
+            <p className="line-clamp-2 leading-5">{resultLine(caseItem)}</p>
           </div>
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-3 pt-5">
           <div className="flex flex-wrap gap-2">
-            {(caseItem.tags ?? [caseItem.caseType ?? "case"]).slice(0, 3).map((tag) => (
+            {tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded-full border border-border bg-card px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
+                className="rounded-md border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
               >
                 {tag}
               </span>
             ))}
           </div>
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-foreground">
-            {copy.cases.viewDetails}
+            {locale === "zh" ? "查看完整案例" : "View full case"}
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </span>
         </div>

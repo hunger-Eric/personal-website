@@ -8,69 +8,54 @@
   "github_readme_projects": [
     {
       "repo_url": "https://github.com/hunger-Eric/notebooklm-cn",
-      "priority": 1,
+      "priority": 40,
       "name": "notebooklm-cn",
       "format": "AI workflow case",
       "caseType": "Knowledge workflow",
       "role": "AI Native System Builder",
       "status": "Active archive",
-      "featured": true,
-      "tags": ["AI workflow", "knowledge system", "localization", "automation"],
+      "featured": false,
+      "tags": ["Knowledge/RAG", "AI workflow", "localization"],
       "workflows": ["document ingestion", "AI-assisted reading", "Chinese UX adaptation"],
-      "aiStack": ["NotebookLM concept", "multi-agent review", "Codex"],
+      "aiStack": ["NotebookLM concept", "Codex", "Next.js"],
       "automation": ["README capture", "GitHub metadata sync", "deploy feedback loop"],
       "experiments": ["localized knowledge assistant", "source-first note workflow"],
-
       "zh": {
         "summary": "把 NotebookLM 的核心体验改造成可维护的中文知识工作流实验。",
         "problem": [
-          "中文知识整理和 AI 阅读工具经常停留在零散 prompt 和单次对话里，难以形成可复用的工作流。",
-          "原型需要同时处理内容输入、AI 辅助理解、界面表达和长期维护，而不是只做一个页面。"
+          "中文知识整理和 AI 阅读工具经常停留在零散 prompt 与一次性对话里，难以形成可复用工作流。"
         ],
         "systemOverview": [
-          "以 GitHub 仓库作为公开记录，把 README、部署状态和案例页面连接成一个可以持续更新的系统档案。",
-          "案例展示不只呈现 UI，而是记录输入、处理、反馈和扩展路径。"
+          "用 GitHub 仓库作为公开记录，把 README、部署状态和案例页面连接成可持续更新的系统档案。"
         ],
         "aiOrchestration": [
-          "使用 Codex 辅助代码实现、结构整理和回归检查。",
-          "把模型输出限制在可审阅的代码、文档和配置里，减少一次性生成带来的维护负担。"
+          "用 Codex 辅助实现、整理结构和做回归检查，让模型输出落在可审阅的代码、文档和配置里。"
         ],
         "results": [
-          "形成了一个可以长期更新的中文 AI 知识工作流案例。",
-          "把项目说明、技术记录和线上展示连接成同一条可维护链路。",
-          "为后续 RAG、知识库、自动化整理和多模型协作留下结构入口。"
+          "形成了一个可长期更新的中文 AI 知识工作流案例。"
         ],
         "learnings": [
-          "AI Native 案例应该记录系统如何工作，而不只是展示完成后的界面。",
-          "长期可扩展的工作流需要把内容源、自动化和部署反馈都纳入设计。"
+          "AI Native 案例应该记录系统如何工作，而不只是展示完成后的界面。"
         ]
       },
-
       "en": {
         "summary": "Adapting NotebookLM's core experience into a maintainable Chinese knowledge workflow experiment.",
         "problem": [
-          "Chinese knowledge tools and AI reading assistants often stay at scattered prompts and one-off conversations, making it hard to build reusable workflows.",
-          "A prototype needs to handle content input, AI-assisted understanding, UI expression, and long-term maintenance simultaneously — not just build a page."
+          "Chinese AI reading workflows often stay in scattered prompts, making reuse hard."
         ],
         "systemOverview": [
-          "Using the GitHub repo as a public record, connecting README, deployment status, and case pages into a continuously updatable system archive.",
-          "Case presentation shows not just the UI, but records the input, processing, feedback, and scaling path."
+          "The GitHub repo acts as the public record connecting README, deployment status, and the case page."
         ],
         "aiOrchestration": [
-          "Using Codex for code implementation, structural organization, and regression checks.",
-          "Constraining model output to reviewable code, docs, and configs to reduce maintenance overhead from one-shot generation."
+          "Codex helps implementation, structure, and regression checks while outputs stay reviewable."
         ],
         "results": [
-          "Built a long-term maintainable Chinese AI knowledge workflow case.",
-          "Connected project documentation, technical records, and live showcase into a single maintainable pipeline.",
-          "Left structural entry points for future RAG, knowledge bases, automated curation, and multi-model collaboration."
+          "A maintainable Chinese AI knowledge workflow case."
         ],
         "learnings": [
-          "AI Native cases should record how the system works, not just showcase the finished interface.",
-          "Long-term scalable workflows need content sources, automation, and deployment feedback baked into the design."
+          "AI Native cases should record how the system works, not only the final interface."
         ]
       },
-
       "architecture": [
         { "label": "Content source", "detail": "README and repository metadata become the source record for the public case page." },
         { "label": "Interface", "detail": "Next.js renders the public archive and keeps the case detail route stable." },
@@ -78,5 +63,317 @@
       ]
     }
   ],
-  "local_projects": []
+  "local_projects": [
+    {
+      "id": "hermes-notebook",
+      "name": "Hermes Notebook",
+      "summary": "面向本地知识库的文档理解引擎，把 PDF、网页、课程、PPT 和笔记转成可追溯的 AI 知识节点。",
+      "format": "Interactive system demo",
+      "caseType": "Knowledge/RAG",
+      "role": "System designer / full-stack builder",
+      "status": "Active build",
+      "start": "2026-05",
+      "end": "Now",
+      "featured": true,
+      "priority": 1,
+      "tags": ["Knowledge/RAG", "document understanding", "Obsidian", "local-first"],
+      "workflows": ["source ingestion", "semantic chunking", "retrieval QA", "artifact generation"],
+      "aiStack": ["FastAPI", "Next.js", "SQLite", "RAG", "Obsidian"],
+      "automation": ["source health checks", "job events", "traceable note generation"],
+      "experiments": ["source-first course ingestion", "PPT story brief generation", "local app productization"],
+      "problem": [
+        "个人和团队的知识资料分散在 PDF、网页、视频课程和 Obsidian 笔记里，普通聊天式 AI 很难长期保持来源边界。",
+        "真正有用的知识系统需要把抽取、检索、回答、笔记生成和证据追踪组织成一条可维护链路。"
+      ],
+      "systemOverview": [
+        "Hermes Notebook 用本地仓库和 Obsidian vault 作为知识底座，通过 CLI、FastAPI 和 Next.js 前端组织导入、检索、问答与 artifact 生成。",
+        "系统强调 source-first：每个回答和笔记都必须能回到来源，而不是只保存模型总结。"
+      ],
+      "aiOrchestration": [
+        "把模型放在可审计的工作流边界里：文档先结构化，片段保留来源，回答再引用证据。",
+        "对失败、重试、trace 和 artifact 类型做显式记录，避免长流程里静默丢数据。"
+      ],
+      "architecture": [
+        { "label": "Source layer", "detail": "PDF, web, video transcript, Office files, and Obsidian notes are normalized into source records." },
+        { "label": "Knowledge layer", "detail": "Semantic chunks, source offsets, retrieval cache, and answer artifacts keep provenance visible." },
+        { "label": "Experience layer", "detail": "CLI and Next.js UI expose notebook creation, ingestion, Q&A, and note generation." }
+      ],
+      "results": [
+        "沉淀出可反复导入、检索、回答和生成笔记的本地知识工作台。",
+        "为课程 ingestion、PPT story brief、应用化 RAG 和 Obsidian 知识库联动留下稳定接口。"
+      ],
+      "learnings": [
+        "知识系统的高级感来自可追溯和可恢复，而不是更长的模型回答。",
+        "先把来源边界做清楚，再扩展模板、应用入口和自动化体验。"
+      ],
+      "demo": {
+        "type": "knowledge-flow",
+        "title": "Document-to-answer pipeline",
+        "description": "模拟 Hermes Notebook 如何把一个资料源转成可追溯的回答和笔记。",
+        "steps": [
+          {
+            "title": "Source ingest",
+            "status": "extracting",
+            "input": "course-notes.pdf + transcript.srt",
+            "output": "2 sources normalized",
+            "metric": "source health: 100%",
+            "logs": ["detect file type", "extract text blocks", "record source offsets"]
+          },
+          {
+            "title": "Semantic chunks",
+            "status": "indexing",
+            "input": "source text blocks",
+            "output": "86 traceable knowledge nodes",
+            "metric": "avg chunk: 420 chars",
+            "logs": ["preserve verbatim spans", "attach notebook slug", "write retrieval index"]
+          },
+          {
+            "title": "RAG answer",
+            "status": "reasoning",
+            "input": "用户问题：这节课的核心方法是什么？",
+            "output": "answer with 5 cited snippets",
+            "metric": "top-k evidence: 5",
+            "logs": ["retrieve source hits", "rank evidence", "compose answer with citations"]
+          },
+          {
+            "title": "Artifact output",
+            "status": "published",
+            "input": "answer + citations",
+            "output": "Obsidian note and rag-trace.json",
+            "metric": "trace complete",
+            "logs": ["write artifact", "link back to source", "ready for review"]
+          }
+        ],
+        "result": {
+          "label": "可追溯知识笔记",
+          "cta": "Open Hermes case"
+        }
+      }
+    },
+    {
+      "id": "freight-lead-agent",
+      "name": "Freight Lead Agent",
+      "summary": "为跨境货代场景设计的线索发现、官网解析、邮箱证据、发送计划和运维监控系统。",
+      "format": "Interactive system demo",
+      "caseType": "Automation",
+      "role": "Product engineer / operations system builder",
+      "status": "Live operations",
+      "start": "2026-06",
+      "end": "Now",
+      "featured": true,
+      "priority": 2,
+      "tags": ["Automation", "lead generation", "operations", "customer delivery"],
+      "workflows": ["Google Maps collection", "website crawl", "contact evidence", "send-plan readiness"],
+      "aiStack": ["FastAPI", "React", "Postgres", "Redis Queue", "Docker"],
+      "automation": ["company-level crawl jobs", "runtime health", "customer package", "safe upgrade flow"],
+      "experiments": ["high-recall collection", "email evidence pipeline", "customer-readable audit trail"],
+      "problem": [
+        "跨境货代找客户不是单次爬取问题，而是一条长链路：地图线索、官网访问、联系人证据、邮件准备、批次审计和客户交付都要稳定。",
+        "长运行任务容易被网络、代理、Docker、队列和数据质量问题打断，需要可恢复的运维语义。"
+      ],
+      "systemOverview": [
+        "Freight Lead Agent 把线索采集、官网解析、资产库、发送计划和运维健康面板组织成一个可部署的客户交付系统。",
+        "系统把数据证据、任务状态和恢复建议分层展示，避免把后台异常直接暴露成客户无法理解的错误。"
+      ],
+      "aiOrchestration": [
+        "用 AI 和自动化生成、整理、筛选和准备触达上下文，但真实发送路径保持测试邮箱和确认门禁。",
+        "长任务采用分块、company-level job、heartbeat 和 retryability 分类，保证可恢复而不是盲目重启。"
+      ],
+      "architecture": [
+        { "label": "Collection", "detail": "Google Maps and website evidence are collected as durable raw parts and normalized company records." },
+        { "label": "Processing", "detail": "Redis Queue and workers process company crawl jobs with timeout, retry, and recovery metadata." },
+        { "label": "Operations", "detail": "Dashboard health, task actions, audit records, and customer packages expose safe operational control." }
+      ],
+      "results": [
+        "形成了可运行、可交付、可升级的客户线索自动化系统。",
+        "把 live run、数据质量、运维健康和客户交付包打通成一套面向真实业务的产品流程。"
+      ],
+      "learnings": [
+        "业务自动化的核心不是一次跑通，而是失败可解释、任务可恢复、证据可交付。",
+        "客户能看到的界面必须隐藏技术噪音，同时保留足够的审计能力。"
+      ],
+      "demo": {
+        "type": "lead-flow",
+        "title": "Lead operations pipeline",
+        "description": "模拟 Freight Lead Agent 如何把公开线索变成可审计的触达准备状态。",
+        "steps": [
+          {
+            "title": "Map discovery",
+            "status": "collecting",
+            "input": "route: Shenzhen -> Taiwan logistics",
+            "output": "320 company candidates",
+            "metric": "raw parts: 16",
+            "logs": ["split query grid", "collect places", "persist raw evidence"]
+          },
+          {
+            "title": "Website crawl",
+            "status": "processing",
+            "input": "company websites",
+            "output": "184 sites parsed",
+            "metric": "crawl workers: 3",
+            "logs": ["enqueue company jobs", "crawl contact/about pages", "recover stale jobs"]
+          },
+          {
+            "title": "Contact evidence",
+            "status": "scoring",
+            "input": "emails + contact pages",
+            "output": "72 reachable companies",
+            "metric": "A/B leads: 41",
+            "logs": ["dedupe contacts", "grade lead quality", "attach source keyword"]
+          },
+          {
+            "title": "Send-plan readiness",
+            "status": "ready",
+            "input": "sender profile + test mailbox",
+            "output": "test-send plan prepared",
+            "metric": "real send: gated",
+            "logs": ["preview candidates", "redirect to test mailbox", "write audit record"]
+          }
+        ],
+        "result": {
+          "label": "可审计线索批次",
+          "cta": "Open freight case"
+        }
+      }
+    },
+    {
+      "id": "element-asset-sdk",
+      "name": "Element Asset SDK",
+      "summary": "跨 Web 与桌面运行时捕获、验证、复用 UI 元素资产的 SDK 和工作台。",
+      "format": "Interactive system demo",
+      "caseType": "Agent Runtime",
+      "role": "SDK designer / runtime engineer",
+      "status": "P0 complete",
+      "start": "2026-06",
+      "end": "2026-06",
+      "featured": true,
+      "priority": 3,
+      "tags": ["Agent Runtime", "UI assets", "SDK", "Chrome extension"],
+      "workflows": ["element capture", "asset validation", "data extraction", "action replay"],
+      "aiStack": ["TypeScript", "Chrome extension", "Desktop UIA", "Workbench"],
+      "automation": ["goal audit", "real Chrome QA", "runtime adapters"],
+      "experiments": ["web/desktop asset model", "replayable extraction", "agent context contract"],
+      "problem": [
+        "Agent 要可靠操作软件，不能只依赖脆弱的一次性选择器；它需要可保存、可验证、可复用的 UI 元素资产。",
+        "Web 和桌面环境的元素模型不同，但上层 SDK 需要给 agent 一个稳定的调用边界。"
+      ],
+      "systemOverview": [
+        "Element Asset SDK 定义资产模型、状态机、证据管理、运行时适配器、CLI、Workbench 和 Chrome extension 验证流。",
+        "系统把捕获、验证、抽取、动作执行和报告组织成可审计 SDK，而不是通用 RPA 平台。"
+      ],
+      "aiOrchestration": [
+        "把 UI 元素和上下文封装成 agent 可理解的资产，让模型能引用稳定资产而不是在屏幕上临时猜。",
+        "通过 goal audit 和真实 Chrome QA 约束 P0 范围，保证 SDK 能被另一个系统复用。"
+      ],
+      "architecture": [
+        { "label": "Asset model", "detail": "Reusable element assets carry selectors, evidence, state, capability, and validation metadata." },
+        { "label": "Runtime adapters", "detail": "Web, Chrome extension, and Desktop UIA adapters expose a consistent SDK boundary." },
+        { "label": "Workbench", "detail": "A local workbench inspects assets, extraction runs, replay summaries, and raw evidence." }
+      ],
+      "results": [
+        "完成 P0 SDK、CLI、Workbench、Chrome extension scaffold 和 Desktop UIA process driver。",
+        "通过 goal audit、真实 Chrome extension QA 和示例调用证明核心接口闭环。"
+      ],
+      "learnings": [
+        "Agent runtime 的关键是把可变 UI 变成可验证资产。",
+        "SDK 边界要比演示页面更重要，因为它决定后续系统能否复用。"
+      ],
+      "demo": {
+        "type": "asset-flow",
+        "title": "Element asset lifecycle",
+        "description": "模拟 SDK 如何捕获一个 UI 元素并把它变成可复用资产。",
+        "steps": [
+          {
+            "title": "Capture element",
+            "status": "capturing",
+            "input": "button: Export report",
+            "output": "asset candidate saved",
+            "metric": "confidence: 0.94",
+            "logs": ["read DOM path", "capture screenshot evidence", "assign stable asset id"]
+          },
+          {
+            "title": "Validate asset",
+            "status": "validating",
+            "input": "selector + visual evidence",
+            "output": "capability: click + extract",
+            "metric": "13/13 checks",
+            "logs": ["verify selector", "check visibility", "record runtime adapter"]
+          },
+          {
+            "title": "Run extraction",
+            "status": "extracting",
+            "input": "saved extraction spec",
+            "output": "structured row set",
+            "metric": "6 fields mapped",
+            "logs": ["resolve dependency assets", "extract table rows", "write validation report"]
+          },
+          {
+            "title": "Replay action",
+            "status": "complete",
+            "input": "asset.export-report",
+            "output": "action result with evidence",
+            "metric": "replayable",
+            "logs": ["execute click", "capture result pane", "export SDK call snippet"]
+          }
+        ],
+        "result": {
+          "label": "可复用 UI 资产",
+          "cta": "Open SDK case"
+        }
+      }
+    },
+    {
+      "id": "geo-saas",
+      "name": "GEO SaaS 验证服务",
+      "summary": "围绕跨境货代航线做 AI 可见性体检、90 天验证和内容基础设施改造的商业 MVP。",
+      "format": "Business validation case",
+      "caseType": "Business Validation",
+      "role": "Service designer / AI visibility strategist",
+      "status": "Validation",
+      "start": "2026-05",
+      "end": "Now",
+      "featured": false,
+      "priority": 20,
+      "tags": ["Business Validation", "GEO", "AI visibility", "freight"],
+      "workflows": ["AI visibility audit", "route landing page", "schema/FAQ", "90-day measurement"],
+      "aiStack": ["Next.js", "llms.txt", "structured content", "AI platform checks"],
+      "problem": [
+        "很多企业还不知道 AI 是否能访问、抓取、理解并提及自己的业务信息。",
+        "GEO 的价值需要通过真实航线、真实客户和 30-90 天观测闭环验证。"
+      ],
+      "systemOverview": [
+        "先用人工服务和轻量工具完成单航线验证，再把重复步骤产品化。",
+        "把体检、改造、内容发布和观测报告拆成可售卖的阶段。"
+      ],
+      "results": [
+        "形成了体检、试点、维护三层商业产品结构。",
+        "沉淀了合同、定价、onboarding、归因和技术蓝图文档。"
+      ]
+    },
+    {
+      "id": "line-oa-automation",
+      "name": "LINE OA 批量消息自动化",
+      "summary": "用 Docker、文件监听、LINE API 和远程转发，把业务系统导出的 Excel 自动变成批量触达任务。",
+      "format": "Automation workflow",
+      "caseType": "Automation",
+      "role": "Automation engineer",
+      "status": "Internal tool",
+      "start": "2026-05",
+      "end": "2026-06",
+      "featured": false,
+      "priority": 30,
+      "tags": ["Automation", "LINE", "Docker", "workflow bridge"],
+      "workflows": ["Excel queue", "member mapping", "LINE push", "result callback"],
+      "aiStack": ["Node.js", "Docker", "LINE API", "FRP/Nginx"],
+      "problem": [
+        "业务系统能导出客户 ID，但人工复制到 LINE OA 触达流程成本高且容易出错。"
+      ],
+      "systemOverview": [
+        "监听指定目录的 Excel 队列，解析 memberId，查映射表，异步调用 LINE push，并写回 result.json。"
+      ],
+      "results": [
+        "把人工批量发送变成可监控、可追踪、可远程调用的自动化流程。"
+      ]
+    }
+  ]
 }

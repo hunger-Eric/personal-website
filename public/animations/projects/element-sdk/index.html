@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Element Asset SDK Film Loop</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #10110e;
+        --panel: #171813;
+        --paper: #f3eadb;
+        --paper-strong: #fff8eb;
+        --ink: #1f2420;
+        --muted: #d8cbb6;
+        --muted-dark: #6f624f;
+        --line: rgba(243, 234, 219, 0.16);
+        --line-dark: rgba(31, 36, 32, 0.14);
+        --accent: #c58a2c;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+        background: var(--bg);
+        font-family: sans-serif;
+      }
+
+      #element-film-loop {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 22% 78%, rgba(197, 138, 44, 0.22), transparent 32%),
+          linear-gradient(145deg, rgba(255, 248, 235, 0.08), transparent 44%),
+          #10110e;
+        color: var(--paper);
+      }
+
+      .grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+          linear-gradient(var(--line) 1px, transparent 1px),
+          linear-gradient(90deg, var(--line) 1px, transparent 1px);
+        background-size: 42px 42px;
+        opacity: 0.45;
+      }
+
+      .topline {
+        position: absolute;
+        z-index: 3;
+        top: 28px;
+        left: 42px;
+        right: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 12px;
+        color: var(--muted);
+        font-family: monospace;
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .scene {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 315px;
+        gap: 20px;
+        width: 100%;
+        height: 100%;
+        padding: 72px 42px 36px;
+      }
+
+      .browser,
+      .asset {
+        border: 1px solid var(--line);
+        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+      }
+
+      .browser {
+        align-self: stretch;
+        overflow: hidden;
+        background: var(--paper);
+        color: var(--ink);
+      }
+
+      .chrome {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 42px;
+        border-bottom: 1px solid var(--line-dark);
+        padding: 0 14px;
+        background: #dfd6c5;
+      }
+
+      .traffic {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: rgba(31, 36, 32, 0.28);
+      }
+
+      .ui {
+        position: relative;
+        display: grid;
+        grid-template-columns: 178px 1fr;
+        gap: 16px;
+        height: calc(100% - 42px);
+        padding: 20px;
+      }
+
+      .sidebar,
+      .table,
+      .export-btn,
+      .field {
+        border: 1px solid var(--line-dark);
+        background: var(--paper-strong);
+      }
+
+      .sidebar {
+        padding: 12px;
+      }
+
+      .field {
+        height: 30px;
+        margin-top: 12px;
+      }
+
+      .field:first-child {
+        margin-top: 0;
+      }
+
+      .table {
+        padding: 14px;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 70px 58px;
+        gap: 10px;
+        border-top: 1px solid var(--line-dark);
+        padding: 11px 0;
+      }
+
+      .row:first-child {
+        border-top: 0;
+      }
+
+      .bar {
+        height: 8px;
+        border-radius: 999px;
+        background: rgba(31, 36, 32, 0.18);
+      }
+
+      .export-btn {
+        position: absolute;
+        z-index: 3;
+        right: 28px;
+        bottom: 26px;
+        display: inline-flex;
+        align-items: center;
+        min-width: 138px;
+        justify-content: center;
+        padding: 12px 16px;
+        background: var(--paper-strong);
+        color: var(--ink);
+        border-color: rgba(31, 36, 32, 0.34);
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .capture-box {
+        position: absolute;
+        z-index: 2;
+        right: 20px;
+        bottom: 18px;
+        width: 154px;
+        height: 56px;
+        border: 2px solid var(--accent);
+        box-shadow:
+          0 0 0 999px rgba(16, 17, 14, 0.18),
+          0 0 24px rgba(197, 138, 44, 0.48);
+      }
+
+      .cursor {
+        position: absolute;
+        z-index: 4;
+        right: 124px;
+        bottom: 76px;
+        width: 0;
+        height: 0;
+        border-left: 18px solid var(--accent);
+        border-top: 12px solid transparent;
+        border-bottom: 12px solid transparent;
+        filter: drop-shadow(0 0 12px rgba(197, 138, 44, 0.65));
+      }
+
+      .asset {
+        align-self: stretch;
+        background: var(--panel);
+        padding: 20px;
+      }
+
+      .label {
+        margin: 0;
+        color: var(--muted);
+        font-family: monospace;
+        font-size: 11px;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      .asset h1 {
+        margin: 12px 0 16px;
+        color: var(--paper);
+        font-family: serif;
+        font-size: 31px;
+        line-height: 1.02;
+        letter-spacing: 0;
+      }
+
+      .check {
+        display: grid;
+        grid-template-columns: 16px 1fr;
+        gap: 10px;
+        align-items: start;
+        border-top: 1px solid rgba(243, 234, 219, 0.13);
+        padding: 12px 0;
+        color: #f0e3cf;
+        font-size: 13px;
+        line-height: 1.45;
+      }
+
+      .tick {
+        width: 10px;
+        height: 10px;
+        margin-top: 5px;
+        border-radius: 999px;
+        background: var(--accent);
+      }
+
+      .code {
+        margin-top: 16px;
+        border: 1px solid rgba(243, 234, 219, 0.14);
+        background: rgba(0, 0, 0, 0.35);
+        padding: 12px;
+        color: #f7dca5;
+        font-family: monospace;
+        font-size: 12px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+      }
+
+      .cursor {
+        animation: cursor-nudge 4.8s ease-in-out infinite;
+      }
+
+      .capture-box {
+        animation: capture-pulse 4.8s ease-in-out infinite;
+      }
+
+      .tick {
+        animation: tick-pulse 4.8s ease-in-out infinite;
+      }
+
+      .field,
+      .row {
+        animation: ui-breathe 4.8s ease-in-out infinite;
+      }
+
+      .row:nth-child(2),
+      .field:nth-child(2) {
+        animation-delay: 0.25s;
+      }
+
+      .row:nth-child(3),
+      .field:nth-child(3) {
+        animation-delay: 0.5s;
+      }
+
+      @keyframes cursor-nudge {
+        0%,
+        100% {
+          transform: translate(0, 0);
+        }
+        46%,
+        56% {
+          transform: translate(8px, 5px);
+        }
+      }
+
+      @keyframes capture-pulse {
+        0%,
+        100% {
+          box-shadow:
+            0 0 0 999px rgba(16, 17, 14, 0.18),
+            0 0 24px rgba(197, 138, 44, 0.42);
+        }
+        52% {
+          box-shadow:
+            0 0 0 999px rgba(16, 17, 14, 0.14),
+            0 0 30px rgba(197, 138, 44, 0.72);
+        }
+      }
+
+      @keyframes tick-pulse {
+        0%,
+        100% {
+          box-shadow: 0 0 0 0 rgba(197, 138, 44, 0);
+        }
+        52% {
+          box-shadow: 0 0 0 5px rgba(197, 138, 44, 0.18);
+        }
+      }
+
+      @keyframes ui-breathe {
+        0%,
+        100% {
+          border-color: var(--line-dark);
+        }
+        48%,
+        58% {
+          border-color: rgba(197, 138, 44, 0.42);
+        }
+      }
+
+      @media (max-width: 720px) {
+        .topline {
+          left: 18px;
+          right: 18px;
+          top: 14px;
+          font-size: 10px;
+        }
+
+        .topline span:last-child {
+          display: none;
+        }
+
+        .scene {
+          grid-template-columns: 1fr;
+          gap: 10px;
+          padding: 52px 18px 18px;
+        }
+
+        .browser {
+          min-height: 178px;
+        }
+
+        .ui {
+          grid-template-columns: 1fr;
+          padding: 12px;
+        }
+
+        .sidebar {
+          display: none;
+        }
+
+        .row {
+          grid-template-columns: 1fr 60px 50px;
+          padding: 8px 0;
+        }
+
+        .export-btn {
+          right: 20px;
+          bottom: 18px;
+          min-width: 112px;
+          padding: 10px 12px;
+          font-size: 12px;
+        }
+
+        .capture-box {
+          right: 14px;
+          bottom: 12px;
+          width: 132px;
+          height: 48px;
+        }
+
+        .asset {
+          padding: 16px;
+        }
+
+        .asset h1 {
+          font-size: 24px;
+        }
+
+        .check,
+        .code {
+          font-size: 12px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.001ms !important;
+          animation-iteration-count: 1 !important;
+          scroll-behavior: auto !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="element-film-loop"
+      data-composition-id="element-film-loop"
+      data-start="0"
+      data-duration="8"
+      data-width="960"
+      data-height="540"
+      data-track-index="0"
+    >
+      <div class="grid" data-layout-ignore></div>
+      <div class="topline">
+        <span>Element Asset SDK / UI 资产</span>
+        <span>捕获 -> 验证 -> 复放调用</span>
+      </div>
+      <main class="scene">
+        <section class="browser">
+          <div class="chrome">
+            <span class="traffic"></span>
+            <span class="traffic"></span>
+            <span class="traffic"></span>
+          </div>
+          <div class="ui">
+            <aside class="sidebar">
+              <div class="field"></div>
+              <div class="field"></div>
+              <div class="field"></div>
+            </aside>
+            <section class="table">
+              <div class="row"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
+              <div class="row"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
+              <div class="row"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
+              <div class="row"><span class="bar"></span><span class="bar"></span><span class="bar"></span></div>
+            </section>
+            <button class="export-btn" type="button">导出入口</button>
+            <div class="capture-box" data-layout-ignore></div>
+            <div class="cursor" data-layout-ignore></div>
+          </div>
+        </section>
+
+        <section class="asset">
+          <p class="label">Client artifact</p>
+          <h1>可复用 UI 操作资产</h1>
+          <div class="check"><span class="tick"></span><span>元素选择器和截图证据被保存</span></div>
+          <div class="check"><span class="tick"></span><span>可见性、点击和导出检查通过</span></div>
+          <div class="check"><span class="tick"></span><span>复放结果可追踪，便于审计</span></div>
+          <pre class="code">sdk.asset("export-button")
+  .click()
+  .captureEvidence()</pre>
+        </section>
+      </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <script>
+      window.__timelines = window.__timelines || {};
+      if (window.gsap) {
+        const tl = gsap.timeline({ paused: true });
+        tl.to({}, { duration: 8 });
+        window.__timelines["element-film-loop"] = tl;
+      }
+    </script>
+  </body>
+</html>

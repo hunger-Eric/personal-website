@@ -1,5 +1,6 @@
 ﻿// config/cases.ts
 import rawConfig from "./cases.json";
+import { caseStories } from "./caseStories";
 import { marked } from "marked";
 import sanitizeHtml from "sanitize-html";
 
@@ -20,6 +21,54 @@ export type CaseLink = {
 export type CaseArchitectureItem = {
   label: string;
   detail: string;
+};
+
+export type CaseDemoType = "knowledge-flow" | "lead-flow" | "asset-flow";
+
+export type CaseDemoStep = {
+  title: string;
+  status: string;
+  input: string;
+  output: string;
+  metric?: string;
+  logs?: string[];
+};
+
+export type CaseDemo = {
+  type: CaseDemoType;
+  title: string;
+  description: string;
+  steps: CaseDemoStep[];
+  result: {
+    label: string;
+    cta: string;
+  };
+};
+
+export type CustomerStoryStep = {
+  title: string;
+  customerAction: string;
+  systemAction: string;
+  visibleOutput: string;
+  artifactPreview: string;
+  proof?: string;
+  metric?: string;
+};
+
+export type CustomerStory = {
+  archetype: "knowledge-system" | "lead-discovery" | "ui-asset-runtime" | string;
+  headline: string;
+  chapterTitle?: string;
+  shortPromise?: string;
+  animationSrc?: string;
+  posterSrc?: string;
+  sceneAccent?: string;
+  publicScenario: string;
+  exampleInput: string;
+  transferableValue: string;
+  artifactLabel: string;
+  proofPoints: string[];
+  steps: CustomerStoryStep[];
 };
 
 export type CaseItem = {
@@ -53,6 +102,8 @@ export type CaseItem = {
   architecture?: CaseArchitectureItem[];
   results?: string[];
   learnings?: string[];
+  demo?: CaseDemo;
+  customerStory?: CustomerStory;
 
   // Static shields / badges to show in the popup
   badges?: string[];
@@ -97,6 +148,8 @@ export type ProjectItem = CaseItem;
 type RawGithubReadmeProject = Partial<CaseItem> & {
   repo_url: string;
   priority?: number;
+  zh?: Partial<CaseItem>;
+  en?: Partial<CaseItem>;
 };
 
 type RawLocalCase = CaseItem & {
@@ -122,6 +175,10 @@ type RawConfig = {
 const cfg: RawConfig = (rawConfig as RawConfig) ?? {
   github_readme_projects: [],
   local_projects: [],
+};
+
+type GithubReleaseAsset = {
+  download_count?: number;
 };
 
 // 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ helpers 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
@@ -372,8 +429,8 @@ async function fetchGithubStats(
   if (Array.isArray(releasesJson) && releasesJson.length > 0 && wantDownloads) {
     const rel = releasesJson[0];
     const assets = Array.isArray(rel?.assets) ? rel.assets : [];
-    downloads = assets.reduce(
-      (sum: number, a: any) => sum + (Number(a?.download_count) || 0),
+    downloads = (assets as GithubReleaseAsset[]).reduce(
+      (sum: number, asset) => sum + (Number(asset.download_count) || 0),
       0
     );
 
@@ -490,7 +547,7 @@ export async function loadCases(locale: "zh" | "en" = "zh"): Promise<CaseItem[]>
         }
 
         // Merge locale-specific fields from entry.zh / entry.en
-        const localized = (entry as any)[locale] || {};
+        const localized = entry[locale] || {};
         const entrySummary = localized.summary ?? entry.summary;
         const entryProblem = localized.problem ?? entry.problem;
         const entrySystemOverview = localized.systemOverview ?? entry.systemOverview;
@@ -524,6 +581,7 @@ export async function loadCases(locale: "zh" | "en" = "zh"): Promise<CaseItem[]>
           architecture: entry.architecture,
           results: entryResults,
           learnings: entryLearnings,
+          demo: entry.demo,
           // Prefer the README's image_url; otherwise fall back to a locally
           // generated branded banner so the carousel never shows a broken
           // dark fallback.
@@ -713,8 +771,14 @@ export async function loadCases(locale: "zh" | "en" = "zh"): Promise<CaseItem[]>
   // 3) Merge + sort by priority, strip internal field
   const merged = [...fromGithub, ...locals];
   const sorted = sortByPriority(merged);
-  return sorted.map(({ _priority, ...rest }) => rest);
+  return sorted.map((item) => {
+    const rest: CaseItem & { _priority?: number } = { ...item };
+    delete rest._priority;
+    return {
+      ...rest,
+      customerStory: rest.customerStory ?? caseStories[rest.id],
+    };
+  });
 }
 
 export const loadProjects = loadCases;
-
