@@ -63,6 +63,15 @@ Use semantic tokens only:
 - `warning`
 - `destructive`
 
+Project semantic token families:
+
+- `surface.paper`, `surface.paper-elevated`, `surface.paper-foreground`
+- `surface.graphite`, `surface.graphite-muted`, `surface.graphite-foreground`
+- `surface.admin`
+- `border.hairline`, `border.inverse`
+- `radius.card`, `radius.control`, `radius.panel`
+- `shadow.card`, `shadow.overlay`
+
 Typography:
 
 - display titles are confident, not oversized
@@ -82,6 +91,10 @@ Motion:
 - use low-intensity CSS transitions only
 - no heavy scroll animation
 - no decorative motion loops
+- main Next.js app should not import GSAP by default
+- GSAP belongs in HyperFrames/iframe animation assets unless a page has a concrete motion requirement
+- shared motion policy lives in `components/motion/*`
+- `prefers-reduced-motion` must disable autoplay, progress transitions, page fades, marquee loops, skeleton shimmer, and iframe animation loading when a static fallback is available
 
 ## 4. Information Architecture
 
@@ -104,6 +117,14 @@ Locale rules:
 - all visible UI copy comes from a locale-aware source
 - proper nouns stay proper nouns
 - Chinese and English should never mix on the same navigation row except product/tool names
+- `locale === "zh"` belongs in resolver/model-builder layers, not leaf UI components
+
+Reusable UI boundaries:
+
+- `components/system/*` owns public/admin UI primitives such as `PageShell`, `SectionHeader`, `Surface`, `ArchiveCard`, `ActionButton`, `IconButton`, `StatusNote`, `EmptyState`, `FormField`, and `AdminPanel`
+- `components/motion/*` owns reduced-motion, in-view playback, autoplay step, and progress primitives
+- `lib/ai-readable/routes.ts` owns the canonical public route inventory for sitemap and `llms.txt`
+- page-private cards, buttons, forms, and surfaces should be temporary only; extract them once they repeat or become part of public/admin chrome
 
 ## 5. Homepage Pattern
 
@@ -201,3 +222,24 @@ Before shipping:
 - Chinese and English copy must stay synchronized
 - hero and about must not repeat the same sentence
 - cases must communicate system thinking, not only UI polish
+
+## 9. Anti-Patch Rules
+
+Do not solve design drift by adding another page-local card, button, surface, status banner, or color value. First check whether the change belongs in:
+
+- `DESIGN.md`
+- CSS/Tailwind semantic tokens
+- `components/system/*`
+- `components/motion/*`
+- `config/contentCopy.ts` or `config/copy/*`
+- `lib/ai-readable/*`
+
+Avoid these as default implementation language:
+
+- raw warm-paper or graphite hex values in page components
+- `border-white/10`
+- `bg-white/5`
+- unqualified `bg-card` on public archive surfaces
+- `rounded-2xl` for normal cards or controls
+- page-local save/error/deploy/admin status copy
+- leaf-level `locale === "zh" ? ... : ...`

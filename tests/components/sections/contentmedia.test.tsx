@@ -2,11 +2,13 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, act } from "@testing-library/react";
 import React from "react";
+import type { YouTubeFeedVideo } from "@/config/youtubeFeed";
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
 
 vi.mock("next/image", () => ({
-  default: (p: any) => React.createElement("img", p),
+  default: (p: React.ImgHTMLAttributes<HTMLImageElement>) =>
+    React.createElement("img", p),
 }));
 
 vi.mock("lucide-react", () => ({
@@ -14,16 +16,16 @@ vi.mock("lucide-react", () => ({
 }));
 
 vi.mock("@/components/BrandGlyphs", () => ({
-  YoutubeGlyph: (p: any) =>
+  YoutubeGlyph: (p: React.SVGProps<SVGSVGElement>) =>
     React.createElement("svg", { "data-testid": "icon-youtube-glyph", className: p.className }),
 }));
 
 // Use vi.hoisted to create mutable state containers before vi.mock factories run
 const mockState = vi.hoisted(() => ({
   channelId: "",
-  videos: [] as any[],
-  loadLatestYouTubeVideos: vi.fn(() => Promise.resolve([] as any[])),
-  featuredContent: {} as { youtubeChannelId: string },
+  videos: [] as YouTubeFeedVideo[],
+  loadLatestYouTubeVideos: vi.fn(() => Promise.resolve([] as YouTubeFeedVideo[])),
+  featuredContent: {} as { youtubeChannelId?: string },
 }));
 
 vi.mock("@/config/siteConfig", () => ({
@@ -63,7 +65,7 @@ const vid3 = {
 };
 
 // Helper to setup state for each test
-function setupContentMedia(channelId: string, videos: any[]) {
+function setupContentMedia(channelId: string, videos: YouTubeFeedVideo[]) {
   mockState.featuredContent = { youtubeChannelId: channelId };
   mockState.loadLatestYouTubeVideos = vi.fn(() => Promise.resolve(videos));
 }
@@ -103,7 +105,8 @@ describe("ContentMediaSection", () => {
   it("renders section heading", async () => {
     setupContentMedia("UC_test", [vid1]);
     await renderContentMedia();
-    expect(screen.getByText("~/Content")).toBeTruthy();
+    expect(screen.getByText("Content & Socials")).toBeTruthy();
+    expect(screen.getByText("Recent on YouTube")).toBeTruthy();
   });
 
   it("renders video cards with titles", async () => {

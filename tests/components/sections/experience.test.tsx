@@ -3,20 +3,38 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import React from "react";
 
+type MockImageProps = React.ImgHTMLAttributes<HTMLImageElement>;
+type MockLinkProps = React.AnchorHTMLAttributes<HTMLAnchorElement>;
+type ExperienceFixture = {
+  id: string;
+  role: string;
+  company: string;
+  logoUrl?: string;
+  start: string;
+  end: string;
+  description: string[];
+};
+
 // ── Mocks ──────────────────────────────────────────────────────────────────
 
 vi.mock("next/image", () => ({
-  default: (p: any) => React.createElement("img", p),
+  default: (p: MockImageProps) => React.createElement("img", p),
 }));
 
 vi.mock("next/link", () => ({
-  default: (p: any) => React.createElement("a", p),
+  default: (p: MockLinkProps) => React.createElement("a", p),
 }));
 
 vi.mock("lucide-react", () => ({}));
 
+vi.mock("@/components/LocaleProvider", () => ({
+  useLocale: () => ({
+    locale: "en",
+  }),
+}));
+
 // Mutable state for experience data
-const expData = vi.hoisted(() => [] as any[]);
+const expData = vi.hoisted(() => [] as ExperienceFixture[]);
 vi.mock("@/config/experience", () => ({ experience: expData }));
 
 // ── Test data ──────────────────────────────────────────────────────────────
@@ -113,8 +131,8 @@ describe("ExperienceSection", () => {
     expData.push(...BASE);
     const { ExperienceSection } = await import("@/components/sections/Experience");
     const { container } = render(React.createElement(ExperienceSection));
-    // Only count description bullets (inside marker:text-indigo-400/70 ul), not sidebar tab li's
-    const descUl = container.querySelector('ul[class*="marker\\:text-indigo"]') || container.querySelector('ul.list-disc');
+    // Only count description bullets, not sidebar tab list items.
+    const descUl = container.querySelector("ul.list-disc");
     const listItems = descUl ? descUl.querySelectorAll("li") : [];
     expect(listItems.length).toBe(3);
     expect(listItems[0]?.textContent).toContain("Built features");
@@ -131,7 +149,7 @@ describe("ExperienceSection", () => {
     const { ExperienceSection } = await import("@/components/sections/Experience");
     const { container } = render(React.createElement(ExperienceSection));
     // The sidebar <ul> is always present, check description <ul> specifically
-    const descUl = container.querySelector('ul[class*="marker\\:text-indigo"]') || container.querySelector('ul.list-disc');
+    const descUl = container.querySelector("ul.list-disc");
     expect(descUl).toBeFalsy();
   });
 

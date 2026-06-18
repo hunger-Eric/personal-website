@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Share2,
   Linkedin,
@@ -9,6 +9,10 @@ import {
   Check,
   MessageCircle,
 } from "lucide-react";
+
+import { getSiteCopy } from "@/config/contentCopy";
+
+const shareCopy = getSiteCopy("en").articles.shareLinks;
 
 type Props = {
   url: string;
@@ -44,29 +48,22 @@ function BrandSvg({
 }
 
 type Btn = {
-  key: string;
+  key: keyof typeof shareCopy.platforms;
   label: string;
   href?: string;
   icon: React.ReactNode;
   onClick?: () => void;
   newTab?: boolean;
-  /** Tailwind color class applied on hover for the icon (brand color). */
-  hoverColor: string;
 };
 
 export function ShareLinks({ url, title, summary, heading }: Props) {
   const [copied, setCopied] = useState(false);
-  const [hasNativeShare, setHasNativeShare] = useState(false);
-  const [absoluteUrl, setAbsoluteUrl] = useState(url);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setHasNativeShare(typeof navigator?.share === "function");
-    // If url was relative, expand to absolute on the client for share targets
-    if (url.startsWith("/")) {
-      setAbsoluteUrl(`${window.location.origin}${url}`);
-    }
-  }, [url]);
+  const hasNativeShare =
+    typeof navigator !== "undefined" && typeof navigator.share === "function";
+  const absoluteUrl =
+    typeof window !== "undefined" && url.startsWith("/")
+      ? `${window.location.origin}${url}`
+      : url;
 
   const u = encodeURIComponent(absoluteUrl);
   const t = encodeURIComponent(title);
@@ -99,54 +96,48 @@ export function ShareLinks({ url, title, summary, heading }: Props) {
   const buttons: Btn[] = [
     {
       key: "x",
-      label: "X / Twitter",
+      label: shareCopy.platforms.x,
       href: `https://twitter.com/intent/tweet?text=${t}&url=${u}`,
       icon: <BrandSvg path={TWITTER_SVG_PATH} viewBox="0 0 1200 1227" className="h-3.5 w-3.5" />,
       newTab: true,
-      hoverColor: "group-hover:text-white",
     },
     {
       key: "linkedin",
-      label: "LinkedIn",
+      label: shareCopy.platforms.linkedin,
       href: `https://www.linkedin.com/sharing/share-offsite/?url=${u}`,
       icon: <Linkedin className="h-4 w-4" />,
       newTab: true,
-      hoverColor: "group-hover:text-[#0a66c2]",
     },
     {
       key: "reddit",
-      label: "Reddit",
+      label: shareCopy.platforms.reddit,
       href: `https://www.reddit.com/submit?url=${u}&title=${t}`,
       icon: <BrandSvg path={REDDIT_SVG_PATH} className="h-4 w-4" />,
       newTab: true,
-      hoverColor: "group-hover:text-[#ff4500]",
     },
     {
       key: "facebook",
-      label: "Facebook",
+      label: shareCopy.platforms.facebook,
       href: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
       icon: <BrandSvg path={FACEBOOK_SVG_PATH} className="h-4 w-4" />,
       newTab: true,
-      hoverColor: "group-hover:text-[#1877f2]",
     },
     {
       key: "email",
-      label: "Email",
+      label: shareCopy.platforms.email,
       href: `mailto:?subject=${t}&body=${body}`,
       icon: <Mail className="h-4 w-4" />,
-      hoverColor: "group-hover:text-accent",
     },
     {
       key: "sms",
-      label: "Message",
+      label: shareCopy.platforms.sms,
       href: `sms:?&body=${body}`,
       icon: <MessageCircle className="h-4 w-4" />,
-      hoverColor: "group-hover:text-emerald-400",
     },
   ];
 
   const headerText =
-    heading === undefined ? "Share this article" : heading;
+    heading === undefined ? shareCopy.heading : heading;
 
   return (
     <div className="flex flex-col gap-3">
@@ -162,12 +153,9 @@ export function ShareLinks({ url, title, summary, heading }: Props) {
             href={b.href}
             target={b.newTab ? "_blank" : undefined}
             rel={b.newTab ? "noreferrer noopener" : undefined}
-            aria-label={`Share on ${b.label}`}
-            title={`Share on ${b.label}`}
-            className={[
-              "group inline-flex h-10 w-10 items-center justify-center rounded-lg border border-white/10 bg-white/[0.03] text-muted-foreground transition-colors hover:border-white/30 hover:bg-white/10",
-              b.hoverColor,
-            ].join(" ")}
+            aria-label={`${shareCopy.shareOnPrefix} ${b.label}`}
+            title={`${shareCopy.shareOnPrefix} ${b.label}`}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-control border border-border bg-surface-paper text-muted-foreground transition-colors hover:border-accent hover:bg-surface-paper-elevated hover:text-accent"
           >
             {b.icon}
           </a>
@@ -176,13 +164,13 @@ export function ShareLinks({ url, title, summary, heading }: Props) {
         <button
           type="button"
           onClick={copy}
-          aria-label={copied ? "Link copied" : "Copy link"}
-          title={copied ? "Link copied" : "Copy link"}
+          aria-label={copied ? shareCopy.linkCopied : shareCopy.copyLink}
+          title={copied ? shareCopy.linkCopied : shareCopy.copyLink}
           className={[
-            "inline-flex h-10 w-10 items-center justify-center rounded-lg border transition-colors",
+            "inline-flex h-10 w-10 items-center justify-center rounded-control border transition-colors",
             copied
-              ? "border-emerald-400 bg-emerald-500/15 text-emerald-300"
-              : "border-white/10 bg-white/[0.03] text-muted-foreground hover:border-accent hover:bg-white/10 hover:text-foreground",
+              ? "border-success bg-success/10 text-success"
+              : "border-border bg-surface-paper text-muted-foreground hover:border-accent hover:bg-surface-paper-elevated hover:text-accent",
           ].join(" ")}
         >
           {copied ? <Check className="h-4 w-4" /> : <LinkIcon className="h-4 w-4" />}
@@ -192,11 +180,11 @@ export function ShareLinks({ url, title, summary, heading }: Props) {
           <button
             type="button"
             onClick={share}
-            aria-label="Share via your device"
-            title="Share via your device"
-            className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm font-medium text-muted-foreground transition-colors hover:border-accent hover:bg-white/10 hover:text-foreground"
+            aria-label={shareCopy.nativeShare}
+            title={shareCopy.nativeShare}
+            className="inline-flex h-10 items-center gap-1.5 rounded-control border border-border bg-surface-paper px-3 text-sm font-medium text-muted-foreground transition-colors hover:border-accent hover:bg-surface-paper-elevated hover:text-accent"
           >
-            <Share2 className="h-4 w-4" /> More
+            <Share2 className="h-4 w-4" /> {shareCopy.more}
           </button>
         )}
       </div>

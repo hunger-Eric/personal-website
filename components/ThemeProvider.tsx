@@ -53,13 +53,6 @@ function getSystemTheme(): ResolvedTheme {
     : "light";
 }
 
-function resolveTheme(theme: ThemeMode): ResolvedTheme {
-  if (theme === "system") {
-    return getSystemTheme();
-  }
-  return theme;
-}
-
 function applyTheme(resolvedTheme: ResolvedTheme): void {
   if (typeof document === "undefined") return;
 
@@ -97,18 +90,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return getStoredTheme() || themeConfig.defaultMode;
   });
 
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
-    resolveTheme(theme)
+  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(() =>
+    getSystemTheme()
   );
+  const resolvedTheme = theme === "system" ? systemTheme : theme;
 
   // Apply theme on mount and when theme changes
   useEffect(() => {
-    const resolved = resolveTheme(theme);
-    setResolvedTheme(resolved);
-    applyTheme(resolved);
+    applyTheme(resolvedTheme);
     applyAccent();
     setStoredTheme(theme);
-  }, [theme]);
+  }, [theme, resolvedTheme]);
 
   // Listen for system preference changes when theme is "system"
   useEffect(() => {
@@ -117,9 +109,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     const handleChange = (e: MediaQueryListEvent) => {
-      const newResolvedTheme = e.matches ? "dark" : "light";
-      setResolvedTheme(newResolvedTheme);
-      applyTheme(newResolvedTheme);
+      setSystemTheme(e.matches ? "dark" : "light");
     };
 
     mediaQuery.addEventListener("change", handleChange);

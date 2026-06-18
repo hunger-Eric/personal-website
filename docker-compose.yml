@@ -14,4 +14,7 @@ services:
       - ENABLE_ADMIN=true
       - ADMIN_TOKEN=local-admin-token-2026
       - ADMIN_PASSWORD=local-admin-pass-2026
+    volumes:
+      - /mnt/e/project/personal-website/docker-data/content:/app/content
+      - /mnt/e/project/personal-website/docker-data/config:/app/config
     restart: unless-stopped

@@ -1,0 +1,15 @@
+{
+  "display": {
+    "mode": "auto",
+    "autoCatalogThreshold": 4,
+    "featuredCount": 1,
+    "previewLimit": 6
+  },
+  "github_readme_projects": [
+    {
+      "repo_url": "https://github.com/hunger-Eric/notebooklm-cn",
+      "priority": 1
+    }
+  ],
+  "local_projects": []
+}

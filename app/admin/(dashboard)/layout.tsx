@@ -1,8 +1,10 @@
 // app/admin/(dashboard)/layout.tsx
 import type { Metadata } from "next";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { isAdminEnabled, verifyAdminToken } from "@/lib/admin-guard";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Admin | fengc",

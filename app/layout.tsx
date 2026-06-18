@@ -6,6 +6,7 @@ import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 import { siteConfig } from "@/config/siteConfig";
+import { viewportThemeColors } from "@/config/visualTokens";
 
 import { NavbarCentered } from "@/components/NavbarCenteredDesktop";
 import NavbarCenteredMobile from "@/components/NavbarCenteredMobile";
@@ -40,8 +41,8 @@ const CF_ANALYTICS_TOKEN = process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN;
 // Viewport configuration
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#050816" },
+    { media: "(prefers-color-scheme: light)", color: viewportThemeColors.light },
+    { media: "(prefers-color-scheme: dark)", color: viewportThemeColors.dark },
   ],
   width: "device-width",
   initialScale: 1,
@@ -217,7 +218,7 @@ export default function RootLayout({
           {/* Skip to content link for accessibility */}
           <a
             href="#main-content"
-            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-accent focus:px-4 focus:py-2 focus:text-white"
+            className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-control focus:bg-accent focus:px-4 focus:py-2 focus:text-accent-foreground"
           >
             Skip to content
           </a>

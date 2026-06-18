@@ -1,0 +1,42 @@
+{
+  "logo": {
+    "label": "fengc",
+    "href": "/",
+    "imageSrc": "",
+    "imageAlt": "fengc"
+  },
+
+  "center": {
+    "items": [
+      { "id": "about", "label": "About", "href": "/#about", "show": true },
+      {
+        "id": "projects",
+        "label": "Projects",
+        "href": "/#projects",
+        "show": true
+      },
+      {
+        "id": "articles",
+        "label": "Articles",
+        "href": "/articles",
+        "show": true
+      },
+      {
+        "id": "photography",
+        "label": "Photography",
+        "href": "/photography",
+        "show": true
+      }
+    ]
+  },
+
+  "cta": {
+    "contact": { "label": "Email me", "href": "mailto:", "external": true, "show": false },
+    "primary": {
+      "label": "Connect with me",
+      "href": "/links",
+      "external": false,
+      "show": true
+    }
+  }
+}

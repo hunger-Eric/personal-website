@@ -5,8 +5,24 @@ import photographyData from "@/config/photography.json";
 
 const PIN = process.env.PRIVATE_PHOTO_PIN;
 
+type Photo = {
+  id: string;
+  private?: boolean;
+};
+
+type Project = {
+  photos?: Photo[];
+};
+
+type PhotographyConfig = {
+  projects?: Project[];
+  zh?: { projects?: Project[] };
+};
+
 // Photography data is locale-keyed: { zh: { projects: [...] }, en: { projects: [...] } }
-const allProjects = (photographyData as any).zh?.projects ?? (photographyData as any).projects ?? [];
+const typedPhotographyData = photographyData as PhotographyConfig;
+const allProjects =
+  typedPhotographyData.zh?.projects ?? typedPhotographyData.projects ?? [];
 
 export async function POST(request: NextRequest) {
   // If no PIN is configured, private photos are effectively disabled

@@ -1,170 +1,195 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
-import React from "react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import React, {
+  type AnchorHTMLAttributes,
+  type ImgHTMLAttributes,
+  type ReactNode,
+  type SVGProps,
+} from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// ── Mocks ──────────────────────────────────────────────────────────────────
+import { getSiteCopy } from "@/config/contentCopy";
+import type { Certification } from "@/config/certifications";
+
+type MockImageProps = ImgHTMLAttributes<HTMLImageElement> & {
+  fill?: boolean;
+  priority?: boolean;
+  sizes?: string;
+};
+
+type MockLinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & {
+  href: string;
+  children?: ReactNode;
+};
+
+const certData = vi.hoisted(() => [] as Certification[]);
+
+vi.mock("@/config/certifications", () => ({ certifications: certData }));
 
 vi.mock("next/image", () => ({
-  default: (p: any) => React.createElement("img", p),
+  default: ({ fill, priority, sizes, ...props }: MockImageProps) => {
+    void fill;
+    void priority;
+    void sizes;
+    return React.createElement("img", props);
+  },
 }));
 
 vi.mock("next/link", () => ({
-  default: (p: any) => React.createElement("a", p),
+  default: ({ href, children, ...props }: MockLinkProps) =>
+    React.createElement("a", { href, ...props }, children),
 }));
+
+function mockIcon(testId: string) {
+  return function Icon(props: SVGProps<SVGSVGElement>) {
+    return React.createElement("svg", {
+      ...props,
+      "aria-hidden": "true",
+      "data-testid": testId,
+    });
+  };
+}
 
 vi.mock("lucide-react", () => ({
-  ChevronDown: () => React.createElement("svg", { "data-testid": "icon-chevron-down" }),
-  ChevronUp: () => React.createElement("svg", { "data-testid": "icon-chevron-up" }),
-  ExternalLink: () => React.createElement("svg", { "data-testid": "icon-external-link" }),
+  ChevronDown: mockIcon("icon-chevron-down"),
+  ChevronUp: mockIcon("icon-chevron-up"),
+  ExternalLink: mockIcon("icon-external-link"),
 }));
 
-// Mutable array
-const certData = vi.hoisted(() => [] as any[]);
-vi.mock("@/config/certifications", () => ({ certifications: certData }));
+const copy = getSiteCopy("zh").certifications;
 
-const CERT = (n: number) => ({
-  name: `Cert ${n}`, issuer: `Issuer ${n}`, date: `2024-0${n}-15`,
-  description: `Description ${n}`, imageUrl: `/images/cert${n}.png`,
-  link: `https://example.com/cert${n}`,
-});
+function cert(index: number): Certification {
+  return {
+    name: `Cert ${index}`,
+    issuer: `Issuer ${index}`,
+    date: `2024-0${index}-15`,
+    description: `Description ${index}`,
+    imageUrl: `/images/cert${index}.png`,
+    link: `https://example.com/cert${index}`,
+  };
+}
 
-// ── Tests ──────────────────────────────────────────────────────────────────
+async function renderSection() {
+  const { CertificationsSection } = await import(
+    "@/components/sections/Certifications"
+  );
+  return render(<CertificationsSection />);
+}
 
 describe("CertificationsSection", () => {
   beforeEach(() => {
     certData.length = 0;
   });
 
-  it("renders section heading and subtitle", async () => {
-    certData.push(CERT(1), CERT(2), CERT(3));
-    const { CertificationsSection } = await import("@/components/sections/Certifications");
-    render(React.createElement(CertificationsSection));
-    expect(screen.getByText("~/Certifications")).toBeTruthy();
-    expect(screen.getByText("My verified skills and credentials.")).toBeTruthy();
+  it("renders the copy-driven section header", async () => {
+    certData.push(cert(1), cert(2), cert(3));
+
+    await renderSection();
+
+    expect(screen.getByText(copy.eyebrow)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: copy.title }),
+    ).toBeInTheDocument();
   });
 
-  it("renders certification names", async () => {
-    certData.push(CERT(1), CERT(2), CERT(3));
-    const { CertificationsSection } = await import("@/components/sections/Certifications");
-    render(React.createElement(CertificationsSection));
-    expect(screen.getByText("Cert 1")).toBeTruthy();
-    expect(screen.getByText("Cert 2")).toBeTruthy();
-    expect(screen.getByText("Cert 3")).toBeTruthy();
+  it("renders the first three certification records when the archive is long", async () => {
+    certData.push(cert(1), cert(2), cert(3), cert(4));
+
+    await renderSection();
+
+    expect(screen.getByText("Cert 1")).toBeInTheDocument();
+    expect(screen.getByText("Cert 2")).toBeInTheDocument();
+    expect(screen.getByText("Cert 3")).toBeInTheDocument();
+    expect(screen.queryByText("Cert 4")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: copy.viewMore }),
+    ).toBeInTheDocument();
   });
 
-  it("renders issuer and date", async () => {
-    certData.push(CERT(1));
-    const { CertificationsSection } = await import("@/components/sections/Certifications");
-    render(React.createElement(CertificationsSection));
-    expect(screen.getByText(/Issuer 1/)).toBeTruthy();
-    expect(screen.getByText(/2024-01-15/)).toBeTruthy();
+  it("expands and collapses the archive with localized action copy", async () => {
+    certData.push(cert(1), cert(2), cert(3), cert(4));
+
+    const { container } = await renderSection();
+
+    expect(
+      container.querySelector('[data-testid="icon-chevron-down"]'),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: copy.viewMore }));
+
+    expect(screen.getByText("Cert 4")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: copy.showLess }),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector('[data-testid="icon-chevron-up"]'),
+    ).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: copy.showLess }));
+
+    expect(screen.queryByText("Cert 4")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: copy.viewMore }),
+    ).toBeInTheDocument();
   });
 
-  it("renders certification images", async () => {
-    certData.push(CERT(1), CERT(2), CERT(3));
-    const { CertificationsSection } = await import("@/components/sections/Certifications");
-    const { container } = render(React.createElement(CertificationsSection));
-    const imgs = container.querySelectorAll("img");
-    expect(imgs.length).toBe(3);
-    expect(imgs[0].getAttribute("src")).toBe("/images/cert1.png");
-    expect(imgs[0].getAttribute("alt")).toBe("Cert 1");
+  it("does not render the archive toggle for three or fewer records", async () => {
+    certData.push(cert(1), cert(2), cert(3));
+
+    await renderSection();
+
+    expect(
+      screen.queryByRole("button", { name: copy.viewMore }),
+    ).not.toBeInTheDocument();
   });
 
-  it("renders ExternalLink icons on credential links", async () => {
-    certData.push(CERT(1), CERT(2));
-    const { CertificationsSection } = await import("@/components/sections/Certifications");
-    const { container } = render(React.createElement(CertificationsSection));
-    expect(container.querySelectorAll('[data-testid="icon-external-link"]').length).toBe(2);
-  });
+  it("renders issuer, date, image alt text, and credential links", async () => {
+    certData.push(cert(1), cert(2));
 
-  describe("showAll toggle", () => {
-    it("shows only first 3 when > 3 certs", async () => {
-      certData.push(CERT(1), CERT(2), CERT(3), CERT(4));
-      const { CertificationsSection } = await import("@/components/sections/Certifications");
-      render(React.createElement(CertificationsSection));
-      expect(screen.getByText("Cert 1")).toBeTruthy();
-      expect(screen.getByText("Cert 2")).toBeTruthy();
-      expect(screen.getByText("Cert 3")).toBeTruthy();
-      expect(screen.queryByText("Cert 4")).toBeFalsy();
+    const { container } = await renderSection();
+    const images = container.querySelectorAll("img");
+
+    expect(screen.getByText(/Issuer 1/)).toBeInTheDocument();
+    expect(screen.getByText(/2024-01-15/)).toBeInTheDocument();
+    expect(images).toHaveLength(2);
+    expect(images[0]).toHaveAttribute("src", "/images/cert1.png");
+    expect(images[0]).toHaveAttribute("alt", "Cert 1");
+
+    const imageLink = screen.getByRole("link", {
+      name: `${copy.viewCredential}: Cert 1`,
     });
+    expect(imageLink).toHaveAttribute("href", "https://example.com/cert1");
+    expect(imageLink).toHaveAttribute("target", "_blank");
+    expect(imageLink).toHaveAttribute("rel", "noreferrer noopener");
 
-    it("shows 'View more' button when > 3", async () => {
-      certData.push(CERT(1), CERT(2), CERT(3), CERT(4));
-      const { CertificationsSection } = await import("@/components/sections/Certifications");
-      render(React.createElement(CertificationsSection));
-      expect(screen.getByText("View more")).toBeTruthy();
-      expect(screen.queryByText("Show less")).toBeFalsy();
-    });
-
-    it("shows ChevronDown icon initially", async () => {
-      certData.push(CERT(1), CERT(2), CERT(3), CERT(4));
-      const { CertificationsSection } = await import("@/components/sections/Certifications");
-      const { container } = render(React.createElement(CertificationsSection));
-      expect(container.querySelector('[data-testid="icon-chevron-down"]')).toBeTruthy();
-      expect(container.querySelector('[data-testid="icon-chevron-up"]')).toBeFalsy();
-    });
-
-    it("shows all after clicking 'View more'", async () => {
-      certData.push(CERT(1), CERT(2), CERT(3), CERT(4));
-      const { CertificationsSection } = await import("@/components/sections/Certifications");
-      render(React.createElement(CertificationsSection));
-      fireEvent.click(screen.getByText("View more"));
-      expect(screen.getByText("Cert 4")).toBeTruthy();
-      expect(screen.getByText("Show less")).toBeTruthy();
-    });
-
-    it("toggles back after clicking 'Show less'", async () => {
-      certData.push(CERT(1), CERT(2), CERT(3), CERT(4));
-      const { CertificationsSection } = await import("@/components/sections/Certifications");
-      render(React.createElement(CertificationsSection));
-      fireEvent.click(screen.getByText("View more"));
-      expect(screen.getByText("Cert 4")).toBeTruthy();
-      fireEvent.click(screen.getByText("Show less"));
-      expect(screen.queryByText("Cert 4")).toBeFalsy();
-    });
-
-    it("shows ChevronUp after expanding", async () => {
-      certData.push(CERT(1), CERT(2), CERT(3), CERT(4));
-      const { CertificationsSection } = await import("@/components/sections/Certifications");
-      const { container } = render(React.createElement(CertificationsSection));
-      fireEvent.click(screen.getByText("View more"));
-      expect(container.querySelector('[data-testid="icon-chevron-up"]')).toBeTruthy();
-      expect(container.querySelector('[data-testid="icon-chevron-down"]')).toBeFalsy();
-    });
+    expect(
+      screen.getAllByRole("link", { name: copy.viewCredential }),
+    ).toHaveLength(2);
+    expect(
+      container.querySelectorAll('[data-testid="icon-external-link"]'),
+    ).toHaveLength(2);
   });
 
-  it("no toggle when exactly 3 certs", async () => {
-    certData.push(CERT(1), CERT(2), CERT(3));
-    const { CertificationsSection } = await import("@/components/sections/Certifications");
-    render(React.createElement(CertificationsSection));
-    expect(screen.queryByText("View more")).toBeFalsy();
+  it("renders the section shell with no credential cards when data is empty", async () => {
+    const { container } = await renderSection();
+
+    expect(screen.getByText(copy.eyebrow)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { level: 1, name: copy.title }),
+    ).toBeInTheDocument();
+    expect(container.querySelectorAll("img")).toHaveLength(0);
+    expect(
+      screen.queryByRole("link", { name: copy.viewCredential }),
+    ).not.toBeInTheDocument();
   });
 
-  it("no toggle when 2 certs", async () => {
-    certData.push(CERT(1), CERT(2));
-    const { CertificationsSection } = await import("@/components/sections/Certifications");
-    render(React.createElement(CertificationsSection));
-    expect(screen.queryByText("View more")).toBeFalsy();
-  });
+  it("uses system surface tokens instead of old template residue", async () => {
+    certData.push(cert(1));
 
-  it("opens cert link when image clicked", async () => {
-    const spy = vi.spyOn(window, "open").mockImplementation(() => null);
-    certData.push(CERT(1));
-    const { CertificationsSection } = await import("@/components/sections/Certifications");
-    render(React.createElement(CertificationsSection));
-    const buttons = screen.getAllByRole("button");
-    const imgBtn = buttons.find((b) => b.querySelector("img"));
-    if (imgBtn) fireEvent.click(imgBtn!);
-    expect(spy).toHaveBeenCalledWith("https://example.com/cert1", "_blank", "noopener,noreferrer");
-    spy.mockRestore();
-  });
+    const { container } = await renderSection();
 
-  it("empty certs shows heading only", async () => {
-    certData.length = 0;
-    const { CertificationsSection } = await import("@/components/sections/Certifications");
-    const { container } = render(React.createElement(CertificationsSection));
-    expect(screen.getByText("~/Certifications")).toBeTruthy();
-    expect(container.querySelectorAll("img").length).toBe(0);
+    expect(container.querySelector(".bg-surface-paper")).toBeInTheDocument();
+    expect(container.innerHTML).not.toContain(["bg", "card"].join("-"));
+    expect(container.innerHTML).not.toContain(["rounded", "2xl"].join("-"));
+    expect(container.innerHTML).not.toContain(["border", "white/10"].join("-"));
   });
 });

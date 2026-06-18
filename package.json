@@ -12,6 +12,7 @@
     "setup": "node scripts/setup.js",
     "validate-env": "node scripts/validate-env.js",
     "build-og": "node scripts/build-og.js",
+    "audit:architecture": "node scripts/audit-site-architecture.mjs",
     "prebuild": "node scripts/validate-env.js",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare preview",

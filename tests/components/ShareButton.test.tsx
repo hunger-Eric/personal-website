@@ -58,7 +58,9 @@ describe("ShareButton", () => {
     render(React.createElement(ShareButton));
     const btn = screen.getByRole("button");
     expect(btn.className).toContain("inline-flex");
-    expect(btn.className).toContain("rounded-md");
+    expect(btn.className).toContain("rounded-control");
+    expect(btn.className).toContain("bg-surface-paper");
+    expect(btn.className).not.toContain(["bg", "card"].join("-"));
   });
 
   it("shows copied state after clipboard copy", async () => {

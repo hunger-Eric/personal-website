@@ -1,40 +1,45 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
-import React from "react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import React, { type AnchorHTMLAttributes, type ReactNode } from "react";
 
-// ── Mocks ──────────────────────────────────────────────────────────────────
+import { getSiteCopy } from "@/config/contentCopy";
+import { ArticlesBrowser, type ArticleListItem } from "@/components/articles/ArticlesBrowser";
+
+const navigationState = vi.hoisted(() => ({
+  search: "",
+  pathname: "/articles",
+  push: vi.fn(),
+}));
 
 vi.mock("next/image", () => ({
-  default: (p: any) => React.createElement("img", p),
+  default: ({ alt = "", ...props }: React.ImgHTMLAttributes<HTMLImageElement>) =>
+    React.createElement("img", { alt, ...props }),
 }));
+
 vi.mock("next/link", () => ({
-  default: (p: any) => React.createElement("a", { href: p.href }, p.children),
+  default: ({
+    href,
+    children,
+    ...props
+  }: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: ReactNode }) =>
+    React.createElement("a", { href, ...props }, children),
 }));
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => navigationState.pathname,
+  useRouter: () => ({ push: navigationState.push }),
+  useSearchParams: () => new URLSearchParams(navigationState.search),
+}));
+
 vi.mock("lucide-react", () => ({
+  BookOpen: () => React.createElement("svg", { "data-testid": "book-open" }),
+  ChevronLeft: () => React.createElement("svg", { "data-testid": "chevron-left" }),
   FileText: () => React.createElement("svg", { "data-testid": "file-text" }),
 }));
 
-const mockSiteCopy = {
-  hero: { line: "test", description: "test" },
-  about: { heading: "test", socialsButton: "test", techIntro: "test", paragraphs: [], afterTechParagraph: "" },
-  cases: { heading: "test", viewAll: "test", featuredBadge: "test", viewDetails: "test", emptyTitle: "test", emptyDescription: "test" },
-  projects: { heading: "test", viewAll: "test", featuredBadge: "test", viewDetails: "test", emptyTitle: "test", emptyDescription: "test" },
-  articles: {
-    heading: "文章",
-    description: "test",
-    viewAll: "查看全部文章",
-    emptyTitle: "还没有文章",
-    emptyDescription: "发布后会显示在这里。",
-    categoryFallback: "未分类",
-    articlesCountSuffix: "篇",
-    readTimeSuffix: "阅读",
-  },
-  photography: { heading: "test", description: "test", ongoing: "test", completed: "test", private: "test", photosSuffix: "test", emptyTitle: "test", emptyDescription: "test" },
-};
-
-vi.mock("@/config/contentCopy", () => ({
-  getSiteCopy: () => mockSiteCopy,
+vi.mock("@/components/LocaleProvider", () => ({
+  useLocale: () => ({ locale: "zh" }),
 }));
 
 vi.mock("@/config/siteConfig", () => ({
@@ -42,36 +47,14 @@ vi.mock("@/config/siteConfig", () => ({
 }));
 
 vi.mock("@/components/articles/ArticleCard", () => ({
-  ArticleCard: ({ article }: any) =>
-    React.createElement("div", { "data-testid": "article-card" }, article.title),
+  ArticleCard: ({ article }: { article: ArticleListItem }) =>
+    React.createElement("article", { "data-testid": "article-card" }, article.title),
 }));
 
-// Mock LocaleProvider
-vi.mock("@/components/LocaleProvider", () => {
-  const LocaleContext = React.createContext({
-    locale: "zh" as const,
-    t: {},
-    setLocale: vi.fn(),
-    toggleLocale: vi.fn(),
-  });
-  return {
-    LocaleProvider: ({ children }: { children: React.ReactNode }) =>
-      React.createElement(LocaleContext.Provider, {
-        value: { locale: "zh", t: {}, setLocale: vi.fn(), toggleLocale: vi.fn() },
-      }, children),
-    useLocale: () => React.useContext(LocaleContext),
-    LocaleScript: () => null,
-  };
-});
-
-vi.mock("@/config/locale", () => ({
-  LOCALE_STORAGE_KEY: "devfoliox-locale",
-  getTranslations: () => ({}),
-}));
-
-// ── Helpers ────────────────────────────────────────────────────────────────
-
-function makeArticle(slug: string, overrides: Record<string, any> = {}) {
+function makeArticle(
+  slug: string,
+  overrides: Partial<ArticleListItem> = {}
+): ArticleListItem {
   return {
     slug,
     title: `Article ${slug}`,
@@ -82,93 +65,140 @@ function makeArticle(slug: string, overrides: Record<string, any> = {}) {
   };
 }
 
-// ── Tests ──────────────────────────────────────────────────────────────────
-
 describe("ArticlesBrowser", () => {
-  it("renders articles in category groups", async () => {
-    const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
-    const articles = [
-      makeArticle("a1", { category: "Dev" }),
-      makeArticle("a2", { category: "Dev" }),
-      makeArticle("a3", { category: "Life" }),
-    ];
-    render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getByText("Dev")).toBeInTheDocument();
-    expect(screen.getByText("Life")).toBeInTheDocument();
-    expect(screen.getAllByTestId("article-card")).toHaveLength(3);
+  beforeEach(() => {
+    navigationState.search = "";
+    navigationState.pathname = "/articles";
+    navigationState.push.mockClear();
   });
 
-  it("renders empty state when no articles", async () => {
-    const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
+  it("renders article categories as archive cards and keeps articles hidden until a category is selected", () => {
+    render(
+      React.createElement(ArticlesBrowser, {
+        articles: [
+          makeArticle("a1", { category: "Dev" }),
+          makeArticle("a2", { category: "Dev" }),
+          makeArticle("a3", { category: "Life" }),
+        ],
+      })
+    );
+
+    expect(screen.getByRole("button", { name: /Dev/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Life/ })).toBeInTheDocument();
+    expect(screen.queryByTestId("article-card")).not.toBeInTheDocument();
+    expect(screen.getByText(`2 ${getSiteCopy("zh").articles.articlesCountSuffix}`)).toBeInTheDocument();
+  });
+
+  it("pushes the selected category into the article archive URL", () => {
+    render(
+      React.createElement(ArticlesBrowser, {
+        articles: [makeArticle("a1", { category: "Dev" })],
+      })
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /Dev/ }));
+
+    expect(navigationState.push).toHaveBeenCalledWith("/articles?category=Dev");
+  });
+
+  it("renders empty state copy when there are no articles", () => {
     render(React.createElement(ArticlesBrowser, { articles: [] }));
-    expect(screen.getByText("还没有文章")).toBeInTheDocument();
+
+    const copy = getSiteCopy("zh").articles;
+    expect(screen.getByText(copy.emptyTitle)).toBeInTheDocument();
+    expect(screen.getByText(copy.emptyDescription)).toBeInTheDocument();
     expect(screen.getByTestId("file-text")).toBeInTheDocument();
   });
 
-  it("uses categoryFallback when article has no category or tags", async () => {
-    const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
-    const articles = [makeArticle("no-cat")];
-    render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getByText("未分类")).toBeInTheDocument();
+  it("uses category fallback and first tag grouping before URL selection", () => {
+    render(
+      React.createElement(ArticlesBrowser, {
+        articles: [
+          makeArticle("no-category"),
+          makeArticle("tagged", { tags: ["React", "Next.js"] }),
+          makeArticle("both", { category: "TypeScript", tags: ["React"] }),
+        ],
+      })
+    );
+
+    const copy = getSiteCopy("zh").articles;
+    expect(screen.getByRole("button", { name: new RegExp(copy.categoryFallback) })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /React/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /TypeScript/ })).toBeInTheDocument();
   });
 
-  it("falls back to first tag when no category", async () => {
-    const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
-    const articles = [makeArticle("tagged", { tags: ["React", "Next.js"] })];
-    render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getByText("React")).toBeInTheDocument();
+  it("renders selected category details with chapter rows first and other article cards after", () => {
+    navigationState.search = "category=Dev";
+
+    render(
+      React.createElement(ArticlesBrowser, {
+        articles: [
+          makeArticle("chapter-2", {
+            category: "Dev",
+            title: "Chapter 2",
+            chapter: 2,
+            author: "fengc",
+          }),
+          makeArticle("preface", {
+            category: "Dev",
+            title: "Preface",
+            chapter: 0,
+          }),
+          makeArticle("loose", {
+            category: "Dev",
+            title: "Loose article",
+          }),
+        ],
+      })
+    );
+
+    const copy = getSiteCopy("zh").articles;
+    expect(screen.getByRole("button", { name: copy.allCategories })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Dev" })).toBeInTheDocument();
+    expect(screen.getByText(copy.preface)).toBeInTheDocument();
+    expect(screen.getByText(`${copy.chapterPrefix} 2${copy.chapterSuffix}`)).toBeInTheDocument();
+    expect(screen.getByText(copy.otherArticles)).toBeInTheDocument();
+    expect(screen.getByTestId("article-card")).toHaveTextContent("Loose article");
   });
 
-  it("prefers category over tags", async () => {
-    const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
-    const articles = [makeArticle("both", { category: "TypeScript", tags: ["React"] })];
-    render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getByText("TypeScript")).toBeInTheDocument();
-    expect(screen.queryByText("React")).not.toBeInTheDocument();
+  it("clears selected category from the URL through the category detail back action", () => {
+    navigationState.search = "category=Dev";
+
+    render(
+      React.createElement(ArticlesBrowser, {
+        articles: [makeArticle("a1", { category: "Dev" })],
+      })
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: getSiteCopy("zh").articles.allCategories }));
+
+    expect(navigationState.push).toHaveBeenCalledWith("/articles");
   });
 
-  it("shows article count suffix per category", async () => {
-    const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
-    const articles = [
-      makeArticle("a1", { category: "Dev" }),
-      makeArticle("a2", { category: "Dev" }),
-    ];
-    render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getByText("2 篇")).toBeInTheDocument();
+  it("renders an actionable empty state when the URL category is unknown", () => {
+    navigationState.search = "category=Missing";
+
+    render(
+      React.createElement(ArticlesBrowser, {
+        articles: [makeArticle("a1", { category: "Dev" })],
+      })
+    );
+
+    const copy = getSiteCopy("zh").articles;
+    expect(screen.getByText(copy.emptyTitle)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: copy.allCategories }));
+    expect(navigationState.push).toHaveBeenCalledWith("/articles");
   });
 
-  it("renders single article without pagination", async () => {
-    const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
-    const articles = [makeArticle("solo")];
-    render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getByText("Article solo")).toBeInTheDocument();
-    expect(screen.queryByLabelText("下一页")).not.toBeInTheDocument();
-  });
+  it("does not reintroduce old template residue in the category archive", () => {
+    const { container } = render(
+      React.createElement(ArticlesBrowser, {
+        articles: [makeArticle("a1", { category: "Dev" })],
+      })
+    );
 
-  it("renders featured article card alongside others", async () => {
-    const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
-    const articles = [
-      makeArticle("featured-1", { featured: true }),
-      makeArticle("regular-1"),
-    ];
-    render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getAllByTestId("article-card")).toHaveLength(2);
-  });
-});
-
-describe("getCategory helper", () => {
-  it("returns categoryFallback when no category or tags", async () => {
-    const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
-    // getCategory is internal; we test via rendering
-    const articles = [makeArticle("no-cat-no-tag")];
-    render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getByText("未分类")).toBeInTheDocument();
-  });
-
-  it("returns first tag when no category but has tags", async () => {
-    const { ArticlesBrowser } = await import("@/components/articles/ArticlesBrowser");
-    const articles = [makeArticle("tag-only", { tags: ["CSS"] })];
-    render(React.createElement(ArticlesBrowser, { articles }));
-    expect(screen.getByText("CSS")).toBeInTheDocument();
+    expect(container.innerHTML).not.toContain(["bg", "card"].join("-"));
+    expect(container.innerHTML).not.toContain(["rounded", "2xl"].join("-"));
+    expect(container.innerHTML).not.toContain(["border", "white/10"].join("-"));
   });
 });

@@ -35,6 +35,11 @@ function makeBlock(
   };
 }
 
+function expectNextImageSrc(image: Element, source: string) {
+  const renderedSource = image.getAttribute("src") ?? "";
+  expect(decodeURIComponent(renderedSource)).toContain(source);
+}
+
 // ── Before each ──────────────────────────────────────────────────────────────
 beforeEach(() => {
   vi.clearAllMocks();
@@ -129,18 +134,6 @@ describe("PageBlocks", () => {
     });
 
     it("renders nothing in prose when text is empty", () => {
-      render(
-        <PageBlocks
-          blocks={[
-            makeBlock({
-              type: "text",
-              content: { text: "" },
-            }),
-          ]}
-        />
-      );
-
-      // Empty text is falsy in component, so no prose rendered
       const { container } = render(
         <PageBlocks
           blocks={[
@@ -153,6 +146,7 @@ describe("PageBlocks", () => {
       );
       // text="" is falsy, so the prose section doesn't render text content
       expect(screen.queryByText("About")).not.toBeInTheDocument();
+      expect(container.querySelectorAll("p")).toHaveLength(0);
     });
 
     it("handles undefined text gracefully", () => {
@@ -188,7 +182,7 @@ describe("PageBlocks", () => {
       expect(screen.getByText("Gallery")).toBeInTheDocument();
       const imgs = document.querySelectorAll("img");
       expect(imgs).toHaveLength(2);
-      expect(imgs[0]).toHaveAttribute("src", "/img1.jpg");
+      expectNextImageSrc(imgs[0], "/img1.jpg");
       expect(imgs[0]).toHaveAttribute("alt", "Photo 1");
     });
 
@@ -257,7 +251,7 @@ describe("PageBlocks", () => {
 
       const img = document.querySelector("img");
       expect(img).toBeInTheDocument();
-      expect(img).toHaveAttribute("src", "/img-no-alt.jpg");
+      expectNextImageSrc(img as HTMLImageElement, "/img-no-alt.jpg");
       // img.alt should fall back to empty string
       expect(img).toHaveAttribute("alt", "");
     });

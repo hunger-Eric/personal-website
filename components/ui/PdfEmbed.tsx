@@ -1,5 +1,7 @@
 "use client";
 
+import { documentCopy } from "@/config/copy/document";
+
 type PdfEmbedProps = {
   src: string; // e.g. "/api/resume"
   className?: string;
@@ -11,10 +13,10 @@ export default function PdfEmbed({ src, className }: PdfEmbedProps) {
       <object
         data={src}
         type="application/pdf"
-        className="w-full h-[60vh] sm:h-[65vh] md:h-[70vh] rounded-lg border border-white/10"
+        className="h-[60vh] w-full rounded-card border border-hairline sm:h-[65vh] md:h-[70vh]"
       >
-        <div className="rounded-lg border border-white/10 p-4 text-sm text-muted-foreground">
-          <p>Your browser can’t display PDFs inline.</p>
+        <div className="rounded-card border border-hairline p-4 text-sm text-muted-foreground">
+          <p>{documentCopy.pdfUnavailable}</p>
           <p>
             <a
               href={src}
@@ -22,7 +24,7 @@ export default function PdfEmbed({ src, className }: PdfEmbedProps) {
               rel="noreferrer noopener"
               className="text-accent underline"
             >
-              Open the PDF in a new tab
+              {documentCopy.openPdf}
             </a>
             .
           </p>

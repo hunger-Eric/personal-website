@@ -4,6 +4,7 @@
 import { Sun, Moon, Monitor } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
 import { themeConfig } from "@/config/theme";
+import { themeCopy, type ThemeMode } from "@/config/copy/theme";
 
 interface ThemeToggleProps {
   className?: string;
@@ -11,29 +12,27 @@ interface ThemeToggleProps {
 }
 
 export function ThemeToggle({ className = "", showLabel = false }: ThemeToggleProps) {
-  const { theme, resolvedTheme, toggleTheme, setTheme } = useTheme();
+  const { theme, resolvedTheme, toggleTheme } = useTheme();
 
   // Don't render if toggle is disabled
   if (!themeConfig.allowToggle) {
     return null;
   }
 
-  const Icon = theme === "system" ? Monitor : resolvedTheme === "dark" ? Moon : Sun;
-
   const label =
     theme === "system"
-      ? "System"
+      ? themeCopy.modes.system
       : resolvedTheme === "dark"
-        ? "Dark"
-        : "Light";
+        ? themeCopy.modes.dark
+        : themeCopy.modes.light;
 
   return (
     <button
       type="button"
       onClick={toggleTheme}
-      className={`group relative inline-flex items-center justify-center rounded-lg p-2 text-muted-foreground transition-colors hover:bg-white/5 hover:text-foreground ${className}`}
-      aria-label={`Current theme: ${label}. Click to toggle.`}
-      title={`Theme: ${label}`}
+      className={`group relative inline-flex items-center justify-center rounded-control p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${className}`}
+      aria-label={themeCopy.toggleLabel(label)}
+      title={themeCopy.toggleTitle(label)}
     >
       {/* Icon with animation */}
       <span className="relative h-5 w-5">
@@ -85,14 +84,14 @@ export function ThemeDropdown({ className = "" }: { className?: string }) {
     <div className={`relative ${className}`}>
       <select
         value={theme}
-        onChange={(e) => setTheme(e.target.value as "light" | "dark" | "system")}
-        className="appearance-none rounded-lg border border-white/10 bg-white/5 px-3 py-2 pr-8 text-sm text-foreground transition-colors hover:border-accent focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-        aria-label="Select theme"
+        onChange={(e) => setTheme(e.target.value as ThemeMode)}
+        className="appearance-none rounded-control border border-border bg-surface-paper px-3 py-2 pr-8 text-sm text-foreground transition-colors hover:border-accent focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+        aria-label={themeCopy.selectLabel}
       >
-        <option value="light">Light</option>
-        <option value="dark">Dark</option>
+        <option value="light">{themeCopy.modes.light}</option>
+        <option value="dark">{themeCopy.modes.dark}</option>
         {themeConfig.respectSystemPreference && (
-          <option value="system">System</option>
+          <option value="system">{themeCopy.modes.system}</option>
         )}
       </select>
       <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { ArrowUpRight, BookOpen, Database, MousePointer2 } from "lucide-react";
 
+import { useLocale } from "@/components/LocaleProvider";
+import { getSiteCopy } from "@/config/contentCopy";
 import type { CaseItem } from "@/config/cases";
 
 type CaseChapterRailProps = {
@@ -24,6 +26,9 @@ export function CaseChapterRail({
   onSelect,
   singleCase = false,
 }: CaseChapterRailProps) {
+  const { locale } = useLocale();
+  const copy = getSiteCopy(locale);
+
   if (!cases.length) return null;
 
   return (
@@ -39,10 +44,10 @@ export function CaseChapterRail({
           <div
             key={caseItem.id}
             className={[
-              "group rounded-md border transition-colors",
+              "group rounded-control border transition-colors",
               active
-                ? "border-[#c48a2c]/70 bg-[#c48a2c]/12"
-                : "border-white/10 bg-transparent hover:border-white/20 hover:bg-white/[0.045]",
+                ? "border-accent/70 bg-accent/15"
+                : "border-inverse bg-transparent hover:border-inverse hover:bg-white/[0.045]",
             ].join(" ")}
           >
             <button
@@ -54,10 +59,10 @@ export function CaseChapterRail({
             >
               <span
                 className={[
-                  "mt-0.5 flex h-7 w-7 items-center justify-center rounded border font-mono text-[11px] font-semibold",
+                  "mt-0.5 flex h-7 w-7 items-center justify-center rounded-control border font-mono text-[11px] font-semibold",
                   active
-                    ? "border-[#c48a2c]/70 bg-[#c48a2c] text-[#12100b]"
-                    : "border-white/10 bg-black/20 text-[#b9ad9c]",
+                    ? "border-accent/70 bg-accent text-accent-foreground"
+                    : "border-inverse bg-black/20 text-muted-foreground",
                 ].join(" ")}
               >
                 {active ? (
@@ -67,10 +72,10 @@ export function CaseChapterRail({
                 )}
               </span>
               <span className="min-w-0">
-                <span className="block truncate text-sm font-semibold text-[#f7efdf]">
+                <span className="block truncate text-sm font-semibold text-surface-graphite-foreground">
                   {label}
                 </span>
-                <span className="mt-0.5 block line-clamp-2 text-xs leading-5 text-[#b9ad9c]">
+                <span className="mt-0.5 block line-clamp-2 text-xs leading-5 text-muted-foreground">
                   {story?.shortPromise || caseItem.summary}
                 </span>
               </span>
@@ -78,9 +83,9 @@ export function CaseChapterRail({
             {!singleCase ? (
               <Link
                 href={href}
-                className="mx-2.5 mb-2.5 inline-flex items-center gap-1.5 rounded border border-white/10 bg-black/20 px-2 py-1 text-[11px] font-semibold text-[#cfc4b2] transition-colors hover:border-white/20 hover:text-[#f7efdf] focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                className="mx-2.5 mb-2.5 inline-flex items-center gap-1.5 rounded-control border border-inverse bg-black/20 px-2 py-1 text-[11px] font-semibold text-muted-foreground transition-colors hover:text-surface-graphite-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
-                完整案例
+                {copy.cases.fullCase}
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </Link>
             ) : null}

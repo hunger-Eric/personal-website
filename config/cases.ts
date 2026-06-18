@@ -144,7 +144,7 @@ export type ProjectLinkType = CaseLinkType;
 export type ProjectLink = CaseLink;
 export type ProjectItem = CaseItem;
 
-// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ raw JSON shapes 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// Raw JSON shapes
 type RawGithubReadmeProject = Partial<CaseItem> & {
   repo_url: string;
   priority?: number;
@@ -181,7 +181,7 @@ type GithubReleaseAsset = {
   download_count?: number;
 };
 
-// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ helpers 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// Helpers
 const MAX_README_BYTES = 150_000; // cap to keep builds lean
 
 function mdToSafeHtml(md: string): string {
@@ -467,7 +467,7 @@ function sortByPriority<T extends { _priority?: number }>(items: T[]) {
   return items.sort((a, b) => (a._priority ?? 9999) - (b._priority ?? 9999));
 }
 
-// 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€ main loader 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+// Main loader
 
 export async function loadCases(locale: "zh" | "en" = "zh"): Promise<CaseItem[]> {
   const revalidateSeconds = 60 * 60 * 3; // 3h

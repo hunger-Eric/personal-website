@@ -1,8 +1,11 @@
-// components/PhotoPinModal.tsx
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Lock, Eye, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+import { Eye, Lock, X } from "lucide-react";
+
+import { ActionButton, IconButton, StatusNote, Surface } from "@/components/system";
+import { getSiteCopy } from "@/config/contentCopy";
 
 type Props = {
   open: boolean;
@@ -10,16 +13,18 @@ type Props = {
   onSuccess: (tokens: Map<string, string>) => void;
 };
 
+const PIN_LENGTH = 6;
+const copy = getSiteCopy("zh").photography;
+
 export function PhotoPinModal({ open, onClose, onSuccess }: Props) {
-  const [pin, setPin] = useState(["", "", "", "", "", ""]);
+  const [pin, setPin] = useState(Array.from({ length: PIN_LENGTH }, () => ""));
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  // Focus first input on open
   useEffect(() => {
     if (open) {
-      setPin(["", "", "", "", "", ""]);
+      setPin(Array.from({ length: PIN_LENGTH }, () => ""));
       setError(null);
       setLoading(false);
       setTimeout(() => inputRefs.current[0]?.focus(), 100);
@@ -27,7 +32,6 @@ export function PhotoPinModal({ open, onClose, onSuccess }: Props) {
   }, [open]);
 
   const handleChange = (index: number, value: string) => {
-    // Only allow digits
     if (!/^\d?$/.test(value)) return;
 
     const newPin = [...pin];
@@ -35,25 +39,24 @@ export function PhotoPinModal({ open, onClose, onSuccess }: Props) {
     setPin(newPin);
     setError(null);
 
-    // Auto-focus next input
-    if (value && index < 5) {
+    if (value && index < PIN_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
   };
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !pin[index] && index > 0) {
+  const handleKeyDown = (index: number, event: React.KeyboardEvent) => {
+    if (event.key === "Backspace" && !pin[index] && index > 0) {
       inputRefs.current[index - 1]?.focus();
     }
-    if (e.key === "Enter") {
-      submitPin();
+    if (event.key === "Enter") {
+      void submitPin();
     }
   };
 
   const submitPin = async () => {
     const code = pin.join("");
-    if (code.length !== 6) {
-      setError("请输入6位PIN码");
+    if (code.length !== PIN_LENGTH) {
+      setError(copy.pinLengthError);
       return;
     }
 
@@ -69,25 +72,25 @@ export function PhotoPinModal({ open, onClose, onSuccess }: Props) {
 
       if (!res.ok) {
         if (res.status === 403) {
-          setError("PIN码错误，请重试");
+          setError(copy.pinIncorrectError);
         } else if (res.status === 501) {
-          setError("私密照片功能未启用");
+          setError(copy.pinDisabledError);
         } else {
-          setError("验证失败，请重试");
+          setError(copy.pinGenericError);
         }
         setLoading(false);
         return;
       }
 
-      const data = await res.json();
+      const data = (await res.json()) as { photos?: Array<{ id: string; token: string }> };
       const tokenMap = new Map<string, string>();
-      for (const p of data.photos) {
-        tokenMap.set(p.id, p.token);
+      for (const photo of data.photos ?? []) {
+        tokenMap.set(photo.id, photo.token);
       }
       onSuccess(tokenMap);
       onClose();
     } catch {
-      setError("网络错误，请重试");
+      setError(copy.pinNetworkError);
     } finally {
       setLoading(false);
     }
@@ -97,80 +100,83 @@ export function PhotoPinModal({ open, onClose, onSuccess }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-surface-graphite/70 p-4 backdrop-blur-sm"
       onClick={onClose}
     >
-      <div
-        className="w-full max-w-sm rounded-2xl border border-border bg-card p-8 shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
+      <Surface
+        tone="paper"
+        className="relative w-full max-w-sm p-8 shadow-panel"
+        onClick={(event) => event.stopPropagation()}
       >
-        {/* Close button */}
-        <button
+        <IconButton
           onClick={onClose}
-          className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
-        >
-          <X className="h-5 w-5" />
-        </button>
+          label={copy.close}
+          icon={<X className="h-5 w-5" aria-hidden="true" />}
+          className="absolute right-4 top-4 h-9 w-9"
+        />
 
-        {/* Icon */}
-        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-          <Lock className="h-7 w-7 text-amber-600 dark:text-amber-400" />
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-control border border-warning bg-warning/10 text-warning">
+          <Lock className="h-7 w-7" aria-hidden="true" />
         </div>
 
-        <h2 className="mb-2 text-center text-xl font-semibold">私密照片</h2>
-        <p className="mb-6 text-center text-sm text-muted-foreground">
-          请输入PIN码查看私密照片
+        <h2 className="mb-2 text-center text-xl font-semibold text-foreground">
+          {copy.pinTitle}
+        </h2>
+        <p className="mb-6 text-center text-sm leading-6 text-muted-foreground">
+          {copy.pinDescription}
         </p>
 
-        {/* PIN input */}
         <div className="mb-4 flex justify-center gap-3">
-          {pin.map((digit, i) => (
+          {pin.map((digit, index) => (
             <input
-              key={i}
-              ref={(el) => {
-                inputRefs.current[i] = el;
+              key={index}
+              ref={(element) => {
+                inputRefs.current[index] = element;
               }}
               type="password"
               inputMode="numeric"
               maxLength={1}
               value={digit}
-              onChange={(e) => handleChange(i, e.target.value)}
-              onKeyDown={(e) => handleKeyDown(i, e)}
-              className={`h-12 w-11 rounded-xl border text-center text-xl font-bold outline-none transition-all
-                ${
-                  error
-                    ? "border-red-400 bg-red-50 dark:border-red-600 dark:bg-red-900/20"
-                    : "border-border bg-background focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-                }`}
+              aria-label={`PIN ${index + 1}`}
+              onChange={(event) => handleChange(index, event.target.value)}
+              onKeyDown={(event) => handleKeyDown(index, event)}
+              className={[
+                "h-12 w-11 rounded-control border bg-surface-paper text-center text-xl font-bold text-foreground outline-none transition-colors focus:ring-2 focus:ring-accent/20",
+                error
+                  ? "border-destructive bg-destructive/10"
+                  : "border-border focus:border-accent",
+              ].join(" ")}
             />
           ))}
         </div>
 
-        {/* Error */}
-        {error && (
-          <p className="mb-4 text-center text-sm text-red-500">{error}</p>
-        )}
+        {error ? (
+          <StatusNote tone="danger" className="mb-4 justify-center text-center">
+            {error}
+          </StatusNote>
+        ) : null}
 
-        {/* Submit */}
-        <button
-          onClick={submitPin}
+        <ActionButton
+          type="button"
+          tone="primary"
+          onClick={() => void submitPin()}
           disabled={loading}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-amber-600 disabled:opacity-50"
+          icon={
+            loading ? (
+              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-accent-foreground/30 border-t-accent-foreground" />
+            ) : (
+              <Eye className="h-4 w-4" aria-hidden="true" />
+            )
+          }
+          className="w-full"
         >
-          {loading ? (
-            <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-          ) : (
-            <>
-              <Eye className="h-4 w-4" />
-              查看私密照片
-            </>
-          )}
-        </button>
+          {copy.pinSubmit}
+        </ActionButton>
 
-        <p className="mt-4 text-center text-[11px] text-muted-foreground">
-          PIN码由网站所有者设置 · 照片仅限本次会话访问
+        <p className="mt-4 text-center text-[11px] leading-5 text-muted-foreground">
+          {copy.pinFootnote}
         </p>
-      </div>
+      </Surface>
     </div>
   );
 }

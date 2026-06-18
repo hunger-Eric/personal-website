@@ -5,6 +5,7 @@ import { siteConfig } from "../../config/siteConfig";
 import { FileText, Mail } from "lucide-react";
 import { useModalRoute } from "@/components/hooks/useModalRoute";
 import { useLocale } from "@/components/LocaleProvider";
+import { ActionButton } from "@/components/system";
 
 export function HeroSection() {
   const { t } = useLocale();
@@ -36,26 +37,26 @@ export function HeroSection() {
 
         <div className="mt-7 flex flex-wrap gap-3">
           {/* Open the resume modal with a shareable SPA URL (/?resume) */}
-          <a
+          <ActionButton
             href={resumeModal.href}
             onClick={(e) => {
               e.preventDefault();
               resumeModal.open();
             }}
-            className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-transform transition-colors hover:-translate-y-[1px] hover:bg-accent/90"
+            tone="primary"
             title={`Open ${resumeModal.href}`}
+            icon={<FileText className="h-4 w-4" />}
           >
-            <FileText className="h-4 w-4" />
             <span>{t.hero.resume}</span>
-          </a>
+          </ActionButton>
 
-          <a
+          <ActionButton
             href="#contact"
-            className="inline-flex items-center gap-2 rounded-md border border-white/20 px-4 py-2 text-sm text-foreground transition-transform transition-colors hover:-translate-y-[1px] hover:border-accent hover:bg-white/5"
+            tone="secondary"
+            icon={<Mail className="h-4 w-4" />}
           >
-            <Mail className="h-4 w-4" />
             <span>{t.hero.contact}</span>
-          </a>
+          </ActionButton>
         </div>
       </div>
     </section>

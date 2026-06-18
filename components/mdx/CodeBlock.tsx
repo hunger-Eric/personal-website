@@ -42,32 +42,32 @@ export function CodeBlock({
   const lines = children.trim().split("\n");
 
   return (
-    <div className="group relative my-6 overflow-hidden rounded-lg border border-white/10 bg-[#0d1117]">
+    <div className="group relative my-6 overflow-hidden rounded-card border border-inverse bg-surface-graphite text-surface-graphite-foreground">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-2">
+      <div className="flex items-center justify-between border-b border-inverse bg-surface-graphite-elevated px-4 py-2">
         <div className="flex items-center gap-3">
           {/* Language badge */}
           {language && (
-            <span className="rounded bg-white/10 px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            <span className="rounded-control border border-inverse px-2 py-0.5 text-xs font-medium text-surface-graphite-muted">
               {language}
             </span>
           )}
           {/* Filename */}
           {filename && (
-            <span className="text-sm text-muted-foreground">{filename}</span>
+            <span className="text-sm text-surface-graphite-muted">{filename}</span>
           )}
         </div>
 
         {/* Copy button */}
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground opacity-0 transition-all hover:bg-white/10 hover:text-foreground group-hover:opacity-100"
+          className="flex items-center gap-1.5 rounded-control px-2 py-1 text-xs text-surface-graphite-muted opacity-0 transition-colors hover:bg-surface-graphite hover:text-surface-graphite-foreground group-hover:opacity-100"
           aria-label="Copy code"
         >
           {copied ? (
             <>
-              <Check className="h-3.5 w-3.5 text-green-500" />
-              <span className="text-green-500">Copied!</span>
+              <Check className="h-3.5 w-3.5 text-accent" />
+              <span className="text-accent">Copied!</span>
             </>
           ) : (
             <>
@@ -89,7 +89,7 @@ export function CodeBlock({
             {showLineNumbers
               ? lines.map((line, i) => (
                   <div key={i} className="table-row">
-                    <span className="table-cell select-none pr-4 text-right text-muted-foreground/50">
+                    <span className="table-cell select-none pr-4 text-right text-surface-graphite-muted">
                       {i + 1}
                     </span>
                     <span className="table-cell">{line || " "}</span>
@@ -108,7 +108,7 @@ export function CodeBlock({
  */
 export function InlineCode({ children }: { children: string }) {
   return (
-    <code className="rounded bg-white/10 px-1.5 py-0.5 font-mono text-sm text-accent">
+    <code className="rounded-control border border-border bg-muted px-1.5 py-0.5 font-mono text-sm text-accent">
       {children}
     </code>
   );

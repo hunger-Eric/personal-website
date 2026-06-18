@@ -12,6 +12,10 @@ type GitHubContent = {
   path: string;
 };
 
+type GitHubDirectoryItem = {
+  name: string;
+};
+
 /**
  * Get the GitHub API token from env.
  */
@@ -54,7 +58,12 @@ export async function upsertRepoFile(
   encoding: "base64" | "utf-8" = "utf-8",
   existingSha?: string
 ): Promise<void> {
-  const body: Record<string, any> = {
+  const body: {
+    message: string;
+    branch: string;
+    content: string;
+    sha?: string;
+  } = {
     message,
     branch: BRANCH,
     content:
@@ -142,9 +151,7 @@ export async function uploadPhoto(
 /**
  * Save the full photography config to the repo.
  */
-export async function saveConfig(
-  config: Record<string, any>
-): Promise<void> {
+export async function saveConfig(config: Record<string, unknown>): Promise<void> {
   // Get the current sha for the config file
   const existing = await getRepoFile("config/photography.json");
   await upsertRepoFile(
@@ -173,7 +180,9 @@ export async function listRepoDir(dir: string): Promise<string[]> {
   if (!res.ok) return [];
   const data = await res.json();
   if (!Array.isArray(data)) return [];
-  return data.map((item: any) => item.name);
+  return data
+    .filter((item): item is GitHubDirectoryItem => Boolean(item) && typeof item.name === "string")
+    .map((item) => item.name);
 }
 
 /**

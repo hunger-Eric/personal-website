@@ -3,6 +3,12 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
+type MockImageProps = React.ImgHTMLAttributes<HTMLImageElement>;
+
+vi.mock("next/image", () => ({
+  default: (props: MockImageProps) => React.createElement("img", props),
+}));
+
 vi.mock("@/config/youtube", () => ({
   youtubeVideos: [
     {
@@ -24,6 +30,9 @@ vi.mock("@/config/youtube", () => ({
 }));
 vi.mock("@/config/siteConfig", () => ({
   siteConfig: { name: "Test", socials: { youtube: "https://youtube.com/@test" } }
+}));
+vi.mock("@/components/LocaleProvider", () => ({
+  useLocale: () => ({ locale: "en" }),
 }));
 vi.mock("lucide-react", () => ({
   Youtube: () => React.createElement("svg", { "data-testid": "youtube-icon" }),
@@ -122,7 +131,7 @@ describe("YouTubeSection", () => {
 describe("getYouTubeEmbedUrl", () => {
   it("extracts id from youtu.be short URL", async () => {
     const mod = await import("@/components/sections/YouTube");
-    const fn = (mod as any).getYouTubeEmbedUrl;
+    const fn = mod.getYouTubeEmbedUrl;
     const result = fn("https://youtu.be/abc123");
     expect(result).toBe(
       "https://www.youtube.com/embed/abc123?rel=0&modestbranding=1"
@@ -131,7 +140,7 @@ describe("getYouTubeEmbedUrl", () => {
 
   it("extracts id from standard youtube.com URL", async () => {
     const mod = await import("@/components/sections/YouTube");
-    const fn = (mod as any).getYouTubeEmbedUrl;
+    const fn = mod.getYouTubeEmbedUrl;
     const result = fn("https://www.youtube.com/watch?v=xyz789");
     expect(result).toBe(
       "https://www.youtube.com/embed/xyz789?rel=0&modestbranding=1"
@@ -140,21 +149,21 @@ describe("getYouTubeEmbedUrl", () => {
 
   it("returns original URL when no video ID is found", async () => {
     const mod = await import("@/components/sections/YouTube");
-    const fn = (mod as any).getYouTubeEmbedUrl;
+    const fn = mod.getYouTubeEmbedUrl;
     const result = fn("https://www.youtube.com/");
     expect(result).toBe("https://www.youtube.com/");
   });
 
   it("returns original URL on invalid URL (catch block)", async () => {
     const mod = await import("@/components/sections/YouTube");
-    const fn = (mod as any).getYouTubeEmbedUrl;
+    const fn = mod.getYouTubeEmbedUrl;
     const result = fn("not-a-valid-url");
     expect(result).toBe("not-a-valid-url");
   });
 
   it("handles youtu.be URL with empty path (line 190 branch)", async () => {
     const mod = await import("@/components/sections/YouTube");
-    const fn = (mod as any).getYouTubeEmbedUrl;
+    const fn = mod.getYouTubeEmbedUrl;
     const result = fn("https://youtu.be/");
     // Empty id falls through to return original URL
     expect(result).toBe("https://youtu.be/");

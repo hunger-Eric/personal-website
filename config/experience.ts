@@ -17,7 +17,7 @@ export type ExperienceLink = {
   type?: ExperienceLinkType;
   /** Small thumbnail image shown on the left side of the attachment card. */
   image?: string;
-  /** Optional subtitle below the label (e.g. "PDF · 254 KB" or domain). */
+  /** Optional subtitle below the label, such as "PDF - 254 KB" or a domain. */
   subtitle?: string;
 };
 
@@ -25,57 +25,102 @@ export type ExperienceItem = {
   id: string;
   role: string;
   company: string;
-  /** Optional path to a small company logo (e.g. "/images/visibleseed.png"). */
+  /** Optional path to a small company logo, such as "/images/visibleseed.png". */
   logoUrl?: string;
   location?: string;
   type?: "internship" | "full-time" | "part-time" | "contract";
-  start: string; // e.g. "Jun 2024"
-  end: string; // e.g. "Aug 2024" or "Present"
+  start: string;
+  end: string;
   description: string[];
   technologies?: string[];
   links?: ExperienceLink[];
 };
 
-function normalizeLinks(input: any): ExperienceLink[] | undefined {
+type RawExperienceLink = {
+  label?: unknown;
+  href?: unknown;
+  type?: unknown;
+  image?: unknown;
+  subtitle?: unknown;
+};
+
+type RawExperienceItem = {
+  hidden?: unknown;
+  id?: unknown;
+  role?: unknown;
+  company?: unknown;
+  logoUrl?: unknown;
+  location?: unknown;
+  type?: ExperienceItem["type"];
+  start?: unknown;
+  end?: unknown;
+  description?: unknown;
+  technologies?: unknown;
+  links?: unknown;
+};
+
+function isExperienceLinkType(value: unknown): value is ExperienceLinkType {
+  return (
+    value === "pdf" ||
+    value === "publication" ||
+    value === "abstract" ||
+    value === "live" ||
+    value === "docs" ||
+    value === "video" ||
+    value === "github" ||
+    value === "external"
+  );
+}
+
+function normalizeLinks(input: unknown): ExperienceLink[] | undefined {
   if (!Array.isArray(input)) return undefined;
+
   const out: ExperienceLink[] = [];
-  for (const raw of input) {
-    if (!raw || typeof raw !== "object") continue;
-    const href = typeof raw.href === "string" ? raw.href.trim() : "";
-    const label = typeof raw.label === "string" ? raw.label.trim() : "";
+  for (const item of input) {
+    if (!item || typeof item !== "object") continue;
+
+    const rawLink = item as RawExperienceLink;
+    const href = typeof rawLink.href === "string" ? rawLink.href.trim() : "";
+    const label = typeof rawLink.label === "string" ? rawLink.label.trim() : "";
     if (!href || !label) continue;
+
     out.push({
       label,
       href,
-      type: raw.type as ExperienceLinkType | undefined,
-      image: typeof raw.image === "string" ? raw.image : undefined,
-      subtitle: typeof raw.subtitle === "string" ? raw.subtitle : undefined,
+      type: isExperienceLinkType(rawLink.type) ? rawLink.type : undefined,
+      image: typeof rawLink.image === "string" ? rawLink.image : undefined,
+      subtitle:
+        typeof rawLink.subtitle === "string" ? rawLink.subtitle : undefined,
     });
   }
+
   return out.length ? out : undefined;
 }
 
-// Light runtime guard (keeps shape predictable). Items with `hidden: true`
-// in experience.json are filtered out — used to temporarily remove a role
-// without losing its data.
-function normalize(items: any[]): ExperienceItem[] {
-  return (items || []).filter((it) => it && it.hidden !== true).map((it) => ({
-    id: String(it.id),
-    role: String(it.role),
-    company: String(it.company),
-    logoUrl: it.logoUrl ? String(it.logoUrl) : undefined,
-    location: it.location ? String(it.location) : undefined,
-    type: it.type,
-    start: String(it.start),
-    end: String(it.end),
-    description: Array.isArray(it.description)
-      ? it.description.map(String)
-      : [],
-    technologies: Array.isArray(it.technologies)
-      ? it.technologies.map(String)
-      : undefined,
-    links: normalizeLinks(it.links),
-  }));
+function isRawExperienceItem(value: unknown): value is RawExperienceItem {
+  return Boolean(value) && typeof value === "object";
 }
 
-export const experience: ExperienceItem[] = normalize(raw as any[]);
+function normalize(items: unknown[]): ExperienceItem[] {
+  return items
+    .filter((item) => isRawExperienceItem(item) && item.hidden !== true)
+    .map((item) => ({
+      id: String(item.id),
+      role: String(item.role),
+      company: String(item.company),
+      logoUrl: item.logoUrl ? String(item.logoUrl) : undefined,
+      location: item.location ? String(item.location) : undefined,
+      type: item.type,
+      start: String(item.start),
+      end: String(item.end),
+      description: Array.isArray(item.description)
+        ? item.description.map(String)
+        : [],
+      technologies: Array.isArray(item.technologies)
+        ? item.technologies.map(String)
+        : undefined,
+      links: normalizeLinks(item.links),
+    }));
+}
+
+export const experience: ExperienceItem[] = normalize(raw as unknown[]);

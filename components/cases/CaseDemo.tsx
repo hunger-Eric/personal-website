@@ -2,7 +2,9 @@
 
 import { Cpu } from "lucide-react";
 
+import { useLocale } from "@/components/LocaleProvider";
 import type { CaseDemo as CaseDemoData, CaseItem, CustomerStory } from "@/config/cases";
+import { getSiteCopy } from "@/config/contentCopy";
 import { CaseFilmStage } from "./CaseFilmStage";
 import { DemoTimeline } from "./DemoTimeline";
 
@@ -14,6 +16,8 @@ type CaseDemoProps = {
 };
 
 export function CaseDemo({ caseItem, demo, story, projectName }: CaseDemoProps) {
+  const { locale } = useLocale();
+  const copy = getSiteCopy(locale).cases;
   const filmCase =
     caseItem ??
     (story && projectName
@@ -29,7 +33,7 @@ export function CaseDemo({ caseItem, demo, story, projectName }: CaseDemoProps) 
 
   if (filmCase?.customerStory) {
     return (
-      <section className="border-t border-[#d9cfbf] py-8">
+      <section className="border-t border-hairline py-8">
         <CaseFilmStage
           cases={[filmCase]}
           initialCaseId={filmCase.id}
@@ -43,18 +47,18 @@ export function CaseDemo({ caseItem, demo, story, projectName }: CaseDemoProps) 
   if (!demo) return null;
 
   return (
-    <section className="border-t border-[#d9cfbf] py-8">
+    <section className="border-t border-hairline py-8">
       <div className="grid gap-5 md:grid-cols-[240px_minmax(0,1fr)]">
         <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#817565]">
-            <Cpu className="h-4 w-4" />
+          <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <Cpu className="h-4 w-4" aria-hidden />
             <span>Interactive demo</span>
           </div>
-          <h2 className="mt-3 text-xl font-semibold tracking-tight text-[#1f2420]">
-            系统流程演示
+          <h2 className="mt-3 text-xl font-semibold tracking-tight text-foreground">
+            {copy.demoTitle}
           </h2>
-          <p className="mt-3 text-sm leading-6 text-[#6f6659]">
-            查看输入、处理、日志和输出如何一步步推进。
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">
+            {copy.demoDescription}
           </p>
         </div>
         <DemoTimeline demo={demo} />

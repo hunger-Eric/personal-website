@@ -1,169 +1,257 @@
-// components/PageBlocks.tsx
 "use client";
 
-import { Mail, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Mail } from "lucide-react";
+import Image from "next/image";
+
+import { ActionButton, EmptyState, Surface } from "@/components/system";
+import { getSiteCopy } from "@/config/contentCopy";
 import { siteConfig } from "@/config/siteConfig";
+
+type BlockType = "hero" | "text" | "gallery" | "cards" | "contact";
+
+type HeroContent = {
+  headline?: string;
+  subheadline?: string;
+  ctaText?: string;
+  ctaHref?: string;
+};
+
+type TextContent = {
+  text?: string;
+};
+
+type GalleryImage = {
+  src?: string;
+  alt?: string;
+};
+
+type GalleryContent = {
+  images?: GalleryImage[];
+};
+
+type CardContent = {
+  title?: string;
+  description?: string;
+};
+
+type CardsContent = {
+  cards?: CardContent[];
+};
 
 type Block = {
   id: string;
-  type: "hero" | "text" | "gallery" | "cards" | "contact";
+  type: BlockType;
   title: string;
-  content: any;
+  content: HeroContent | TextContent | GalleryContent | CardsContent | Record<string, unknown>;
 };
+
+const copy = getSiteCopy("zh").customPage;
+
+function asHeroContent(content: Block["content"]): HeroContent {
+  return content as HeroContent;
+}
+
+function asTextContent(content: Block["content"]): TextContent {
+  return content as TextContent;
+}
+
+function asGalleryContent(content: Block["content"]): GalleryContent {
+  return content as GalleryContent;
+}
+
+function asCardsContent(content: Block["content"]): CardsContent {
+  return content as CardsContent;
+}
 
 export function PageBlocks({ blocks }: { blocks: Block[] }) {
   return (
     <div className="space-y-16">
       {blocks.map((block) => (
-        <section key={block.id} id={`block-${block.id}`}>
-          {block.type === "hero" && <HeroBlock block={block} />}
-          {block.type === "text" && <TextBlock block={block} />}
-          {block.type === "gallery" && <GalleryBlock block={block} />}
-          {block.type === "cards" && <CardsBlock block={block} />}
-          {block.type === "contact" && <ContactBlock />}
+        <section
+          key={block.id}
+          id={`block-${block.id}`}
+          aria-labelledby={block.title ? `block-${block.id}-title` : undefined}
+        >
+          {block.type === "hero" ? <HeroBlock block={block} /> : null}
+          {block.type === "text" ? <TextBlock block={block} /> : null}
+          {block.type === "gallery" ? <GalleryBlock block={block} /> : null}
+          {block.type === "cards" ? <CardsBlock block={block} /> : null}
+          {block.type === "contact" ? <ContactBlock blockId={block.id} /> : null}
         </section>
       ))}
     </div>
   );
 }
 
+function BlockTitle({ block }: { block: Block }) {
+  if (!block.title) return null;
+
+  return (
+    <h2
+      id={`block-${block.id}-title`}
+      className="mb-6 text-2xl font-semibold tracking-tight text-foreground"
+    >
+      {block.title}
+    </h2>
+  );
+}
+
 function HeroBlock({ block }: { block: Block }) {
-  const { headline, subheadline, ctaText } = block.content;
+  const { headline, subheadline, ctaText, ctaHref } = asHeroContent(block.content);
+
   return (
     <div className="text-center">
-      {block.title && (
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-amber-500">
+      {block.title ? (
+        <p
+          id={`block-${block.id}-title`}
+          className="mb-3 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground"
+        >
           {block.title}
         </p>
-      )}
-      {headline && (
-        <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+      ) : null}
+      {headline ? (
+        <h1 className="mx-auto max-w-4xl text-4xl font-semibold leading-[1.02] tracking-tight text-foreground sm:text-5xl">
           {headline}
-        </h2>
-      )}
-      {subheadline && (
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+        </h1>
+      ) : null}
+      {subheadline ? (
+        <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
           {subheadline}
         </p>
-      )}
-      {ctaText && (
+      ) : null}
+      {ctaText ? (
         <div className="mt-8">
-          <a
-            href={block.content.ctaHref || "#"}
-            className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-amber-600"
+          <ActionButton
+            href={ctaHref || "#"}
+            tone="primary"
+            icon={<ArrowUpRight className="h-4 w-4" />}
           >
             {ctaText}
-            <ArrowUpRight className="h-4 w-4" />
-          </a>
+          </ActionButton>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
 
 function TextBlock({ block }: { block: Block }) {
-  const { text } = block.content;
+  const { text } = asTextContent(block.content);
+
   return (
     <div>
-      {block.title && (
-        <h2 className="mb-4 text-2xl font-bold tracking-tight">{block.title}</h2>
-      )}
-      {text && (
-        <div className="prose prose-slate max-w-none dark:prose-invert">
-          {text.split("\n").map((p: string, i: number) => (
-            <p key={i} className="mb-4 text-base leading-relaxed text-muted-foreground">
-              {p}
-            </p>
-          ))}
+      <BlockTitle block={block} />
+      {text ? (
+        <div className="max-w-3xl space-y-4">
+          {text
+            .split("\n")
+            .filter((paragraph) => paragraph.trim().length > 0)
+            .map((paragraph, index) => (
+              <p key={index} className="text-base leading-7 text-muted-foreground">
+                {paragraph}
+              </p>
+            ))}
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
 
 function GalleryBlock({ block }: { block: Block }) {
-  const images = block.content.images || [];
+  const images = asGalleryContent(block.content).images ?? [];
+
   return (
     <div>
-      {block.title && (
-        <h2 className="mb-6 text-2xl font-bold tracking-tight">{block.title}</h2>
-      )}
+      <BlockTitle block={block} />
       {images.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {images.map((img: any, i: number) => (
-            <div
-              key={i}
-              className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-muted"
+          {images.map((image, index) => (
+            <figure
+              key={`${image.src || "image"}-${index}`}
+              className="relative aspect-[4/3] overflow-hidden rounded-card border border-border bg-muted"
             >
-              {img.src && (
-                <img
-                  src={img.src}
-                  alt={img.alt || ""}
+              {image.src ? (
+                <Image
+                  src={image.src}
+                  alt={image.alt || ""}
+                  fill
+                  sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
                   className="h-full w-full object-cover"
                 />
-              )}
-            </div>
+              ) : null}
+            </figure>
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">暂无图片</p>
+        <EmptyState title={copy.emptyGalleryTitle} />
       )}
     </div>
   );
 }
 
 function CardsBlock({ block }: { block: Block }) {
-  const cards = block.content.cards || [];
+  const cards = asCardsContent(block.content).cards ?? [];
+
   return (
     <div>
-      {block.title && (
-        <h2 className="mb-6 text-2xl font-bold tracking-tight">{block.title}</h2>
-      )}
+      <BlockTitle block={block} />
       {cards.length > 0 ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {cards.map((card: any, i: number) => (
-            <div
-              key={i}
-              className="rounded-2xl border border-border bg-card p-6 transition-all hover:shadow-md"
+          {cards.map((card, index) => (
+            <Surface
+              key={`${card.title || "card"}-${index}`}
+              tone="paper"
+              className="p-6"
             >
-              <h3 className="font-semibold">{card.title}</h3>
-              {card.description && (
-                <p className="mt-2 text-sm text-muted-foreground">
-                  {card.description}
-                </p>
-              )}
-            </div>
+              <article>
+                {card.title ? (
+                  <h3 className="text-base font-semibold text-foreground">
+                    {card.title}
+                  </h3>
+                ) : null}
+                {card.description ? (
+                  <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                    {card.description}
+                  </p>
+                ) : null}
+              </article>
+            </Surface>
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">暂无内容</p>
+        <EmptyState title={copy.emptyCardsTitle} />
       )}
     </div>
   );
 }
 
-function ContactBlock() {
-  const emailEntry = siteConfig.socialsList?.find(
-    (s: any) => s.key === "email"
-  );
+function ContactBlock({ blockId }: { blockId: string }) {
+  const emailEntry = siteConfig.socialsList?.find((social) => social.key === "email");
+
   return (
-    <div className="rounded-2xl border border-border bg-card p-8 text-center">
-      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-        <Mail className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+    <Surface tone="paper" className="p-8 text-center">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-control border border-border bg-background text-accent">
+        <Mail className="h-6 w-6" />
       </div>
-      <h2 className="text-xl font-bold">联系我</h2>
-      <p className="mt-2 text-muted-foreground">
-        有任何问题或合作意向，欢迎联系
+      <h2
+        id={`block-${blockId}-title`}
+        className="text-xl font-semibold tracking-tight text-foreground"
+      >
+        {copy.contactTitle}
+      </h2>
+      <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+        {copy.contactDescription}
       </p>
-      {emailEntry && (
-        <a
-          href={emailEntry.href}
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-amber-500 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-amber-600"
-        >
-          <Mail className="h-4 w-4" />
-          发送邮件
-        </a>
-      )}
-    </div>
+      {emailEntry ? (
+        <div className="mt-6">
+          <ActionButton
+            href={emailEntry.href}
+            tone="primary"
+            icon={<Mail className="h-4 w-4" />}
+          >
+            {copy.emailAction}
+          </ActionButton>
+        </div>
+      ) : null}
+    </Surface>
   );
 }

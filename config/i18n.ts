@@ -5,6 +5,7 @@
 // so downstream consumers see a flat config without knowing about i18n.
 
 import type { Locale } from "./locale";
+import { selectLocalized } from "./locale-utils";
 
 type Localizable = Record<string, unknown>;
 
@@ -27,7 +28,7 @@ export function getLocalizedConfig<T extends Localizable>(
     en?: Localizable;
   };
 
-  const localized = locale === "en" ? en : zh;
+  const localized = selectLocalized(locale, { zh, en });
 
   if (!localized) {
     // No locale-specific data, return as-is (minus zh/en keys)

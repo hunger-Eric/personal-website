@@ -1,6 +1,14 @@
 // app/download/route.ts
 import { NextResponse } from "next/server";
 
+type GitHubReleaseAsset = {
+  browser_download_url?: unknown;
+};
+
+type GitHubRelease = {
+  assets?: GitHubReleaseAsset[];
+};
+
 function parseGithubRepo(
   input: string
 ): { owner: string; repo: string } | null {
@@ -80,13 +88,13 @@ export async function GET(request: Request) {
       );
     }
 
-    const data = (await res.json()) as any;
-    const assets = (data.assets ?? []) as any[];
+    const data = (await res.json()) as GitHubRelease;
+    const assets = Array.isArray(data.assets) ? data.assets : [];
 
     // 1) Prefer a .zip asset if present
     const zipAsset =
       assets.find(
-        (a: any) =>
+        (a) =>
           typeof a.browser_download_url === "string" &&
           a.browser_download_url.toLowerCase().endsWith(".zip")
       ) ??
@@ -103,7 +111,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const downloadUrl = zipAsset.browser_download_url as string;
+    const downloadUrl = String(zipAsset.browser_download_url);
 
     // This URL IS counted in GitHub's "Downloads" stats for that asset.
     return NextResponse.redirect(downloadUrl, 302);

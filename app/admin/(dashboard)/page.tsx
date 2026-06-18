@@ -13,49 +13,45 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { ActionButton, Surface } from "@/components/system";
+import { adminCopy } from "@/config/copy/admin";
 
 const CARDS = [
   {
     href: "/admin/site",
-    label: "站点设置",
-    desc: "修改站点名称、标题、简介、社交链接",
+    label: adminCopy.dashboard.cards.site.label,
+    desc: adminCopy.dashboard.cards.site.description,
     icon: Settings,
-    color: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
   },
   {
     href: "/admin/navbar",
-    label: "导航栏",
-    desc: "编辑导航菜单项、下拉菜单、CTA按钮",
+    label: adminCopy.dashboard.cards.navbar.label,
+    desc: adminCopy.dashboard.cards.navbar.description,
     icon: Menu,
-    color: "bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
   },
   {
     href: "/admin/about",
-    label: "关于我",
-    desc: "编辑个人简介、技术栈、个人故事",
+    label: adminCopy.dashboard.cards.about.label,
+    desc: adminCopy.dashboard.cards.about.description,
     icon: User,
-    color: "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400",
   },
   {
     href: "/admin/theme",
-    label: "主题配色",
-    desc: "切换配色方案、明暗模式设置",
+    label: adminCopy.dashboard.cards.theme.label,
+    desc: adminCopy.dashboard.cards.theme.description,
     icon: Palette,
-    color: "bg-pink-50 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400",
   },
   {
     href: "/admin/photography",
-    label: "摄影作品",
-    desc: "管理摄影项目、上传照片、设置公开/私密",
+    label: adminCopy.dashboard.cards.photography.label,
+    desc: adminCopy.dashboard.cards.photography.description,
     icon: ImageIcon,
-    color: "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
   },
   {
     href: "/admin/pages",
-    label: "自定义页面",
-    desc: "创建和管理自定义页面，自由排版",
+    label: adminCopy.dashboard.cards.pages.label,
+    desc: adminCopy.dashboard.cards.pages.description,
     icon: FilePlus,
-    color: "bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400",
   },
 ];
 
@@ -63,11 +59,11 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-background pl-64">
       <AdminSidebar />
-      <div className="mx-auto max-w-5xl px-6 py-10">
+      <main className="mx-auto max-w-5xl px-6 py-10">
         <div className="mb-10">
-          <h1 className="text-2xl font-bold">管理后台</h1>
+          <h1 className="text-2xl font-bold">{adminCopy.dashboard.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            管理你的个人网站 · 编辑后自动保存到 GitHub 并部署
+            {adminCopy.dashboard.description}
           </p>
         </div>
 
@@ -76,11 +72,9 @@ export default function AdminDashboard() {
             <Link
               key={card.href}
               href={card.href}
-              className="group rounded-2xl border border-border bg-card p-5 transition-all hover:shadow-md hover:-translate-y-0.5"
+              className="group rounded-card border border-border bg-surface-paper p-5 transition-colors hover:bg-muted"
             >
-              <div
-                className={`mb-4 inline-flex h-10 w-10 items-center justify-center rounded-xl ${card.color}`}
-              >
+              <div className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-control border border-border bg-background text-accent">
                 <card.icon className="h-5 w-5" />
               </div>
               <h2 className="font-semibold">{card.label}</h2>
@@ -89,37 +83,38 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {/* Quick stats */}
-        <div className="mt-12 rounded-2xl border border-border bg-card p-6">
-          <h2 className="mb-4 font-semibold">快捷链接</h2>
+        <Surface tone="admin" className="mt-12 p-6">
+          <h2 className="mb-4 font-semibold">
+            {adminCopy.dashboard.quickLinks.title}
+          </h2>
           <div className="flex flex-wrap gap-3">
-            <Link
+            <ActionButton
               href="/photography"
-              className="inline-flex items-center gap-1.5 rounded-full bg-muted px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
+              tone="secondary"
+              icon={<Camera className="h-4 w-4" />}
             >
-              <Camera className="h-4 w-4" />
-              摄影主页
+              {adminCopy.dashboard.quickLinks.photography}
               <ExternalLink className="h-3 w-3" />
-            </Link>
-            <Link
+            </ActionButton>
+            <ActionButton
               href="/"
-              className="inline-flex items-center gap-1.5 rounded-full bg-muted px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
+              tone="secondary"
             >
-              网站首页
+              {adminCopy.dashboard.quickLinks.website}
               <ExternalLink className="h-3 w-3" />
-            </Link>
+            </ActionButton>
             <a
               href="https://github.com/hunger-Eric/personal-website"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-full bg-muted px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
+              className="inline-flex items-center justify-center gap-2 rounded-control border border-border bg-surface-paper px-3.5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
-              GitHub 仓库
+              {adminCopy.dashboard.quickLinks.github}
               <ExternalLink className="h-3 w-3" />
             </a>
           </div>
-        </div>
-      </div>
+        </Surface>
+      </main>
     </div>
   );
 }

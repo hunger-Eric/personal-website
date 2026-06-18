@@ -3,13 +3,17 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
+type MockImageProps = React.ImgHTMLAttributes<HTMLImageElement>;
+type MockLinkProps = React.PropsWithChildren<{ href: string }>;
+
 // ── Mocks ──────────────────────────────────────────────────────────────────
 
 vi.mock("next/image", () => ({
-  default: (p: any) => React.createElement("img", p),
+  default: (p: MockImageProps) => React.createElement("img", p),
 }));
 vi.mock("next/link", () => ({
-  default: (p: any) => React.createElement("a", { href: p.href }, p.children),
+  default: (p: MockLinkProps) =>
+    React.createElement("a", { href: p.href }, p.children),
 }));
 
 vi.mock("lucide-react", () => ({
@@ -19,6 +23,10 @@ vi.mock("lucide-react", () => ({
 
 vi.mock("@/config/siteConfig", () => ({
   siteConfig: { name: "Test", socials: { youtube: "https://youtube.com/@test" } },
+}));
+
+vi.mock("@/components/LocaleProvider", () => ({
+  useLocale: () => ({ locale: "en" }),
 }));
 
 // ── Tests ──────────────────────────────────────────────────────────────────

@@ -1,4 +1,5 @@
 import type { CustomerStory } from "./cases";
+import { caseSceneAccents } from "./caseTheme";
 
 export const caseStories: Record<string, CustomerStory> = {
   "hermes-notebook": {
@@ -7,7 +8,7 @@ export const caseStories: Record<string, CustomerStory> = {
     chapterTitle: "资料到知识卡片",
     shortPromise: "把 PDF、网页和会议记录整理成可追问、可引用、可沉淀的知识。",
     animationSrc: "/animations/projects/hermes/index.html",
-    sceneAccent: "#c48a2c",
+    sceneAccent: caseSceneAccents.knowledge,
     publicScenario:
       "团队资料常常散落在 PDF、网页、会议记录、课程字幕和个人笔记里。这个系统把它们整理成可以追问、引用和沉淀的知识工作流。",
     exampleInput: "产品手册 PDF、网页资料、会议纪要、课程字幕",
@@ -64,7 +65,7 @@ export const caseStories: Record<string, CustomerStory> = {
     chapterTitle: "公开信息到线索清单",
     shortPromise: "把市场、画像和关键词转成带证据链的优先级名单。",
     animationSrc: "/animations/projects/freight/index.html",
-    sceneAccent: "#b9832f",
+    sceneAccent: caseSceneAccents.leadDiscovery,
     publicScenario:
       "B2B 团队需要从公开网络发现、验证、优先级排序潜在客户。这个系统把搜索、页面理解、证据整理和触达准备串成一条可审核流程。",
     exampleInput: "目标市场、客户画像、关键词组合、地区范围",
@@ -121,7 +122,7 @@ export const caseStories: Record<string, CustomerStory> = {
     chapterTitle: "界面操作到 UI 资产",
     shortPromise: "把按钮、表格或导出入口封装成 Agent 可以稳定调用的能力。",
     animationSrc: "/animations/projects/element-sdk/index.html",
-    sceneAccent: "#d09a3a",
+    sceneAccent: caseSceneAccents.assetRuntime,
     publicScenario:
       "Agent 或自动化系统要稳定操作网页和桌面软件，不能每次临时猜按钮。这个系统把界面元素封装成可保存、可验证、可复放的操作资产。",
     exampleInput: "一个按钮、表格、表单字段或导出入口",

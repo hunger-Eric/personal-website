@@ -3,8 +3,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
-// ── Mocks ──────────────────────────────────────────────────────────────────
-
 vi.mock("next/image", () => ({
   default: (p: any) => React.createElement("img", p),
 }));
@@ -20,18 +18,18 @@ vi.mock("lucide-react", () => ({
   ScrollText: () => React.createElement("svg", { "data-testid": "icon-scroll" }),
 }));
 
-// Use vi.hoisted to set mutable state before vi.mock runs
 const pubData = vi.hoisted(() => [] as any[]);
 
-// Mock using the @/ alias path (matching the tsconfig resolution)
 vi.mock("@/config/publications.json", () => ({ default: pubData }));
 
-// ── Test data ──────────────────────────────────────────────────────────────
-
 const PUB_FULL = {
-  id: "pub1", title: "A Novel Approach to AI",
-  venue: "IEEE Conference on AI", volume: "Vol. 42",
-  publisher: "IEEE", year: "2024", type: "Conference Paper",
+  id: "pub1",
+  title: "A Novel Approach to AI",
+  venue: "IEEE Conference on AI",
+  volume: "Vol. 42",
+  publisher: "IEEE",
+  year: "2024",
+  type: "Conference Paper",
   summary: "This paper presents a novel approach to artificial intelligence...",
   image: "/images/paper.png",
   links: [
@@ -42,20 +40,28 @@ const PUB_FULL = {
 };
 
 const PUB_NO_IMAGE = {
-  id: "pub2", title: "Simple Study", venue: "Journal of Simple Things",
-  summary: "A simple study.", links: [{ label: "Open", href: "https://example.com", type: "other" }],
+  id: "pub2",
+  title: "Simple Study",
+  venue: "Journal of Simple Things",
+  summary: "A simple study.",
+  links: [{ label: "Open", href: "https://example.com", type: "other" }],
 };
 
 const PUB_NO_LINKS = {
-  id: "pub3", title: "No Links Paper", venue: "Conference 2023",
-  summary: "Paper without links.", year: "2023", type: "Workshop",
+  id: "pub3",
+  title: "No Links Paper",
+  venue: "Conference 2023",
+  summary: "Paper without links.",
+  year: "2023",
+  type: "Workshop",
 };
 
 const PUB_MINIMAL = {
-  id: "pub4", title: "Minimal Paper", venue: "Local Journal", summary: "Just a basic paper.",
+  id: "pub4",
+  title: "Minimal Paper",
+  venue: "Local Journal",
+  summary: "Just a basic paper.",
 };
-
-// ── Tests ──────────────────────────────────────────────────────────────────
 
 describe("PublicationsSection", () => {
   beforeEach(() => {
@@ -63,7 +69,6 @@ describe("PublicationsSection", () => {
   });
 
   it("renders nothing when publications array is empty", async () => {
-    pubData.length = 0;
     const { PublicationsSection } = await import("@/components/sections/Publications");
     const { container } = render(React.createElement(PublicationsSection));
     expect(container.innerHTML).toBe("");
@@ -90,7 +95,7 @@ describe("PublicationsSection", () => {
     const { PublicationsSection } = await import("@/components/sections/Publications");
     render(React.createElement(PublicationsSection));
     expect(screen.getByText(/Vol\. 42/)).toBeTruthy();
-    expect(screen.getByText(/· IEEE$/)).toBeTruthy();
+    expect(screen.getByText(/- IEEE$/)).toBeTruthy();
   });
 
   it("renders publication type badge and year", async () => {

@@ -38,6 +38,15 @@ vi.mock("@/components/ThemeProvider", () => ({
   }),
 }));
 
+vi.mock("@/components/LocaleProvider", () => ({
+  useLocale: () => ({
+    locale: "en",
+    t: {},
+    setLocale: vi.fn(),
+    toggleLocale: vi.fn(),
+  }),
+}));
+
 describe("CommandPalette", () => {
   it("renders trigger button when closed", async () => {
     const { CommandPalette } = await import("@/components/CommandPalette");
@@ -50,7 +59,7 @@ describe("CommandPalette", () => {
     const { CommandPalette } = await import("@/components/CommandPalette");
     render(React.createElement(CommandPalette));
     fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByPlaceholderText("Search pages, projects, articles...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Search pages, cases, articles...")).toBeInTheDocument();
   });
 
   it("renders with projects and articles", async () => {
@@ -59,6 +68,6 @@ describe("CommandPalette", () => {
     const articles = [{ slug: "a1", title: "Test Article", summary: "An article" }];
     render(React.createElement(CommandPalette, { projects, articles }));
     fireEvent.click(screen.getByRole("button"));
-    expect(screen.getByPlaceholderText("Search pages, projects, articles...")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Search pages, cases, articles...")).toBeInTheDocument();
   });
 });

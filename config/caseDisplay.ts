@@ -1,4 +1,6 @@
 import raw from "./cases.json";
+import type { Locale } from "./locale";
+import { selectLocalized } from "./locale-utils";
 
 export type CaseDisplayMode = "auto" | "featured" | "catalog";
 
@@ -20,6 +22,21 @@ const defaults: CaseDisplaySettings = {
   previewLimit: 6,
 };
 
+const caseDisplayModeLabels: Record<CaseDisplayMode, Record<Locale, string>> = {
+  auto: {
+    zh: "自动适配",
+    en: "Auto",
+  },
+  featured: {
+    zh: "精选展示",
+    en: "Featured",
+  },
+  catalog: {
+    zh: "索引 / 分类",
+    en: "Catalog",
+  },
+};
+
 export function getCaseDisplaySettings(): CaseDisplaySettings {
   const config = raw as RawCaseDisplayConfig;
   return {
@@ -38,17 +55,6 @@ export function resolveCaseDisplayMode(
   return caseCount >= settings.autoCatalogThreshold ? "catalog" : "featured";
 }
 
-export function formatCaseDisplayMode(
-  mode: CaseDisplayMode,
-  locale: "zh" | "en"
-) {
-  if (locale === "zh") {
-    if (mode === "featured") return "精选展示";
-    if (mode === "catalog") return "索引 / 分类";
-    return "自动适配";
-  }
-
-  if (mode === "featured") return "Featured";
-  if (mode === "catalog") return "Catalog";
-  return "Auto";
+export function formatCaseDisplayMode(mode: CaseDisplayMode, locale: Locale) {
+  return selectLocalized(locale, caseDisplayModeLabels[mode]);
 }

@@ -56,11 +56,11 @@ export async function GET(request: NextRequest) {
       headSha: run.head_sha || null,
       name: run.name || "CI",
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to fetch CI status";
     return NextResponse.json(
-      { error: err?.message || "Failed to fetch CI status" },
+      { error: message },
       { status: 500 }
     );
   }
 }
-

@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
 import { useMemo } from "react";
-import { ArrowRight, Folder } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 import { useLocale } from "@/components/LocaleProvider";
 import { getSiteCopy } from "@/config/contentCopy";
 import { ProjectCard } from "@/components/projects/ProjectCard";
+import { ActionButton, SectionHeader } from "@/components/system";
 import {
   FeaturedProjectsCarousel,
   FeaturedProjectsTicker,
@@ -34,15 +33,9 @@ interface ProjectsSectionClientProps {
   projectsEn: Project[];
 }
 
-const GITHUB_URL = "https://github.com/hunger-Eric";
 const DESKTOP_VISIBLE = 3;
 const MOBILE_VISIBLE = 6;
 const CAROUSEL_CAP = 8;
-const FALLBACK_BLURB = "A featured project built to solve a real problem.";
-
-function getProjectBlurb(project: Project): string {
-  return project.description?.[0] || project.summary || FALLBACK_BLURB;
-}
 
 export function ProjectsSectionClient({
   projectsZh,
@@ -50,7 +43,8 @@ export function ProjectsSectionClient({
 }: ProjectsSectionClientProps) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
-  const projects = locale === "en" ? projectsEn : projectsZh;
+  const projectsByLocale = { zh: projectsZh, en: projectsEn };
+  const projects = projectsByLocale[locale] ?? projectsZh;
 
   const featuredProjects = useMemo(
     () => projects.filter((p) => p.featured),
@@ -77,41 +71,27 @@ export function ProjectsSectionClient({
   if (!projects.length) return null;
 
   return (
-    <section id="projects" className="scroll-mt-12 py-16 lg:py-24">
+    <section id="projects" className="scroll-mt-12 bg-surface-paper py-16 lg:py-24">
       <div className="mx-auto w-full max-w-6xl px-4">
-        <div className="grid gap-5 border-t border-border pt-5 lg:grid-cols-[280px_minmax(0,1fr)]">
-          {/* Left column: heading + view all link */}
-          <div>
-            <h2 className="flex items-center gap-2 font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
-              <Folder className="h-4 w-4" />
-              <span>~/Projects</span>
-            </h2>
-            <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              {locale === "zh"
-                ? "这里不是普通作品集，而是系统设计档案。每个项目都记录问题、workflow、AI 参与方式、自动化和可扩展路径。"
-                : "This is not a normal portfolio. Each record captures the problem, workflow, AI orchestration, automation, and scaling path."}
-            </p>
-            <Link
-              href={GITHUB_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-5 inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
-            >
-              <span>{copy.projects.viewAll || "View all Projects"}</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+        <SectionHeader
+          eyebrow={copy.projects.heading}
+          title={copy.projects.indexTitle}
+          description={copy.projects.sectionDescription}
+          actions={
+            <ActionButton href="/projects" tone="primary" icon={<ArrowRight className="h-4 w-4" />}>
+              {copy.projects.viewAll}
+            </ActionButton>
+          }
+        />
 
-          {/* Right column: content area */}
+        <div className="mt-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)]">
           <div>
-            {/* Desktop: Featured carousel (hidden on mobile, visible on lg) */}
             <div className="hidden lg:block">
               {carouselProjects.length > 0 && (
                 <FeaturedProjectsCarousel projects={carouselProjects} />
               )}
             </div>
 
-            {/* Mobile: Project cards grid */}
             <div className="lg:hidden">
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 {mobileProjects.map((project) => (
@@ -126,7 +106,6 @@ export function ProjectsSectionClient({
               </div>
             </div>
 
-            {/* Desktop: Compact grid with hideImage */}
             <div className="hidden lg:grid lg:grid-cols-3 lg:gap-4">
               {desktopProjects.map((project) => (
                 <ProjectCard
@@ -140,7 +119,6 @@ export function ProjectsSectionClient({
               ))}
             </div>
 
-            {/* Fallback ticker for when carousel is not preferred */}
             <div className="mt-8 lg:hidden">
               {carouselProjects.length > 0 && (
                 <FeaturedProjectsTicker projects={carouselProjects} />

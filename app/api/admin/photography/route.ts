@@ -25,13 +25,13 @@ type Project = {
   id: string;
   photos: Photo[];
   photoCount: number;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 type Config = {
   description: string;
   projects: Project[];
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 type DraftMeta = {
@@ -68,27 +68,43 @@ function buildPhotoFromDraft(meta: DraftMeta, src: string, fileName: string): Ph
   };
 }
 
+async function listRepoDirOrWarning(dir: string) {
+  try {
+    return {
+      files: await listRepoDir(dir),
+      warning: null,
+    };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to load file listing";
+    return {
+      files: [] as string[],
+      warning: `${dir}: ${message}`,
+    };
+  }
+}
+
 export async function GET(request: NextRequest) {
   const guard = adminGuard(request);
   if (guard) return guard;
 
-  try {
-    const publicPhotos = await listRepoDir("public/images/photography");
-    const privatePhotos = await listRepoDir("private-photos");
+  const [publicListing, privateListing] = await Promise.all([
+    listRepoDirOrWarning("public/images/photography"),
+    listRepoDirOrWarning("private-photos"),
+  ]);
+  const warnings = [
+    publicListing.warning,
+    privateListing.warning,
+  ].filter((warning): warning is string => Boolean(warning));
 
-    return NextResponse.json({
-      config: photographyData,
-      files: {
-        public: publicPhotos,
-        private: privatePhotos,
-      },
-    });
-  } catch (err: any) {
-    return NextResponse.json(
-      { error: err.message || "Failed to load config" },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({
+    config: photographyData.zh,
+    locales: photographyData,
+    files: {
+      public: publicListing.files,
+      private: privateListing.files,
+    },
+    warnings,
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -184,10 +200,11 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "配置已保存并推送到 GitHub",
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Admin photo API error:", err);
+    const message = err instanceof Error ? err.message : "保存失败";
     return NextResponse.json(
-      { error: err.message || "保存失败" },
+      { error: message },
       { status: 500 }
     );
   }

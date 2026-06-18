@@ -2,15 +2,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
+import type { EducationItem } from "@/config/education";
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
 
 vi.mock("next/image", () => ({
-  default: (p: any) => React.createElement("img", p),
+  default: (p: React.ImgHTMLAttributes<HTMLImageElement>) =>
+    React.createElement("img", p),
 }));
 
 vi.mock("next/link", () => ({
-  default: (p: any) => React.createElement("a", p),
+  default: (p: React.AnchorHTMLAttributes<HTMLAnchorElement>) =>
+    React.createElement("a", p),
 }));
 
 vi.mock("lucide-react", () => ({
@@ -19,7 +22,7 @@ vi.mock("lucide-react", () => ({
 }));
 
 // Mutable array that keeps the same reference
-const eduData = vi.hoisted(() => [] as any[]);
+const eduData = vi.hoisted(() => [] as EducationItem[]);
 vi.mock("@/config/education", () => ({ education: eduData }));
 
 // ── Test data presets ──────────────────────────────────────────────────────
@@ -66,7 +69,7 @@ describe("EducationSection", () => {
     const { EducationSection } = await import("@/components/sections/Education");
     render(React.createElement(EducationSection));
     expect(screen.getByText("~/Education")).toBeTruthy();
-    expect(screen.getByText(/Where I've been studying/)).toBeTruthy();
+    expect(screen.getByText("学习与训练记录")).toBeTruthy();
   });
 
   it("renders school name and degree", async () => {
@@ -82,7 +85,7 @@ describe("EducationSection", () => {
     const { EducationSection } = await import("@/components/sections/Education");
     render(React.createElement(EducationSection));
     expect(screen.getByText(/Computer Science/)).toBeTruthy();
-    expect(screen.getByText(/Minor in Mathematics/)).toBeTruthy();
+    expect(screen.getByText(/辅修 Mathematics/)).toBeTruthy();
     expect(screen.getByText(/GPA: 3.8/)).toBeTruthy();
   });
 
@@ -90,7 +93,7 @@ describe("EducationSection", () => {
     eduData.push(...makeFull());
     const { EducationSection } = await import("@/components/sections/Education");
     const { container } = render(React.createElement(EducationSection));
-    expect(screen.getByText("Aug 2020 — May 2024")).toBeTruthy();
+    expect(screen.getByText("Aug 2020 - May 2024")).toBeTruthy();
     expect(container.querySelector('[data-testid="icon-calendar"]')).toBeTruthy();
   });
 
@@ -131,7 +134,7 @@ describe("EducationSection", () => {
     eduData.push(...makeMinimal());
     const { EducationSection } = await import("@/components/sections/Education");
     render(React.createElement(EducationSection));
-    expect(screen.getByText(/Expected Graduation: Dec 2025/)).toBeTruthy();
+    expect(screen.getByText(/预计毕业: Dec 2025/)).toBeTruthy();
   });
 
   it("handles expectedGraduation with location", async () => {
@@ -139,12 +142,12 @@ describe("EducationSection", () => {
     const { EducationSection } = await import("@/components/sections/Education");
     render(React.createElement(EducationSection));
     expect(screen.getByText("Future University")).toBeTruthy();
-    expect(screen.getByText(/Expected Graduation: Jun 2028/)).toBeTruthy();
+    expect(screen.getByText(/预计毕业: Jun 2028/)).toBeTruthy();
     expect(screen.getByText("Virtual")).toBeTruthy();
   });
 
   it("renders without GPA when gpa absent", async () => {
-    eduData.push(...makeNoImage().map((e: any) => ({ ...e, gpa: undefined })));
+    eduData.push(...makeNoImage().map((e) => ({ ...e, gpa: undefined })));
     const { EducationSection } = await import("@/components/sections/Education");
     render(React.createElement(EducationSection));
     expect(screen.queryByText(/GPA/)).toBeFalsy();
@@ -216,8 +219,8 @@ describe("EducationSection", () => {
     }]);
     const { EducationSection } = await import("@/components/sections/Education");
     render(React.createElement(EducationSection));
-    // start+end and expectedGraduation render in one span: "Sep 2020 — May 2024 · Expected Jun 2024"
+    // start+end and expectedGraduation render in one span.
     expect(screen.getByText(/Sep 2020/)).toBeTruthy();
-    expect(screen.getByText(/Expected Jun 2024/)).toBeTruthy();
+    expect(screen.getByText(/预计 Jun 2024/)).toBeTruthy();
   });
 });

@@ -72,6 +72,8 @@ function normalizeCtaHref(href: string) {
 
 // Resolve locale-specific data from zh/en keys
 type RawWithLocale = typeof raw & {
+  center?: NavbarJson["center"];
+  cta?: NavbarJson["cta"];
   zh?: { center?: NavbarJson["center"]; cta?: NavbarJson["cta"] };
   en?: { center?: NavbarJson["center"]; cta?: NavbarJson["cta"] };
 };
@@ -80,8 +82,8 @@ const data = raw as unknown as RawWithLocale;
 
 function getLocalizedNavData(locale: Locale): NavbarJson {
   const localized = data[locale] || {};
-  const center = localized.center || (data as any).center || { items: [] };
-  const cta = localized.cta || (data as any).cta || {
+  const center = localized.center || data.center || { items: [] };
+  const cta = localized.cta || data.cta || {
     contact: { label: "Email", href: "mailto:", show: false },
     primary: { label: "Contact", href: "/links", show: true },
   };

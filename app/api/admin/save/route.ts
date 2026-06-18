@@ -90,10 +90,11 @@ export async function POST(request: NextRequest) {
       message: `${key} 配置已保存并推送，正在自动部署到 Vercel`,
       deployId,
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Admin save API error:", err);
+    const message = err instanceof Error ? err.message : "保存失败";
     return NextResponse.json(
-      { error: err.message || "保存失败" },
+      { error: message },
       { status: 500 }
     );
   }

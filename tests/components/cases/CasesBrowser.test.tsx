@@ -17,11 +17,8 @@ vi.mock("@/components/LocaleProvider", () => ({
 
 vi.mock("lucide-react", () => ({
   ArrowUpRight: () => React.createElement("svg"),
-  FileOutput: () => React.createElement("svg"),
   Filter: () => React.createElement("svg"),
   FolderOpen: () => React.createElement("svg"),
-  GitBranch: () => React.createElement("svg"),
-  Workflow: () => React.createElement("svg"),
 }));
 
 const cases: CaseItem[] = [

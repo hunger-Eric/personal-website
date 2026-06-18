@@ -1,16 +1,38 @@
-// app/admin/pages/page.tsx
 "use client";
 
-import { useState } from "react";
-import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { ExternalLink, Plus, Trash2 } from "lucide-react";
+
 import { AdminEditor } from "@/components/admin/AdminEditor";
-import { Plus, Trash2, GripVertical, ChevronDown, ChevronUp } from "lucide-react";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { ActionButton, AdminPanel, EmptyState, FormField, IconButton } from "@/components/system";
+import { adminCopy } from "@/config/copy/admin";
+
+type BlockType = "hero" | "text" | "gallery" | "cards" | "contact";
+
+type HeroContent = {
+  headline?: string;
+  subheadline?: string;
+  ctaText?: string;
+};
+
+type TextContent = {
+  text?: string;
+};
+
+type CardContent = {
+  title?: string;
+  description?: string;
+};
+
+type CardsContent = {
+  cards?: CardContent[];
+};
 
 type PageBlock = {
   id: string;
-  type: "hero" | "text" | "gallery" | "cards" | "contact";
+  type: BlockType;
   title: string;
-  content: any;
+  content: HeroContent | TextContent | CardsContent | Record<string, unknown>;
 };
 
 type PageItem = {
@@ -25,305 +47,538 @@ type PagesData = {
   pages: PageItem[];
 };
 
+const blockTypes: BlockType[] = ["hero", "text", "gallery", "cards", "contact"];
+
+function fieldClassName(extra = "") {
+  return [
+    "w-full rounded-control border border-border bg-background px-3 py-2 text-sm outline-none",
+    "focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-50",
+    extra,
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function getHeroContent(content: PageBlock["content"]): HeroContent {
+  return content as HeroContent;
+}
+
+function getTextContent(content: PageBlock["content"]): TextContent {
+  return content as TextContent;
+}
+
+function getCardsContent(content: PageBlock["content"]): CardsContent {
+  return content as CardsContent;
+}
+
+function createTextBlock(): PageBlock {
+  return {
+    id: `block-${Date.now()}`,
+    type: "text",
+    title: adminCopy.pages.newBlockTitle,
+    content: { text: adminCopy.pages.newTextContent },
+  };
+}
+
+function createPage(): PageItem {
+  const timestamp = Date.now();
+  return {
+    id: `page-${timestamp}`,
+    slug: `${adminCopy.pages.newPageSlug}-${timestamp}`,
+    title: adminCopy.pages.newPageTitle,
+    description: "",
+    blocks: [
+      {
+        id: `block-${timestamp}`,
+        type: "hero",
+        title: adminCopy.pages.newHeroTitle,
+        content: {
+          headline: adminCopy.pages.newHeroHeadline,
+          subheadline: adminCopy.pages.newHeroSubheadline,
+          ctaText: "",
+        },
+      },
+    ],
+  };
+}
+
+function updatePages(
+  data: PagesData,
+  updater: (pages: PageItem[]) => PageItem[]
+): PagesData {
+  return {
+    ...data,
+    pages: updater(data.pages ?? []),
+  };
+}
+
+function updatePage(
+  data: PagesData,
+  pageIndex: number,
+  updates: Partial<PageItem>
+): PagesData {
+  return updatePages(data, (pages) => {
+    const next = [...pages];
+    next[pageIndex] = { ...next[pageIndex], ...updates };
+    return next;
+  });
+}
+
+function updateBlocks(
+  data: PagesData,
+  pageIndex: number,
+  updater: (blocks: PageBlock[]) => PageBlock[]
+): PagesData {
+  return updatePages(data, (pages) => {
+    const next = [...pages];
+    const page = next[pageIndex];
+    next[pageIndex] = {
+      ...page,
+      blocks: updater(page.blocks ?? []),
+    };
+    return next;
+  });
+}
+
+function updateBlock(
+  data: PagesData,
+  pageIndex: number,
+  blockIndex: number,
+  updates: Partial<PageBlock>
+): PagesData {
+  return updateBlocks(data, pageIndex, (blocks) => {
+    const next = [...blocks];
+    next[blockIndex] = { ...next[blockIndex], ...updates };
+    return next;
+  });
+}
+
+function updateBlockContent(
+  data: PagesData,
+  pageIndex: number,
+  blockIndex: number,
+  updates: Record<string, unknown>
+): PagesData {
+  return updateBlocks(data, pageIndex, (blocks) => {
+    const next = [...blocks];
+    const block = next[blockIndex];
+    next[blockIndex] = {
+      ...block,
+      content: {
+        ...(block.content ?? {}),
+        ...updates,
+      },
+    };
+    return next;
+  });
+}
+
+function updateCard(
+  data: PagesData,
+  pageIndex: number,
+  blockIndex: number,
+  cardIndex: number,
+  updates: Partial<CardContent>
+): PagesData {
+  return updateBlocks(data, pageIndex, (blocks) => {
+    const next = [...blocks];
+    const block = next[blockIndex];
+    const content = getCardsContent(block.content);
+    const cards = [...(content.cards ?? [])];
+    cards[cardIndex] = { ...cards[cardIndex], ...updates };
+    next[blockIndex] = {
+      ...block,
+      content: {
+        ...content,
+        cards,
+      },
+    };
+    return next;
+  });
+}
+
+function addCard(data: PagesData, pageIndex: number, blockIndex: number): PagesData {
+  return updateBlocks(data, pageIndex, (blocks) => {
+    const next = [...blocks];
+    const block = next[blockIndex];
+    const content = getCardsContent(block.content);
+    next[blockIndex] = {
+      ...block,
+      content: {
+        ...content,
+        cards: [
+          ...(content.cards ?? []),
+          {
+            title: adminCopy.pages.newCardTitle,
+            description: adminCopy.pages.newCardDescription,
+          },
+        ],
+      },
+    };
+    return next;
+  });
+}
+
+function removeCard(
+  data: PagesData,
+  pageIndex: number,
+  blockIndex: number,
+  cardIndex: number
+): PagesData {
+  return updateBlocks(data, pageIndex, (blocks) => {
+    const next = [...blocks];
+    const block = next[blockIndex];
+    const content = getCardsContent(block.content);
+    next[blockIndex] = {
+      ...block,
+      content: {
+        ...content,
+        cards: (content.cards ?? []).filter((_, index) => index !== cardIndex),
+      },
+    };
+    return next;
+  });
+}
+
+function PageBlockEditor({
+  block,
+  blockIndex,
+  pageIndex,
+  data,
+  setData,
+}: {
+  block: PageBlock;
+  blockIndex: number;
+  pageIndex: number;
+  data: PagesData;
+  setData: (data: PagesData) => void;
+}) {
+  const copy = adminCopy.pages;
+
+  return (
+    <div className="rounded-card border border-border bg-muted/30 p-4">
+      <div className="mb-4 grid gap-3 lg:grid-cols-[11rem_1fr_auto]">
+        <FormField label={copy.blockTypeLabel}>
+          <select
+            value={block.type}
+            onChange={(event) =>
+              setData(
+                updateBlock(data, pageIndex, blockIndex, {
+                  type: event.target.value as BlockType,
+                })
+              )
+            }
+            className={fieldClassName("py-1.5")}
+          >
+            {blockTypes.map((type) => (
+              <option key={type} value={type}>
+                {copy.blockTypes[type]}
+              </option>
+            ))}
+          </select>
+        </FormField>
+        <FormField label={copy.blockTitleLabel}>
+          <input
+            value={block.title}
+            onChange={(event) =>
+              setData(
+                updateBlock(data, pageIndex, blockIndex, {
+                  title: event.target.value,
+                })
+              )
+            }
+            className={fieldClassName("py-1.5")}
+          />
+        </FormField>
+        <IconButton
+          icon={<Trash2 className="h-4 w-4" />}
+          label={copy.removeBlock}
+          className="self-end"
+          onClick={() =>
+            setData(
+              updateBlocks(data, pageIndex, (blocks) =>
+                blocks.filter((_, index) => index !== blockIndex)
+              )
+            )
+          }
+        />
+      </div>
+
+      {block.type === "hero" ? (
+        <div className="space-y-3">
+          <input
+            value={getHeroContent(block.content).headline || ""}
+            onChange={(event) =>
+              setData(
+                updateBlockContent(data, pageIndex, blockIndex, {
+                  headline: event.target.value,
+                })
+              )
+            }
+            placeholder={copy.heroHeadline}
+            className={fieldClassName()}
+          />
+          <input
+            value={getHeroContent(block.content).subheadline || ""}
+            onChange={(event) =>
+              setData(
+                updateBlockContent(data, pageIndex, blockIndex, {
+                  subheadline: event.target.value,
+                })
+              )
+            }
+            placeholder={copy.heroSubheadline}
+            className={fieldClassName()}
+          />
+          <input
+            value={getHeroContent(block.content).ctaText || ""}
+            onChange={(event) =>
+              setData(
+                updateBlockContent(data, pageIndex, blockIndex, {
+                  ctaText: event.target.value,
+                })
+              )
+            }
+            placeholder={copy.heroCtaText}
+            className={fieldClassName()}
+          />
+        </div>
+      ) : null}
+
+      {block.type === "text" ? (
+        <textarea
+          value={getTextContent(block.content).text || ""}
+          onChange={(event) =>
+            setData(
+              updateBlockContent(data, pageIndex, blockIndex, {
+                text: event.target.value,
+              })
+            )
+          }
+          rows={4}
+          placeholder={copy.textPlaceholder}
+          className={fieldClassName("min-h-28")}
+        />
+      ) : null}
+
+      {block.type === "gallery" ? (
+        <p className="text-sm leading-6 text-muted-foreground">{copy.galleryNote}</p>
+      ) : null}
+
+      {block.type === "cards" ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <h4 className="text-sm font-semibold text-foreground">{copy.cardsTitle}</h4>
+            <ActionButton
+              type="button"
+              tone="ghost"
+              icon={<Plus className="h-4 w-4" />}
+              onClick={() => setData(addCard(data, pageIndex, blockIndex))}
+            >
+              {copy.addCard}
+            </ActionButton>
+          </div>
+          {(getCardsContent(block.content).cards ?? []).map((card, cardIndex) => (
+            <div
+              key={`${block.id}-card-${cardIndex}`}
+              className="grid gap-2 sm:grid-cols-[1fr_1fr_auto]"
+            >
+              <input
+                value={card.title || ""}
+                onChange={(event) =>
+                  setData(
+                    updateCard(data, pageIndex, blockIndex, cardIndex, {
+                      title: event.target.value,
+                    })
+                  )
+                }
+                placeholder={copy.cardTitle}
+                className={fieldClassName("py-1.5")}
+              />
+              <input
+                value={card.description || ""}
+                onChange={(event) =>
+                  setData(
+                    updateCard(data, pageIndex, blockIndex, cardIndex, {
+                      description: event.target.value,
+                    })
+                  )
+                }
+                placeholder={copy.cardDescription}
+                className={fieldClassName("py-1.5")}
+              />
+              <IconButton
+                icon={<Trash2 className="h-4 w-4" />}
+                label={copy.removeCard}
+                className="h-9 w-9"
+                onClick={() =>
+                  setData(removeCard(data, pageIndex, blockIndex, cardIndex))
+                }
+              />
+            </div>
+          ))}
+        </div>
+      ) : null}
+
+      {block.type === "contact" ? (
+        <p className="text-sm leading-6 text-muted-foreground">{copy.contactNote}</p>
+      ) : null}
+    </div>
+  );
+}
+
 export default function PagesAdminPage() {
+  const copy = adminCopy.pages;
+
   return (
     <div className="min-h-screen bg-background pl-64">
       <AdminSidebar />
-      <AdminEditor
-        title="自定义页面"
-        description="创建和管理自定义页面，自由排版"
-        configKey="pages"
-      >
-        {(data: PagesData, setData) => (
-          <div className="space-y-6">
-            {data.pages.map((page, pi) => (
-              <div key={page.id} className="rounded-2xl border border-border bg-card p-5">
-                {/* Page header */}
-                <div className="mb-4 flex items-center gap-3">
-                  <input
-                    value={page.title}
-                    onChange={(e) => {
-                      const newPages = [...data.pages];
-                      newPages[pi] = { ...page, title: e.target.value };
-                      setData({ ...data, pages: newPages });
-                    }}
-                    placeholder="页面标题"
-                    className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm font-semibold outline-none focus:border-amber-400"
-                  />
-                  <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <span>/page/</span>
-                    <input
-                      value={page.slug}
-                      onChange={(e) => {
-                        const newPages = [...data.pages];
-                        newPages[pi] = { ...page, slug: e.target.value };
-                        setData({ ...data, pages: newPages });
-                      }}
-                      placeholder="slug"
-                      className="w-24 rounded border border-border bg-background px-2 py-1 text-xs outline-none focus:border-amber-400"
-                    />
-                  </div>
-                  <a
-                    href={`/page/${page.slug}`}
-                    target="_blank"
-                    className="rounded-lg bg-muted px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-                  >
-                    预览
-                  </a>
-                  <button
-                    onClick={() => {
-                      const newPages = data.pages.filter((_, j) => j !== pi);
-                      setData({ ...data, pages: newPages });
-                    }}
-                    className="rounded-lg p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
-                </div>
-
-                {/* Description */}
-                <textarea
-                  value={page.description || ""}
-                  onChange={(e) => {
-                    const newPages = [...data.pages];
-                    newPages[pi] = { ...page, description: e.target.value };
-                    setData({ ...data, pages: newPages });
-                  }}
-                  placeholder="页面描述"
-                  rows={2}
-                  className="mb-4 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-amber-400"
-                />
-
-                {/* Blocks */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-semibold uppercase text-muted-foreground">
-                      页面区块 ({page.blocks.length})
-                    </h3>
-                    <button
-                      onClick={() => {
-                        const newPages = [...data.pages];
-                        newPages[pi] = {
-                          ...page,
-                          blocks: [
-                            ...page.blocks,
-                            {
-                              id: `block-${Date.now()}`,
-                              type: "text",
-                              title: "新区块",
-                              content: { text: "在此输入内容..." },
-                            },
-                          ],
-                        };
-                        setData({ ...data, pages: newPages });
-                      }}
-                      className="inline-flex items-center gap-1 rounded-lg bg-amber-50 px-3 py-1.5 text-xs font-medium text-amber-600 hover:bg-amber-100 dark:bg-amber-900/30 dark:text-amber-300"
-                    >
-                      <Plus className="h-3 w-3" />
-                      添加区块
-                    </button>
-                  </div>
-
-                  {page.blocks.map((block, bi) => (
-                    <div key={block.id} className="rounded-xl border border-border bg-muted/30 p-4">
-                      <div className="mb-3 flex items-center gap-2">
-                        {/* Block type selector */}
-                        <select
-                          value={block.type}
-                          onChange={(e) => {
-                            const newPages = [...data.pages];
-                            const newBlocks = [...page.blocks];
-                            newBlocks[bi] = { ...block, type: e.target.value as any };
-                            newPages[pi] = { ...page, blocks: newBlocks };
-                            setData({ ...data, pages: newPages });
-                          }}
-                          className="rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs outline-none focus:border-amber-400"
+      <main className="px-6 py-8">
+        <AdminEditor<PagesData>
+          title={copy.title}
+          description={copy.description}
+          configKey="pages"
+        >
+          {(data, setData) => (
+            <div className="space-y-6">
+              {(data.pages ?? []).length > 0 ? (
+                (data.pages ?? []).map((page, pageIndex) => (
+                  <AdminPanel
+                    key={page.id}
+                    title={page.title || copy.newPageTitle}
+                    description={`${copy.slugPrefix}${page.slug}`}
+                    actions={
+                      <div className="flex gap-2">
+                        <ActionButton
+                          href={`/page/${page.slug}`}
+                          target="_blank"
+                          tone="secondary"
+                          icon={<ExternalLink className="h-4 w-4" />}
                         >
-                          <option value="hero">Hero 标题区</option>
-                          <option value="text">文本区</option>
-                          <option value="gallery">图片画廊</option>
-                          <option value="cards">卡片列表</option>
-                          <option value="contact">联系方式</option>
-                        </select>
-                        <input
-                          value={block.title}
-                          onChange={(e) => {
-                            const newPages = [...data.pages];
-                            const newBlocks = [...page.blocks];
-                            newBlocks[bi] = { ...block, title: e.target.value };
-                            newPages[pi] = { ...page, blocks: newBlocks };
-                            setData({ ...data, pages: newPages });
-                          }}
-                          placeholder="区块标题"
-                          className="flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm outline-none focus:border-amber-400"
+                          {copy.preview}
+                        </ActionButton>
+                        <IconButton
+                          icon={<Trash2 className="h-4 w-4" />}
+                          label={copy.removePage}
+                          onClick={() =>
+                            setData(
+                              updatePages(data, (pages) =>
+                                pages.filter((_, index) => index !== pageIndex)
+                              )
+                            )
+                          }
                         />
-                        <button
-                          onClick={() => {
-                            const newPages = [...data.pages];
-                            const newBlocks = page.blocks.filter((_, k) => k !== bi);
-                            newPages[pi] = { ...page, blocks: newBlocks };
-                            setData({ ...data, pages: newPages });
-                          }}
-                          className="rounded-lg p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </button>
+                      </div>
+                    }
+                  >
+                    <div className="space-y-5">
+                      <div className="grid gap-4 lg:grid-cols-[1fr_12rem]">
+                        <FormField label={copy.pageTitleLabel}>
+                          <input
+                            value={page.title}
+                            onChange={(event) =>
+                              setData(
+                                updatePage(data, pageIndex, {
+                                  title: event.target.value,
+                                })
+                              )
+                            }
+                            className={fieldClassName()}
+                          />
+                        </FormField>
+                        <FormField label={copy.slugLabel}>
+                          <div className="flex items-center rounded-control border border-border bg-background text-sm focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20">
+                            <span className="px-3 text-xs text-muted-foreground">
+                              {copy.slugPrefix}
+                            </span>
+                            <input
+                              value={page.slug}
+                              onChange={(event) =>
+                                setData(
+                                  updatePage(data, pageIndex, {
+                                    slug: event.target.value,
+                                  })
+                                )
+                              }
+                              className="min-w-0 flex-1 bg-transparent px-2 py-2 text-sm outline-none"
+                            />
+                          </div>
+                        </FormField>
                       </div>
 
-                      {/* Block content editor */}
-                      {block.type === "hero" && (
-                        <div className="space-y-2">
-                          <input
-                            value={block.content.headline || ""}
-                            onChange={(e) => {
-                              const newPages = [...data.pages];
-                              const newBlocks = [...page.blocks];
-                              newBlocks[bi] = { ...block, content: { ...block.content, headline: e.target.value } };
-                              newPages[pi] = { ...page, blocks: newBlocks };
-                              setData({ ...data, pages: newPages });
-                            }}
-                            placeholder="大标题"
-                            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-amber-400"
-                          />
-                          <input
-                            value={block.content.subheadline || ""}
-                            onChange={(e) => {
-                              const newPages = [...data.pages];
-                              const newBlocks = [...page.blocks];
-                              newBlocks[bi] = { ...block, content: { ...block.content, subheadline: e.target.value } };
-                              newPages[pi] = { ...page, blocks: newBlocks };
-                              setData({ ...data, pages: newPages });
-                            }}
-                            placeholder="副标题"
-                            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-amber-400"
-                          />
-                          <input
-                            value={block.content.ctaText || ""}
-                            onChange={(e) => {
-                              const newPages = [...data.pages];
-                              const newBlocks = [...page.blocks];
-                              newBlocks[bi] = { ...block, content: { ...block.content, ctaText: e.target.value } };
-                              newPages[pi] = { ...page, blocks: newBlocks };
-                              setData({ ...data, pages: newPages });
-                            }}
-                            placeholder="按钮文字"
-                            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-amber-400"
-                          />
-                        </div>
-                      )}
-
-                      {block.type === "text" && (
+                      <FormField label={copy.descriptionLabel}>
                         <textarea
-                          value={block.content.text || ""}
-                          onChange={(e) => {
-                            const newPages = [...data.pages];
-                            const newBlocks = [...page.blocks];
-                            newBlocks[bi] = { ...block, content: { ...block.content, text: e.target.value } };
-                            newPages[pi] = { ...page, blocks: newBlocks };
-                            setData({ ...data, pages: newPages });
-                          }}
-                          rows={4}
-                          placeholder="输入文本内容..."
-                          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-amber-400"
+                          value={page.description || ""}
+                          onChange={(event) =>
+                            setData(
+                              updatePage(data, pageIndex, {
+                                description: event.target.value,
+                              })
+                            )
+                          }
+                          rows={2}
+                          className={fieldClassName("min-h-20")}
                         />
-                      )}
+                      </FormField>
 
-                      {block.type === "gallery" && (
-                        <p className="text-xs text-muted-foreground">
-                          图片画廊：配置版面编辑器中调整
-                        </p>
-                      )}
-
-                      {block.type === "cards" && (
-                        <div className="space-y-2">
-                          {Array.isArray(block.content.cards) &&
-                            block.content.cards.map((card: any, ci: number) => (
-                              <div key={ci} className="flex items-center gap-2">
-                                <input
-                                  value={card.title || ""}
-                                  onChange={(e) => {
-                                    const newCards = [...block.content.cards];
-                                    newCards[ci] = { ...card, title: e.target.value };
-                                    const newPages = [...data.pages];
-                                    const newBlocks = [...page.blocks];
-                                    newBlocks[bi] = { ...block, content: { ...block.content, cards: newCards } };
-                                    newPages[pi] = { ...page, blocks: newBlocks };
-                                    setData({ ...data, pages: newPages });
-                                  }}
-                                  placeholder="卡片标题"
-                                  className="flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs outline-none focus:border-amber-400"
-                                />
-                                <input
-                                  value={card.description || ""}
-                                  onChange={(e) => {
-                                    const newCards = [...block.content.cards];
-                                    newCards[ci] = { ...card, description: e.target.value };
-                                    const newPages = [...data.pages];
-                                    const newBlocks = [...page.blocks];
-                                    newBlocks[bi] = { ...block, content: { ...block.content, cards: newCards } };
-                                    newPages[pi] = { ...page, blocks: newBlocks };
-                                    setData({ ...data, pages: newPages });
-                                  }}
-                                  placeholder="描述"
-                                  className="flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-xs outline-none focus:border-amber-400"
-                                />
-                              </div>
-                            ))}
-                          <button
-                            onClick={() => {
-                              const newCards = [...(block.content.cards || []), { title: "新卡片", description: "卡片描述" }];
-                              const newPages = [...data.pages];
-                              const newBlocks = [...page.blocks];
-                              newBlocks[bi] = { ...block, content: { ...block.content, cards: newCards } };
-                              newPages[pi] = { ...page, blocks: newBlocks };
-                              setData({ ...data, pages: newPages });
-                            }}
-                            className="inline-flex items-center gap-1 rounded-lg border border-dashed border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                      <div className="space-y-3">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <h3 className="text-sm font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                            {copy.blocksTitle} ({page.blocks.length})
+                          </h3>
+                          <ActionButton
+                            type="button"
+                            tone="secondary"
+                            icon={<Plus className="h-4 w-4" />}
+                            onClick={() =>
+                              setData(
+                                updateBlocks(data, pageIndex, (blocks) => [
+                                  ...blocks,
+                                  createTextBlock(),
+                                ])
+                              )
+                            }
                           >
-                            <Plus className="h-3 w-3" />
-                            添加卡片
-                          </button>
+                            {copy.addBlock}
+                          </ActionButton>
                         </div>
-                      )}
 
-                      {block.type === "contact" && (
-                        <p className="text-xs text-muted-foreground">
-                          联系方式区块：自动显示站点配置中的社交链接
-                        </p>
-                      )}
+                        {page.blocks.map((block, blockIndex) => (
+                          <PageBlockEditor
+                            key={block.id}
+                            block={block}
+                            blockIndex={blockIndex}
+                            pageIndex={pageIndex}
+                            data={data}
+                            setData={setData}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+                  </AdminPanel>
+                ))
+              ) : (
+                <EmptyState
+                  title={copy.emptyTitle}
+                  description={copy.emptyDescription}
+                />
+              )}
 
-            {/* Add page */}
-            <button
-              onClick={() => {
-                const newPage: PageItem = {
-                  id: `page-${Date.now()}`,
-                  slug: `page-${Date.now()}`,
-                  title: "新页面",
-                  description: "",
-                  blocks: [
-                    {
-                      id: `block-${Date.now()}`,
-                      type: "hero",
-                      title: "欢迎",
-                      content: { headline: "标题", subheadline: "副标题", ctaText: "" },
-                    },
-                  ],
-                };
-                setData({ ...data, pages: [...data.pages, newPage] });
-              }}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border px-6 py-8 text-sm text-muted-foreground transition-colors hover:border-amber-300 hover:text-foreground"
-            >
-              <Plus className="h-5 w-5" />
-              添加新页面
-            </button>
-          </div>
-        )}
-      </AdminEditor>
+              <ActionButton
+                type="button"
+                tone="secondary"
+                icon={<Plus className="h-4 w-4" />}
+                className="w-full border-dashed py-5"
+                onClick={() =>
+                  setData(updatePages(data, (pages) => [...pages, createPage()]))
+                }
+              >
+                {copy.addPage}
+              </ActionButton>
+            </div>
+          )}
+        </AdminEditor>
+      </main>
     </div>
   );
 }

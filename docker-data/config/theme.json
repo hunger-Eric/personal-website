@@ -1,0 +1,43 @@
+{
+  "defaultMode": "light",
+  "allowToggle": false,
+  "respectSystemPreference": false,
+  "accentColor": "sky",
+  "presets": {
+    "indigo": {
+      "accent": "#4f46e5",
+      "accentHover": "#4338ca",
+      "accentLight": "#818cf8"
+    },
+    "emerald": {
+      "accent": "#10b981",
+      "accentHover": "#059669",
+      "accentLight": "#34d399"
+    },
+    "rose": {
+      "accent": "#f43f5e",
+      "accentHover": "#e11d48",
+      "accentLight": "#fb7185"
+    },
+    "amber": {
+      "accent": "#f59e0b",
+      "accentHover": "#d97706",
+      "accentLight": "#fbbf24"
+    },
+    "cyan": {
+      "accent": "#06b6d4",
+      "accentHover": "#0891b2",
+      "accentLight": "#22d3ee"
+    },
+    "violet": {
+      "accent": "#8b5cf6",
+      "accentHover": "#7c3aed",
+      "accentLight": "#a78bfa"
+    },
+    "sky": {
+      "accent": "#0ea5e9",
+      "accentHover": "#0284c7",
+      "accentLight": "#38bdf8"
+    }
+  }
+}

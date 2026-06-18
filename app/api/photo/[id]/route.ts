@@ -5,8 +5,25 @@ import photographyData from "@/config/photography.json";
 import fs from "fs";
 import path from "path";
 
+type Photo = {
+  id: string;
+  src: string;
+  private?: boolean;
+};
+
+type Project = {
+  photos?: Photo[];
+};
+
+type PhotographyConfig = {
+  projects?: Project[];
+  zh?: { projects?: Project[] };
+};
+
 // Photography data is locale-keyed: { zh: { projects: [...] }, en: { projects: [...] } }
-const allProjects = (photographyData as any).zh?.projects ?? (photographyData as any).projects ?? [];
+const typedPhotographyData = photographyData as PhotographyConfig;
+const allProjects =
+  typedPhotographyData.zh?.projects ?? typedPhotographyData.projects ?? [];
 
 /** Maximum file size: 20MB */
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
@@ -47,7 +64,7 @@ export async function GET(
   // Find the photo in config to get its src
   let photoSrc: string | null = null;
   for (const project of allProjects) {
-    for (const photo of project.photos) {
+    for (const photo of project.photos ?? []) {
       if (photo.id === id && photo.private) {
         photoSrc = photo.src;
         break;

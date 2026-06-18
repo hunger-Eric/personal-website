@@ -11,6 +11,9 @@ export type TranslationDict = {
   nav: {
     home: string;
     menu: string;
+    openMenu: string;
+    closeMenu: string;
+    mainMenu: string;
     viewMore: string;
     about: string;
     projects: string;
@@ -41,6 +44,9 @@ const zh: TranslationDict = {
   nav: {
     home: "首页",
     menu: "菜单",
+    openMenu: "打开导航菜单",
+    closeMenu: "关闭导航菜单",
+    mainMenu: "主导航",
     viewMore: "查看更多",
     about: "关于",
     projects: "案例",
@@ -71,6 +77,9 @@ const en: TranslationDict = {
   nav: {
     home: "Home",
     menu: "Menu",
+    openMenu: "Toggle navigation menu",
+    closeMenu: "Close navigation menu",
+    mainMenu: "Main navigation",
     viewMore: "View more",
     about: "About",
     projects: "Cases",

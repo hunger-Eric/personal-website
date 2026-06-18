@@ -1,53 +1,72 @@
 "use client";
 
-import { useState, useEffect, useCallback, ReactNode } from "react";
+import { useState, useEffect, useCallback, type ReactNode } from "react";
 import { Save, ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { ActionButton, StatusNote } from "@/components/system";
+import { adminCopy } from "@/config/copy/admin";
 
-type Props = {
+type AdminData = Record<string, unknown>;
+
+type Props<TData extends AdminData = AdminData> = {
   title: string;
   description: string;
   configKey: string;
   loadUrl?: string;
-  children: (data: any, setData: (d: any) => void) => ReactNode;
-  transformSave?: (data: any) => any;
+  children: (data: TData, setData: (data: TData) => void) => ReactNode;
+  transformSave?: (data: TData) => unknown;
 };
 
-export function AdminEditor({
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
+
+export function AdminEditor<TData extends AdminData = AdminData>({
   title,
   description,
   configKey,
   loadUrl,
   children,
   transformSave,
-}: Props) {
-  const [data, setData] = useState<any>(null);
+}: Props<TData>) {
+  const [data, setData] = useState<TData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ciMessage, setCiMessage] = useState<string | null>(null);
+  const copy = adminCopy.editor;
 
   useEffect(() => {
     const url = loadUrl || `/api/admin/${configKey}`;
     fetch(url)
-      .then(async (r) => {
-        const body = await r.json().catch(() => ({}));
-        if (!r.ok) {
-          const msg = body?.error || `Request failed (${r.status})`;
+      .then(async (response) => {
+        const body = (await response.json().catch(() => ({}))) as {
+          config?: TData;
+          error?: string;
+        } & TData;
+
+        if (!response.ok) {
+          const msg =
+            body?.error || `${copy.requestFailed} (${response.status})`;
           throw new Error(msg);
         }
-        const nextData = body?.config ?? body;
+
+        const nextData = (body?.config ?? body) as TData;
         if (!nextData || typeof nextData !== "object") {
-          throw new Error("Invalid config payload");
+          throw new Error(copy.invalidPayload);
         }
+
         setData(nextData);
       })
-      .catch((e) => setError(`Load failed: ${e.message}`))
+      .catch((loadError: unknown) =>
+        setError(`${copy.loadFailed}: ${getErrorMessage(loadError)}`)
+      )
       .finally(() => setLoading(false));
-  }, [configKey, loadUrl]);
+  }, [configKey, loadUrl, copy.invalidPayload, copy.loadFailed, copy.requestFailed]);
 
   const handleSave = useCallback(async () => {
+    if (!data) return;
+
     setSaving(true);
     setMessage(null);
     setError(null);
@@ -55,7 +74,7 @@ export function AdminEditor({
 
     try {
       const payload = transformSave ? transformSave(data) : data;
-      const res = await fetch("/api/admin/save", {
+      const response = await fetch("/api/admin/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -64,45 +83,56 @@ export function AdminEditor({
           message: `feat: update ${configKey} via admin`,
         }),
       });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || "Save failed");
+
+      if (!response.ok) {
+        const errorData = (await response.json()) as { error?: string };
+        throw new Error(errorData.error || copy.saveFailed);
       }
-      const result = await res.json();
-      setMessage(result.message);
+
+      const result = (await response.json()) as {
+        message?: string;
+        deployId?: string;
+      };
+      setMessage(result.message || adminCopy.common.saveToGitHub);
 
       const ciPollInterval = setInterval(async () => {
         try {
-          const ciRes = await fetch("/api/admin/ci-status");
-          if (!ciRes.ok) return;
-          const ciData = await ciRes.json();
+          const ciResponse = await fetch("/api/admin/ci-status");
+          if (!ciResponse.ok) return;
+          const ciData = (await ciResponse.json()) as {
+            status?: string;
+            conclusion?: string;
+            runNumber?: string | number;
+          };
+          const runNumber = ciData.runNumber ?? "?";
+
           if (ciData.status === "NOT_FOUND") {
-            setCiMessage("CI: workflow run not found yet");
+            setCiMessage(copy.ci.notFound);
             return;
           }
 
           if (ciData.status === "queued" || ciData.status === "waiting") {
-            setCiMessage(`CI #${ciData.runNumber ?? "?"}: queued...`);
+            setCiMessage(`CI #${runNumber}: ${copy.ci.queued}`);
             return;
           }
 
           if (ciData.status === "in_progress") {
-            setCiMessage(`CI #${ciData.runNumber ?? "?"}: running...`);
+            setCiMessage(`CI #${runNumber}: ${copy.ci.running}`);
             return;
           }
 
           if (ciData.status === "completed") {
             if (ciData.conclusion === "success") {
-              setCiMessage(`CI #${ciData.runNumber ?? "?"}: passed`);
+              setCiMessage(`CI #${runNumber}: ${copy.ci.passed}`);
             } else {
               setCiMessage(
-                `CI #${ciData.runNumber ?? "?"}: ${ciData.conclusion || "failed"}`
+                `CI #${runNumber}: ${ciData.conclusion || copy.ci.failed}`
               );
             }
             clearInterval(ciPollInterval);
           }
         } catch {
-          // keep save flow unaffected
+          // Keep the save flow unaffected by status polling.
         }
       }, 8000);
 
@@ -111,99 +141,93 @@ export function AdminEditor({
       if (result.deployId) {
         const pollInterval = setInterval(async () => {
           try {
-            const statusRes = await fetch(
+            const statusResponse = await fetch(
               `/api/admin/deploy-status?deployId=${result.deployId}`
             );
-            if (!statusRes.ok) return;
-            const statusData = await statusRes.json();
+            if (!statusResponse.ok) return;
+            const statusData = (await statusResponse.json()) as {
+              status?: string;
+            };
+
             if (statusData.status === "READY") {
-              setMessage(`${configKey} saved and deployed`);
+              setMessage(`${configKey} ${copy.savedAndDeployed}`);
               clearInterval(pollInterval);
             } else if (
               statusData.status === "ERROR" ||
               statusData.status === "FAILED"
             ) {
-              setMessage(`${configKey} saved, but auto-deploy failed`);
+              setMessage(`${configKey} ${copy.savedDeployFailed}`);
               clearInterval(pollInterval);
             } else {
-              setMessage(`${configKey} saved. Deploying to Vercel...`);
+              setMessage(`${configKey} ${copy.deploying}`);
             }
           } catch {
-            // ignore polling errors
+            // Ignore polling errors.
           }
         }, 5000);
 
         setTimeout(() => clearInterval(pollInterval), 180000);
       }
-    } catch (e: any) {
-      setError(`Save failed: ${e.message}`);
+    } catch (saveError: unknown) {
+      setError(`${copy.saveFailed}: ${getErrorMessage(saveError)}`);
     } finally {
       setSaving(false);
     }
-  }, [data, configKey, transformSave]);
+  }, [data, configKey, transformSave, copy]);
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[color:var(--accent)] border-t-transparent" />
+      <div className="flex min-h-96 items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-accent border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pl-64">
-      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-white/10 bg-card px-6 py-3">
+    <div>
+      <header className="sticky top-0 z-30 -mx-6 mb-8 flex items-center justify-between border-b border-border bg-background/95 px-6 py-3 backdrop-blur">
         <div>
-          <Link
+          <ActionButton
             href="/admin"
-            className="mb-0.5 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            tone="ghost"
+            icon={<ArrowLeft className="h-3 w-3" />}
+            className="mb-1 px-0 py-1 text-xs"
           >
-            <ArrowLeft className="h-3 w-3" />
-            Back to dashboard
-          </Link>
+            {copy.backToDashboard}
+          </ActionButton>
           <h1 className="text-lg font-semibold">{title}</h1>
         </div>
-        <button
+        <ActionButton
+          type="button"
           onClick={handleSave}
-          disabled={saving}
-          className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--accent)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all hover:bg-[color:var(--accent-hover)] disabled:opacity-50"
-        >
-          {saving ? (
-            <>
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
-              Saving...
-            </>
-          ) : (
-            <>
+          disabled={saving || !data}
+          tone="primary"
+          icon={
+            saving ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
               <Save className="h-4 w-4" />
-              Save to GitHub
-            </>
-          )}
-        </button>
-      </div>
+            )
+          }
+        >
+          {saving ? adminCopy.common.saving : adminCopy.common.saveToGitHub}
+        </ActionButton>
+      </header>
 
-      <div className="mx-auto max-w-4xl px-6 py-8">
-        {description && (
-          <p className="mb-6 text-sm text-muted-foreground">{description}</p>
-        )}
+      <div className="mx-auto max-w-4xl">
+        {description ? (
+          <p className="mb-6 text-sm leading-6 text-muted-foreground">
+            {description}
+          </p>
+        ) : null}
 
-        {message && (
-          <div className="mb-6 rounded-xl border border-emerald-300/40 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-300">
-            {message}
-          </div>
-        )}
-        {ciMessage && (
-          <div className="mb-6 rounded-xl border border-[color:var(--accent)]/40 bg-[color:var(--accent)]/10 px-4 py-3 text-sm text-[color:var(--accent-light)]">
-            {ciMessage}
-          </div>
-        )}
-        {error && (
-          <div className="mb-6 rounded-xl border border-red-300/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-            {error}
-          </div>
-        )}
+        <div className="mb-6 space-y-3">
+          {message ? <StatusNote tone="success">{message}</StatusNote> : null}
+          {ciMessage ? <StatusNote tone="info">{ciMessage}</StatusNote> : null}
+          {error ? <StatusNote tone="danger">{error}</StatusNote> : null}
+        </div>
 
-        {data && children(data, setData)}
+        {data ? children(data, setData) : null}
       </div>
     </div>
   );

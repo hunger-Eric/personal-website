@@ -14,18 +14,22 @@ import {
 } from "lucide-react";
 
 import { useLocale } from "@/components/LocaleProvider";
-import { getSiteCopy } from "@/config/contentCopy";
+import { ActionButton } from "@/components/system";
 import {
   formatCaseDisplayMode,
   getCaseDisplaySettings,
   resolveCaseDisplayMode,
 } from "@/config/caseDisplay";
-import type { CaseItem } from "../../config/cases";
+import type { CaseItem } from "@/config/cases";
+import { getSiteCopy, type SiteCopy } from "@/config/contentCopy";
+import { selectLocalized } from "@/config/locale-utils";
 
 interface CasesSectionClientProps {
   casesZh: CaseItem[];
   casesEn: CaseItem[];
 }
+
+type CasesCopy = SiteCopy["cases"];
 
 function metadataLabel(value?: string) {
   return value?.trim() || "Archive";
@@ -35,11 +39,11 @@ function getPrimaryProblem(caseItem: CaseItem) {
   return caseItem.problem?.[0] || caseItem.description?.[0] || caseItem.summary;
 }
 
-function getPrimaryWorkflow(caseItem: CaseItem, locale: "zh" | "en") {
+function getPrimaryWorkflow(caseItem: CaseItem, copy: CasesCopy) {
   return (
     caseItem.workflows?.[0] ||
     caseItem.aiOrchestration?.[0] ||
-    (locale === "zh" ? "AI 工作流" : "AI workflow")
+    copy.aiWorkflowFallback
   );
 }
 
@@ -50,7 +54,7 @@ function TagRow({ items, empty }: { items?: string[]; empty: string }) {
       {values.map((item) => (
         <span
           key={item}
-          className="rounded-full border border-border bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
+          className="rounded-full border border-hairline bg-surface-paper-elevated px-2.5 py-1 text-[11px] font-medium text-muted-foreground"
         >
           {item}
         </span>
@@ -61,19 +65,19 @@ function TagRow({ items, empty }: { items?: string[]; empty: string }) {
 
 function FeaturedLabRecord({
   caseItem,
-  locale,
+  copy,
 }: {
   caseItem: CaseItem;
-  locale: "zh" | "en";
+  copy: CasesCopy;
 }) {
   return (
     <Link
       href={`/projects/${encodeURIComponent(caseItem.id)}`}
-      className="group block border-y border-border py-5 transition-colors hover:border-foreground/30"
+      className="group block border-y border-hairline py-5 transition-colors hover:border-foreground/30"
     >
       <div className="flex flex-wrap items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
         <Bot className="h-4 w-4" />
-        <span>{locale === "zh" ? "精选案例笔记" : "Featured Lab Note"}</span>
+        <span>{copy.featuredBadge}</span>
         <span className="text-border">/</span>
         <span>{metadataLabel(caseItem.status)}</span>
       </div>
@@ -89,37 +93,34 @@ function FeaturedLabRecord({
         </div>
 
         <div className="grid gap-3 text-sm">
-          <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-border pt-3">
+          <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-hairline pt-3">
             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              {locale === "zh" ? "角色" : "Role"}
+              {copy.roleLabel}
             </span>
             <span className="text-foreground">{metadataLabel(caseItem.role)}</span>
           </div>
-          <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-border pt-3">
+          <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-hairline pt-3">
             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              {locale === "zh" ? "工作流" : "Workflow"}
+              {copy.workflowLabel}
             </span>
-            <span className="text-foreground">{getPrimaryWorkflow(caseItem, locale)}</span>
+            <span className="text-foreground">{getPrimaryWorkflow(caseItem, copy)}</span>
           </div>
-          <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-border pt-3">
+          <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3 border-t border-hairline pt-3">
             <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-              {locale === "zh" ? "AI 栈" : "AI Stack"}
+              {copy.aiStackLabel}
             </span>
             <span className="text-foreground">
               {(caseItem.aiStack ?? caseItem.technologies ?? []).slice(0, 3).join(", ") ||
-                (locale === "zh" ? "AI 辅助工作流" : "AI-assisted workflow")}
+                copy.aiStackFallback}
             </span>
           </div>
         </div>
       </div>
 
       <div className="mt-5 flex items-center justify-between gap-4">
-        <TagRow
-          items={caseItem.tags}
-          empty={locale === "zh" ? "系统档案" : "system archive"}
-        />
+        <TagRow items={caseItem.tags} empty={copy.tagFallback} />
         <span className="inline-flex items-center gap-1 text-sm font-semibold text-foreground">
-          {locale === "zh" ? "查看记录" : "View record"}
+          {copy.viewDetails}
           <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </span>
       </div>
@@ -130,16 +131,16 @@ function FeaturedLabRecord({
 function LabIndexRow({
   caseItem,
   index,
-  locale,
+  copy,
 }: {
   caseItem: CaseItem;
   index: number;
-  locale: "zh" | "en";
+  copy: CasesCopy;
 }) {
   return (
     <Link
       href={`/projects/${encodeURIComponent(caseItem.id)}`}
-      className="group grid gap-4 border-t border-border py-4 transition-colors hover:border-foreground/30 md:grid-cols-[64px_minmax(0,1fr)_260px_32px]"
+      className="group grid gap-4 border-t border-hairline py-4 transition-colors hover:border-foreground/30 md:grid-cols-[64px_minmax(0,1fr)_260px_32px]"
     >
       <span className="font-mono text-sm text-muted-foreground">
         {String(index + 1).padStart(2, "0")}
@@ -147,7 +148,7 @@ function LabIndexRow({
       <div>
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-base font-semibold text-foreground">{caseItem.name}</h3>
-          <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+          <span className="rounded-full border border-hairline bg-surface-paper-elevated px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
             {metadataLabel(caseItem.caseType || caseItem.format)}
           </span>
         </div>
@@ -158,13 +159,13 @@ function LabIndexRow({
       <div className="space-y-2">
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <Workflow className="h-3.5 w-3.5" />
-          <span className="truncate">{getPrimaryWorkflow(caseItem, locale)}</span>
+          <span className="truncate">{getPrimaryWorkflow(caseItem, copy)}</span>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <BrainCircuit className="h-3.5 w-3.5" />
           <span className="truncate">
             {(caseItem.aiStack ?? caseItem.technologies ?? []).slice(0, 2).join(", ") ||
-              (locale === "zh" ? "AI 栈" : "AI stack")}
+              copy.aiStackLabel}
           </span>
         </div>
       </div>
@@ -175,10 +176,9 @@ function LabIndexRow({
 
 export function CasesSectionClient({ casesZh, casesEn }: CasesSectionClientProps) {
   const { locale } = useLocale();
-  const copy = getSiteCopy(locale);
-  const cases = locale === "en" ? casesEn : casesZh;
+  const copy = getSiteCopy(locale).cases;
+  const cases = selectLocalized(locale, { zh: casesZh, en: casesEn });
   const display = getCaseDisplaySettings();
-
   const mode = resolveCaseDisplayMode(cases.length);
 
   const featuredCase = useMemo(
@@ -195,23 +195,21 @@ export function CasesSectionClient({ casesZh, casesEn }: CasesSectionClientProps
   return (
     <section id="projects" className="scroll-mt-12 py-16 lg:py-24">
       <div className="mx-auto w-full max-w-6xl px-4">
-        <div className="grid gap-5 border-t border-border pt-5 lg:grid-cols-[280px_minmax(0,1fr)]">
+        <div className="grid gap-5 border-t border-hairline pt-5 lg:grid-cols-[280px_minmax(0,1fr)]">
           <div>
             <h2 className="flex items-center gap-2 font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
               <FolderOpen className="h-4 w-4" />
-              <span>{copy.cases.heading}</span>
+              <span>{copy.heading}</span>
             </h2>
             <p className="mt-4 text-sm leading-6 text-muted-foreground">
-              {locale === "zh"
-                ? "这里不是普通作品集，而是系统设计档案。每个案例都记录问题、workflow、AI 参与方式、自动化和可扩展路径。"
-                : "This is not a normal portfolio. Each record captures the problem, workflow, AI orchestration, automation, and scaling path."}
+              {copy.sectionDescription}
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+              <span className="rounded-full border border-hairline bg-surface-paper-elevated px-3 py-1 text-xs font-medium text-muted-foreground">
                 {formatCaseDisplayMode(display.mode, locale)}
               </span>
-              <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
-                {cases.length} {locale === "zh" ? "个档案" : "records"}
+              <span className="rounded-full border border-hairline bg-surface-paper-elevated px-3 py-1 text-xs font-medium text-muted-foreground">
+                {cases.length} {copy.recordSuffix}
               </span>
             </div>
           </div>
@@ -219,18 +217,18 @@ export function CasesSectionClient({ casesZh, casesEn }: CasesSectionClientProps
           <div>
             {mode === "featured" ? (
               <>
-                <FeaturedLabRecord caseItem={featuredCase} locale={locale} />
+                <FeaturedLabRecord caseItem={featuredCase} copy={copy} />
                 <div className="mt-8">
                   <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                     <GitBranch className="h-4 w-4" />
-                    <span>{locale === "zh" ? "系统档案" : "System Archive"}</span>
+                    <span>{copy.systemArchive}</span>
                   </div>
                   {previewCases.map((caseItem, index) => (
                     <LabIndexRow
                       key={caseItem.id}
                       caseItem={caseItem}
                       index={index}
-                      locale={locale}
+                      copy={copy}
                     />
                   ))}
                 </div>
@@ -239,26 +237,27 @@ export function CasesSectionClient({ casesZh, casesEn }: CasesSectionClientProps
               <div>
                 <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
                   <Boxes className="h-4 w-4" />
-                  <span>{locale === "zh" ? "目录模式" : "Catalog Mode"}</span>
+                  <span>{copy.catalogMode}</span>
                 </div>
                 {previewCases.map((caseItem, index) => (
                   <LabIndexRow
                     key={caseItem.id}
                     caseItem={caseItem}
                     index={index}
-                    locale={locale}
+                    copy={copy}
                   />
                 ))}
               </div>
             )}
 
-            <Link
+            <ActionButton
               href="/projects"
-              className="mt-6 inline-flex items-center gap-2 rounded-md border border-border bg-card px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              tone="secondary"
+              icon={<ArrowRight className="h-4 w-4" />}
+              className="mt-6"
             >
-              <span>{copy.cases.viewAll}</span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+              {copy.viewAll}
+            </ActionButton>
           </div>
         </div>
       </div>

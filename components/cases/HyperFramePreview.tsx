@@ -3,6 +3,9 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
 
+import { useLocale } from "@/components/LocaleProvider";
+import { getSiteCopy } from "@/config/contentCopy";
+
 type HyperFramePreviewProps = {
   projectName: string;
   animationSrc?: string;
@@ -16,15 +19,18 @@ export function HyperFramePreview({
   projectName,
   animationSrc,
   posterSrc,
-  accent = "#c48a2c",
+  accent = "var(--accent)",
   activeStepTitle,
   reducedMotion = false,
 }: HyperFramePreviewProps) {
+  const { locale } = useLocale();
+  const copy = getSiteCopy(locale).cases;
   const showAnimation = Boolean(animationSrc && !reducedMotion);
+  const fallbackStages = [copy.inputLabel, copy.processLabel, copy.artifactLabel];
 
   return (
     <div
-      className="relative isolate aspect-[16/10] overflow-hidden rounded-md border border-white/10 bg-[#11120f] shadow-[0_24px_70px_rgba(0,0,0,0.28)] sm:aspect-video"
+      className="relative isolate aspect-[16/10] overflow-hidden rounded-card border border-inverse bg-surface-graphite shadow-overlay sm:aspect-video"
       style={{ "--film-accent": accent } as CSSProperties}
     >
       <div
@@ -59,10 +65,10 @@ export function HyperFramePreview({
           role="img"
           aria-label={`${projectName} static system preview`}
         >
-          <div className="w-full max-w-[620px] rounded-md border border-white/12 bg-[#171815]/92 p-5 text-[#f1eadc]">
-            <div className="mb-5 flex items-center justify-between border-b border-white/10 pb-3">
-              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-[#bfb7a8]">
-                System Preview
+          <div className="w-full max-w-[620px] rounded-card border border-inverse bg-surface-graphite-muted p-5 text-surface-graphite-foreground">
+            <div className="mb-5 flex items-center justify-between border-b border-inverse pb-3">
+              <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                {copy.systemPreview}
               </span>
               <span
                 className="h-2.5 w-2.5 rounded-full"
@@ -70,16 +76,16 @@ export function HyperFramePreview({
               />
             </div>
             <div className="grid gap-3 sm:grid-cols-3">
-              {["Input", "Process", "Artifact"].map((label, index) => (
+              {fallbackStages.map((label, index) => (
                 <div
                   key={label}
-                  className="rounded border border-white/10 bg-white/[0.04] p-3"
+                  className="rounded-control border border-inverse bg-surface-graphite p-3"
                 >
-                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-[#938a7a]">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
                     0{index + 1}
                   </span>
-                  <p className="mt-2 text-sm font-semibold text-[#f6efe1]">{label}</p>
-                  <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-white/10">
+                  <p className="mt-2 text-sm font-semibold text-surface-graphite-foreground">{label}</p>
+                  <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface-graphite-muted">
                     <div
                       className="h-full rounded-full"
                       style={{ width: `${42 + index * 24}%`, backgroundColor: accent }}
@@ -93,22 +99,22 @@ export function HyperFramePreview({
       )}
 
       <div className="pointer-events-none absolute left-4 right-4 top-4 z-20 flex items-center justify-between gap-3">
-        <div className="rounded border border-white/10 bg-[#10110e]/80 px-3 py-2 backdrop-blur">
-          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-[#d8c7a6]">
+        <div className="rounded-control border border-inverse bg-surface-graphite/80 px-3 py-2 backdrop-blur">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             {projectName}
           </p>
           {activeStepTitle ? (
-            <p className="mt-0.5 text-xs font-medium text-[#f7efe0]">
+            <p className="mt-0.5 text-xs font-medium text-surface-graphite-foreground">
               {activeStepTitle}
             </p>
           ) : null}
         </div>
-        <div className="hidden items-center gap-2 rounded border border-white/10 bg-[#10110e]/80 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-[#bfb7a8] backdrop-blur sm:flex">
+        <div className="hidden items-center gap-2 rounded-control border border-inverse bg-surface-graphite/80 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground backdrop-blur sm:flex">
           <span
             className="h-1.5 w-1.5 rounded-full"
             style={{ backgroundColor: accent }}
           />
-          live loop
+          {copy.liveLoop}
         </div>
       </div>
     </div>

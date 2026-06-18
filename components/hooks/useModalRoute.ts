@@ -38,10 +38,10 @@ function buildFlagQuery(
 }
 
 export function useModalRoute(opts: UseModalRouteOpts = {}) {
-  const scheme: Scheme = (opts as any).scheme ?? "kv";
-  const key = (opts as any).key ?? (scheme === "kv" ? "modal" : "resume");
-  const value = (opts as any).value ?? "resume";
-  const scroll = (opts as any).scroll ?? false;
+  const scheme: Scheme = opts.scheme ?? "kv";
+  const key = opts.key ?? (scheme === "kv" ? "modal" : "resume");
+  const value = scheme === "kv" ? (opts.value ?? "resume") : "resume";
+  const scroll = opts.scroll ?? false;
 
   const router = useRouter();
   const pathname = usePathname();

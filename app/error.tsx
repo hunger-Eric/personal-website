@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect } from "react";
-import Link from "next/link";
 import { Home, RefreshCw, AlertTriangle } from "lucide-react";
+import { ActionButton } from "@/components/system";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -20,8 +20,8 @@ export default function Error({ error, reset }: ErrorProps) {
     <main className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="mx-auto flex w-full max-w-md flex-col items-center text-center text-foreground">
         {/* Error icon */}
-        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-500/10">
-          <AlertTriangle className="h-8 w-8 text-red-500" />
+        <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+          <AlertTriangle className="h-8 w-8 text-destructive" />
         </div>
 
         <p className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
@@ -45,21 +45,21 @@ export default function Error({ error, reset }: ErrorProps) {
         )}
 
         <div className="mt-6 flex flex-wrap justify-center gap-3">
-          <button
+          <ActionButton
             onClick={reset}
-            className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-medium text-white transition-transform transition-colors hover:-translate-y-[1px] hover:bg-accent/90"
+            tone="primary"
+            icon={<RefreshCw className="h-4 w-4" />}
           >
-            <RefreshCw className="h-4 w-4" />
-            <span>Try again</span>
-          </button>
+            Try again
+          </ActionButton>
 
-          <Link
+          <ActionButton
             href="/"
-            className="inline-flex items-center gap-2 rounded-md border border-white/15 px-4 py-2 text-sm text-foreground transition-transform transition-colors hover:-translate-y-[1px] hover:border-accent hover:bg-white/5"
+            tone="secondary"
+            icon={<Home className="h-4 w-4" />}
           >
-            <Home className="h-4 w-4" />
-            <span>Back to home</span>
-          </Link>
+            Back to home
+          </ActionButton>
         </div>
       </div>
     </main>

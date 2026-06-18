@@ -2,6 +2,7 @@
 // Dynamic Open Graph image generation
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
+import { getOgPalette, ogCopy, ogPalettes } from "@/config/ogTheme";
 
 // Use nodejs runtime to avoid edge-runtime build warnings in this repo.
 export const runtime = "nodejs";
@@ -15,16 +16,11 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
 
     // Get parameters from URL
-    const title = searchParams.get("title") || "fengc";
-    const subtitle = searchParams.get("subtitle") || "Full-Stack Developer";
+    const title = searchParams.get("title") || ogCopy.defaultTitle;
+    const subtitle = searchParams.get("subtitle") || ogCopy.defaultSubtitle;
     const theme = searchParams.get("theme") || "dark";
 
-    // Theme colors
-    const isDark = theme === "dark";
-    const bgColor = isDark ? "#050816" : "#ffffff";
-    const textColor = isDark ? "#f4f4f5" : "#1f2937";
-    const mutedColor = isDark ? "#71717a" : "#6b7280";
-    const accentColor = "#4f46e5";
+    const palette = getOgPalette(theme);
 
     return new ImageResponse(
       (
@@ -36,8 +32,8 @@ export async function GET(request: NextRequest) {
             flexDirection: "column",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: bgColor,
-            backgroundImage: `radial-gradient(circle at 25px 25px, ${isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)"} 2%, transparent 0%)`,
+            backgroundColor: palette.background,
+            backgroundImage: `radial-gradient(circle at 25px 25px, ${palette.pattern} 2%, transparent 0%)`,
             backgroundSize: "50px 50px",
             fontFamily: "Inter, system-ui, sans-serif",
           }}
@@ -50,7 +46,7 @@ export async function GET(request: NextRequest) {
               left: 0,
               right: 0,
               height: "6px",
-              background: `linear-gradient(90deg, ${accentColor}, #7c3aed, ${accentColor})`,
+              background: `linear-gradient(90deg, ${palette.accent}, ${palette.accentSecondary}, ${palette.accent})`,
             }}
           />
 
@@ -71,19 +67,19 @@ export async function GET(request: NextRequest) {
                 width: "120px",
                 height: "120px",
                 borderRadius: "60px",
-                background: `linear-gradient(135deg, ${accentColor}, #7c3aed)`,
+                background: `linear-gradient(135deg, ${palette.accent}, ${palette.accentSecondary})`,
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 marginBottom: "40px",
-                boxShadow: `0 20px 40px ${isDark ? "rgba(79, 70, 229, 0.3)" : "rgba(79, 70, 229, 0.2)"}`,
+                boxShadow: `0 20px 40px ${palette.accentShadow}`,
               }}
             >
               <span
                 style={{
                   fontSize: "48px",
                   fontWeight: 700,
-                  color: "#ffffff",
+                  color: palette.accentForeground,
                 }}
               >
                 {title.charAt(0).toUpperCase()}
@@ -95,7 +91,7 @@ export async function GET(request: NextRequest) {
               style={{
                 fontSize: "64px",
                 fontWeight: 700,
-                color: textColor,
+                color: palette.foreground,
                 textAlign: "center",
                 lineHeight: 1.2,
                 marginBottom: "16px",
@@ -110,7 +106,7 @@ export async function GET(request: NextRequest) {
               style={{
                 fontSize: "28px",
                 fontWeight: 400,
-                color: mutedColor,
+                color: palette.muted,
                 textAlign: "center",
                 lineHeight: 1.4,
                 maxWidth: "800px",
@@ -135,18 +131,18 @@ export async function GET(request: NextRequest) {
                 width: "8px",
                 height: "8px",
                 borderRadius: "4px",
-                backgroundColor: accentColor,
+                backgroundColor: palette.accent,
               }}
             />
             <span
               style={{
                 fontSize: "16px",
-                color: mutedColor,
+                color: palette.muted,
                 letterSpacing: "0.05em",
                 textTransform: "uppercase",
               }}
             >
-              Website
+              {ogCopy.contextLabel}
             </span>
           </div>
         </div>
@@ -161,7 +157,7 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (error: unknown) {
-    console.error("OG Image generation error:", error);
+    console.error(ogCopy.generationError, error);
 
     // Return a simple fallback image on error
     return new ImageResponse(
@@ -173,13 +169,13 @@ export async function GET(request: NextRequest) {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            backgroundColor: "#050816",
-            color: "#f4f4f5",
+            backgroundColor: ogPalettes.dark.background,
+            color: ogPalettes.dark.foreground,
             fontSize: "48px",
             fontWeight: 700,
           }}
         >
-          Website
+          {ogCopy.contextLabel}
         </div>
       ),
       {

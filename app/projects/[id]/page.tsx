@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   ArrowLeft,
@@ -15,8 +14,12 @@ import {
 } from "lucide-react";
 
 import { CaseDemo } from "@/components/cases/CaseDemo";
+import { JsonLd } from "@/components/JsonLd";
+import { ActionButton, PageShell, Surface } from "@/components/system";
 import { loadCases, type CaseArchitectureItem, type CaseItem } from "@/config/cases";
+import { getSiteCopy } from "@/config/contentCopy";
 import { siteConfig } from "@/config/siteConfig";
+import { generateProjectSchema } from "@/lib/structured-data";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -28,6 +31,8 @@ type NarrativeSectionProps = {
   body: string[];
   Icon: typeof Workflow;
 };
+
+const copy = getSiteCopy("zh").cases;
 
 export async function generateStaticParams() {
   const cases = await loadCases();
@@ -78,18 +83,18 @@ function NarrativeSection({ eyebrow, title, body, Icon }: NarrativeSectionProps)
   if (!body.length) return null;
 
   return (
-    <section className="border-t border-[#d9cfbf] py-8">
+    <section className="border-t border-hairline py-8">
       <div className="grid gap-5 md:grid-cols-[220px_minmax(0,1fr)]">
         <div>
-          <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#817565]">
-            <Icon className="h-4 w-4" />
+          <div className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <Icon className="h-4 w-4" aria-hidden />
             <span>{eyebrow}</span>
           </div>
-          <h2 className="mt-3 text-xl font-semibold tracking-tight text-[#1f2420]">
+          <h2 className="mt-3 text-xl font-semibold tracking-tight text-foreground">
             {title}
           </h2>
         </div>
-        <div className="space-y-4 text-sm leading-7 text-[#3f3a32] sm:text-base">
+        <div className="space-y-4 text-sm leading-7 text-foreground sm:text-base">
           {body.map((line) => (
             <p key={line}>{line}</p>
           ))}
@@ -99,16 +104,22 @@ function NarrativeSection({ eyebrow, title, body, Icon }: NarrativeSectionProps)
   );
 }
 
-function ArchitectureSection({ architecture }: { architecture?: CaseArchitectureItem[] }) {
+function ArchitectureSection({
+  architecture,
+}: {
+  architecture?: CaseArchitectureItem[];
+}) {
   if (!architecture?.length) return null;
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
       {architecture.map((item) => (
-        <div key={item.label} className="rounded-md border border-[#d9cfbf] bg-[#fffaf1] p-4">
-          <h3 className="text-sm font-semibold text-[#1f2420]">{item.label}</h3>
-          <p className="mt-2 text-sm leading-6 text-[#6f6659]">{item.detail}</p>
-        </div>
+        <Surface key={item.label} tone="paper" className="p-4">
+          <h3 className="text-sm font-semibold text-foreground">{item.label}</h3>
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
+            {item.detail}
+          </p>
+        </Surface>
       ))}
     </div>
   );
@@ -117,42 +128,39 @@ function ArchitectureSection({ architecture }: { architecture?: CaseArchitecture
 function MetaRail({ caseItem }: { caseItem: CaseItem }) {
   const rows = [
     [
-      "系统类型",
+      copy.systemType,
       caseItem.customerStory?.chapterTitle || caseItem.caseType || caseItem.format,
     ],
-    ["交付物", caseItem.customerStory?.artifactLabel || caseItem.demo?.result.label],
-    ["项目状态", caseItem.status],
+    [copy.deliverable, caseItem.customerStory?.artifactLabel || caseItem.demo?.result.label],
+    [copy.projectStatus, caseItem.status],
   ].filter(([, value]) => value);
 
   return (
     <aside className="space-y-5">
-      <div className="border-y border-[#d9cfbf] py-4">
+      <div className="border-y border-hairline py-4">
         {rows.map(([label, value]) => (
           <div
             key={label}
-            className="grid grid-cols-[88px_minmax(0,1fr)] gap-3 border-t border-[#d9cfbf] py-3 first:border-t-0 first:pt-0 last:pb-0"
+            className="grid grid-cols-[96px_minmax(0,1fr)] gap-3 border-t border-hairline py-3 first:border-t-0 first:pt-0 last:pb-0"
           >
-            <span className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-[#817565]">
+            <span className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
               {label}
             </span>
-            <span className="text-sm font-medium text-[#1f2420]">{value}</span>
+            <span className="text-sm font-medium text-foreground">{value}</span>
           </div>
         ))}
       </div>
 
-      {caseItem.customerStory?.proofPoints.length ? (
+      {caseItem.customerStory?.proofPoints?.length ? (
         <div>
-          <h3 className="mb-3 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#817565]">
-            可信交付点
+          <h3 className="mb-3 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {copy.proofPoints}
           </h3>
           <div className="space-y-2">
             {caseItem.customerStory.proofPoints.map((point) => (
-              <p
-                key={point}
-                className="rounded-md border border-[#d9cfbf] bg-[#fffaf1] px-3 py-2 text-xs leading-5 text-[#6f6659]"
-              >
-                {point}
-              </p>
+              <Surface key={point} tone="paper" className="px-3 py-2">
+                <p className="text-xs leading-5 text-muted-foreground">{point}</p>
+              </Surface>
             ))}
           </div>
         </div>
@@ -160,8 +168,8 @@ function MetaRail({ caseItem }: { caseItem: CaseItem }) {
 
       {caseItem.links?.length ? (
         <div>
-          <h3 className="mb-3 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#817565]">
-            链接
+          <h3 className="mb-3 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {copy.links}
           </h3>
           <div className="space-y-2">
             {caseItem.links.map((link) => (
@@ -170,10 +178,10 @@ function MetaRail({ caseItem }: { caseItem: CaseItem }) {
                 href={link.href}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="inline-flex w-full items-center justify-between rounded-md border border-[#d9cfbf] bg-[#fffaf1] px-3 py-2 text-sm font-medium text-[#1f2420] transition-colors hover:bg-[#efe4d2]"
+                className="inline-flex w-full items-center justify-between rounded-control border border-hairline bg-surface-paper-elevated px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <span>{link.label}</span>
-                <ArrowUpRight className="h-4 w-4 text-[#817565]" />
+                <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
               </a>
             ))}
           </div>
@@ -199,20 +207,20 @@ function ImplementationAppendix({ caseItem }: { caseItem: CaseItem }) {
   }
 
   return (
-    <section className="border-t border-[#d9cfbf] py-8">
-      <details className="group rounded-lg border border-[#d9cfbf] bg-[#fffaf1] p-4">
+    <section className="border-t border-hairline py-8">
+      <details className="group rounded-card border border-hairline bg-surface-paper-elevated p-4">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-4">
           <span>
-            <span className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#817565]">
-              <Layers3 className="h-4 w-4" />
-              Implementation appendix
+            <span className="flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+              <Layers3 className="h-4 w-4" aria-hidden />
+              {copy.implementationAppendix}
             </span>
-            <span className="mt-2 block text-lg font-semibold text-[#1f2420]">
-              实现细节与项目记录
+            <span className="mt-2 block text-lg font-semibold text-foreground">
+              {copy.implementationTitle}
             </span>
           </span>
-          <span className="rounded border border-[#d9cfbf] px-2 py-1 text-xs font-semibold text-[#6f6659]">
-            展开
+          <span className="rounded-control border border-hairline px-2 py-1 text-xs font-semibold text-muted-foreground">
+            {copy.expand}
           </span>
         </summary>
 
@@ -222,7 +230,7 @@ function ImplementationAppendix({ caseItem }: { caseItem: CaseItem }) {
           {workflowLines.length ? (
             <NarrativeSection
               eyebrow="Workflow"
-              title="自动化边界"
+              title={copy.workflowTitle}
               body={workflowLines}
               Icon={Workflow}
             />
@@ -231,7 +239,7 @@ function ImplementationAppendix({ caseItem }: { caseItem: CaseItem }) {
           {resultLines.length ? (
             <NarrativeSection
               eyebrow="Results"
-              title="沉淀结果"
+              title={copy.resultsTitle}
               body={resultLines}
               Icon={GitBranch}
             />
@@ -240,18 +248,18 @@ function ImplementationAppendix({ caseItem }: { caseItem: CaseItem }) {
           {learningLines.length ? (
             <NarrativeSection
               eyebrow="Learnings"
-              title="项目经验"
+              title={copy.learningsTitle}
               body={learningLines}
               Icon={BrainCircuit}
             />
           ) : null}
 
-          {caseItem.readmeHtmlFull && (
+          {caseItem.readmeHtmlFull ? (
             <article
-              className="prose prose-slate max-w-none border-t border-[#d9cfbf] pt-8"
+              className="prose prose-slate max-w-none border-t border-hairline pt-8"
               dangerouslySetInnerHTML={{ __html: caseItem.readmeHtmlFull }}
             />
-          )}
+          ) : null}
         </div>
       </details>
     </section>
@@ -289,39 +297,55 @@ export default async function CaseDetailPage({ params }: Props) {
     story?.proofPoints,
     caseItem.results?.[0]
   );
-  const transferLines = asLines(
-    story?.transferableValue,
-    caseItem.learnings?.[0]
-  );
+  const transferLines = asLines(story?.transferableValue, caseItem.learnings?.[0]);
 
   return (
-    <div className="bg-[#f7f1e7] text-[#1f2420]">
-      <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-        <Link
+    <PageShell tone="public" className="min-h-screen">
+      <JsonLd
+        data={generateProjectSchema({
+          id: caseItem.id,
+          name: caseItem.name,
+          summary:
+            story?.shortPromise ||
+            story?.publicScenario ||
+            caseItem.summary ||
+            caseItem.repoDescription,
+          description: caseItem.description?.join(" "),
+          repoUrl: caseItem.githubRepoUrl,
+          liveUrl: caseItem.links?.find((link) => link.type === "live")?.href,
+          imageSrc: caseItem.imageUrl,
+          technologies: caseItem.technologies || caseItem.aiStack,
+          stars: caseItem.githubStars,
+          dateCreated: caseItem.start,
+        })}
+      />
+      <main className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
+        <ActionButton
           href="/projects"
-          className="group mb-10 inline-flex items-center gap-1.5 text-sm text-[#6f6659] transition-colors hover:text-[#1f2420]"
+          tone="ghost"
+          icon={<ArrowLeft className="h-4 w-4" aria-hidden />}
+          className="mb-10"
         >
-          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
-          返回案例
-        </Link>
+          {copy.detailBack}
+        </ActionButton>
 
-        <header className="border-y border-[#d9cfbf] py-8">
-          <div className="flex flex-wrap items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-[#817565]">
-            <Bot className="h-4 w-4" />
-            <span>AI Native system case</span>
-            <span className="text-[#d9cfbf]">/</span>
+        <header className="border-y border-hairline py-8">
+          <div className="flex flex-wrap items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <Bot className="h-4 w-4" aria-hidden />
+            <span>{copy.detailEyebrow}</span>
+            <span className="text-border">/</span>
             <span>{caseItem.status || "Archive"}</span>
           </div>
           <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
             <div>
-              <h1 className="max-w-4xl text-4xl font-semibold leading-[1.02] tracking-tight text-[#1f2420] sm:text-5xl">
+              <h1 className="max-w-4xl text-4xl font-semibold leading-[1.02] tracking-tight text-foreground sm:text-5xl">
                 {story?.headline || caseItem.name}
               </h1>
-              <p className="mt-4 max-w-3xl text-base leading-8 text-[#6f6659] sm:text-lg">
+              <p className="mt-4 max-w-3xl text-base leading-8 text-muted-foreground sm:text-lg">
                 {story?.shortPromise || story?.publicScenario || caseItem.summary}
               </p>
-              <p className="mt-4 text-sm font-semibold text-[#817565]">
-                来源项目：{caseItem.name}
+              <p className="mt-4 text-sm font-semibold text-muted-foreground">
+                {copy.sourceProject}: {caseItem.name}
               </p>
             </div>
             <MetaRail caseItem={caseItem} />
@@ -332,34 +356,34 @@ export default async function CaseDetailPage({ params }: Props) {
 
         <NarrativeSection
           eyebrow="Scenario"
-          title="这一类问题是什么"
+          title={copy.scenarioTitle}
           body={asLines(fallbackProblem)}
           Icon={Network}
         />
 
         <NarrativeSection
           eyebrow="System"
-          title="系统如何接管"
+          title={copy.systemTitle}
           body={systemTakeover}
           Icon={Boxes}
         />
 
         <NarrativeSection
           eyebrow="Artifact"
-          title="客户拿走什么"
+          title={copy.artifactTitle}
           body={artifactLines}
           Icon={FileOutput}
         />
 
         <NarrativeSection
           eyebrow="Transfer"
-          title="可以迁移到哪里"
+          title={copy.transferTitle}
           body={transferLines}
           Icon={Workflow}
         />
 
         <ImplementationAppendix caseItem={caseItem} />
-      </div>
-    </div>
+      </main>
+    </PageShell>
   );
 }

@@ -32,23 +32,23 @@ export function Typewriter({
   caret = true,
   className = "",
 }: Props) {
-  const [count, setCount] = useState(0);
-  const [done, setDone] = useState(false);
+  const [typingState, setTypingState] = useState({
+    text,
+    count: 0,
+    done: false,
+  });
 
   useEffect(() => {
-    setCount(0);
-    setDone(false);
-
     let cancelled = false;
     let timeoutId: number | undefined;
 
     const tick = (i: number) => {
       if (cancelled) return;
       if (i >= text.length) {
-        setDone(true);
+        setTypingState({ text, count: text.length, done: true });
         return;
       }
-      setCount(i + 1);
+      setTypingState({ text, count: i + 1, done: false });
       timeoutId = window.setTimeout(() => tick(i + 1), speedMs);
     };
 
@@ -60,6 +60,8 @@ export function Typewriter({
     };
   }, [text, speedMs, startDelayMs]);
 
+  const count = typingState.text === text ? typingState.count : 0;
+  const done = typingState.text === text ? typingState.done : false;
   const visible = text.slice(0, count);
 
   // Render with optional highlighted slice. We only highlight chars that are

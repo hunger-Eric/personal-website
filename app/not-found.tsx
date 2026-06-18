@@ -9,6 +9,7 @@ import {
   Mail,
 } from "lucide-react";
 import { siteConfig } from "@/config/siteConfig";
+import { ActionButton } from "@/components/system";
 
 export default function NotFound() {
   const emailHref = siteConfig.socialsList.find((s) => s.key === "email")?.href || "";
@@ -29,7 +30,7 @@ export default function NotFound() {
   return (
     <main className="mx-auto flex min-h-[calc(100dvh-160px)] w-full max-w-2xl flex-col items-center justify-center px-4 pb-16 pt-12 text-center sm:pt-20">
       {/* Big numeric 404 — quiet */}
-      <div className="select-none font-mono text-[7rem] font-bold leading-none text-white/[0.04] sm:text-[10rem]">
+      <div className="select-none font-mono text-[7rem] font-bold leading-none text-muted-foreground/10 sm:text-[10rem]">
         404
       </div>
 
@@ -47,20 +48,20 @@ export default function NotFound() {
       </p>
 
       <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Link
+        <ActionButton
           href="/"
-          className="inline-flex items-center gap-2 rounded-md bg-accent px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-accent/90"
+          tone="primary"
+          icon={<ArrowLeft className="h-4 w-4" />}
         >
-          <ArrowLeft className="h-4 w-4" />
           Back to home
-        </Link>
+        </ActionButton>
       </div>
 
       {/* Suggestions */}
       <div className="mt-10 grid w-full max-w-md grid-cols-2 gap-2 sm:grid-cols-4">
         {suggestions.map((s) => {
           const className =
-            "group flex flex-col items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.03] p-3 text-xs font-medium text-foreground transition-colors hover:border-accent/50 hover:bg-white/[0.07]";
+            "group flex flex-col items-center gap-1.5 rounded-card border border-hairline bg-surface-paper-elevated p-3 text-xs font-medium text-foreground transition-colors hover:border-accent/50 hover:bg-muted";
           const inner = (
             <>
               <s.Icon className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-accent" />

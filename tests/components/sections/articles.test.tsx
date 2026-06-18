@@ -1,33 +1,68 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from "vitest";
-import { render } from "@testing-library/react";
-import React from "react";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+
+import { ArticlesSection } from "@/components/sections/Articles";
 
 vi.mock("@/config/articles", () => ({
   blogPosts: [
-    { id: "1", slug: "test-article", title: "Test Article", summary: "A summary", date: "2025-01-15", featured: true, readTime: "5 min", category: "tech" },
-    { id: "2", slug: "second-article", title: "Second Article", summary: "Another summary", date: "2025-01-10", readTime: "3 min", category: "guide" },
-  ]
+    {
+      id: "1",
+      slug: "test-article",
+      title: "Test Article",
+      summary: "A summary",
+      date: "2025-01-15",
+      featured: true,
+      readTime: "5 min",
+      category: "tech",
+    },
+    {
+      id: "2",
+      slug: "second-article",
+      title: "Second Article",
+      summary: "Another summary",
+      date: "2025-01-10",
+      readTime: "3 min",
+      category: "guide",
+    },
+  ],
 }));
+
 vi.mock("lucide-react", () => ({
-  SquareArrowOutUpRight: () => React.createElement("svg"),
-  BookOpenText: () => React.createElement("svg"),
-  PenLine: () => React.createElement("svg"),
-  NotebookPen: () => React.createElement("svg"),
-  FileText: () => React.createElement("svg"),
-  CalendarDays: () => React.createElement("svg"),
-  Clock3: () => React.createElement("svg"),
+  ArrowRight: () => <svg data-testid="arrow-right" />,
+  CalendarDays: () => <svg data-testid="calendar-days" />,
+  Clock3: () => <svg data-testid="clock" />,
 }));
-vi.mock("next/image", () => ({ default: (p) => React.createElement("img", p) }));
-vi.mock("next/link", () => ({ default: (p) => React.createElement("a", { href: p.href, children: p.children }) }));
 
 describe("ArticlesSection", () => {
-  it("renders without crashing", async () => {
-    const mod = await import("@/components/sections/Articles");
-    const Component = mod["ArticlesSection"];
-    if (typeof Component === "function") {
-      const { container } = render(React.createElement(Component));
-      expect(container).toBeTruthy();
-    }
+  it("renders article previews with centralized copy and links", () => {
+    render(<ArticlesSection />);
+
+    expect(screen.getByText("~/文章")).toBeInTheDocument();
+    expect(screen.getByText("其他文章")).toBeInTheDocument();
+    expect(screen.getByText("Test Article")).toBeInTheDocument();
+    expect(screen.getByText("Second Article")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "查看全部文章" })).toHaveAttribute(
+      "href",
+      "/articles"
+    );
+    expect(screen.getByRole("link", { name: /Test Article/ })).toHaveAttribute(
+      "href",
+      "/articles/test-article"
+    );
+  });
+
+  it("uses system surface classes instead of old template residue", () => {
+    const { container } = render(<ArticlesSection />);
+    const html = container.innerHTML;
+    const oldRounded = ["rounded", "md"].join("-");
+    const oldBg = ["bg", "white/5"].join("-");
+    const oldBorder = ["border", "white/10"].join("-");
+
+    expect(html).toContain("rounded-card");
+    expect(html).toContain("bg-surface-paper-elevated");
+    expect(html).not.toContain(oldRounded);
+    expect(html).not.toContain(oldBg);
+    expect(html).not.toContain(oldBorder);
   });
 });

@@ -5,7 +5,9 @@ import { useMemo, useState } from "react";
 import { ArrowUpRight, Filter, FolderOpen } from "lucide-react";
 
 import { useLocale } from "@/components/LocaleProvider";
-import type { CaseItem } from "../../config/cases";
+import { EmptyState, Surface } from "@/components/system";
+import { getSiteCopy } from "@/config/contentCopy";
+import type { CaseItem } from "@/config/cases";
 
 type Props = {
   cases: CaseItem[];
@@ -57,44 +59,44 @@ function artifactLine(caseItem: CaseItem) {
 
 export function CasesBrowser({ cases }: Props) {
   const { locale } = useLocale();
+  const copy = getSiteCopy(locale);
   const [activeCapability, setActiveCapability] = useState("All");
 
   const filteredCases = useMemo(
-    () => cases.filter((caseItem) => matchesCapability(caseItem, activeCapability)),
+    () =>
+      cases.filter((caseItem) =>
+        matchesCapability(caseItem, activeCapability)
+      ),
     [activeCapability, cases]
   );
 
   if (!cases.length) {
     return (
-      <div className="flex flex-col items-center justify-center border-y border-[#d9cfbf] py-20 text-center">
-        <FolderOpen className="mb-4 h-12 w-12 text-[#988b76]" />
-        <h3 className="mb-1 text-lg font-semibold text-[#1f2420]">
-          {locale === "zh" ? "暂无案例记录" : "No system records yet"}
-        </h3>
-        <p className="text-sm text-[#6f6659]">
-          {locale === "zh" ? "案例档案还在整理中。" : "Case records are still being organized."}
-        </p>
-      </div>
+      <EmptyState
+        icon={<FolderOpen className="h-12 w-12" aria-hidden />}
+        title={copy.cases.emptyTitle}
+        description={copy.cases.emptyDescription}
+      />
     );
   }
 
   return (
     <div className="space-y-5">
-      <header className="grid gap-4 border-y border-[#d9cfbf] py-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:items-end">
+      <header className="grid gap-4 border-y border-hairline py-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.95fr)] lg:items-end">
         <div>
-          <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#817565]">
-            <FolderOpen className="h-4 w-4" />
-            <span>{locale === "zh" ? "案例索引" : "Case index"}</span>
+          <div className="mb-3 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <FolderOpen className="h-4 w-4" aria-hidden />
+            <span>{copy.cases.indexEyebrow}</span>
           </div>
-          <h2 className="text-2xl font-semibold tracking-tight text-[#1f2420]">
-            {locale === "zh" ? "更多系统记录" : "More system records"}
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+            {copy.cases.indexTitle}
           </h2>
         </div>
 
         <div>
-          <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#817565]">
-            <Filter className="h-4 w-4" />
-            <span>{locale === "zh" ? "能力筛选" : "Capability filter"}</span>
+          <div className="mb-3 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            <Filter className="h-4 w-4" aria-hidden />
+            <span>{copy.cases.filterLabel}</span>
           </div>
           <div className="flex flex-wrap gap-2">
             {CAPABILITIES.map((capability) => {
@@ -105,10 +107,10 @@ export function CasesBrowser({ cases }: Props) {
                   type="button"
                   onClick={() => setActiveCapability(capability)}
                   className={[
-                    "rounded-md border px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+                    "rounded-control border px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent",
                     active
-                      ? "border-[#b87922] bg-[#b87922] text-white"
-                      : "border-[#d9cfbf] bg-[#f7f1e7] text-[#6f6659] hover:border-[#c8b99f] hover:text-[#1f2420]",
+                      ? "border-accent bg-accent text-accent-foreground"
+                      : "border-hairline bg-surface-paper text-muted-foreground hover:bg-muted hover:text-foreground",
                   ].join(" ")}
                 >
                   {capability}
@@ -120,55 +122,51 @@ export function CasesBrowser({ cases }: Props) {
       </header>
 
       {!filteredCases.length ? (
-        <div className="border-y border-[#d9cfbf] py-16 text-center">
-          <FolderOpen className="mx-auto mb-4 h-10 w-10 text-[#988b76]" />
-          <h3 className="text-lg font-semibold text-[#1f2420]">
-            {locale === "zh" ? "没有匹配案例" : "No matching records"}
-          </h3>
-          <p className="mt-2 text-sm text-[#6f6659]">
-            {locale === "zh" ? "换一个能力筛选看看。" : "Try another capability filter."}
-          </p>
-        </div>
+        <EmptyState
+          icon={<FolderOpen className="h-10 w-10" aria-hidden />}
+          title={copy.cases.noMatchesTitle}
+          description={copy.cases.noMatchesDescription}
+        />
       ) : (
         <div>
-          <p className="mb-3 text-xs font-medium text-[#817565]">
-            {filteredCases.length} {locale === "zh" ? "个匹配案例" : "matching records"}
+          <p className="mb-3 text-xs font-medium text-muted-foreground">
+            {filteredCases.length} {copy.cases.matchingSuffix}
           </p>
-          <div className="divide-y divide-[#d9cfbf] border-y border-[#d9cfbf]">
+          <Surface tone="paper" className="divide-y divide-hairline">
             {filteredCases.map((caseItem, index) => (
               <Link
                 key={caseItem.id}
                 href={`/projects/${encodeURIComponent(caseItem.id)}`}
-                className="group grid gap-4 py-4 transition-colors hover:bg-[#efe4d2]/45 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent md:grid-cols-[52px_minmax(0,1.2fr)_minmax(220px,0.8fr)_32px]"
+                className="group grid gap-4 px-4 py-4 transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent md:grid-cols-[52px_minmax(0,1.2fr)_minmax(220px,0.8fr)_32px]"
               >
-                <span className="font-mono text-sm text-[#817565]">
+                <span className="font-mono text-sm text-muted-foreground">
                   {String(index + 1).padStart(2, "0")}
                 </span>
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-base font-semibold text-[#1f2420]">
+                    <h3 className="text-base font-semibold text-foreground">
                       {caseItem.name}
                     </h3>
-                    <span className="rounded border border-[#d9cfbf] bg-[#f7f1e7] px-2 py-0.5 text-[11px] font-medium text-[#6f6659]">
+                    <span className="rounded-control border border-hairline bg-surface-paper px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                       {caseItem.caseType || caseItem.format || "Archive"}
                     </span>
                   </div>
-                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#6f6659]">
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-muted-foreground">
                     {firstLine(caseItem)}
                   </p>
                 </div>
                 <div>
-                  <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#817565]">
-                    Artifact
+                  <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                    {copy.cases.artifactLabel}
                   </p>
-                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#1f2420]">
+                  <p className="mt-2 line-clamp-2 text-sm leading-6 text-foreground">
                     {artifactLine(caseItem)}
                   </p>
                 </div>
-                <ArrowUpRight className="hidden h-5 w-5 self-center text-[#817565] transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 md:block" />
+                <ArrowUpRight className="hidden h-5 w-5 self-center text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 md:block" />
               </Link>
             ))}
-          </div>
+          </Surface>
         </div>
       )}
     </div>

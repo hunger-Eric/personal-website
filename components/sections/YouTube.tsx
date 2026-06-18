@@ -1,9 +1,18 @@
 // components/sections/YouTube.tsx
+"use client";
+
 import { Youtube, ExternalLink } from "lucide-react";
+import Image from "next/image";
 import { youtubeVideos } from "../../config/youtube";
 import { siteConfig } from "../../config/siteConfig";
+import { useLocale } from "../LocaleProvider";
+import { getSiteCopy } from "../../config/contentCopy";
+import { ActionButton, SectionHeader, Surface } from "../system";
 
 export function YouTubeSection() {
+  const { locale } = useLocale();
+  const copy = getSiteCopy(locale).youtube;
+
   if (!youtubeVideos.length) return null;
 
   const featured = youtubeVideos[0];
@@ -15,45 +24,50 @@ export function YouTubeSection() {
 
   const youtubeProfile = {
     avatarUrl: "/images/codertrinh-avatar.jpg",
-    name: "hunger-Eric",
-    description:
-      "Software dev and content creator sharing projects, tutorials, and dev logs.",
-    stats: {
-      videos: "0",
-      subscribers: "0",
-      views: "0",
-    },
+    name: copy.channelName,
+    description: copy.channelDescription,
+    stats: copy.stats,
   };
 
   return (
-    <section id="youtube" className="py-16 scroll-mt-12 lg:py-24">
+    <section id="youtube" className="scroll-mt-12 py-16 lg:py-24">
       <div className="mx-auto w-full max-w-6xl px-4">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          ~/YouTube
-        </h2>
-
-        <h3 className="mt-4 text-2xl font-semibold sm:text-3xl">
-          Videos of my work, hobbies, and life.
-        </h3>
+        <SectionHeader
+          eyebrow={copy.eyebrow}
+          title={copy.title}
+          description={copy.description}
+          className="py-5"
+        />
 
         {/* Channel banner */}
-        <div className="mt-3 flex flex-col gap-3 rounded-lg border border-white/10 bg-white/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <Surface
+          tone="paper"
+          className="mt-6 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+        >
           <div className="flex items-center gap-3">
-            <div className="h-16 w-16 overflow-hidden rounded-md bg-black/40">
-              <img
+            <div className="h-16 w-16 overflow-hidden rounded-control border border-hairline bg-surface-paper">
+              <Image
                 src={youtubeProfile.avatarUrl}
                 alt={youtubeProfile.name}
+                width={64}
+                height={64}
                 className="h-full w-full object-cover"
               />
             </div>
             <div>
-              <p className="text-sm font-semibold text-white sm:text-base">
+              <p className="text-sm font-semibold text-foreground sm:text-base">
                 {youtubeProfile.name}
               </p>
               <div className="mt-2 flex flex-wrap gap-3 text-[11px] text-muted-foreground sm:text-xs">
-                <span>{youtubeProfile.stats.videos} videos</span>
-                <span>· {youtubeProfile.stats.subscribers} subscribers</span>
-                <span>· {youtubeProfile.stats.views} views</span>
+                <span>
+                  {youtubeProfile.stats.videos} {copy.videosLabel}
+                </span>
+                <span>
+                  · {youtubeProfile.stats.subscribers} {copy.subscribersLabel}
+                </span>
+                <span>
+                  · {youtubeProfile.stats.views} {copy.viewsLabel}
+                </span>
               </div>
               <p className="mt-2 text-xs text-muted-foreground sm:text-sm">
                 {youtubeProfile.description}
@@ -62,27 +76,30 @@ export function YouTubeSection() {
           </div>
 
           {channelUrl && (
-            <a
+            <ActionButton
               href={channelUrl}
               target="_blank"
               rel="noreferrer noopener"
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-accent px-4 py-2 text-xs font-medium text-white shadow-sm transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.02] hover:bg-accent/90 sm:text-sm"
+              tone="primary"
+              icon={<Youtube className="h-4 w-4" aria-hidden />}
             >
-              <Youtube className="h-4 w-4" />
-              <span>View channel</span>
-            </a>
+              {copy.viewChannel}
+            </ActionButton>
           )}
-        </div>
+        </Surface>
 
         {/* Featured video: video left, text right */}
-        <article className="mt-6 rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-muted-foreground sm:p-5 sm:text-base">
+        <Surface
+          tone="paper"
+          className="mt-6 p-4 text-sm text-muted-foreground sm:p-5 sm:text-base"
+        >
           <p className="text-xs font-semibold uppercase tracking-wide text-accent sm:text-sm">
-            Featured video
+            {copy.featuredVideo}
           </p>
 
           <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-start">
             <div className="md:basis-[50%]">
-              <div className="relative aspect-video overflow-hidden rounded-md">
+              <div className="relative aspect-video overflow-hidden rounded-control border border-hairline bg-surface-paper">
                 <iframe
                   src={featuredEmbedUrl}
                   title={featured.title}
@@ -95,7 +112,7 @@ export function YouTubeSection() {
 
             <div className="flex flex-1 flex-col justify-between gap-3 md:pl-3">
               <div className="space-y-2">
-                <h4 className="text-base font-semibold text-white sm:text-lg">
+                <h4 className="text-base font-semibold text-foreground sm:text-lg">
                   {featured.title}
                 </h4>
 
@@ -103,7 +120,7 @@ export function YouTubeSection() {
                   <p className="text-[11px] text-muted-foreground sm:text-xs">
                     {featured.date}
                     {featured.date && featured.views && " · "}
-                    {featured.views && `${featured.views} views`}
+                    {featured.views && `${featured.views} ${copy.viewsLabel}`}
                   </p>
                 )}
 
@@ -114,23 +131,32 @@ export function YouTubeSection() {
                 )}
               </div>
 
-              <a
+              <ActionButton
                 href={featured.url}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="inline-flex items-center gap-1.5 self-start rounded-md border border-white/25 px-3 py-1.5 text-xs font-medium text-white/90 transition hover:bg-white/10 sm:text-sm"
+                tone="secondary"
+                icon={<ExternalLink className="h-3.5 w-3.5" aria-hidden />}
+                className="self-start px-3 py-1.5 text-xs sm:text-sm"
               >
-                <span>Watch on YouTube</span>
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
+                {copy.watchOnYouTube}
+              </ActionButton>
             </div>
           </div>
-        </article>
+        </Surface>
 
         {/* Bottom row: most recent + most viewed */}
         <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <VideoCard label="Most recent video" video={mostRecent} />
-          <VideoCard label="Most viewed video" video={mostViewed} />
+          <VideoCard
+            label={copy.mostRecentVideo}
+            viewsLabel={copy.viewsLabel}
+            video={mostRecent}
+          />
+          <VideoCard
+            label={copy.mostViewedVideo}
+            viewsLabel={copy.viewsLabel}
+            video={mostViewed}
+          />
         </div>
       </div>
     </section>
@@ -139,23 +165,33 @@ export function YouTubeSection() {
 
 type SimpleVideo = (typeof youtubeVideos)[number];
 
-function VideoCard({ label, video }: { label: string; video: SimpleVideo }) {
+function VideoCard({
+  label,
+  viewsLabel,
+  video,
+}: {
+  label: string;
+  viewsLabel: string;
+  video: SimpleVideo;
+}) {
   return (
     <a
       href={video.url}
       target="_blank"
       rel="noreferrer noopener"
-      className="group flex flex-col gap-2 rounded-lg border border-white/10 bg-white/5 p-3 text-xs text-muted-foreground transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.01] hover:border-accent/70 hover:bg-white/10 sm:p-4 sm:text-sm md:flex-row md:items-start"
+      className="group flex flex-col gap-2 rounded-card border border-hairline bg-surface-paper-elevated p-3 text-xs text-muted-foreground transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:scale-[1.01] hover:border-accent/70 hover:bg-muted sm:p-4 sm:text-sm md:flex-row md:items-start"
     >
       <div className="md:w-40 md:flex-shrink-0">
-        <div className="relative aspect-video overflow-hidden rounded-md">
-          <img
+        <div className="relative aspect-video overflow-hidden rounded-control border border-hairline bg-surface-paper">
+          <Image
             src={video.thumbnailUrl}
             alt={video.title}
+            fill
+            sizes="(min-width: 768px) 160px, 100vw"
             className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.05]"
           />
           {video.duration && (
-            <div className="pointer-events-none absolute bottom-1 right-1 rounded-sm bg-black/70 px-1.5 py-0.5 text-[10px] text-white">
+            <div className="pointer-events-none absolute bottom-1 right-1 rounded-control bg-surface-graphite px-1.5 py-0.5 text-[10px] text-surface-graphite-foreground">
               {video.duration}
             </div>
           )}
@@ -167,13 +203,15 @@ function VideoCard({ label, video }: { label: string; video: SimpleVideo }) {
           {label}
         </p>
 
-        <h5 className="line-clamp-2 font-medium text-white">{video.title}</h5>
+        <h5 className="line-clamp-2 font-medium text-foreground">
+          {video.title}
+        </h5>
 
         {(video.date || video.views) && (
           <p className="text-[11px] text-muted-foreground sm:text-xs">
             {video.date}
             {video.date && video.views && " · "}
-            {video.views && `${video.views} views`}
+            {video.views && `${video.views} ${viewsLabel}`}
           </p>
         )}
       </div>

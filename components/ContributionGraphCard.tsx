@@ -15,6 +15,20 @@ type ActivityDay = {
   count: number;
 };
 
+type PhotographyPhoto = {
+  date?: string;
+};
+
+type PhotographyProject = {
+  date?: string;
+  photos?: PhotographyPhoto[];
+};
+
+type PhotographyConfig = {
+  projects?: PhotographyProject[];
+  zh?: { projects?: PhotographyProject[] };
+};
+
 type DayCell = {
   date: Date;
   inRange: boolean;
@@ -96,10 +110,11 @@ function buildActivityDays(githubDays?: ActivityDay[]): ActivityDay[] {
 
   // Photography projects
   // Photography projects (date data only for contribution graph)
-  const photographyProjects = Array.isArray((photographyData as any)?.zh?.projects)
-    ? (photographyData as any).zh.projects
-    : Array.isArray((photographyData as any)?.projects)
-      ? (photographyData as any).projects
+  const typedPhotographyData = photographyData as PhotographyConfig;
+  const photographyProjects = Array.isArray(typedPhotographyData.zh?.projects)
+    ? typedPhotographyData.zh.projects
+    : Array.isArray(typedPhotographyData.projects)
+      ? typedPhotographyData.projects
       : [];
 
   for (const project of photographyProjects) {
@@ -177,7 +192,7 @@ function buildYearGrid(year: number, activityDays?: ActivityDay[]): GridResult {
     if (!cell.inRange || cell.date.getUTCFullYear() !== year) return;
     const m = cell.date.getUTCMonth();
     const weekIndex = Math.floor(idx / 7);
-    let span = monthSpans[m];
+    const span = monthSpans[m];
     if (!span) {
       monthSpans[m] = { minWeek: weekIndex, maxWeek: weekIndex };
       return;
@@ -386,13 +401,16 @@ export function ContributionGraphCard({
     return () => { cancelled = true; };
   }, [currentYear]);
 
-  const years = [
-    currentYear,
-    currentYear - 1,
-    currentYear - 2,
-    currentYear - 3,
-    currentYear - 4,
-  ];
+  const years = useMemo(
+    () => [
+      currentYear,
+      currentYear - 1,
+      currentYear - 2,
+      currentYear - 3,
+      currentYear - 4,
+    ],
+    [currentYear]
+  );
 
   const activityByYear = useMemo(() => {
     const buckets: Record<number, ActivityDay[]> = {};
@@ -404,7 +422,7 @@ export function ContributionGraphCard({
       }
     }
     return buckets;
-  }, [githubDays, currentYear]);
+  }, [githubDays, years]);
 
   const useRolling = rollingCurrentYear && year === currentYear;
   const { cells, weekCount, monthLabelByWeek, summaryLabel } = useMemo(() => {

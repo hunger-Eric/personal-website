@@ -10,28 +10,28 @@ const CALLOUT_STYLES: Record<
 > = {
   info: {
     icon: Info,
-    cls: "border-sky-500/30 bg-sky-500/10",
-    iconCls: "text-sky-400",
+    cls: "border-border bg-surface-paper-elevated",
+    iconCls: "text-accent",
   },
   warning: {
     icon: AlertTriangle,
-    cls: "border-amber-500/30 bg-amber-500/10",
-    iconCls: "text-amber-400",
+    cls: "border-warning bg-warning/10",
+    iconCls: "text-warning",
   },
   success: {
     icon: CheckCircle,
-    cls: "border-emerald-500/30 bg-emerald-500/10",
-    iconCls: "text-emerald-400",
+    cls: "border-success bg-success/10",
+    iconCls: "text-success",
   },
   danger: {
     icon: XCircle,
-    cls: "border-rose-500/30 bg-rose-500/10",
-    iconCls: "text-rose-400",
+    cls: "border-destructive bg-destructive/10",
+    iconCls: "text-destructive",
   },
   tip: {
     icon: Lightbulb,
-    cls: "border-indigo-500/30 bg-indigo-500/10",
-    iconCls: "text-indigo-300",
+    cls: "border-accent bg-accent/10",
+    iconCls: "text-accent",
   },
 };
 
@@ -49,7 +49,7 @@ export function Callout({
   return (
     <div
       className={[
-        "my-6 rounded-lg border p-4 text-sm sm:text-base",
+        "my-6 rounded-card border p-4 text-sm sm:text-base",
         safe.cls,
       ].join(" ")}
     >
@@ -86,7 +86,7 @@ export function YouTube({
   if (!videoId) return null;
 
   return (
-    <figure className="my-6 overflow-hidden rounded-xl border border-white/10 bg-black">
+    <figure className="my-6 overflow-hidden rounded-card border border-border bg-surface-graphite">
       <div className="relative aspect-video w-full">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${videoId}`}
@@ -130,13 +130,13 @@ function extractYouTubeId(url?: string): string | null {
 export function Tweet({ url, children }: { url: string; children?: ReactNode }) {
   if (!url) return null;
   return (
-    <blockquote className="my-6 rounded-xl border border-white/10 bg-white/5 p-4">
+    <blockquote className="my-6 rounded-card border border-border bg-surface-paper-elevated p-4">
       {children && <div className="text-foreground">{children}</div>}
       <a
         href={url}
         target="_blank"
         rel="noreferrer noopener"
-        className="mt-2 inline-block text-sm text-accent hover:underline"
+        className="mt-2 inline-block text-sm font-semibold text-accent hover:underline"
       >
         View on X / Twitter →
       </a>
@@ -172,7 +172,7 @@ export function Figure({
         height={height}
         loading="lazy"
         decoding="async"
-        className="w-full rounded-xl border border-white/10"
+        className="w-full rounded-card border border-border"
       />
       {caption && (
         <figcaption className="mt-2 text-center text-sm text-muted-foreground">
@@ -189,7 +189,7 @@ export function Figure({
  */
 export function Kbd({ children }: { children: ReactNode }) {
   return (
-    <kbd className="inline-flex items-center rounded-md border border-white/15 bg-white/5 px-1.5 py-0.5 font-mono text-[0.85em] text-foreground shadow-[0_1px_0_rgba(255,255,255,0.08)]">
+    <kbd className="inline-flex items-center rounded-control border border-border bg-muted px-1.5 py-0.5 font-mono text-[0.85em] text-foreground">
       {children}
     </kbd>
   );

@@ -18,7 +18,7 @@ export default async function Page() {
   const cases = await loadCases("zh");
 
   return (
-    <main className="min-h-screen bg-[#f7f1e7] text-[#1f2420]">
+    <main className="min-h-screen bg-surface-paper text-surface-paper-foreground">
       {sections.hero && <HeroShowcaseSection />}
       <SystemDemoConsole cases={cases} />
       {sections.about && <AboutSection />}

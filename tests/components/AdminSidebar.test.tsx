@@ -1,53 +1,65 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
+import React, { type AnchorHTMLAttributes, type ReactNode } from "react";
+
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { adminCopy } from "@/config/copy/admin";
 
 const mockUsePathname = vi.fn();
 
-vi.mock("next/navigation", () => ({
-  usePathname: () => mockUsePathname(),
-  useRouter: () => ({
-    push: vi.fn(),
-    replace: vi.fn(),
-    prefetch: vi.fn(),
-  }),
+vi.mock("next/link", () => ({
+  default: ({
+    href,
+    children,
+    ...props
+  }: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string; children?: ReactNode }) =>
+    React.createElement("a", { href, ...props }, children),
 }));
 
-const NAV_GROUPS: { section: string; items: { href: string; label: string }[] }[] = [
+vi.mock("next/navigation", () => ({
+  usePathname: () => mockUsePathname(),
+}));
+
+vi.mock("lucide-react", () => {
+  const Icon = ({ className }: { className?: string }) =>
+    React.createElement("svg", { className });
+  return {
+    LayoutDashboard: Icon,
+    Settings: Icon,
+    Menu: Icon,
+    User: Icon,
+    Image: Icon,
+    Palette: Icon,
+    FilePlus: Icon,
+    ArrowLeft: Icon,
+  };
+});
+
+const navGroups = [
   {
-    section: "General",
+    section: adminCopy.sidebar.general,
     items: [
-      { href: "/admin", label: "Dashboard" },
-      { href: "/admin/site", label: "Site Settings" },
-      { href: "/admin/navbar", label: "Navbar" },
-      { href: "/admin/about", label: "About" },
-      { href: "/admin/theme", label: "Theme" },
+      { href: "/admin", label: adminCopy.sidebar.dashboard },
+      { href: "/admin/site", label: adminCopy.sidebar.site },
+      { href: "/admin/navbar", label: adminCopy.sidebar.navbar },
+      { href: "/admin/about", label: adminCopy.sidebar.about },
+      { href: "/admin/theme", label: adminCopy.sidebar.theme },
     ],
   },
   {
-    section: "Content",
+    section: adminCopy.sidebar.content,
     items: [
-      { href: "/admin/photography", label: "Photography" },
-      { href: "/admin/pages", label: "Custom Pages" },
+      { href: "/admin/photography", label: adminCopy.sidebar.photography },
+      { href: "/admin/pages", label: adminCopy.sidebar.pages },
     ],
   },
 ];
 
-function getAllNavLinks(): HTMLAnchorElement[] {
-  return screen.getAllByRole("link");
-}
-
 function getNavLinkByLabel(label: string): HTMLAnchorElement {
-  const link = screen.getByText(label);
-  const anchor = link.closest("a");
-  if (!anchor) throw new Error(`No anchor found for label "${label}"`);
-  return anchor;
-}
-
-function isActiveLink(link: HTMLAnchorElement): boolean {
-  const cls = link.className;
-  return cls.includes("bg-[color:var(--accent-light)]/20");
+  const link = screen.getByText(label).closest("a");
+  if (!link) throw new Error(`No anchor found for ${label}`);
+  return link;
 }
 
 beforeEach(() => {
@@ -56,54 +68,57 @@ beforeEach(() => {
 });
 
 describe("AdminSidebar", () => {
-  describe("navigation items", () => {
-    it("renders all section headings", () => {
-      render(<AdminSidebar />);
-      for (const group of NAV_GROUPS) {
-        expect(screen.getByText(group.section)).toBeInTheDocument();
-      }
-    });
+  it("renders copy-driven section headings and nav item hrefs", () => {
+    render(<AdminSidebar />);
 
-    it("renders all nav item labels with correct hrefs", () => {
-      render(<AdminSidebar />);
-      for (const group of NAV_GROUPS) {
-        for (const item of group.items) {
-          const anchor = getNavLinkByLabel(item.label);
-          expect(anchor).toHaveAttribute("href", item.href);
-        }
+    for (const group of navGroups) {
+      expect(screen.getByText(group.section)).toBeInTheDocument();
+      for (const item of group.items) {
+        expect(getNavLinkByLabel(item.label)).toHaveAttribute("href", item.href);
       }
-    });
+    }
   });
 
-  describe("active state highlighting", () => {
-    it("highlights dashboard when pathname is /admin", () => {
-      mockUsePathname.mockReturnValue("/admin");
-      render(<AdminSidebar />);
-      const link = getNavLinkByLabel("Dashboard");
-      expect(isActiveLink(link)).toBe(true);
-    });
+  it("highlights dashboard only for the exact admin index", () => {
+    mockUsePathname.mockReturnValue("/admin");
+    render(<AdminSidebar />);
 
-    it("supports prefix matching on non-dashboard items", () => {
-      mockUsePathname.mockReturnValue("/admin/site/extra");
-      render(<AdminSidebar />);
-      const link = getNavLinkByLabel("Site Settings");
-      expect(isActiveLink(link)).toBe(true);
-    });
+    const link = getNavLinkByLabel(adminCopy.sidebar.dashboard);
+    expect(link.className).toContain("bg-accent/10");
+    expect(link.className).toContain("text-accent");
   });
 
-  describe("branding and footer", () => {
-    it("shows brand and footer text", () => {
-      render(<AdminSidebar />);
-      expect(screen.getByText("fengc")).toBeInTheDocument();
-      expect(
-        screen.getByText("Saving changes pushes to GitHub automatically")
-      ).toBeInTheDocument();
-    });
+  it("supports prefix matching on non-dashboard sections", () => {
+    mockUsePathname.mockReturnValue("/admin/site/extra");
+    render(<AdminSidebar />);
 
-    it("renders back link", () => {
-      render(<AdminSidebar />);
-      const backLink = screen.getByTitle("Back to site");
-      expect(backLink).toHaveAttribute("href", "/");
-    });
+    expect(getNavLinkByLabel(adminCopy.sidebar.site).className).toContain("bg-accent/10");
+    expect(getNavLinkByLabel(adminCopy.sidebar.dashboard).className).not.toContain(
+      "bg-accent/10"
+    );
+  });
+
+  it("shows admin workbench identity and copy-driven footer text", () => {
+    render(<AdminSidebar />);
+
+    expect(screen.getByText(adminCopy.common.brand)).toBeInTheDocument();
+    expect(screen.getByText(adminCopy.common.product)).toBeInTheDocument();
+    expect(screen.getByText(adminCopy.sidebar.autoSaveHint)).toBeInTheDocument();
+  });
+
+  it("renders accessible back-to-site links", () => {
+    render(<AdminSidebar />);
+
+    const links = screen.getAllByLabelText(adminCopy.common.backToSite);
+    expect(links).toHaveLength(2);
+    links.forEach((link) => expect(link).toHaveAttribute("href", "/"));
+  });
+
+  it("does not reintroduce template radius or raw accent color classes", () => {
+    const { container } = render(<AdminSidebar />);
+
+    expect(container.innerHTML).not.toContain(["rounded", "lg"].join("-"));
+    expect(container.innerHTML).not.toContain("var(--accent-light)");
+    expect(container.innerHTML).not.toContain("var(--accent-hover)");
   });
 });

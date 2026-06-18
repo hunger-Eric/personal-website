@@ -6,6 +6,28 @@ export type GitHubContributionDay = {
   count: number; // total contributions that day
 };
 
+type GitHubGraphQLError = {
+  message?: string;
+};
+
+type GitHubContributionResponse = {
+  errors?: GitHubGraphQLError[];
+  data?: {
+    user?: {
+      contributionsCollection?: {
+        contributionCalendar?: {
+          weeks?: Array<{
+            contributionDays?: Array<{
+              date?: string;
+              contributionCount?: number;
+            }>;
+          }>;
+        };
+      };
+    };
+  };
+};
+
 const CONTRIBUTIONS_QUERY = `
   query Contributions($login: String!, $from: DateTime!, $to: DateTime!) {
     user(login: $login) {
@@ -123,11 +145,13 @@ export async function fetchGitHubContributionsForYear(
         throw new Error(`GitHub GraphQL error: ${res.status} - ${text}`);
       }
 
-      const json = await res.json();
+      const json = (await res.json()) as GitHubContributionResponse;
 
       // Check for GraphQL errors
       if (json.errors && json.errors.length > 0) {
-        const errorMessage = json.errors.map((e: any) => e.message).join(", ");
+        const errorMessage = json.errors
+          .map((error) => error.message || "Unknown GraphQL error")
+          .join(", ");
         throw new Error(`GitHub GraphQL error: ${errorMessage}`);
       }
 
@@ -147,11 +171,11 @@ export async function fetchGitHubContributionsForYear(
       }
 
       return days;
-    } catch (err: any) {
-      lastError = err;
+    } catch (err: unknown) {
+      lastError = err instanceof Error ? err : new Error(String(err));
 
       // Handle abort errors (timeout)
-      if (err.name === "AbortError") {
+      if (lastError.name === "AbortError") {
         if (attempt < RETRY_CONFIG.maxRetries) {
           const delay = getRetryDelay(attempt);
           console.warn(
@@ -167,7 +191,7 @@ export async function fetchGitHubContributionsForYear(
       if (attempt < RETRY_CONFIG.maxRetries) {
         const delay = getRetryDelay(attempt);
         console.warn(
-          `GitHub API error: ${err.message}, retrying in ${Math.round(delay)}ms... (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries})`
+          `GitHub API error: ${lastError.message}, retrying in ${Math.round(delay)}ms... (attempt ${attempt + 1}/${RETRY_CONFIG.maxRetries})`
         );
         await sleep(delay);
         continue;

@@ -5,6 +5,7 @@ import React from "react";
 
 import type { CaseItem, CustomerStory } from "@/config/cases";
 import { CaseFilmStage } from "@/components/cases/CaseFilmStage";
+import { getSiteCopy } from "@/config/contentCopy";
 
 vi.mock("next/link", () => ({
   default: ({ href, children, className, ...props }: React.ComponentProps<"a">) =>
@@ -147,14 +148,15 @@ describe("CaseFilmStage", () => {
   });
 
   it("advances and replays the current step", () => {
+    const copy = getSiteCopy("zh").cases;
     render(React.createElement(CaseFilmStage, { cases, singleCase: true }));
 
     expect(screen.getByText("artifact-1")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByLabelText("Next film step"));
+    fireEvent.click(screen.getByLabelText(copy.nextStep));
     expect(screen.getByText("artifact-2")).toBeInTheDocument();
 
-    fireEvent.click(screen.getByLabelText("Replay film demo"));
+    fireEvent.click(screen.getByLabelText(copy.replayFilm));
     expect(screen.getByText("artifact-1")).toBeInTheDocument();
   });
 

@@ -1,8 +1,7 @@
 ﻿// components/cases/FeaturedCasesTicker.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import { useMemo, useRef, useState, type TouchEventHandler } from "react";
 import { ChevronLeft, ChevronRight, FolderOpen } from "lucide-react";
 import {
   FilledGithub,
@@ -12,7 +11,11 @@ import {
   FilledPlay,
   FilledArrowUpRight,
 } from "@/components/FilledIcons";
+import { useLocale } from "@/components/LocaleProvider";
+import { useAutoplaySteps, usePrefersReducedMotion } from "@/components/motion";
+import { ActionButton, IconButton, Surface } from "@/components/system";
 import type { CaseItem } from "../../config/cases";
+import { getSiteCopy } from "@/config/contentCopy";
 
 interface FeaturedCasesTickerProps {
   cases: CaseItem[];
@@ -51,34 +54,22 @@ function getTools(project: CaseItem) {
 export function FeaturedCasesCarousel({
   cases,
 }: FeaturedCasesTickerProps) {
+  const { locale } = useLocale();
+  const copy = getSiteCopy(locale).cases;
   const slides = useMemo(() => cases.slice(0, 8), [cases]);
   const total = slides.length;
 
-  const [reduceMotion, setReduceMotion] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia?.("(prefers-reduced-motion: reduce)");
-    if (!mq) return;
-    const apply = () => setReduceMotion(Boolean(mq.matches));
-    apply();
-    mq.addEventListener?.("change", apply);
-    return () => mq.removeEventListener?.("change", apply);
-  }, []);
-
   const [paused, setPaused] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const reduceMotion = usePrefersReducedMotion();
+  const { activeIndex, setActiveIndex, next: goNext } = useAutoplaySteps({
+    length: total,
+    intervalMs: 5000,
+    enabled: !paused,
+    reducedMotion: reduceMotion,
+  });
 
   const touchStartX = useRef<number | null>(null);
   const touchDeltaX = useRef<number>(0);
-
-  useEffect(() => {
-    if (!total) return;
-    setActiveIndex(0);
-  }, [total]);
-
-  const goNext = () => {
-    if (total <= 1) return;
-    setActiveIndex((i) => (i + 1) % total);
-  };
 
   const goPrev = () => {
     if (total <= 1) return;
@@ -90,23 +81,16 @@ export function FeaturedCasesCarousel({
     setActiveIndex(((i % total) + total) % total);
   };
 
-  useEffect(() => {
-    if (total <= 1 || reduceMotion || paused) return;
-    const t = window.setTimeout(goNext, 5000);
-    return () => window.clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeIndex, total, reduceMotion, paused]);
-
-  const onTouchStart: React.TouchEventHandler<HTMLDivElement> = (e) => {
+  const onTouchStart: TouchEventHandler<HTMLDivElement> = (e) => {
     touchStartX.current = e.touches[0]?.clientX ?? null;
     touchDeltaX.current = 0;
   };
-  const onTouchMove: React.TouchEventHandler<HTMLDivElement> = (e) => {
+  const onTouchMove: TouchEventHandler<HTMLDivElement> = (e) => {
     if (touchStartX.current == null) return;
     const x = e.touches[0]?.clientX ?? 0;
     touchDeltaX.current = x - touchStartX.current;
   };
-  const onTouchEnd: React.TouchEventHandler<HTMLDivElement> = () => {
+  const onTouchEnd: TouchEventHandler<HTMLDivElement> = () => {
     const dx = touchDeltaX.current;
     touchStartX.current = null;
     touchDeltaX.current = 0;
@@ -117,7 +101,8 @@ export function FeaturedCasesCarousel({
 
   if (!total) return null;
 
-  const current = slides[activeIndex];
+  const safeActiveIndex = activeIndex % total;
+  const current = slides[safeActiveIndex];
   if (!current) return null;
 
   const blurb = getBlurb(current);
@@ -129,11 +114,22 @@ export function FeaturedCasesCarousel({
     window.open(href, "_blank", "noopener,noreferrer");
   };
 
-  const navBtnClass =
-    "inline-flex items-center justify-center rounded-md border border-border bg-card/90 p-2.5 text-foreground backdrop-blur-md transition-all duration-200 hover:bg-muted active:scale-95";
-
-  const actionBtnClass =
-    "inline-flex items-center gap-1.5 rounded-md border border-border bg-card/90 px-3.5 py-2 text-[13px] font-medium text-foreground backdrop-blur-md transition-all duration-200 hover:bg-muted sm:text-sm";
+  const linkLabel = (type?: string) => {
+    switch (type) {
+      case "live":
+        return copy.linkLive;
+      case "github":
+        return copy.linkGithub;
+      case "docs":
+        return copy.linkDocs;
+      case "download":
+        return copy.linkDownload;
+      case "video":
+        return copy.linkVideo;
+      default:
+        return copy.linkOpen;
+    }
+  };
 
   return (
     <div
@@ -143,20 +139,19 @@ export function FeaturedCasesCarousel({
       onFocusCapture={() => setPaused(true)}
       onBlurCapture={() => setPaused(false)}
     >
-      <div
-        className="relative overflow-hidden rounded-2xl border border-border bg-card"
+      <Surface
+        tone="paper"
+        className="relative overflow-hidden"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
-        aria-label="Featured cases carousel"
+        aria-label={copy.featuredBadge}
       >
-        {/* Fixed, modest height so the carousel stays compact */}
         <div className="relative h-[240px] w-full sm:h-[280px] md:h-[320px]">
-          {/* Image stack 鈥?full bleed, crossfade */}
           <div className="absolute inset-0">
             {slides.map((project, idx) => {
               const image = project.imageUrl;
-              const isActive = idx === activeIndex;
+              const isActive = idx === safeActiveIndex;
               return (
                 <div
                   key={`${project.id}-${idx}`}
@@ -178,23 +173,21 @@ export function FeaturedCasesCarousel({
                       loading={isActive ? "eager" : "lazy"}
                     />
                   ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-200/70 via-violet-100/50 to-sky-100/60" />
+                    <div className="absolute inset-0 bg-surface-paper-elevated" />
                   )}
                 </div>
               );
             })}
           </div>
 
-          {/* Dark overlay so text always reads. Flat scrim + a subtle gradient at the edges. */}
-          <div className="pointer-events-none absolute inset-0 bg-white/42" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-white/30 via-transparent to-white/45" />
+          <div className="pointer-events-none absolute inset-0 bg-surface-paper/75" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-surface-paper via-transparent to-surface-paper" />
 
-          {/* Centered content */}
           <div className="relative z-10 flex h-full w-full items-center justify-center px-5 py-6 sm:px-8">
             <div className="w-full max-w-xl text-center">
-              <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-border bg-card/90 px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:text-[12px]">
+              <div className="mb-3 inline-flex items-center gap-2 rounded-control border border-border bg-surface-paper px-3 py-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground backdrop-blur-sm sm:text-[12px]">
                 <FolderOpen className="h-3.5 w-3.5" />
-                <span>Featured project</span>
+                <span>{copy.featuredBadge}</span>
               </div>
 
               <h4 className="text-xl font-semibold leading-tight text-foreground sm:text-2xl md:text-[2rem]">
@@ -206,96 +199,77 @@ export function FeaturedCasesCarousel({
               </p>
 
               {tools.length ? (
-                <p className="mt-2 text-[12px] font-medium text-indigo-600 sm:text-sm">
+                <p className="mt-2 text-[12px] font-medium text-accent sm:text-sm">
                   {tools.join(", ")}
                 </p>
               ) : null}
 
               <div className="mt-4 flex flex-wrap justify-center gap-2">
-                <Link
+                <ActionButton
                   href={`/projects/${encodeURIComponent(current.id)}`}
-                  className={`${actionBtnClass} px-3 py-1.5`}
+                  className="px-3 py-1.5 backdrop-blur-md"
+                  icon={<FilledArrowUpRight className="h-4 w-4 opacity-90" />}
                 >
-                  <FilledArrowUpRight className="h-4 w-4 opacity-90" />
-                  <span>View Details</span>
-                </Link>
+                  {copy.viewDetails}
+                </ActionButton>
 
                 {links
                   .filter((l) => !!l.href)
                   .map((l) => {
                     const Ico = iconForLink(l.type);
                     return (
-                      <button
+                      <ActionButton
                         key={`${current.id}-${l.type}-${l.href}`}
                         type="button"
                         onClick={() => openHref(l.href)}
-                        className={`${actionBtnClass} px-3 py-1.5`}
+                        className="px-3 py-1.5 backdrop-blur-md"
+                        icon={<Ico className="h-4 w-4 opacity-90" />}
                       >
-                        <Ico className="h-4 w-4 opacity-90" />
-                        <span>
-                          {l.label ||
-                            (l.type === "live"
-                              ? "Live"
-                              : l.type === "github"
-                              ? "GitHub"
-                              : l.type === "docs"
-                              ? "Docs"
-                              : l.type === "download"
-                              ? "Download"
-                              : l.type === "video"
-                              ? "Video"
-                              : "Open")}
-                        </span>
-                      </button>
+                        {l.label || linkLabel(l.type)}
+                      </ActionButton>
                     );
                   })}
               </div>
             </div>
           </div>
 
-          {/* Side arrows */}
           {total > 1 ? (
             <>
-              <button
-                type="button"
+              <IconButton
                 onClick={goPrev}
-                aria-label="Previous project"
-                className={`absolute left-3 top-1/2 z-20 -translate-y-1/2 ${navBtnClass} sm:left-5`}
-              >
-                <ChevronLeft className="h-5 w-5" strokeWidth={2.4} />
-              </button>
-              <button
-                type="button"
+                label={copy.previousProject}
+                icon={<ChevronLeft className="h-5 w-5" strokeWidth={2.4} />}
+                className="absolute left-3 top-1/2 z-20 -translate-y-1/2 bg-surface-paper/90 backdrop-blur-md active:scale-95 sm:left-5"
+              />
+              <IconButton
                 onClick={goNext}
-                aria-label="Next project"
-                className={`absolute right-3 top-1/2 z-20 -translate-y-1/2 ${navBtnClass} sm:right-5`}
-              >
-                <ChevronRight className="h-5 w-5" strokeWidth={2.4} />
-              </button>
+                label={copy.nextProject}
+                icon={<ChevronRight className="h-5 w-5" strokeWidth={2.4} />}
+                className="absolute right-3 top-1/2 z-20 -translate-y-1/2 bg-surface-paper/90 backdrop-blur-md active:scale-95 sm:right-5"
+              />
             </>
           ) : null}
         </div>
-      </div>
+      </Surface>
 
-      {/* Indicators 鈥?rectangles, outside the card */}
       {total > 1 ? (
         <div className="mt-4 flex items-center justify-center gap-2">
           {Array.from({ length: total }).map((_, i) => {
-            const isActive = i === activeIndex;
+            const isActive = i === safeActiveIndex;
             return (
               <button
                 key={i}
                 type="button"
                 onClick={() => goTo(i)}
-                aria-label={`Go to slide ${i + 1}`}
+                aria-label={`${copy.goToSlidePrefix} ${i + 1}`}
                 className="group py-1"
               >
                 <span
                   className={[
-                    "block h-[5px] rounded-[1px] transition-all duration-300",
+                    "block h-[5px] rounded-control transition-all duration-300",
                     isActive
-                      ? "w-12 bg-indigo-500"
-                      : "w-8 bg-slate-300 group-hover:bg-slate-400",
+                      ? "w-12 bg-accent"
+                      : "w-8 bg-muted group-hover:bg-border",
                   ].join(" ")}
                 />
               </button>
@@ -308,4 +282,3 @@ export function FeaturedCasesCarousel({
 }
 
 export const FeaturedCasesTicker = FeaturedCasesCarousel;
-

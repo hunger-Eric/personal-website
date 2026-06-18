@@ -3,6 +3,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
+type MockLinkProps = React.PropsWithChildren<{ href: string }>;
+type MockImageProps = React.ImgHTMLAttributes<HTMLImageElement>;
+
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
   useRouter: () => ({
@@ -15,12 +18,12 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("next/link", () => ({
-  default: ({ children, href }: any) =>
+  default: ({ children, href }: MockLinkProps) =>
     React.createElement("a", { href }, children),
 }));
 
 vi.mock("next/image", () => ({
-  default: (props: any) => React.createElement("img", props),
+  default: (props: MockImageProps) => React.createElement("img", props),
 }));
 
 vi.mock("lucide-react", () => {
@@ -38,8 +41,15 @@ vi.mock("@/components/LangSwitch", () => ({
 
 vi.mock("@/components/LocaleProvider", () => ({
   useLocale: () => ({
+    locale: "en",
     t: {
       nav: {
+        home: "Home",
+        menu: "Menu",
+        openMenu: "Toggle navigation menu",
+        closeMenu: "Close navigation menu",
+        mainMenu: "Main navigation",
+        viewMore: "View more",
         about: "About",
         projects: "Projects",
         articles: "Articles",
@@ -76,7 +86,7 @@ const mockNavbarConfig = {
 };
 
 vi.mock("@/config/navbarConfig", () => ({
-  navbarConfig: mockNavbarConfig,
+  getNavbarConfig: () => mockNavbarConfig,
   isExternalHref: (href: string) =>
     href.startsWith("http://") ||
     href.startsWith("https://") ||

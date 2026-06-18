@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeAll } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { NextRequest } from "next/server";
 
 process.env.ENABLE_ADMIN = "true";
@@ -49,7 +49,7 @@ describe("GET /api/admin/photography", () => {
     expect(body.files.private).toEqual(["private1.jpg"]);
   });
 
-  it("returns 500 when listRepoDir throws for public dir", async () => {
+  it("returns config with warning when public file listing fails", async () => {
     vi.mocked(listRepoDir).mockRejectedValueOnce(new Error("Network error"));
     vi.mocked(listRepoDir).mockResolvedValueOnce([]);
 
@@ -58,12 +58,14 @@ describe("GET /api/admin/photography", () => {
       headers: { Cookie: "admin_token=test-admin-token" },
     }));
     const res = await GET(req);
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.error).toBe("Network error");
+    expect(body.files.public).toEqual([]);
+    expect(body.files.private).toEqual([]);
+    expect(body.warnings).toEqual(["public/images/photography: Network error"]);
   });
 
-  it("returns 500 when listRepoDir throws for private dir", async () => {
+  it("returns config with warning when private file listing fails", async () => {
     vi.mocked(listRepoDir).mockResolvedValueOnce(["p1.jpg"]);
     vi.mocked(listRepoDir).mockRejectedValueOnce(new Error("Auth error"));
 
@@ -72,12 +74,14 @@ describe("GET /api/admin/photography", () => {
       headers: { Cookie: "admin_token=test-admin-token" },
     }));
     const res = await GET(req);
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.error).toBe("Auth error");
+    expect(body.files.public).toEqual(["p1.jpg"]);
+    expect(body.files.private).toEqual([]);
+    expect(body.warnings).toEqual(["private-photos: Auth error"]);
   });
 
-  it("returns 500 with fallback message when err has no message", async () => {
+  it("returns config with fallback warning when err has no message", async () => {
     // Throws a non-Error (no .message property)
     vi.mocked(listRepoDir).mockImplementationOnce(() => Promise.reject({ code: 123 }));
     vi.mocked(listRepoDir).mockResolvedValueOnce([]);
@@ -87,12 +91,15 @@ describe("GET /api/admin/photography", () => {
       headers: { Cookie: "admin_token=test-admin-token" },
     }));
     const res = await GET(req);
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.error).toBe("Failed to load config");
+    expect(body.files.public).toEqual([]);
+    expect(body.warnings).toEqual([
+      "public/images/photography: Failed to load file listing",
+    ]);
   });
 
-  it("returns 500 when a string is thrown (non-Error)", async () => {
+  it("returns config with fallback warning when a string is thrown", async () => {
     vi.mocked(listRepoDir).mockImplementationOnce(() => Promise.reject("string error"));
     vi.mocked(listRepoDir).mockResolvedValueOnce([]);
 
@@ -101,9 +108,12 @@ describe("GET /api/admin/photography", () => {
       headers: { Cookie: "admin_token=test-admin-token" },
     }));
     const res = await GET(req);
-    expect(res.status).toBe(500);
+    expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.error).toBe("Failed to load config");
+    expect(body.files.public).toEqual([]);
+    expect(body.warnings).toEqual([
+      "public/images/photography: Failed to load file listing",
+    ]);
   });
 });
 

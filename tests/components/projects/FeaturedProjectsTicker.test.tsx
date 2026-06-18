@@ -230,8 +230,7 @@ describe("FeaturedProjectsTicker", () => {
     const { container } = render(React.createElement(FeaturedProjectsTicker, {
       projects: [makeProject("1")],
     }));
-    // When no imageUrl, the card still renders with bg-card class
-    expect(container.querySelector(".bg-card")).toBeInTheDocument();
+    expect(container.querySelector(".bg-surface-paper-elevated")).toBeInTheDocument();
   });
 
   it("opens project links in new window", async () => {
@@ -255,7 +254,7 @@ describe("FeaturedProjectsTicker", () => {
   it("resets active index when total changes", async () => {
     const { FeaturedProjectsTicker } = await import("@/components/projects/FeaturedProjectsTicker");
     const projects = [makeProject("1"), makeProject("2")];
-    const { container } = render(React.createElement(FeaturedProjectsTicker, { projects }));
+    render(React.createElement(FeaturedProjectsTicker, { projects }));
 
     fireEvent.click(screen.getByLabelText("Next project"));
     expect(screen.getByText("Project 2")).toBeInTheDocument();

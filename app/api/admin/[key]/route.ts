@@ -1,15 +1,22 @@
 // app/api/admin/[key]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { adminGuard } from "@/lib/admin-guard";
+import site from "@/config/site.json";
+import navbar from "@/config/navbar.json";
+import about from "@/config/about.json";
+import theme from "@/config/theme.json";
+import photography from "@/config/photography.json";
+import pages from "@/config/pages.json";
 
-// Dynamic import of config files
-const CONFIG_MODULES: Record<string, () => any> = {
-  site: () => require("@/config/site.json"),
-  navbar: () => require("@/config/navbar.json"),
-  about: () => require("@/config/about.json"),
-  theme: () => require("@/config/theme.json"),
-  photography: () => require("@/config/photography.json"),
-  pages: () => require("@/config/pages.json"),
+type ConfigPayload = Record<string, unknown> | unknown[];
+
+const CONFIG_MODULES: Record<string, ConfigPayload> = {
+  site,
+  navbar,
+  about,
+  theme,
+  photography,
+  pages,
 };
 
 export async function GET(
@@ -25,11 +32,11 @@ export async function GET(
     return NextResponse.json({ error: "Unknown config" }, { status: 404 });
   }
   try {
-    const config = loader();
-    return NextResponse.json({ config });
-  } catch (err: any) {
+    return NextResponse.json({ config: loader });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to load";
     return NextResponse.json(
-      { error: err.message || "Failed to load" },
+      { error: message },
       { status: 500 }
     );
   }

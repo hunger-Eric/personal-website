@@ -14,6 +14,11 @@ async function handler(req: NextRequest) {
 }
 
 describe("GET /api/github-contributions", () => {
+  beforeEach(() => {
+    vi.mocked(fetchGitHubContributionsForYear).mockReset();
+    delete process.env.GITHUB_USERNAME;
+  });
+
   it("returns contributions for a year", async () => {
     const mockFetch = vi.mocked(fetchGitHubContributionsForYear);
     mockFetch.mockResolvedValue([{ date: "2025-01-01", count: 5 }]);
@@ -54,5 +59,20 @@ describe("GET /api/github-contributions", () => {
     );
     const res = await handler(req);
     expect(res.status).toBe(200);
+  });
+
+  it("returns empty fallback data when GitHub token is unavailable", async () => {
+    const mockFetch = vi.mocked(fetchGitHubContributionsForYear);
+    mockFetch.mockRejectedValue(new Error("Missing GITHUB_TOKEN env var"));
+
+    const req = new NextRequest(
+      new Request("http://localhost/api/github-contributions?username=fallback-user&year=2025")
+    );
+    const res = await handler(req);
+    expect(res.status).toBe(200);
+    expect(res.headers.get("X-Data-Status")).toBe("FALLBACK");
+    const body = await res.json();
+    expect(body.days).toEqual([]);
+    expect(body.code).toBe("MISSING_TOKEN");
   });
 });

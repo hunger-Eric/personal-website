@@ -3,7 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Eye, EyeOff, Lock, X } from "lucide-react";
+import { Camera, ChevronLeft, ChevronRight, Eye, EyeOff, Lock, X } from "lucide-react";
+
+import { EmptyState, IconButton, Surface } from "@/components/system";
+import { getSiteCopy } from "@/config/contentCopy";
 
 import { PhotoPinModal } from "./PhotoPinModal";
 
@@ -25,43 +28,47 @@ type Props = {
 
 const SESSION_STORAGE_KEY = "photography_session_token";
 const TOKENS_STORAGE_KEY = "photography_photo_tokens";
+const copy = getSiteCopy("zh").photography;
 
-export function PhotographyGallery({ photos }: Props) {
-  const [mounted, setMounted] = useState(false);
-  const [pinModalOpen, setPinModalOpen] = useState(false);
-  const [photoTokens, setPhotoTokens] = useState<Map<string, string>>(new Map());
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+function loadStoredPhotoTokens() {
+  if (typeof window === "undefined") return new Map<string, string>();
 
-  useEffect(() => {
-    setMounted(true);
-    try {
-      const sessionToken = sessionStorage.getItem(SESSION_STORAGE_KEY);
-      const stored = sessionStorage.getItem(TOKENS_STORAGE_KEY);
-      if (sessionToken && stored) {
-        const parsed: [string, string][] = JSON.parse(stored);
-        setPhotoTokens(new Map(parsed));
-      }
-    } catch {
-      sessionStorage.removeItem(SESSION_STORAGE_KEY);
-      sessionStorage.removeItem(TOKENS_STORAGE_KEY);
+  try {
+    const sessionToken = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const stored = window.sessionStorage.getItem(TOKENS_STORAGE_KEY);
+    if (sessionToken && stored) {
+      const parsed = JSON.parse(stored) as [string, string][];
+      return new Map(parsed);
     }
-  }, []);
+  } catch {
+    window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    window.sessionStorage.removeItem(TOKENS_STORAGE_KEY);
+  }
+
+  return new Map<string, string>();
+}
+
+export function PhotographyGallery({ photos, projectTitle }: Props) {
+  const [pinModalOpen, setPinModalOpen] = useState(false);
+  const [photoTokens, setPhotoTokens] = useState<Map<string, string>>(loadStoredPhotoTokens);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   const handlePinSuccess = useCallback((tokens: Map<string, string>) => {
     setPhotoTokens(tokens);
-    sessionStorage.setItem(TOKENS_STORAGE_KEY, JSON.stringify(Array.from(tokens.entries())));
-    sessionStorage.setItem(SESSION_STORAGE_KEY, "true");
+    window.sessionStorage.setItem(TOKENS_STORAGE_KEY, JSON.stringify(Array.from(tokens.entries())));
+    window.sessionStorage.setItem(SESSION_STORAGE_KEY, "true");
   }, []);
 
   const resetPrivateAccess = useCallback(() => {
     setPhotoTokens(new Map());
-    sessionStorage.removeItem(SESSION_STORAGE_KEY);
-    sessionStorage.removeItem(TOKENS_STORAGE_KEY);
+    window.sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    window.sessionStorage.removeItem(TOKENS_STORAGE_KEY);
   }, []);
 
-  const hasPrivate = photos.some((p) => p.private);
+  const privateCount = photos.filter((photo) => photo.private).length;
+  const hasPrivate = privateCount > 0;
   const isPrivateVisible = photoTokens.size > 0;
-  const visiblePhotos = isPrivateVisible ? photos : photos.filter((p) => !p.private);
+  const visiblePhotos = isPrivateVisible ? photos : photos.filter((photo) => !photo.private);
 
   const selectedPhoto =
     selectedIndex !== null ? visiblePhotos[selectedIndex] ?? null : null;
@@ -123,27 +130,34 @@ export function PhotographyGallery({ photos }: Props) {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [closeLightbox, goNext, goPrev, selectedIndex]);
 
+  const emptyTitle = hasPrivate ? copy.privateHiddenTitle : copy.noPhotosTitle;
+  const emptyDescription = hasPrivate
+    ? copy.privateHiddenDescription
+    : copy.noPhotosDescription;
+
   return (
     <>
-      {hasPrivate && (
-        <div className="mb-8 flex items-center justify-center gap-4">
+      {hasPrivate ? (
+        <div className="mb-8 flex flex-wrap items-center justify-center gap-3">
           {isPrivateVisible ? (
             <button
+              type="button"
               onClick={resetPrivateAccess}
-              className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700 transition-all hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+              className="inline-flex items-center gap-2 rounded-control border border-warning bg-warning/10 px-4 py-2 text-sm font-semibold text-warning transition-colors hover:bg-warning/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
-              <EyeOff className="h-4 w-4" />
-              隐藏私密照片
+              <EyeOff className="h-4 w-4" aria-hidden="true" />
+              {copy.hidePrivate}
             </button>
           ) : (
             <button
+              type="button"
               onClick={() => setPinModalOpen(true)}
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:text-foreground"
+              className="inline-flex items-center gap-2 rounded-control border border-hairline bg-surface-paper-elevated px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
-              <Eye className="h-4 w-4" />
-              显示私密照片
-              <span className="ml-0.5 rounded-full bg-muted px-1.5 py-0.5 text-[11px]">
-                {photos.filter((p) => p.private).length}
+              <Eye className="h-4 w-4" aria-hidden="true" />
+              {copy.showPrivate}
+              <span className="rounded-control bg-muted px-1.5 py-0.5 text-[11px] text-foreground">
+                {privateCount}
               </span>
             </button>
           )}
@@ -153,35 +167,39 @@ export function PhotographyGallery({ photos }: Props) {
             onSuccess={handlePinSuccess}
           />
         </div>
-      )}
+      ) : null}
 
       {visiblePhotos.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="mb-4 text-4xl">📷</div>
-          <h2 className="text-xl font-semibold">私密照片已隐藏</h2>
-          <p className="mt-2 text-muted-foreground">输入 PIN 码查看内容</p>
-        </div>
+        <EmptyState
+          icon={<Camera className="h-8 w-8" aria-hidden="true" />}
+          title={emptyTitle}
+          description={emptyDescription}
+        />
       ) : (
-        <div className="columns-1 gap-6 sm:columns-2 lg:columns-3">
+        <div
+          aria-label={projectTitle}
+          className="columns-1 gap-6 sm:columns-2 lg:columns-3"
+        >
           {visiblePhotos.map((photo, index) => {
             const src = getPhotoSrc(photo);
 
             return (
-              <div
+              <Surface
+                as="article"
+                tone="paper"
                 key={photo.id}
-                className="group relative mb-6 break-inside-avoid overflow-hidden rounded-2xl border border-border bg-card"
+                className="group mb-6 break-inside-avoid overflow-hidden shadow-soft transition-colors duration-200 hover:border-accent"
               >
                 <button
+                  type="button"
                   onClick={() => openPhoto(index)}
-                  className="relative block w-full overflow-hidden"
+                  className="relative block w-full overflow-hidden bg-surface-graphite focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent"
                   style={{
                     aspectRatio: `${photo.width}/${photo.height}`,
                   }}
                 >
                   <div
-                    className={`relative h-full w-full ${
-                      photo.private && !mounted ? "blur-xl" : ""
-                    }`}
+                    className="relative h-full w-full"
                   >
                     <Image
                       src={src}
@@ -189,79 +207,78 @@ export function PhotographyGallery({ photos }: Props) {
                       fill
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                       unoptimized
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     />
                   </div>
 
-                  {photo.private && !isPrivateVisible && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 backdrop-blur-lg">
-                      <div className="flex flex-col items-center gap-2 text-white">
-                        <Lock className="h-8 w-8" />
-                        <span className="text-sm font-medium">私密</span>
+                  {photo.private && !isPrivateVisible ? (
+                    <div className="absolute inset-0 flex items-center justify-center bg-surface-graphite/55 backdrop-blur-lg">
+                      <div className="flex flex-col items-center gap-2 text-surface-graphite-foreground">
+                        <Lock className="h-8 w-8" aria-hidden="true" />
+                        <span className="text-sm font-semibold">{copy.private}</span>
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </button>
 
                 <div className="p-4">
-                  <h3 className="flex items-center gap-2 font-medium">
+                  <h2 className="flex items-center gap-2 text-base font-semibold text-foreground">
                     {photo.title}
-                    {photo.private && <Lock className="h-3.5 w-3.5 text-amber-500" />}
-                  </h3>
-                  {photo.description && (
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                    {photo.private ? (
+                      <Lock className="h-3.5 w-3.5 text-warning" aria-hidden="true" />
+                    ) : null}
+                  </h2>
+                  {photo.description ? (
+                    <p className="mt-1 line-clamp-2 text-sm leading-6 text-muted-foreground">
                       {photo.description}
                     </p>
-                  )}
+                  ) : null}
                   <p className="mt-1.5 text-xs text-muted-foreground">{photo.date}</p>
                 </div>
-              </div>
+              </Surface>
             );
           })}
         </div>
       )}
 
-      {selectedPhoto && selectedIndex !== null && (
+      {selectedPhoto && selectedIndex !== null ? (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-2 backdrop-blur-md sm:p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-surface-graphite/90 p-2 backdrop-blur-md sm:p-4"
           onClick={closeLightbox}
         >
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
+          <IconButton
+            onClick={(event) => {
+              event.stopPropagation();
               closeLightbox();
             }}
-            className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-            aria-label="关闭"
-          >
-            <X className="h-5 w-5" />
-          </button>
+            label={copy.close}
+            icon={<X className="h-5 w-5" aria-hidden="true" />}
+            className="absolute right-4 top-4 border-inverse bg-surface-graphite/70 text-surface-graphite-foreground hover:bg-surface-graphite"
+          />
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
+          <IconButton
+            onClick={(event) => {
+              event.stopPropagation();
               goPrev();
             }}
-            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20 sm:left-6"
-            aria-label="上一张"
-          >
-            <ChevronLeft className="h-6 w-6" />
-          </button>
+            label={copy.previous}
+            icon={<ChevronLeft className="h-6 w-6" aria-hidden="true" />}
+            className="absolute left-3 top-1/2 -translate-y-1/2 border-inverse bg-surface-graphite/70 text-surface-graphite-foreground hover:bg-surface-graphite sm:left-6"
+          />
 
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
+          <IconButton
+            onClick={(event) => {
+              event.stopPropagation();
               goNext();
             }}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-3 text-white transition-colors hover:bg-white/20 sm:right-6"
-            aria-label="下一张"
-          >
-            <ChevronRight className="h-6 w-6" />
-          </button>
+            label={copy.next}
+            icon={<ChevronRight className="h-6 w-6" aria-hidden="true" />}
+            className="absolute right-3 top-1/2 -translate-y-1/2 border-inverse bg-surface-graphite/70 text-surface-graphite-foreground hover:bg-surface-graphite sm:right-6"
+          />
 
           <div
-            className="relative flex items-center justify-center overflow-hidden rounded-2xl"
-            onClick={(e) => e.stopPropagation()}
+            className="relative flex items-center justify-center overflow-hidden rounded-card"
+            onClick={(event) => event.stopPropagation()}
             style={{
               width: "min(98vw, 1800px)",
               height: "min(94vh, 1200px)",
@@ -276,12 +293,16 @@ export function PhotographyGallery({ photos }: Props) {
               className="object-contain"
             />
 
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-12">
-              <h3 className="text-lg font-semibold text-white">{selectedPhoto.title}</h3>
-              {selectedPhoto.description && (
-                <p className="text-sm text-white/80">{selectedPhoto.description}</p>
-              )}
-              <div className="mt-2 flex items-center justify-between text-xs text-white/60">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-surface-graphite/80 to-transparent p-4 pt-12">
+              <h2 className="text-lg font-semibold text-surface-graphite-foreground">
+                {selectedPhoto.title}
+              </h2>
+              {selectedPhoto.description ? (
+                <p className="text-sm text-surface-graphite-foreground/80">
+                  {selectedPhoto.description}
+                </p>
+              ) : null}
+              <div className="mt-2 flex items-center justify-between text-xs text-surface-graphite-foreground/70">
                 <span>{selectedPhoto.date}</span>
                 <span>
                   {selectedIndex + 1} / {visiblePhotos.length}
@@ -290,7 +311,7 @@ export function PhotographyGallery({ photos }: Props) {
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </>
   );
 }

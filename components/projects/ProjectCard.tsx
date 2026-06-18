@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { Folder, Star, GitFork, Download } from "lucide-react";
+import { Star, GitFork, Download } from "lucide-react";
 
 import { FilledGithub, FilledGlobe, FilledFileText, FilledDownload, FilledPlay, FilledArrowUpRight } from "@/components/FilledIcons";
 
@@ -53,7 +53,7 @@ export function ProjectCard({ project, hideImage, iconFor }: ProjectCardProps) {
   const hasStats = project.githubStars !== undefined || project.githubForks !== undefined || project.downloads !== undefined;
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card">
+    <div className="group relative flex flex-col overflow-hidden rounded-card border border-hairline bg-surface-paper-elevated shadow-card">
       {/* Image or gradient placeholder */}
       {!hideImage && project.imageUrl ? (
         <div className="relative aspect-video overflow-hidden">
@@ -114,7 +114,7 @@ export function ProjectCard({ project, hideImage, iconFor }: ProjectCardProps) {
             {project.technologies.slice(0, 8).map((tech) => (
               <span
                 key={tech}
-                className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+                className="rounded-control bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
               >
                 {tech}
               </span>
@@ -135,7 +135,7 @@ export function ProjectCard({ project, hideImage, iconFor }: ProjectCardProps) {
                   e.preventDefault();
                   window.open(link.href, "_blank", "noopener,noreferrer");
                 }}
-                className="inline-flex items-center gap-1 rounded border border-border bg-background px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                className="inline-flex items-center gap-1 rounded-control border border-border bg-surface-paper px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-muted"
               >
                 <IconWrapper type={link.type} iconFor={iconFor} />
                 <span>{link.label}</span>

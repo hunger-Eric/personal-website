@@ -13,6 +13,11 @@ import type { NavDropdownItemCfg } from "@/config/navbarConfig";
 import { LangSwitch } from "@/components/LangSwitch";
 import { useLocale } from "@/components/LocaleProvider";
 
+type LucideIconComponent = React.ComponentType<{
+  className?: string;
+  "aria-hidden"?: boolean;
+}>;
+
 function PrimaryCtaContent({ label }: { label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5">
@@ -81,10 +86,6 @@ export function NavbarCentered() {
   const pathname = usePathname();
 
   const [openDropdownKey, setOpenDropdownKey] = useState<string | null>(null);
-  const [scrolled, setScrolled] = useState(false);
-
-  // Desktop dropdown positioning (fixed + centered)
-  const [dropdownTop, setDropdownTop] = useState<number>(56);
   const headerRef = useRef<HTMLElement | null>(null);
 
   // Hover-intent timer
@@ -110,7 +111,6 @@ export function NavbarCentered() {
   // ✅ prevent any pending timer from firing after unmount
   useEffect(() => {
     return () => cancelCloseDesktop();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /**
@@ -229,32 +229,6 @@ export function NavbarCentered() {
   const resolveNavLabel = (id: string | undefined, fallback: string) =>
     (id && navLabelById[id]) || fallback;
 
-  // scroll style after scrolling
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 6);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  useEffect(() => {
-    const updateTop = () => {
-      const el = headerRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      setDropdownTop(Math.round(rect.bottom + 1));
-    };
-
-    updateTop();
-    window.addEventListener("resize", updateTop);
-    window.addEventListener("scroll", updateTop, { passive: true });
-
-    return () => {
-      window.removeEventListener("resize", updateTop);
-      window.removeEventListener("scroll", updateTop);
-    };
-  }, []);
-
   // Close dropdown on outside click
   useEffect(() => {
     if (!openDropdownKey) return;
@@ -269,17 +243,17 @@ export function NavbarCentered() {
     return () => window.removeEventListener("mousedown", onDown);
   }, [openDropdownKey]);
 
-  // 100% opaque always — no see-through.
-  const headerBg = "bg-background";
+  // Keep the shell transparent; individual controls own their surfaces.
+  const headerBg = "bg-transparent";
   const headerBlur = "";
-  const headerBorder = "border-border";
+  const headerBorder = "border-transparent";
 
   return (
     <header
       ref={headerRef}
       className={[
         "hidden sm:block",
-        "sticky top-0 z-[9999] isolate border-b",
+        "fixed inset-x-0 top-0 z-[9999] isolate border-b",
         headerBorder,
         headerBg,
         headerBlur,
@@ -297,7 +271,7 @@ export function NavbarCentered() {
                 href={logo.href}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="group flex items-center gap-2 transform-gpu transition hover:scale-[0.97] active:scale-95"
+                className="group flex items-center gap-2 rounded-control px-2.5 py-1.5 transform-gpu transition hover:bg-muted hover:scale-[0.97] active:scale-95"
                 onMouseEnter={() => {
                   cancelCloseDesktop();
                   setOpenDropdownKey(null);
@@ -320,7 +294,7 @@ export function NavbarCentered() {
             ) : (
               <Link
                 href={logo.href}
-                className="group flex items-center gap-2 transform-gpu transition hover:scale-[0.97] active:scale-95"
+                className="group flex items-center gap-2 rounded-control px-2.5 py-1.5 transform-gpu transition hover:bg-muted hover:scale-[0.97] active:scale-95"
                 onMouseEnter={() => {
                   cancelCloseDesktop();
                   setOpenDropdownKey(null);
@@ -364,13 +338,7 @@ export function NavbarCentered() {
           <nav className="flex flex-none items-center justify-center">
             <div className="pointer-events-none relative flex items-center justify-center">
               <div
-                className={[
-                  "pointer-events-auto flex items-center gap-1 rounded-2xl border px-2 py-1 text-xs md:gap-2 md:px-3 md:py-1.5 md:text-sm",
-                  scrolled
-                    ? "border-border bg-card text-muted-foreground shadow-sm transition-[background-color,border-color,box-shadow,color] duration-300 ease-out"
-                    : // ✅ not transparent at all (still subtle + minimal)
-                      "border-border bg-card text-muted-foreground shadow-sm transition-[background-color,border-color,box-shadow,color] duration-300 ease-out",
-                ].join(" ")}
+                className="pointer-events-auto flex items-center gap-1 px-2 py-1 text-xs text-muted-foreground transition-colors duration-300 ease-out md:gap-2 md:px-3 md:py-1.5 md:text-sm"
               >
                 {textLinks.map((item) => {
                   const hasDropdown = !!(item.children && item.children.length);
@@ -387,7 +355,7 @@ export function NavbarCentered() {
                           key={itemKey}
                           type="button"
                           className={[
-                            "rounded-md px-2.5 py-1 md:px-3 md:py-1.5",
+                            "rounded-control px-2.5 py-1 md:px-3 md:py-1.5",
                             "font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground",
                           ].join(" ")}
                           onMouseEnter={() => {
@@ -410,7 +378,7 @@ export function NavbarCentered() {
                           target="_blank"
                           rel="noreferrer noopener"
                           className={[
-                            "rounded-md px-2.5 py-1 md:px-3 md:py-1.5",
+                            "rounded-control px-2.5 py-1 md:px-3 md:py-1.5",
                             "font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground",
                           ].join(" ")}
                           onMouseEnter={() => {
@@ -431,7 +399,7 @@ export function NavbarCentered() {
                         href={item.href}
                         scroll={true}
                         className={[
-                          "rounded-md px-2.5 py-1 md:px-3 md:py-1.5",
+                          "rounded-control px-2.5 py-1 md:px-3 md:py-1.5",
                           "font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground",
                         ].join(" ")}
                         onMouseEnter={() => {
@@ -457,7 +425,7 @@ export function NavbarCentered() {
                       <button
                         type="button"
                         className={[
-                          "group inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 md:px-3 md:py-1.5",
+                          "group inline-flex items-center gap-1.5 rounded-control px-2.5 py-1 md:px-3 md:py-1.5",
                           "font-semibold text-muted-foreground transition",
                           "hover:bg-muted hover:text-foreground",
                         ].join(" ")}
@@ -480,7 +448,7 @@ export function NavbarCentered() {
                         role="menu"
                         className={[
                           "absolute left-1/2 top-full z-30 mt-2 w-44 -translate-x-1/2 origin-top",
-                          "overflow-hidden rounded-xl border border-border bg-card py-1.5 text-sm shadow-xl",
+                          "overflow-hidden rounded-panel border border-border bg-surface-paper py-1.5 text-sm shadow-surface-strong",
                           "supports-[backdrop-filter]:backdrop-blur",
                           "transition-all duration-150 ease-out",
                           isDropdownOpen
@@ -514,7 +482,7 @@ export function NavbarCentered() {
 
           {/* Right CTAs */}
           <div className="flex flex-1 items-center justify-end gap-1 sm:gap-3">
-            <LangSwitch />
+            <LangSwitch variant="ghost" />
             {/* Contact CTA — opens the user's default mail client (mailto:) */}
             {contactCta.show !== false && (
               <a
@@ -543,7 +511,7 @@ export function NavbarCentered() {
                   href={primaryCta.href}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="rounded-md border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground shadow-sm transition-colors hover:border-foreground/30 hover:bg-muted md:text-sm"
+                  className="inline-flex items-center justify-center gap-2 rounded-control px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted md:text-sm"
                   onMouseEnter={() => {
                     cancelCloseDesktop();
                     setOpenDropdownKey(null);
@@ -556,7 +524,7 @@ export function NavbarCentered() {
                 <Link
                   href={primaryCta.href}
                   scroll={true}
-                  className="rounded-md border border-border bg-card px-3.5 py-1.5 text-xs font-semibold text-foreground shadow-sm transition-colors hover:border-foreground/30 hover:bg-muted md:text-sm"
+                  className="inline-flex items-center justify-center gap-2 rounded-control px-2.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted md:text-sm"
                   onMouseEnter={() => {
                     cancelCloseDesktop();
                     setOpenDropdownKey(null);
@@ -585,12 +553,11 @@ function DesktopDropdownItem({
   const external = !!item.external || isExternalHref(item.href);
   const hashId = extractHashId(item.href);
 
-  const IconComponent =
-    item.icon && (LucideIcons as any)[item.icon]
-      ? ((LucideIcons as any)[item.icon] as React.ComponentType<{
-          className?: string;
-        }>)
-      : null;
+  const lucideIcons = LucideIcons as unknown as Record<
+    string,
+    LucideIconComponent | undefined
+  >;
+  const IconComponent = item.icon ? lucideIcons[item.icon] : null;
 
   const baseClass =
     "flex w-full items-center gap-2.5 px-3 py-2 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted hover:text-foreground";

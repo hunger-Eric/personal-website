@@ -1,6 +1,11 @@
 // components/sections/Education.tsx
 import { education } from "../../config/education";
 import { MapPin, Calendar } from "lucide-react";
+import Image from "next/image";
+import { getSiteCopy } from "@/config/contentCopy";
+import { SectionHeader, Surface } from "@/components/system";
+
+const copy = getSiteCopy("zh").education;
 
 export function EducationSection() {
   if (!education.length) return null;
@@ -8,13 +13,7 @@ export function EducationSection() {
   return (
     <section id="education" className="py-16 scroll-mt-12 lg:py-24">
       <div className="mx-auto w-full max-w-6xl px-4">
-        <h2 className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-          ~/Education
-        </h2>
-
-        <h3 className="mt-3 text-2xl font-semibold sm:text-3xl">
-          Where I&apos;ve been studying.
-        </h3>
+        <SectionHeader eyebrow={copy.eyebrow} title={copy.title} />
 
         <div className="mt-8 space-y-4">
           {education.map((item) => {
@@ -39,22 +38,26 @@ export function EducationSection() {
             const hasImage = Boolean(item.imageUrl);
 
             return (
-              <article
+              <Surface
+                as="article"
                 key={item.id}
-                className="group rounded-lg border border-white/10 bg-white/5 p-4 text-sm text-muted-foreground transition-transform transition-colors duration-200 hover:-translate-y-[1px] hover:border-accent/60 hover:bg-white/[0.08] sm:flex sm:gap-1 sm:text-base"
+                tone="paper"
+                className="group p-4 text-sm text-muted-foreground transition-transform transition-colors duration-200 hover:-translate-y-[1px] hover:border-accent sm:flex sm:gap-1 sm:text-base"
               >
                 {hasImage && (
                   <div className="mb-3 flex justify-center sm:mb-0 sm:w-40 sm:flex-shrink-0 sm:block">
-                    <img
+                    <Image
                       src={item.imageUrl as string}
                       alt={item.school}
-                      className="h-16 w-16 rounded-md object-cover shadow-sm transition-transform duration-300 ease-out group-hover:scale-105 group-hover:shadow-lg sm:h-full sm:w-full"
+                      width={160}
+                      height={160}
+                      className="h-16 w-16 rounded-control object-cover shadow-card transition-transform duration-300 ease-out group-hover:scale-105 sm:h-full sm:w-full"
                     />
                   </div>
                 )}
 
                 {hasImage && (
-                  <div className="hidden sm:mx-1 sm:block sm:w-px sm:bg-white/10" />
+                  <div className="hidden sm:mx-1 sm:block sm:w-px sm:bg-border" />
                 )}
 
                 <div className="flex-1">
@@ -66,8 +69,8 @@ export function EducationSection() {
                       <p className="text-xs text-muted-foreground sm:text-sm">
                         {item.degree}
                         {item.major ? `, ${item.major}` : ""}
-                        {item.minor ? `, Minor in ${item.minor}` : ""}
-                        {cleanGpa && ` · GPA: ${cleanGpa}`}
+                        {item.minor ? `, ${copy.minorPrefix} ${item.minor}` : ""}
+                        {cleanGpa && ` · ${copy.gpaLabel}: ${cleanGpa}`}
                       </p>
                     </div>
 
@@ -78,11 +81,11 @@ export function EducationSection() {
                           <span>
                             {item.start &&
                               item.end &&
-                              `${item.start} — ${item.end}`}
+                              `${item.start} - ${item.end}`}
                             {item.start && !item.end && item.start}
                             {!item.start && item.end && item.end}
                             {item.expectedGraduation &&
-                              ` · Expected ${item.expectedGraduation}`}
+                              ` · ${copy.expectedPrefix} ${item.expectedGraduation}`}
                           </span>
                         </div>
                       )}
@@ -91,7 +94,7 @@ export function EducationSection() {
                         <div className="inline-flex items-center gap-1">
                           <Calendar className="h-3.5 w-3.5" />
                           <span>
-                            Expected Graduation: {item.expectedGraduation}
+                            {copy.expectedGraduationLabel}: {item.expectedGraduation}
                           </span>
                         </div>
                       )}
@@ -109,7 +112,7 @@ export function EducationSection() {
                     {awardsText && (
                       <p>
                         <span className="font-medium text-foreground">
-                          Awards:
+                          {copy.awardsLabel}:
                         </span>{" "}
                         {awardsText}
                       </p>
@@ -118,7 +121,7 @@ export function EducationSection() {
                     {activitiesText && (
                       <p>
                         <span className="font-medium text-foreground">
-                          Activities and societies:
+                          {copy.activitiesLabel}:
                         </span>{" "}
                         {activitiesText}
                       </p>
@@ -127,14 +130,14 @@ export function EducationSection() {
                     {courseworkText && (
                       <p>
                         <span className="font-medium text-foreground">
-                          Relevant coursework:
+                          {copy.courseworkLabel}:
                         </span>{" "}
                         {courseworkText}
                       </p>
                     )}
                   </div>
                 </div>
-              </article>
+              </Surface>
             );
           })}
         </div>

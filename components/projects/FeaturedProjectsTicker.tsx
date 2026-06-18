@@ -64,13 +64,6 @@ export function FeaturedProjectsTicker({
   const touchStartX = useRef<number>(0);
   const outerRef = useRef<HTMLDivElement>(null);
 
-  // Reset active index when total changes
-  useEffect(() => {
-    if (activeIndex >= cappedProjects.length && cappedProjects.length > 0) {
-      setActiveIndex(0);
-    }
-  }, [cappedProjects.length, activeIndex]);
-
   // Auto-advance
   useEffect(() => {
     if (cappedProjects.length <= 1 || isHovered) return;
@@ -122,12 +115,13 @@ export function FeaturedProjectsTicker({
 
   if (cappedProjects.length === 0) return null;
 
-  const current = cappedProjects[activeIndex];
+  const safeActiveIndex = Math.min(activeIndex, cappedProjects.length - 1);
+  const current = cappedProjects[safeActiveIndex];
 
   return (
     <div
       ref={outerRef}
-      className="relative overflow-hidden rounded-lg border border-border bg-card"
+      className="relative overflow-hidden rounded-card border border-hairline bg-surface-paper-elevated shadow-card"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -162,7 +156,7 @@ export function FeaturedProjectsTicker({
               {current.technologies.slice(0, TECH_CAP).map((tech) => (
                 <span
                   key={tech}
-                  className="rounded bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
+                  className="rounded-control bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground"
                 >
                   {tech}
                 </span>
@@ -177,7 +171,7 @@ export function FeaturedProjectsTicker({
                 <button
                   key={link.href}
                   onClick={() => window.open(link.href, "_blank", "noopener,noreferrer")}
-                  className="inline-flex items-center gap-1 rounded border border-border bg-background px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                  className="inline-flex items-center gap-1 rounded-control border border-border bg-surface-paper px-2.5 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
                 >
                   <IconWrapper type={link.type} />
                   <span>{link.label}</span>
@@ -222,7 +216,7 @@ export function FeaturedProjectsTicker({
                 aria-label={`Go to slide ${i + 1}`}
                 onClick={() => goToSlide(i)}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === activeIndex
+                  i === safeActiveIndex
                     ? "w-6 bg-primary"
                     : "w-1.5 bg-muted-foreground/40"
                 }`}

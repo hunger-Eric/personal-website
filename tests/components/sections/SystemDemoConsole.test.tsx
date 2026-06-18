@@ -103,7 +103,7 @@ describe("SystemDemoConsole", () => {
 
     expect(screen.getByTestId("demo-timeline")).toHaveTextContent("Hermes flow");
 
-    fireEvent.click(screen.getByRole("button", { name: "Preview Freight Lead Agent demo" }));
+    fireEvent.click(screen.getByRole("button", { name: "Freight Lead Agent" }));
     expect(screen.getByTestId("demo-timeline")).toHaveTextContent("Lead flow");
   });
 });

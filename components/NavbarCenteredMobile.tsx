@@ -1,22 +1,21 @@
 // components/NavbarCenteredMobile.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Home } from "lucide-react";
-import * as LucideIcons from "lucide-react";
+import { ChevronDown, Handshake, Mail, Menu, X } from "lucide-react";
 
 import { LangSwitch } from "./LangSwitch";
+import { IconButton } from "./system";
 import {
   getNavbarConfig,
   isExternalHref,
   type NavDropdownItemCfg,
   type NavDropdownFooterCfg,
 } from "../config/navbarConfig";
-import { siteConfig } from "../config/siteConfig";
 import { useLocale } from "./LocaleProvider";
 
 type NavItem = {
@@ -34,7 +33,6 @@ export default function NavbarCenteredMobile() {
   const { t, locale } = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const [openKey, setOpenKey] = useState<string | null>(null);
-  const [scrolled, setScrolled] = useState(false);
 
   const pathname = usePathname();
   const isHome = pathname === "/" || pathname === "";
@@ -56,89 +54,62 @@ export default function NavbarCenteredMobile() {
 
   // Build mobile nav from navbarConfig (single source of truth)
   const navbarConfig = useMemo(() => getNavbarConfig(locale), [locale]);
-  const { items, contactLink, primaryCta, logo } = useMemo(() => {
-    const centerItems: NavItem[] = (navbarConfig.centerItems || []).map(
-      (it) => {
-        const key = it.id || it.href || it.label;
-        return {
-          key,
-          id: it.id,
-          label: resolveNavLabel(it.id, it.label),
-          href: it.href,
-          external: Boolean(it.external ?? isExternalHref(it.href)),
-          isButton: false,
-          children: it.children ?? [],
-          // ✅ remove dropdown footer support in mobile
-          dropdownFooter: undefined,
-        };
-      }
-    );
-
-    const contact = navbarConfig.cta.contact;
-    const primary = navbarConfig.cta.primary;
-
-    const contactLink: NavItem = {
-      key: "cta-contact",
-      id: "contact",
-      label: contact.label,
-      href: contact.href,
-      external: Boolean(contact.external ?? isExternalHref(contact.href)),
-      isButton: true,
-      children: [],
-      dropdownFooter: undefined,
-    };
-
-    const primaryCta: NavItem = {
-      key: "cta-primary",
-      id: "primary",
-      label: primary.label,
-      href: primary.href,
-      external: Boolean(primary.external ?? isExternalHref(primary.href)),
-      isButton: true,
-      children: [],
-      dropdownFooter: undefined,
-    };
-
+  const items: NavItem[] = (navbarConfig.centerItems || []).map((it) => {
+    const key = it.id || it.href || it.label;
     return {
-      items: centerItems,
-      contactLink,
-      primaryCta,
-      logo: navbarConfig.logo,
-    };
-  }, [t.nav.about, t.nav.projects, t.nav.articles, t.nav.photography, t.nav.more]);
-
-  const menuLinks = useMemo<NavItem[]>(() => {
-    if (isHome) return items;
-    const homeItem: NavItem = {
-      key: "nav-home",
-      id: "home",
-      label: t.nav.home,
-      href: "/",
-      external: false,
+      key,
+      id: it.id,
+      label: resolveNavLabel(it.id, it.label),
+      href: it.href,
+      external: Boolean(it.external ?? isExternalHref(it.href)),
       isButton: false,
-      children: [],
+      children: it.children ?? [],
       dropdownFooter: undefined,
     };
-    return [homeItem, ...items];
-  }, [items, isHome, t.nav.home]);
+  });
 
-  // Socials for the bottom of the drawer (footer-visible only)
-  const socialItems = useMemo(() => {
-    return (siteConfig.socialsFor?.footer ?? [])
-      .filter((s) => {
-        const href = (s.href || "").trim();
-        if (!href || href === "null") return false;
-        return true;
-      })
-      .slice(0, 8);
-  }, []);
+  const contact = navbarConfig.cta.contact;
+  const primary = navbarConfig.cta.primary;
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 6);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const contactLink: NavItem = {
+    key: "cta-contact",
+    id: "contact",
+    label: contact.label,
+    href: contact.href,
+    external: Boolean(contact.external ?? isExternalHref(contact.href)),
+    isButton: true,
+    children: [],
+    dropdownFooter: undefined,
+  };
+
+  const primaryCta: NavItem = {
+    key: "cta-primary",
+    id: "primary",
+    label: primary.label,
+    href: primary.href,
+    external: Boolean(primary.external ?? isExternalHref(primary.href)),
+    isButton: true,
+    children: [],
+    dropdownFooter: undefined,
+  };
+
+  const logo = navbarConfig.logo;
+
+  const menuLinks: NavItem[] = isHome
+    ? items
+    : [
+        {
+          key: "nav-home",
+          id: "home",
+          label: t.nav.home,
+          href: "/",
+          external: false,
+          isButton: false,
+          children: [],
+          dropdownFooter: undefined,
+        },
+        ...items,
+      ];
 
   // Close on outside click + meaningful scroll (no instant close).
   // Uses capture-phase click + preventDefault/stopPropagation so the synthesized
@@ -157,6 +128,7 @@ export default function NavbarCenteredMobile() {
         return;
       e.preventDefault();
       e.stopPropagation();
+      setOpenKey(null);
       setIsOpen(false);
     };
 
@@ -164,7 +136,10 @@ export default function NavbarCenteredMobile() {
       const dt = Date.now() - openedAt;
       const dy = Math.abs(window.scrollY - openedY);
       if (dt < 250) return;
-      if (dy > 12) setIsOpen(false);
+      if (dy > 12) {
+        setOpenKey(null);
+        setIsOpen(false);
+      }
     };
 
     window.addEventListener("click", onClickCapture, true);
@@ -176,9 +151,10 @@ export default function NavbarCenteredMobile() {
     };
   }, [isOpen]);
 
-  useEffect(() => {
-    if (!isOpen) setOpenKey(null);
-  }, [isOpen]);
+  const closeDrawer = () => {
+    setOpenKey(null);
+    setIsOpen(false);
+  };
 
   // Lock background scroll while drawer is open.
   // Defensive: also clear on unmount in case the cleanup gets skipped by a
@@ -203,16 +179,20 @@ export default function NavbarCenteredMobile() {
   }, []);
 
   // Mount-gate so createPortal only runs client-side.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 
   // Close on Escape
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
+      if (e.key === "Escape") {
+        setOpenKey(null);
+        setIsOpen(false);
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -225,7 +205,7 @@ export default function NavbarCenteredMobile() {
     <header
       className={[
         "sm:hidden",
-        "sticky top-0 z-[9999] isolate border-b border-white/10",
+        "sticky top-0 z-[9999] isolate border-b border-border",
         headerBg,
         "transition-colors",
       ].join(" ")}
@@ -237,7 +217,7 @@ export default function NavbarCenteredMobile() {
             href={logo.href}
             className="group flex flex-1 items-center gap-2 transition active:scale-95"
             onClick={(e) => {
-              setIsOpen(false);
+              closeDrawer();
               // Already on home → scroll to top instead of being a no-op.
               if (
                 typeof window !== "undefined" &&
@@ -270,38 +250,19 @@ export default function NavbarCenteredMobile() {
 
           <LangSwitch />
 
-          {/* Hamburger */}
-          <button
+          <IconButton
             ref={toggleRef}
-            type="button"
-            aria-label="Toggle navigation menu"
+            label={t.nav.openMenu}
+            icon={<Menu className="h-5 w-5" aria-hidden />}
             aria-expanded={isOpen}
-            onClick={() => setIsOpen((v) => !v)}
-            className="relative inline-flex h-10 w-10 items-center justify-center text-white"
-          >
-            <span className="relative block h-5 w-6">
-              <span
-                className={[
-                  "absolute left-0 top-0 block h-0.5 w-6 rounded bg-white transition-all duration-200",
-                  isOpen ? "translate-y-2 rotate-45" : "translate-y-0 rotate-0",
-                ].join(" ")}
-              />
-              <span
-                className={[
-                  "absolute left-0 top-2 block h-0.5 w-6 rounded bg-white transition-all duration-200",
-                  isOpen ? "opacity-0" : "opacity-100",
-                ].join(" ")}
-              />
-              <span
-                className={[
-                  "absolute left-0 top-4 block h-0.5 w-6 rounded bg-white transition-all duration-200",
-                  isOpen
-                    ? "-translate-y-2 -rotate-45"
-                    : "translate-y-0 rotate-0",
-                ].join(" ")}
-              />
-            </span>
-          </button>
+            onClick={() =>
+              setIsOpen((v) => {
+                if (v) setOpenKey(null);
+                return !v;
+              })
+            }
+            className="border-transparent bg-transparent shadow-none"
+          />
         </div>
       </div>
 
@@ -314,9 +275,9 @@ export default function NavbarCenteredMobile() {
           {/* Backdrop */}
           <div
             aria-hidden
-            onClick={() => setIsOpen(false)}
+            onClick={closeDrawer}
             className={[
-              "sm:hidden fixed inset-0 z-[10000] bg-slate-950/60 backdrop-blur-sm transition-opacity duration-200",
+              "sm:hidden fixed inset-0 z-[10000] bg-surface-graphite/65 backdrop-blur-sm transition-opacity duration-200",
               isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
             ].join(" ")}
           />
@@ -326,10 +287,10 @@ export default function NavbarCenteredMobile() {
             ref={panelRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Main navigation"
+            aria-label={t.nav.mainMenu}
             className={[
               "sm:hidden fixed top-0 right-0 z-[10001] h-[100dvh] w-[85%] max-w-sm",
-              "border-l border-white/10 bg-slate-950/95 shadow-xl shadow-slate-950/40",
+              "border-l border-border bg-surface-graphite text-surface-graphite-foreground shadow-surface-strong",
               "backdrop-blur supports-[backdrop-filter]:backdrop-blur",
               "transition-transform duration-300 ease-out",
               isOpen ? "translate-x-0" : "translate-x-full",
@@ -339,21 +300,16 @@ export default function NavbarCenteredMobile() {
             ].join(" ")}
           >
         <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
+          <div className="flex items-center justify-between border-b border-border px-4 py-4">
             <span className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
               {t.nav.menu}
             </span>
-            <button
-              type="button"
-              aria-label="Close navigation menu"
-              onClick={() => setIsOpen(false)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-200 transition hover:bg-white/10"
-            >
-              <span className="relative block h-5 w-5">
-                <span className="absolute left-0 top-2 block h-0.5 w-5 rotate-45 bg-white" />
-                <span className="absolute left-0 top-2 block h-0.5 w-5 -rotate-45 bg-white" />
-              </span>
-            </button>
+            <IconButton
+              label={t.nav.closeMenu}
+              icon={<X className="h-5 w-5" aria-hidden />}
+              onClick={closeDrawer}
+              className="h-9 w-9 border-border bg-transparent text-surface-graphite-foreground hover:bg-muted/20"
+            />
           </div>
 
           <div className="flex-1 overflow-y-auto px-4 py-4">
@@ -371,8 +327,8 @@ export default function NavbarCenteredMobile() {
                       href={item.href || undefined}
                       target={item.external ? "_blank" : undefined}
                       rel={item.external ? "noreferrer" : undefined}
-                      onClick={() => setIsOpen(false)}
-                      className="rounded-md px-3 py-2 text-[1rem] font-semibold text-slate-100 transition hover:bg-white/5 hover:text-white"
+                      onClick={closeDrawer}
+                      className="rounded-control px-3 py-2 text-[1rem] font-semibold text-surface-graphite-foreground transition hover:bg-muted/20"
                     >
                       {item.label}
                     </a>
@@ -380,14 +336,14 @@ export default function NavbarCenteredMobile() {
                 }
 
                 return (
-                  <div key={item.key} className="rounded-md">
+                  <div key={item.key} className="rounded-control">
                     <button
                       type="button"
                       onClick={() =>
                         setOpenKey((k) => (k === item.key ? null : item.key))
                       }
                       aria-expanded={isItemOpen}
-                      className="flex w-full items-center justify-between rounded-md px-3 py-2 text-[1rem] font-semibold text-slate-100 transition hover:bg-white/5 hover:text-white"
+                      className="flex w-full items-center justify-between rounded-control px-3 py-2 text-[1rem] font-semibold text-surface-graphite-foreground transition hover:bg-muted/20"
                     >
                       <span className="min-w-0 truncate">{item.label}</span>
 
@@ -404,18 +360,18 @@ export default function NavbarCenteredMobile() {
                     </button>
 
                     {isItemOpen && (
-                      <div className="mt-1 flex flex-col gap-1 border-l border-white/10 pl-3">
+                      <div className="mt-1 flex flex-col gap-1 border-l border-border pl-3">
                         {item.children!.map((child) => (
                           <a
                             key={child.id || child.href}
                             href={child.href}
                             target={child.external ? "_blank" : undefined}
                             rel={child.external ? "noreferrer" : undefined}
-                            onClick={() => setIsOpen(false)}
-                            className="rounded-md px-3 py-2 transition hover:bg-white/5"
+                            onClick={closeDrawer}
+                            className="rounded-control px-3 py-2 transition hover:bg-muted/20"
                           >
                             {/* mobile: title only */}
-                            <span className="block text-[0.98rem] font-semibold text-slate-100">
+                            <span className="block text-[0.98rem] font-semibold text-surface-graphite-foreground">
                               {resolveNavLabel(child.id, child.label)}
                             </span>
                           </a>
@@ -439,15 +395,10 @@ export default function NavbarCenteredMobile() {
                     href={contactLink.href}
                     target={contactLink.external ? "_blank" : undefined}
                     rel={contactLink.external ? "noreferrer noopener" : undefined}
-                    onClick={() => setIsOpen(false)}
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-50 transition hover:border-accent hover:bg-white/10"
+                    onClick={closeDrawer}
+                    className="inline-flex items-center justify-center gap-2 rounded-control border border-border bg-surface-paper px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-muted"
                   >
-                    {(() => {
-                      const Icon = (LucideIcons as any).Mail;
-                      return Icon ? (
-                        <Icon className="h-4 w-4 opacity-80" aria-hidden />
-                      ) : null;
-                    })()}
+                    <Mail className="h-4 w-4 opacity-80" aria-hidden />
                     <span>{t.nav.connect}</span>
                   </a>
                 )}
@@ -457,15 +408,10 @@ export default function NavbarCenteredMobile() {
                     href={primaryCta.href}
                     target={primaryCta.external ? "_blank" : undefined}
                     rel={primaryCta.external ? "noreferrer" : undefined}
-                    onClick={() => setIsOpen(false)}
-                    className="inline-flex items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-4 py-2.5 text-sm font-semibold text-slate-50 transition hover:border-white/30 hover:bg-white/10"
+                    onClick={closeDrawer}
+                    className="inline-flex items-center justify-center gap-2 rounded-control border border-accent bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover"
                   >
-                    {(() => {
-                      const Icon = (LucideIcons as any).Handshake;
-                      return Icon ? (
-                        <Icon className="h-4 w-4" aria-hidden />
-                      ) : null;
-                    })()}
+                    <Handshake className="h-4 w-4" aria-hidden />
                     <span>{t.nav.connect}</span>
                   </a>
                 )}

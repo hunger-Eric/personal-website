@@ -1,34 +1,31 @@
 // app/articles/[slug]/page.tsx
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { redirect } from "next/navigation";
 
+import { ArticleCard } from "@/components/articles/ArticleCard";
+import type { ArticleListItem } from "@/components/articles/ArticlesBrowser";
+import { JsonLd } from "@/components/JsonLd";
+import { MdxRenderer } from "@/components/mdx/MdxRenderer";
 import { siteConfig } from "@/config/siteConfig";
 import {
   getArticleBySlug,
   getArticleSlugs,
   getRelatedArticles,
 } from "@/lib/mdx/mdx";
-import { JsonLd } from "@/components/JsonLd";
 import { generateArticleSchema } from "@/lib/structured-data";
-import { MdxRenderer } from "@/components/mdx/MdxRenderer";
-import { ArticleCard } from "@/components/articles/ArticleCard";
-import type { ArticleListItem } from "@/components/articles/ArticlesBrowser";
 
-// Fully static — MDX is bundled at build time; fs access at runtime is not
-// available on Cloudflare Workers so we skip revalidation entirely.
+// Fully static: MDX is bundled at build time; fs access at runtime is not
+// available on Cloudflare Workers, so we skip revalidation entirely.
 export const dynamic = "force-static";
 export const dynamicParams = false;
 
-// Generate static paths
 export async function generateStaticParams() {
   const slugs = await getArticleSlugs();
   return slugs.map((slug) => ({ slug }));
 }
 
-// Generate metadata
 export async function generateMetadata({
   params,
 }: {
@@ -92,26 +89,12 @@ export default async function ArticlePage({
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
 
-    if (!article) {
+  if (!article) {
     notFound();
   }
 
-  // Custom-styled articles redirect to their standalone HTML
-  const CUSTOM_HTML_SLUGS = new Set([
-    "hello-agents-preface",
-    ...Array.from({ length: 16 }, (_, i) => `hello-agents-ch${String(i + 1).padStart(2, "0")}`),
-  ]);
-
-  if (CUSTOM_HTML_SLUGS.has(article.slug)) {
-    redirect(`/articles/${article.slug}.html`);
-  }
-
   const relatedArticles = await getRelatedArticles(slug, 3);
-
   const author = article.author || siteConfig.name;
-
-  // Map related articles to the shared ArticleListItem shape so the
-  // ArticleCard renders them identically to /articles.
   const related: ArticleListItem[] = relatedArticles.map((a) => ({
     slug: a.slug,
     title: a.title,
@@ -128,7 +111,6 @@ export default async function ArticlePage({
 
   return (
     <>
-      {/* Structured Data */}
       <JsonLd
         data={generateArticleSchema({
           title: article.title,
@@ -143,16 +125,14 @@ export default async function ArticlePage({
       />
 
       <div className="mx-auto w-full max-w-3xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-        {/* Left-aligned header — no breadcrumb, no TOC sidebar */}
         <header className="mb-10">
           <h1 className="text-balance text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
             {article.title}
           </h1>
 
-          {/* Author + date — same typography as the cards, "|" separator */}
           <div className="mt-6 flex flex-wrap items-center gap-2 text-sm font-semibold">
             <span className="text-foreground">{author}</span>
-            <span aria-hidden className="font-normal text-slate-500">
+            <span aria-hidden className="font-normal text-muted-foreground">
               |
             </span>
             <span className="text-foreground">{formatDate(article.date)}</span>
@@ -171,27 +151,24 @@ export default async function ArticlePage({
           )}
         </header>
 
-        {/* Cover image */}
         {article.imageSrc && (
           <figure className="mb-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={article.imageSrc}
               alt={article.imageAlt || article.title}
-              className="w-full rounded-xl border border-white/10"
+              className="w-full rounded-card border border-hairline"
               loading="eager"
               decoding="async"
             />
           </figure>
         )}
 
-        {/* Body — single column, no TOC sidebar */}
         <article className="min-w-0">
           <MdxRenderer source={article.content} />
         </article>
 
-        {/* Back to all */}
-        <nav className="mt-12 flex items-center justify-between border-t border-white/10 pt-8">
+        <nav className="mt-12 flex items-center justify-between border-t border-hairline pt-8">
           <Link
             href="/articles"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-accent"
@@ -202,8 +179,6 @@ export default async function ArticlePage({
         </nav>
       </div>
 
-      {/* Related posts — same horizontal ArticleCard, on the wider container
-          so the cards have room. 1 → 2 → 3 cols by breakpoint. */}
       {related.length > 0 && (
         <div className="mx-auto w-full max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
           <h2 className="mb-5 text-xl font-semibold">相关文章</h2>

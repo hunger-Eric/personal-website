@@ -5,49 +5,54 @@ import { NextRequest } from "next/server";
 process.env.ENABLE_ADMIN = "true";
 process.env.ADMIN_TOKEN = "test-admin-token";
 
+type RouteContext = {
+  params: Promise<{ key: string }>;
+};
+
 beforeEach(() => {
   vi.resetModules();
 });
 
+function adminRequest(path: string) {
+  return new NextRequest(new Request(`http://localhost${path}`, {
+    headers: { Cookie: "admin_token=test-admin-token" },
+  }));
+}
+
 describe("GET /api/admin/[key]", () => {
   it("returns 404 for unknown config key", async () => {
     const { GET } = await import("@/app/api/admin/[key]/route");
-    const req = new NextRequest(new Request("http://localhost/api/admin/unknown", {
-      headers: { Cookie: "admin_token=test-admin-token" },
-    }));
-    const params = Promise.resolve({ key: "unknown" });
-    const res = await GET(req, { params } as any);
+    const context: RouteContext = {
+      params: Promise.resolve({ key: "unknown" }),
+    };
+    const res = await GET(adminRequest("/api/admin/unknown"), context);
+
     expect(res.status).toBe(404);
     const body = await res.json();
     expect(body.error).toBe("Unknown config");
   });
 
-  it("returns 500 when require fails with an error message", async () => {
-    // The route uses require() which can't resolve @/ aliases in vitest.
-    // All valid keys will hit the 500 catch block.
-    // This test verifies the error response shape.
+  it("returns static config payload for a known config key", async () => {
     const { GET } = await import("@/app/api/admin/[key]/route");
-    const req = new NextRequest(new Request("http://localhost/api/admin/site", {
-      headers: { Cookie: "admin_token=test-admin-token" },
-    }));
-    const params = Promise.resolve({ key: "site" });
-    const res = await GET(req, { params } as any);
-    expect(res.status).toBe(500);
+    const context: RouteContext = {
+      params: Promise.resolve({ key: "site" }),
+    };
+    const res = await GET(adminRequest("/api/admin/site"), context);
+
+    expect(res.status).toBe(200);
     const body = await res.json();
-    expect(body.error).toContain("Cannot find module");
+    expect(body.config).toEqual(expect.objectContaining({}));
   });
 
-  it("returns error message from thrown Error object", async () => {
-    // This relies on the require() call throwing a real Error with .message
+  it("returns navbar config without relying on runtime require aliases", async () => {
     const { GET } = await import("@/app/api/admin/[key]/route");
-    const req = new NextRequest(new Request("http://localhost/api/admin/navbar", {
-      headers: { Cookie: "admin_token=test-admin-token" },
-    }));
-    const params = Promise.resolve({ key: "navbar" });
-    const res = await GET(req, { params } as any);
-    expect(res.status).toBe(500);
+    const context: RouteContext = {
+      params: Promise.resolve({ key: "navbar" }),
+    };
+    const res = await GET(adminRequest("/api/admin/navbar"), context);
+
+    expect(res.status).toBe(200);
     const body = await res.json();
-    expect(typeof body.error).toBe("string");
-    expect(body.error.length).toBeGreaterThan(0);
+    expect(body.config).toHaveProperty("logo");
   });
 });

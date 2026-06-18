@@ -9,6 +9,8 @@ type ApiResponse = {
   username: string;
   year: number;
   days: GitHubContributionDay[];
+  warning?: string;
+  code?: string;
 };
 
 type ApiErrorResponse = {
@@ -124,7 +126,33 @@ export async function GET(req: NextRequest) {
     }
 
     // ----- Cache miss → fetch from GitHub -----
-    const days = await fetchGitHubContributionsForYear(username, year);
+    let days: GitHubContributionDay[];
+    try {
+      days = await fetchGitHubContributionsForYear(username, year);
+    } catch (fetchError: unknown) {
+      const message =
+        fetchError instanceof Error ? fetchError.message : "Unknown error";
+
+      if (message.includes("GITHUB_TOKEN")) {
+        const fallbackPayload: ApiResponse = {
+          username,
+          year,
+          days: [],
+          warning: "GitHub contribution data is unavailable in this environment.",
+          code: "MISSING_TOKEN",
+        };
+
+        return NextResponse.json(fallbackPayload, {
+          status: 200,
+          headers: {
+            "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600",
+            "X-Data-Status": "FALLBACK",
+          },
+        });
+      }
+
+      throw fetchError;
+    }
 
     const payload: ApiResponse = { username, year, days };
 

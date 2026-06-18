@@ -9,18 +9,18 @@ import rehypeSlug from "rehype-slug";
 import { mdxComponents } from "./MdxComponents";
 
 const PROSE_CLASSES = [
-  "prose prose-invert prose-lg max-w-none",
+  "prose prose-lg max-w-none",
   "prose-headings:font-semibold prose-headings:tracking-tight",
   "prose-h2:mt-10 prose-h2:text-2xl",
   "prose-h3:mt-8 prose-h3:text-xl",
   "prose-p:text-muted-foreground prose-p:leading-relaxed",
   "prose-a:text-accent prose-a:no-underline hover:prose-a:underline",
   // inline code
-  "prose-code:rounded prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5",
+  "prose-code:rounded-control prose-code:border prose-code:border-border prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5",
   "prose-code:font-normal prose-code:before:content-none prose-code:after:content-none",
-  // pre/code blocks (rehype-pretty-code adds its own background)
-  "prose-pre:rounded-xl prose-pre:border prose-pre:border-white/10 prose-pre:bg-[#0d1117] prose-pre:p-0",
-  "prose-img:rounded-xl prose-img:border prose-img:border-white/10",
+  // pre/code blocks
+  "prose-pre:rounded-card prose-pre:border prose-pre:border-inverse prose-pre:bg-surface-graphite prose-pre:p-0",
+  "prose-img:rounded-card prose-img:border prose-img:border-border",
   "prose-blockquote:border-l-accent prose-blockquote:text-muted-foreground",
   "prose-strong:text-foreground",
   "prose-ul:text-muted-foreground prose-ol:text-muted-foreground",
@@ -34,7 +34,6 @@ const PROSE_CLASSES = [
 ].join(" ");
 
 const prettyCodeOptions = {
-  // GitHub Dark mirrors the prose-pre bg of #0d1117
   theme: "github-dark-default",
   keepBackground: false,
   defaultLang: "plaintext",

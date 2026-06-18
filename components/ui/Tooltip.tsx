@@ -5,6 +5,7 @@ import {
   useState,
   useRef,
   useEffect,
+  useId,
   type ReactNode,
   type HTMLAttributes,
 } from "react";
@@ -29,7 +30,6 @@ export function Tooltip({
   delay = 150,
   ...rest
 }: TooltipProps) {
-  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [coords, setCoords] = useState<{ top: number; left: number }>({
     top: 0,
@@ -39,14 +39,8 @@ export function Tooltip({
   const triggerRef = useRef<HTMLDivElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const timeoutRef = useRef<number | null>(null);
-  const idRef = useRef<string>(
-    `tooltip-${Math.random().toString(36).slice(2)}`
-  );
+  const tooltipId = useId();
   const mousePosRef = useRef<{ x: number; y: number } | null>(null);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     return () => {
@@ -142,7 +136,7 @@ export function Tooltip({
     setCoords({ top, left });
   }, [open, side, align]);
 
-  if (!mounted) {
+  if (typeof document === "undefined") {
     return (
       <div ref={triggerRef} {...rest}>
         {children}
@@ -153,13 +147,13 @@ export function Tooltip({
   const tooltipNode = open ? (
     <div
       ref={tooltipRef}
-      id={idRef.current}
+      id={tooltipId}
       role="tooltip"
       style={{
         top: coords.top,
         left: coords.left,
       }}
-      className="fixed z-[60] max-w-xs rounded-md border border-white/15 bg-black/90 px-3 py-2 text-[12px] text-foreground shadow-lg backdrop-blur-sm opacity-0 scale-[0.97] animate-tooltip-in"
+      className="fixed z-[60] max-w-xs animate-tooltip-in rounded-control border border-inverse bg-surface-graphite px-3 py-2 text-[12px] text-surface-graphite-foreground opacity-0 shadow-overlay backdrop-blur-sm scale-[0.97]"
     >
       {content}
     </div>
@@ -191,7 +185,7 @@ export function Tooltip({
           rest.onBlur?.(e);
           hide();
         }}
-        aria-describedby={open ? idRef.current : undefined}
+        aria-describedby={open ? tooltipId : undefined}
       >
         {children}
       </div>

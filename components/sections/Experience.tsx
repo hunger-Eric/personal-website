@@ -4,6 +4,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import { experience } from "../../config/experience";
+import { useLocale } from "../LocaleProvider";
+import { getSiteCopy } from "../../config/contentCopy";
+import { SectionHeader, Surface } from "../system";
 
 function formatCompany(name: string): string {
   // "VisibleSeed LLC" -> "VisibleSeed, LLC"; same for Inc, Inc., Co., Corp., Ltd.
@@ -30,7 +33,7 @@ function CompanyAvatar({
 }) {
   if (logoUrl) {
     return (
-      <div className="relative h-8 w-8 flex-none overflow-hidden rounded-md border border-white/10 bg-white/5">
+      <div className="relative h-8 w-8 flex-none overflow-hidden rounded-control border border-hairline bg-surface-paper">
         <Image
           src={logoUrl}
           alt={`${company} logo`}
@@ -42,35 +45,33 @@ function CompanyAvatar({
     );
   }
   return (
-    <div className="flex h-8 w-8 flex-none items-center justify-center rounded-md border border-white/10 bg-indigo-500/15 text-[11px] font-bold text-indigo-200">
+    <div className="flex h-8 w-8 flex-none items-center justify-center rounded-control border border-hairline bg-surface-paper text-[11px] font-bold text-accent">
       {companyInitials(company)}
     </div>
   );
 }
 
 export function ExperienceSection() {
-  if (!experience.length) return null;
+  const { locale } = useLocale();
+  const copy = getSiteCopy(locale).experience;
 
-  const defaultActiveId = experience[0]?.id;
+  const defaultActiveId = experience[0]?.id ?? "";
   const [activeId, setActiveId] = useState<string>(defaultActiveId);
   const activeItem =
     experience.find((item) => item.id === activeId) ?? experience[0];
 
-  // ✅ subtle "Apple-like" fade when switching roles
   const [detailsKey, setDetailsKey] = useState(0);
 
-  // ✅ Left menu typography — smaller on mobile
+  if (!activeItem) return null;
+
   const roleCompanyClass = "text-sm font-semibold sm:text-lg";
 
-  // ✅ Details typography — smaller on mobile
   const detailsTitleClass = "text-base font-semibold sm:text-2xl";
 
   const detailsMetaClass = "mt-1 text-[15px] sm:text-[16px]";
 
-  // ✅ Bullets/paragraphs: decreased slightly
   const bulletClass = "mt-5 space-y-2 text-[15px] sm:text-[16px]";
 
-  // ✅ light-weight fade for details panel using key + CSS animation
   const detailsFadeClass =
     "animate-in fade-in-0 duration-200 ease-out motion-reduce:animate-none";
 
@@ -80,18 +81,17 @@ export function ExperienceSection() {
   };
 
   return (
-    <section id="experience" className="py-16 scroll-mt-12 lg:py-24">
+    <section id="experience" className="scroll-mt-12 py-16 lg:py-24">
       <div className="mx-auto w-full max-w-6xl px-4">
-        <div className="flex items-center gap-4">
-          <h2 className="font-mono text-[13px] font-semibold uppercase tracking-[0.18em] text-muted-foreground sm:text-lg">
-            ~/Experience
-          </h2>
-          <div className="hidden h-px w-40 bg-white/15 sm:block sm:w-72" aria-hidden />
-        </div>
+        <SectionHeader
+          eyebrow={copy.eyebrow}
+          title={copy.title}
+          className="py-5"
+        />
 
         <div className="mt-8 flex flex-col gap-4 md:flex-row md:items-start">
           {/* Left: roles list — horizontal scroll on mobile, vertical on md+ */}
-          <div className="w-full border-b border-white/10 pb-4 md:w-72 md:border-b-0 md:pb-0 md:pr-6">
+          <div className="w-full border-b border-hairline pb-4 md:w-72 md:border-b-0 md:pb-0 md:pr-6">
             <ul className="-mx-4 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-col md:gap-0 md:space-y-1 md:overflow-visible md:px-0 md:pb-0 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
               {experience.map((item) => {
                 const isActive = item.id === activeItem.id;
@@ -101,9 +101,9 @@ export function ExperienceSection() {
                       type="button"
                       onClick={() => handleSelect(item.id)}
                       className={[
-                        "group flex items-center gap-2 rounded-md border border-white/10 px-3 py-2 text-left transition-colors hover:bg-white/5",
+                        "group flex items-center gap-2 rounded-control border border-hairline px-3 py-2 text-left transition-colors hover:bg-muted",
                         "md:w-full md:border-0 md:px-3 md:py-3",
-                        isActive ? "bg-white/5 border-accent/40 md:border-0" : "",
+                        isActive ? "border-accent/40 bg-muted md:border-0" : "",
                       ].join(" ")}
                     >
                       <CompanyAvatar
@@ -115,7 +115,7 @@ export function ExperienceSection() {
                         <p
                           className={
                             isActive
-                              ? `${roleCompanyClass} text-indigo-300 whitespace-nowrap md:whitespace-normal`
+                              ? `${roleCompanyClass} whitespace-nowrap text-accent md:whitespace-normal`
                               : `${roleCompanyClass} text-foreground group-hover:text-accent/60 whitespace-nowrap md:whitespace-normal`
                           }
                         >
@@ -146,19 +146,22 @@ export function ExperienceSection() {
               text-muted-foreground
               md:border-t-0
               md:border-l
-              md:border-white/10
+              md:border-hairline
               md:pl-6
               md:pt-0
             "
           >
-            <div key={detailsKey} className={detailsFadeClass}>
+            <Surface
+              key={detailsKey}
+              tone="paper"
+              className={`${detailsFadeClass} border-0 bg-transparent p-0`}
+            >
               <div className="flex flex-col justify-between gap-2 sm:flex-row">
                 <div>
                   <h4 className={`${detailsTitleClass} text-foreground`}>
                     {activeItem.role} @ {formatCompany(activeItem.company)}
                   </h4>
 
-                  {/* ✅ Removed city/location + removed job type */}
                   <p className={`${detailsMetaClass} text-muted-foreground`}>
                     {activeItem.start} - {activeItem.end}
                   </p>
@@ -167,7 +170,7 @@ export function ExperienceSection() {
 
               {activeItem.description?.length > 0 && (
                 <ul
-                  className={`${bulletClass} list-disc pl-5 marker:text-indigo-400/70`}
+                  className={`${bulletClass} list-disc pl-5 marker:text-accent/70`}
                 >
                   {activeItem.description.slice(0, 3).map((line, idx) => (
                     <li key={idx} className="leading-relaxed">
@@ -176,7 +179,7 @@ export function ExperienceSection() {
                   ))}
                 </ul>
               )}
-            </div>
+            </Surface>
           </article>
         </div>
       </div>
