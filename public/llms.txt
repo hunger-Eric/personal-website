@@ -1,0 +1,65 @@
+# fengc — AI Native 独立开发者
+
+> 把 AI、自动化、知识系统和业务流程组织成可运行的系统。
+
+基于深圳，面向个人与小团队提供 AI Native 系统构建服务。
+擅长把 AI 模型、自动化流程、本地知识库和业务需求组织成可长期维护的产品和工作流。
+
+## 核心方向
+
+- **AI 工作流工程** — 多模型协同、Codex/Claude Code 辅助开发、原型迭代流程
+- **自动化系统** — Docker、n8n、API、队列与长期可维护业务自动化
+- **知识库与 RAG 系统** — 本地知识库、多源检索、Obsidian 联动、文档理解引擎
+- **AI 辅助内容生产** — AI 内容创作、视觉表达、素材整理和数字叙事
+
+## 代表项目
+
+### Hermes Notebook
+本地知识库的文档理解引擎，把 PDF、网页、课程、PPT 和笔记转成可追溯的 AI 知识节点。
+技术栈：FastAPI、Next.js、SQLite、RAG、Obsidian
+状态：Active build
+详情：https://me.itheheda.online/projects/hermes-notebook
+
+### Freight Lead Agent
+跨境货代场景的线索发现、官网解析、邮箱证据、发送计划和运维监控系统。
+技术栈：FastAPI、React、Postgres、Redis Queue、Docker
+状态：Live operations
+详情：https://me.itheheda.online/projects/freight-lead-agent
+
+### Element Asset SDK
+跨 Web 与桌面运行时捕获、验证、复用 UI 元素资产的 SDK 和工作台，面向 AI Agent 场景。
+技术栈：TypeScript、Chrome extension、Desktop UIA
+状态：P0 complete
+详情：https://me.itheheda.online/projects/element-asset-sdk
+
+### GEO SaaS 验证服务
+AI 可见性体检、内容基础设施改造和 90 天验证服务，帮助企业被 AI 引用。
+技术栈：Next.js、llms.txt、structured content
+状态：Validation
+详情：https://me.itheheda.online/projects/geo-saas
+
+### LINE OA 批量消息自动化
+Docker + LINE API 的批量触达自动化，把 Excel 导出自动变成消息推送任务。
+技术栈：Node.js、Docker、LINE API
+状态：Internal tool
+详情：https://me.itheheda.online/projects/line-oa-automation
+
+## 开源项目
+
+- notebooklm-cn — NotebookLM 中文版克隆，Next.js 部署
+  GitHub: https://github.com/hunger-Eric/notebooklm-cn
+
+## 联系方式
+
+- 网站: https://me.itheheda.online
+- GitHub: https://github.com/hunger-Eric
+- Email: itheheda@gmail.com
+- 微信公众号: 独立系统
+
+## 页面索引
+
+- 首页: https://me.itheheda.online/
+- 项目案例: https://me.itheheda.online/projects
+- 文章: https://me.itheheda.online/articles
+- 摄影: https://me.itheheda.online/photography
+- 联系: https://me.itheheda.online/links
