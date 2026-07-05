@@ -215,6 +215,14 @@ export default function RootLayout({
             />
           )}
 
+          {/* Umami Analytics — self-hosted privacy-friendly analytics */}
+          <Script
+            src="https://cloud.umami.is/script.js"
+            data-website-id="1de589b4-ac08-45ab-a92c-b69e24fa3419"
+            data-domains="me.itheheda.online"
+            strategy="afterInteractive"
+          />
+
           {/* Skip to content link for accessibility */}
           <a
             href="#main-content"
