@@ -5,7 +5,7 @@ import { GeistSans } from "geist/font/sans";
 import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-import { siteConfig } from "@/config/siteConfig";
+import { publicIdentity } from "@/config/public-identity";
 import { viewportThemeColors } from "@/config/visualTokens";
 
 import { NavbarCentered } from "@/components/NavbarCenteredDesktop";
@@ -17,9 +17,9 @@ import { PageTransition } from "@/components/PageTransition";
 import { ThemeProvider, ThemeScript } from "@/components/ThemeProvider";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import {
-  generatePersonSchema,
-  generateWebSiteSchema,
-  generateProfilePageSchema,
+  generateProfessionalServiceSchema,
+  generatePublicPersonSchema,
+  generatePublicWebSiteSchema,
 } from "@/lib/structured-data";
 import { SITE_URL } from "@/lib/site-url";
 
@@ -55,24 +55,21 @@ export const metadata: Metadata = {
 
   // Basic metadata
   title: {
-    default: `${siteConfig.name} – ${siteConfig.title}`,
-    template: `%s | ${siteConfig.name}`,
+    default: `${publicIdentity.canonicalName} — ${publicIdentity.category.zh}`,
+    template: `%s | ${publicIdentity.canonicalName}`,
   },
-  description: siteConfig.tagline,
+  description: publicIdentity.positioning.zh,
   keywords: [
-    siteConfig.name,
-    "portfolio",
-    "developer",
-    "software engineer",
-    "full stack",
-    "web development",
-    "React",
-    "Next.js",
-    "TypeScript",
+    publicIdentity.canonicalName,
+    "企业 AI 自动化",
+    "业务流程自动化",
+    "AI 工作流诊断",
+    "人工审核自动化",
+    "中小企业自动化改造",
   ],
-  authors: [{ name: siteConfig.name, url: SITE_URL }],
-  creator: siteConfig.name,
-  publisher: siteConfig.name,
+  authors: [{ name: publicIdentity.canonicalName, url: SITE_URL }],
+  creator: publicIdentity.canonicalName,
+  publisher: publicIdentity.canonicalName,
 
   // Icons
   icons: {
@@ -93,15 +90,15 @@ export const metadata: Metadata = {
     type: "website",
     locale: "zh_CN",
     url: SITE_URL,
-    siteName: `${siteConfig.name} Website`,
-    title: `${siteConfig.name} – ${siteConfig.title}`,
-    description: siteConfig.tagline,
+    siteName: `${publicIdentity.canonicalName} — AI Automation`,
+    title: `${publicIdentity.canonicalName} — ${publicIdentity.category.zh}`,
+    description: publicIdentity.positioning.zh,
     images: [
       {
         url: "/images/og/home.png?v=4",
         width: 1200,
         height: 630,
-        alt: `${siteConfig.name} - ${siteConfig.title}`,
+        alt: `${publicIdentity.canonicalName} — ${publicIdentity.category.zh}`,
       },
     ],
   },
@@ -109,8 +106,8 @@ export const metadata: Metadata = {
   // Twitter Card
   twitter: {
     card: "summary_large_image",
-    title: `${siteConfig.name} – ${siteConfig.title}`,
-    description: siteConfig.tagline,
+    title: `${publicIdentity.canonicalName} — ${publicIdentity.category.zh}`,
+    description: publicIdentity.positioning.zh,
     images: ["/images/og/home.png?v=4"],
   },
 
@@ -138,10 +135,10 @@ export const metadata: Metadata = {
     canonical: SITE_URL,
     types: {
       "application/rss+xml": [
-        { url: `${SITE_URL}/feed.xml`, title: `${siteConfig.name} — Articles` },
+        { url: `${SITE_URL}/feed.xml`, title: `${publicIdentity.canonicalName} — Articles` },
       ],
       "application/feed+json": [
-        { url: `${SITE_URL}/feed.json`, title: `${siteConfig.name} — Articles` },
+        { url: `${SITE_URL}/feed.json`, title: `${publicIdentity.canonicalName} — Articles` },
       ],
     },
   },
@@ -195,9 +192,9 @@ export default function RootLayout({
         {/* JSON-LD Structured Data */}
         <JsonLd
           data={[
-            generatePersonSchema(),
-            generateWebSiteSchema(),
-            generateProfilePageSchema(),
+            generatePublicPersonSchema(),
+            generatePublicWebSiteSchema(),
+            generateProfessionalServiceSchema(),
           ]}
         />
       </head>

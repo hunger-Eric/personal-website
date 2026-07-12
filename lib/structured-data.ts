@@ -3,6 +3,9 @@
 // Reference: https://schema.org/
 
 import { siteConfig } from "@/config/siteConfig";
+import { publicContent } from "@/config/public-content";
+import { publicIdentity } from "@/config/public-identity";
+import { serviceMethod } from "@/config/service-method";
 import { SITE_URL } from "@/lib/site-url";
 
 /**
@@ -214,5 +217,47 @@ export function generateProfilePageSchema() {
     name: `${siteConfig.name} - ${siteConfig.title}`,
     description: siteConfig.tagline,
     url: SITE_URL,
+  };
+}
+
+export function generatePublicPersonSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: publicIdentity.canonicalName,
+    url: SITE_URL,
+    jobTitle: publicIdentity.category.zh,
+    description: publicIdentity.positioning.zh,
+    knowsLanguage: publicIdentity.languages,
+  };
+}
+
+export function generatePublicWebSiteSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: `${publicIdentity.canonicalName} — ${publicIdentity.category.zh}`,
+    url: SITE_URL,
+    description: publicIdentity.positioning.zh,
+    inLanguage: publicIdentity.languages,
+    author: generatePublicPersonSchema(),
+    dateModified: publicContent.updatedAt,
+  };
+}
+
+export function generateProfessionalServiceSchema() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfessionalService",
+    name: `${publicIdentity.canonicalName} — ${publicIdentity.category.zh}`,
+    url: SITE_URL,
+    description: publicIdentity.description.zh,
+    serviceType: serviceMethod.suitableWork.map((item) => item.zh),
+    provider: generatePublicPersonSchema(),
+    potentialAction: {
+      "@type": "CommunicateAction",
+      target: `${SITE_URL}${publicIdentity.contact.page}`,
+      description: publicIdentity.contact.promise.zh,
+    },
   };
 }

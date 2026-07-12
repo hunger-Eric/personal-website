@@ -84,7 +84,7 @@ const requiredFiles = [
   "components/system/index.ts",
   "components/motion/index.ts",
   "lib/ai-readable/routes.ts",
-  "public/.well-known/brand-facts.json",
+  "app/.well-known/brand-facts.json/route.ts",
 ];
 
 const missingRequired = requiredFiles.filter((file) => !fs.existsSync(path.join(root, file)));

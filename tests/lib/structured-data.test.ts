@@ -448,3 +448,24 @@ describe("generateProfilePageSchema", () => {
     expect(r.mainEntity.jobTitle).toBe("CS Student");
   });
 });
+
+describe("public enterprise structured data", () => {
+  it("uses the reviewed public identity and service model", async () => {
+    const {
+      generateProfessionalServiceSchema,
+      generatePublicPersonSchema,
+      generatePublicWebSiteSchema,
+    } = await import("@/lib/structured-data");
+
+    const person = generatePublicPersonSchema();
+    const website = generatePublicWebSiteSchema();
+    const service = generateProfessionalServiceSchema();
+
+    expect(person.name).toBe("fengc");
+    expect(person.description).toContain("人工衔接");
+    expect(website.dateModified).toBe("2026-07-12");
+    expect(service["@type"]).toBe("ProfessionalService");
+    expect(service.potentialAction.target).toBe(`${BASE_URL}/contact`);
+    expect(service.serviceType.length).toBeGreaterThan(1);
+  });
+});

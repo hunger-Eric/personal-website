@@ -1,17 +1,9 @@
-import rawCaseConfig from "@/config/cases.json";
-import pagesData from "@/config/pages.json";
-import photographyData from "@/config/photography.json";
-import { siteConfig } from "@/config/siteConfig";
+import { publicContent } from "@/config/public-content";
+import { publicIdentity } from "@/config/public-identity";
 import { getArticles } from "@/lib/mdx/mdx";
 import { SITE_URL } from "@/lib/site-url";
 
-export type ReadableRouteKind =
-  | "primary"
-  | "project"
-  | "article"
-  | "photography"
-  | "custom"
-  | "machine";
+export type ReadableRouteKind = "primary" | "project" | "article" | "machine";
 
 export type ReadableRoute = {
   kind: ReadableRouteKind;
@@ -31,59 +23,8 @@ export type ReadableRoute = {
   priority: number;
 };
 
-type RawCaseConfig = {
-  github_readme_projects?: Array<{
-    repo_url?: string;
-    name?: string;
-    summary?: string;
-    priority?: number;
-    updated?: string;
-    end?: string;
-    status?: string;
-  }>;
-  local_projects?: Array<{
-    id?: string;
-    name?: string;
-    summary?: string;
-    priority?: number;
-    updated?: string;
-    end?: string;
-    status?: string;
-  }>;
-};
-
-type RawPageConfig = {
-  pages?: Array<{
-    slug?: string;
-    title?: string;
-    description?: string;
-    updated?: string;
-  }>;
-};
-
-type RawPhotographyConfig = {
-  zh?: {
-    projects?: Array<{
-      slug?: string;
-      title?: string;
-      description?: string;
-      date?: string;
-      photos?: Array<{ private?: boolean; src?: string; title?: string }>;
-    }>;
-  };
-  en?: {
-    projects?: Array<{
-      slug?: string;
-      title?: string;
-      description?: string;
-      date?: string;
-    }>;
-  };
-};
-
 function absoluteUrl(path: string) {
-  if (path === "/") return `${SITE_URL}/`;
-  return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
+  return path === "/" ? `${SITE_URL}/` : `${SITE_URL}${path}`;
 }
 
 function dateOrUndefined(value?: string) {
@@ -92,26 +33,14 @@ function dateOrUndefined(value?: string) {
   return Number.isNaN(parsed.getTime()) ? undefined : parsed;
 }
 
-function repoRouteId(repoUrl?: string, fallback?: string) {
-  if (!repoUrl) return fallback || "";
-  try {
-    const url = new URL(repoUrl);
-    const parts = url.pathname.split("/").filter(Boolean);
-    if (parts.length >= 2) return `${parts[0]}-${parts[1]}`.toLowerCase();
-  } catch {
-    return fallback || "";
-  }
-  return fallback || "";
-}
-
-function buildStaticRoutes(): ReadableRoute[] {
-  const routes: ReadableRoute[] = [
+function primaryRoutes(): ReadableRoute[] {
+  return [
     {
       kind: "primary",
       path: "/",
       url: absoluteUrl("/"),
       title: "Home",
-      description: siteConfig.tagline,
+      description: publicIdentity.positioning.en,
       changeFrequency: "weekly",
       priority: 1,
     },
@@ -119,172 +48,124 @@ function buildStaticRoutes(): ReadableRoute[] {
       kind: "primary",
       path: "/projects",
       url: absoluteUrl("/projects"),
-      title: "Projects",
-      description: "AI Native system cases and project archive.",
+      title: "Cases",
+      description: "Reviewed evidence of transferable AI automation delivery.",
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       kind: "primary",
-      path: "/links",
-      url: absoluteUrl("/links"),
-      title: "Links",
-      description: "Canonical contact and social links.",
+      path: "/contact",
+      url: absoluteUrl("/contact"),
+      title: "Submit a workflow problem",
+      description: publicIdentity.contact.promise.en,
       changeFrequency: "monthly",
-      priority: 0.75,
+      priority: 0.95,
     },
     {
       kind: "primary",
-      path: "/content",
-      url: absoluteUrl("/content"),
-      title: "Content",
-      description: "Public writing, video, and social channels.",
-      changeFrequency: "weekly",
+      path: "/about",
+      url: absoluteUrl("/about"),
+      title: "About",
+      description: publicIdentity.description.en,
+      changeFrequency: "monthly",
       priority: 0.7,
     },
     {
       kind: "primary",
-      path: "/photography",
-      url: absoluteUrl("/photography"),
-      title: "Photography",
-      description: "Photography projects and visual notes.",
-      changeFrequency: "monthly",
+      path: "/articles",
+      url: absoluteUrl("/articles"),
+      title: "Articles",
+      description: "Original writing about AI, agents, automation, and workflows.",
+      changeFrequency: "weekly",
       priority: 0.65,
     },
-    {
-      kind: "primary",
-      path: "/resume",
-      url: absoluteUrl("/resume"),
-      title: "Resume",
-      description: "Canonical resume endpoint.",
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
   ];
-
-  return routes.filter((route) => {
-    if (route.path === "/projects") return Boolean(siteConfig.sections?.projects);
-    if (route.path === "/articles") return Boolean(siteConfig.sections?.articles);
-    return true;
-  });
 }
 
-function buildCaseRoutes(): ReadableRoute[] {
-  const cfg = rawCaseConfig as RawCaseConfig;
-  const github = (cfg.github_readme_projects || []).map((entry, index) => {
-    const id = repoRouteId(entry.repo_url, entry.name);
-    return {
-      kind: "project" as const,
-      path: `/projects/${id}`,
-      url: absoluteUrl(`/projects/${id}`),
-      title: entry.name || id,
-      description: entry.summary,
-      lastModified: dateOrUndefined(entry.updated || entry.end),
-      changeFrequency: "monthly" as const,
-      priority: entry.priority ? Math.max(0.5, Math.min(0.85, entry.priority / 100)) : 0.65,
-      _order: entry.priority ?? index,
-    };
-  });
-
-  const local = (cfg.local_projects || []).map((entry, index) => {
-    const id = entry.id || entry.name || "";
-    return {
-      kind: "project" as const,
-      path: `/projects/${id}`,
-      url: absoluteUrl(`/projects/${id}`),
-      title: entry.name || id,
-      description: entry.summary,
-      lastModified: dateOrUndefined(entry.updated || entry.end),
-      changeFrequency: "monthly" as const,
-      priority: entry.priority ? Math.max(0.5, Math.min(0.9, entry.priority / 100)) : 0.7,
-      _order: entry.priority ?? 500 + index,
-    };
-  });
-
-  return [...github, ...local]
-    .filter((route) => route.path !== "/projects/")
-    .sort((a, b) => a._order - b._order)
-    .map((route) => {
-      const { _order: sortOrder, ...readableRoute } = route;
-      void sortOrder;
-      return readableRoute;
-    });
+function projectRoutes(): ReadableRoute[] {
+  return publicContent.projects.map((project) => ({
+    kind: "project" as const,
+    path: `/projects/${project.id}`,
+    url: absoluteUrl(`/projects/${project.id}`),
+    title: project.name.en ?? project.name.zh ?? project.id,
+    description: project.purpose?.en ?? project.purpose?.zh,
+    lastModified: dateOrUndefined(project.reviewedAt),
+    changeFrequency: "monthly" as const,
+    priority: project.featured ? 0.85 : 0.7,
+  }));
 }
 
-function buildPhotographyRoutes(): ReadableRoute[] {
-  const data = photographyData as RawPhotographyConfig;
-  const zhProjects = data.zh?.projects || [];
-  const enBySlug = new Map((data.en?.projects || []).map((project) => [project.slug, project]));
-
-  return zhProjects
-    .filter((project) => project.slug)
-    .map((project) => {
-      const en = enBySlug.get(project.slug);
-      return {
-        kind: "photography" as const,
-        path: `/photography/${project.slug}`,
-        url: absoluteUrl(`/photography/${project.slug}`),
-        title: en?.title || project.title || project.slug || "Photography project",
-        description: en?.description || project.description,
-        lastModified: dateOrUndefined(project.date),
-        changeFrequency: "monthly" as const,
-        priority: 0.55,
-      };
-    });
-}
-
-function buildMachineRoutes(): ReadableRoute[] {
+function machineRoutes(): ReadableRoute[] {
+  const common = {
+    kind: "machine" as const,
+    changeFrequency: "weekly" as const,
+    priority: 0.7,
+  };
   return [
     {
-      kind: "machine",
+      ...common,
       path: "/llms.txt",
       url: absoluteUrl("/llms.txt"),
       title: "llms.txt",
-      description: "Markdown map for AI systems and crawlers.",
-      changeFrequency: "weekly",
-      priority: 0.8,
+      description: "Canonical Markdown guide for AI systems.",
     },
     {
-      kind: "machine",
-      path: "/feed.xml",
-      url: absoluteUrl("/feed.xml"),
-      title: "RSS feed",
-      description: "RSS feed for published articles.",
-      changeFrequency: "weekly",
-      priority: 0.6,
-    },
-    {
-      kind: "machine",
-      path: "/feed.json",
-      url: absoluteUrl("/feed.json"),
-      title: "JSON feed",
-      description: "JSON Feed 1.1 for published articles.",
-      changeFrequency: "weekly",
-      priority: 0.6,
-    },
-    {
-      kind: "machine",
-      path: "/sitemap.xml",
-      url: absoluteUrl("/sitemap.xml"),
-      title: "Sitemap",
-      description: "Canonical XML sitemap for public and machine-readable pages.",
-      changeFrequency: "weekly",
-      priority: 0.75,
-    },
-    {
-      kind: "machine",
+      ...common,
       path: "/.well-known/brand-facts.json",
       url: absoluteUrl("/.well-known/brand-facts.json"),
       title: "Brand facts",
-      description: "Canonical identity, work, writing, and citation facts.",
-      changeFrequency: "monthly",
-      priority: 0.7,
+      description: "Canonical identity and positioning facts.",
+    },
+    {
+      ...common,
+      path: "/ai/services.json",
+      url: absoluteUrl("/ai/services.json"),
+      title: "Service facts",
+      description: "Problem fit, delivery method, and engagement boundaries.",
+    },
+    {
+      ...common,
+      path: "/ai/projects.json",
+      url: absoluteUrl("/ai/projects.json"),
+      title: "Case index",
+      description: "Index of reviewed public project evidence.",
+    },
+    ...publicContent.projects.map((project) => ({
+      ...common,
+      path: `/ai/projects/${project.id}.json`,
+      url: absoluteUrl(`/ai/projects/${project.id}.json`),
+      title: `${project.name.en ?? project.name.zh ?? project.id} facts`,
+      description: "Complete reviewed public facts for this case.",
+    })),
+    {
+      ...common,
+      path: "/sitemap.xml",
+      url: absoluteUrl("/sitemap.xml"),
+      title: "Sitemap",
+      description: "Canonical public route inventory.",
+    },
+    {
+      ...common,
+      path: "/feed.xml",
+      url: absoluteUrl("/feed.xml"),
+      title: "RSS feed",
+      description: "RSS feed for relevant published articles.",
+      priority: 0.5,
+    },
+    {
+      ...common,
+      path: "/feed.json",
+      url: absoluteUrl("/feed.json"),
+      title: "JSON feed",
+      description: "JSON feed for relevant published articles.",
+      priority: 0.5,
     },
   ];
 }
 
 export async function getReadableRoutes(): Promise<ReadableRoute[]> {
-  const articles = siteConfig.sections?.articles ? await getArticles() : [];
+  const articles = await getArticles();
   const articleRoutes: ReadableRoute[] = articles.map((article) => ({
     kind: "article",
     path: `/articles/${article.slug}`,
@@ -293,43 +174,14 @@ export async function getReadableRoutes(): Promise<ReadableRoute[]> {
     description: article.summary,
     lastModified: dateOrUndefined(article.updated || article.date),
     changeFrequency: "monthly",
-    priority: 0.6,
+    priority: 0.55,
   }));
 
-  const pages = (pagesData as RawPageConfig).pages || [];
-  const customRoutes: ReadableRoute[] = pages
-    .filter((page) => page.slug)
-    .map((page) => ({
-      kind: "custom",
-      path: `/page/${page.slug}`,
-      url: absoluteUrl(`/page/${page.slug}`),
-      title: page.title || page.slug || "Custom page",
-      description: page.description,
-      lastModified: dateOrUndefined(page.updated),
-      changeFrequency: "monthly",
-      priority: 0.5,
-    }));
-
   return [
-    ...buildStaticRoutes(),
-    ...(siteConfig.sections?.articles
-      ? [
-          {
-            kind: "primary" as const,
-            path: "/articles",
-            url: absoluteUrl("/articles"),
-            title: "Articles",
-            description: "Published articles and lab notes.",
-            changeFrequency: "weekly" as const,
-            priority: 0.8,
-          },
-        ]
-      : []),
-    ...buildCaseRoutes(),
+    ...primaryRoutes(),
+    ...projectRoutes(),
     ...articleRoutes,
-    ...buildPhotographyRoutes(),
-    ...customRoutes,
-    ...buildMachineRoutes(),
+    ...machineRoutes(),
   ];
 }
 
@@ -339,13 +191,6 @@ export function groupReadableRoutes(routes: ReadableRoute[]) {
       groups[route.kind].push(route);
       return groups;
     },
-    {
-      primary: [],
-      project: [],
-      article: [],
-      photography: [],
-      custom: [],
-      machine: [],
-    }
+    { primary: [], project: [], article: [], machine: [] }
   );
 }

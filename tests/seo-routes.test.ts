@@ -11,14 +11,19 @@ describe("SEO routes", () => {
 
     expect(entries.length).toBeGreaterThan(0);
     expect(urls).toContain(`${SITE_URL}/projects`);
-    expect(urls).toContain(`${SITE_URL}/content`);
-    expect(urls).toContain(`${SITE_URL}/photography`);
+    expect(urls).toContain(`${SITE_URL}/contact`);
+    expect(urls).toContain(`${SITE_URL}/about`);
     expect(urls).toContain(`${SITE_URL}/llms.txt`);
     expect(urls).toContain(`${SITE_URL}/feed.xml`);
     expect(urls).toContain(`${SITE_URL}/feed.json`);
     expect(urls).toContain(`${SITE_URL}/.well-known/brand-facts.json`);
+    expect(urls).toContain(`${SITE_URL}/ai/services.json`);
+    expect(urls).toContain(`${SITE_URL}/ai/projects.json`);
     expect(urls.some((url) => url.startsWith(`${SITE_URL}/projects/`))).toBe(true);
-    expect(urls.some((url) => url.startsWith(`${SITE_URL}/photography/`))).toBe(true);
+    expect(urls).not.toContain(`${SITE_URL}/content`);
+    expect(urls).not.toContain(`${SITE_URL}/photography`);
+    expect(urls).not.toContain(`${SITE_URL}/links`);
+    expect(urls).not.toContain(`${SITE_URL}/resume`);
     for (const entry of entries) {
       expect(entry.url).toMatch(/^https:\/\/me\.itheheda\.online(?:\/|$)/);
     }

@@ -49,6 +49,8 @@ Required machine-readable surfaces:
 - `/ai/projects/[id].json`
 - sitemap, metadata, and JSON-LD generated from the same reviewed facts
 
+The shared public identity, service method, CTA, and reviewed project model now generate the real brand-facts route, `/ai/services.json`, `/ai/projects.json`, per-case JSON, `llms.txt`, sitemap entries, metadata, and public JSON-LD. The legacy static brand-facts file has been removed.
+
 ## Current Architecture
 
 - Next.js 16 App Router with React 19 and Tailwind.
@@ -101,7 +103,7 @@ Pre-existing untracked paths that are unrelated to this redesign and must not be
 
 ## Immediate Next Step
 
-Build the shared public identity, service method, and AI-readable route model from the approved positioning and reviewed public case facts.
+Rebuild navigation, homepage, public cases, and contact/about pages on the shared public content model, then retire legacy personal-site routes.
 
 ## Verification Commands
 

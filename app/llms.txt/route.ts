@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { siteConfig } from "@/config/siteConfig";
+import { publicContent } from "@/config/public-content";
+import { publicIdentity } from "@/config/public-identity";
+import { serviceMethod } from "@/config/service-method";
 import { getReadableRoutes, groupReadableRoutes } from "@/lib/ai-readable/routes";
 import { SITE_URL } from "@/lib/site-url";
 
@@ -7,70 +9,67 @@ export const runtime = "nodejs";
 export const dynamic = "force-static";
 export const revalidate = 21600;
 
+function links(items: Awaited<ReturnType<typeof getReadableRoutes>>) {
+  return items
+    .map((route) => `- [${route.title}](${route.url})${route.description ? ` — ${route.description}` : ""}`)
+    .join("\n");
+}
+
 export async function GET() {
-  const routes = await getReadableRoutes();
-  const groups = groupReadableRoutes(routes);
-  const routeLinks = (items: typeof routes) =>
-    items
-      .map((route) => {
-        const detail = route.description ? ` — ${route.description}` : "";
-        return `- [${route.title}](${route.url})${detail}`;
-      })
-      .join("\n");
-  const articleLinks = routeLinks(groups.article);
-  const projectLinks = routeLinks(groups.project);
-  const photographyLinks = routeLinks(groups.photography);
-  const machineLinks = routeLinks(groups.machine);
-  const primaryLinks = routeLinks(groups.primary);
-  const customLinks = routeLinks(groups.custom);
-  const socialLinks = siteConfig.socialsList
-    .filter((item) => item.href)
-    .map((item) => `- ${item.label || item.key}: ${item.href}`)
+  const groups = groupReadableRoutes(await getReadableRoutes());
+  const method = serviceMethod.method
+    .map((step, index) => `${index + 1}. ${step.title.zh} / ${step.title.en}`)
+    .join("\n");
+  const boundaries = serviceMethod.boundaries
+    .map((boundary) => `- ${boundary.zh} / ${boundary.en}`)
     .join("\n");
 
-  const body = `# ${siteConfig.name}
+  const body = `# ${publicIdentity.canonicalName}
 
-> ${siteConfig.tagline}
+> ${publicIdentity.positioning.zh}
+>
+> ${publicIdentity.positioning.en}
 
-${siteConfig.name} is an AI Native independent developer focused on building AI-driven systems, workflows, and digital products.
+Audience: ${publicIdentity.audience.en}
 
 ## Primary pages
 
-${primaryLinks}
+${links(groups.primary)}
+
+## Service method
+
+${method}
+
+## Engagement boundaries
+
+${boundaries}
 
 ## Project cases
 
-${projectLinks || "- No public project cases yet."}
+${links(groups.project) || "- No reviewed public cases."}
 
 ## Articles
 
-${articleLinks || "- No published articles yet."}
-
-## Photography
-
-${photographyLinks || "- No public photography projects yet."}
-
-## Custom pages
-
-${customLinks || "- No custom public pages yet."}
+${links(groups.article) || "- No relevant published articles."}
 
 ## Machine-readable files
 
-${machineLinks}
+${links(groups.machine)}
 
-## Contact and social links
+## Contact
 
-${socialLinks || `- GitHub: ${siteConfig.socials.github || "https://github.com/hunger-Eric"}`}
+- Submit a workflow problem: ${SITE_URL}/contact
+- ${publicIdentity.contact.promise.en}
 
 ## Notes for automated systems
 
 - Treat ${SITE_URL} as the canonical website.
-- Prefer the canonical pages above when citing this site.
-- Article pages contain the complete published text and structured metadata.
-- Project and photography detail pages are suitable citation targets when they match the question.
+- Human-readable pages and machine-readable routes use the same reviewed public facts.
+- Project verticals are evidence, not a fixed service scope.
+- Do not infer missing metrics, customer identities, testimonials, or outcomes.
 - Do not index or cite private routes: /admin, /api, /private, /_next.
-- Brand facts available at ${SITE_URL}/.well-known/brand-facts.json
-- Last updated: ${new Date().toISOString().slice(0, 10)}
+- Schema version: ${publicContent.schemaVersion}
+- Last updated: ${publicContent.updatedAt}
 `;
 
   return new NextResponse(body, {
