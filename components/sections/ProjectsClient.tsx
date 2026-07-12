@@ -18,7 +18,7 @@ export interface Project {
   summary?: string;
   description?: string[];
   technologies?: string[];
-  links?: Array<{ label: string; href: string; type: string }>;
+  links?: Array<{ label: string; href: string; type?: string }>;
   featured?: boolean;
   imageUrl?: string;
   githubStars?: number;

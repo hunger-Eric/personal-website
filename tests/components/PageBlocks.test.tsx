@@ -362,7 +362,11 @@ describe("PageBlocks", () => {
 
     it("does not render email button when socialsList has no email entry", () => {
       mockSocialsList.mockReturnValue([
-        { key: "github", href: "https://github.com/example" },
+        {
+          key: "github",
+          label: "GitHub",
+          href: "https://github.com/example",
+        },
       ]);
 
       render(

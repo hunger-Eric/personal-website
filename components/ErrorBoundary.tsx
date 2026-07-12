@@ -5,7 +5,7 @@ import React, { Component, type ReactNode, type ErrorInfo } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
-  children: ReactNode;
+  children?: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
@@ -93,7 +93,7 @@ export function AsyncBoundary({
   loadingFallback,
   errorFallback,
 }: {
-  children: ReactNode;
+  children?: ReactNode;
   error?: Error | null;
   isLoading?: boolean;
   loadingFallback?: ReactNode;

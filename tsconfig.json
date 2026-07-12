@@ -9,7 +9,9 @@
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
-    "types": [],
+    "types": [
+      "vitest/globals"
+    ],
     "noEmit": true,
     "incremental": true,
     "module": "esnext",

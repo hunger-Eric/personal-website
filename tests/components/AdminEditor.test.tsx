@@ -115,7 +115,7 @@ function captureIntervals() {
         ? (handler as IntervalCallback)
         : () => undefined,
     );
-    return callbacks.length as ReturnType<typeof setInterval>;
+    return callbacks.length;
   });
   vi.stubGlobal("setInterval", intervalMock);
   vi.stubGlobal("clearInterval", vi.fn());

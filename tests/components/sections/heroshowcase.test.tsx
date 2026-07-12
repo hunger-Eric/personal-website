@@ -126,16 +126,16 @@ vi.mock("@/components/LocaleProvider", () => {
   return {
     LocaleProvider: ({
       children,
-      locale = "zh",
+      initialLocale = "zh",
     }: {
       children: React.ReactNode;
-      locale?: Locale;
+      initialLocale?: Locale;
     }) =>
       React.createElement(
         LocaleContext.Provider,
         {
           value: {
-            locale,
+            locale: initialLocale,
             setLocale: () => {},
             t: {},
             toggleLocale: () => {},
@@ -155,7 +155,9 @@ vi.mock("@/config/contentCopy", () => ({
 }));
 
 function renderWithLocale(ui: React.ReactElement, locale: "zh" | "en" = "zh") {
-  return render(React.createElement(LocaleProvider, { locale }, ui));
+  return render(
+    React.createElement(LocaleProvider, { children: ui, initialLocale: locale })
+  );
 }
 
 describe("HeroShowcaseSection", () => {

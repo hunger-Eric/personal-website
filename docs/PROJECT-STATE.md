@@ -8,7 +8,7 @@ Redesign the public site from an AI Native personal archive into an enterprise-f
 
 The site should help owners and operations leaders at small and medium businesses recognize a repetitive workflow problem, understand the custom diagnosis-and-delivery method, inspect source-grounded project evidence, and submit the workflow for a possible 30-minute initial diagnosis.
 
-The approved design is documented in [`docs/superpowers/specs/2026-07-12-enterprise-ai-readable-website-redesign-design.md`](superpowers/specs/2026-07-12-enterprise-ai-readable-website-redesign-design.md). The detailed execution sequence is documented in [`docs/superpowers/plans/2026-07-12-enterprise-ai-readable-website-redesign.md`](superpowers/plans/2026-07-12-enterprise-ai-readable-website-redesign.md). No redesign implementation has started yet.
+The approved design is documented in [`docs/superpowers/specs/2026-07-12-enterprise-ai-readable-website-redesign-design.md`](superpowers/specs/2026-07-12-enterprise-ai-readable-website-redesign-design.md). The detailed execution sequence is documented in [`docs/superpowers/plans/2026-07-12-enterprise-ai-readable-website-redesign.md`](superpowers/plans/2026-07-12-enterprise-ai-readable-website-redesign.md). Implementation is active on `codex/enterprise-ai-readable-redesign`.
 
 ## Approved Product Boundaries
 
@@ -64,11 +64,11 @@ Required machine-readable surfaces:
 
 - CodeGraph: 301 files, 3,663 nodes, 5,879 edges; index reported current on 2026-07-12.
 - `npm run audit:architecture`: passes; 297 files scanned and no actionable architecture debt reported by the current audit.
-- `npm run lint`: 0 errors and 28 warnings.
+- `npm run lint`: 0 errors and 27 warnings.
 - `npm test`: 90 files and 891 tests pass.
-- `npm run build`: passes and generates 52 pages, but the build currently skips type errors.
-- `npx tsc --noEmit`: fails with 163 errors; 24 are in non-test source files.
-- `npm audit --omit=dev`: reports one high-severity direct Next.js vulnerability group and five moderate production dependency findings, with fixes available.
+- `npm run typecheck`: passes; the previous 163 TypeScript errors are resolved and production builds no longer skip type validation.
+- `npm run build`: passes with Next.js 16.2.10, runs TypeScript, and currently generates 52 pages.
+- `npm audit --omit=dev`: reports no high or critical production findings. Three moderate findings remain in the newest stable Next.js line and legacy `gray-matter` transitive dependencies; unsafe downgrade advice is not accepted.
 - Browser audit at desktop and 390px mobile widths found no horizontal overflow.
 - Current `/links` is hard-coded to English and is a social link page rather than a business consultation flow.
 - Current `llms.txt` still describes the old independent-developer/archive positioning and includes photography/content routes.
@@ -90,7 +90,7 @@ Private source identifiers and raw fetched content must stay in ignored local re
 
 ## Known Existing Worktree State
 
-The branch was `main...origin/main [ahead 3]` when this design phase started.
+Implementation runs on `codex/enterprise-ai-readable-redesign`; `main` was five commits ahead of `origin/main` when the branch was created.
 
 Pre-existing untracked paths that are unrelated to this redesign and must not be overwritten:
 
@@ -99,14 +99,14 @@ Pre-existing untracked paths that are unrelated to this redesign and must not be
 
 ## Immediate Next Step
 
-The user reviews the detailed implementation plan. After approval, implementation begins with dependency/type-gate repair and the GitHub project-source audit before writing public case copy.
+Build the reviewed public project-case schema and local-only GitHub evidence workflow before writing or publishing case copy.
 
 ## Verification Commands
 
 ```bash
 npm run audit:architecture
 npm run lint
-npx tsc --noEmit
+npm run typecheck
 npm test
 npm run build
 ```

@@ -10,9 +10,32 @@ type CommonProps = {
   className?: string;
 };
 
-type ActionButtonProps =
-  | (CommonProps & ComponentPropsWithoutRef<"button"> & { href?: never })
-  | (CommonProps & ComponentPropsWithoutRef<typeof Link> & { href: string });
+type ButtonActionProps = CommonProps &
+  Omit<ComponentPropsWithoutRef<"button">, keyof CommonProps | "href"> & {
+    href?: undefined;
+  };
+
+type LinkActionProps = CommonProps &
+  Omit<ComponentPropsWithoutRef<typeof Link>, keyof CommonProps | "href"> & {
+    href: string;
+  };
+
+type ActionButtonProps = ButtonActionProps | LinkActionProps;
+
+function isLinkAction(props: ActionButtonProps): props is LinkActionProps {
+  return typeof props.href === "string" && props.href.length > 0;
+}
+
+function stripCommonProps<T extends CommonProps>(
+  props: T
+): Omit<T, keyof CommonProps> {
+  const rest = { ...props } as T & Record<string, unknown>;
+  Reflect.deleteProperty(rest, "tone");
+  Reflect.deleteProperty(rest, "icon");
+  Reflect.deleteProperty(rest, "children");
+  Reflect.deleteProperty(rest, "className");
+  return rest;
+}
 
 const toneClass: Record<ButtonTone, string> = {
   primary: "border-accent bg-accent text-accent-foreground hover:bg-accent-hover",
@@ -20,13 +43,13 @@ const toneClass: Record<ButtonTone, string> = {
   ghost: "border-transparent bg-transparent text-foreground hover:bg-muted",
 };
 
-export function ActionButton({
-  tone = "secondary",
-  icon,
-  children,
-  className = "",
-  ...props
-}: ActionButtonProps) {
+export function ActionButton(allProps: ActionButtonProps) {
+  const {
+    tone = "secondary",
+    icon,
+    children,
+    className = "",
+  } = allProps;
   const classes = [
     "inline-flex items-center justify-center gap-2 rounded-control border px-3.5 py-2 text-sm font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent disabled:opacity-50",
     toneClass[tone],
@@ -35,17 +58,19 @@ export function ActionButton({
     .filter(Boolean)
     .join(" ");
 
-  if ("href" in props && props.href) {
+  if (isLinkAction(allProps)) {
+    const linkProps = stripCommonProps(allProps);
     return (
-      <Link {...props} className={classes}>
+      <Link {...linkProps} className={classes}>
         {icon}
         <span>{children}</span>
       </Link>
     );
   }
 
+  const buttonProps = stripCommonProps(allProps);
   return (
-    <button {...props} className={classes}>
+    <button {...buttonProps} className={classes}>
       {icon}
       <span>{children}</span>
     </button>

@@ -16,7 +16,7 @@ type TooltipAlign = "center" | "start" | "end";
 
 type TooltipProps = {
   content: ReactNode;
-  children: ReactNode;
+  children?: ReactNode;
   side?: TooltipSide;
   align?: TooltipAlign;
   delay?: number;

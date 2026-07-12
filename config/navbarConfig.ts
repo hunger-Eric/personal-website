@@ -81,7 +81,9 @@ type RawWithLocale = typeof raw & {
 const data = raw as unknown as RawWithLocale;
 
 function getLocalizedNavData(locale: Locale): NavbarJson {
-  const localized = data[locale] || {};
+  const localized = (data[locale] || {}) as Partial<
+    Pick<NavbarJson, "center" | "cta">
+  >;
   const center = localized.center || data.center || { items: [] };
   const cta = localized.cta || data.cta || {
     contact: { label: "Email", href: "mailto:", show: false },

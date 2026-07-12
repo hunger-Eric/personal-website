@@ -14,6 +14,14 @@ vi.mock("@/lib/mdx/mdx", () => ({
 
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
+function withArticleViews(articleViews: CloudflareEnv["ARTICLE_VIEWS"]) {
+  return {
+    env: { ARTICLE_VIEWS: articleViews },
+    cf: undefined,
+    ctx: undefined,
+  };
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -64,9 +72,9 @@ describe("GET /api/views/[slug]", () => {
       get: vi.fn().mockResolvedValue("42"),
       put: vi.fn().mockResolvedValue(undefined),
     };
-    vi.mocked(getCloudflareContext).mockReturnValueOnce({
-      env: { ARTICLE_VIEWS: mockKv },
-    });
+    vi.mocked(getCloudflareContext).mockReturnValueOnce(
+      withArticleViews(mockKv)
+    );
 
     const { GET } = await import("@/app/api/views/[slug]/route");
     const req = new NextRequest(new Request("http://localhost/api/views/test-article"));
@@ -107,9 +115,9 @@ describe("POST /api/views/[slug]", () => {
       }),
       put: vi.fn().mockResolvedValue(undefined),
     };
-    vi.mocked(getCloudflareContext).mockReturnValueOnce({
-      env: { ARTICLE_VIEWS: mockKv },
-    });
+    vi.mocked(getCloudflareContext).mockReturnValueOnce(
+      withArticleViews(mockKv)
+    );
 
     const { POST } = await import("@/app/api/views/[slug]/route");
     const req = new NextRequest(new Request("http://localhost/api/views/test-article", { method: "POST" }));
@@ -129,9 +137,9 @@ describe("POST /api/views/[slug]", () => {
       }),
       put: vi.fn().mockResolvedValue(undefined),
     };
-    vi.mocked(getCloudflareContext).mockReturnValueOnce({
-      env: { ARTICLE_VIEWS: mockKv },
-    });
+    vi.mocked(getCloudflareContext).mockReturnValueOnce(
+      withArticleViews(mockKv)
+    );
 
     const { POST } = await import("@/app/api/views/[slug]/route");
     const req = new NextRequest(
@@ -158,9 +166,9 @@ describe("POST /api/views/[slug]", () => {
       }),
       put: vi.fn().mockResolvedValue(undefined),
     };
-    vi.mocked(getCloudflareContext).mockReturnValueOnce({
-      env: { ARTICLE_VIEWS: mockKv },
-    });
+    vi.mocked(getCloudflareContext).mockReturnValueOnce(
+      withArticleViews(mockKv)
+    );
 
     const { POST } = await import("@/app/api/views/[slug]/route");
     const req = new NextRequest(
@@ -186,9 +194,9 @@ describe("POST /api/views/[slug]", () => {
       }),
       put: vi.fn().mockResolvedValue(undefined),
     };
-    vi.mocked(getCloudflareContext).mockReturnValueOnce({
-      env: { ARTICLE_VIEWS: mockKv },
-    });
+    vi.mocked(getCloudflareContext).mockReturnValueOnce(
+      withArticleViews(mockKv)
+    );
 
     const { POST } = await import("@/app/api/views/[slug]/route");
     const req = new NextRequest(
@@ -212,9 +220,9 @@ describe("POST /api/views/[slug]", () => {
       }),
       put: vi.fn().mockResolvedValue(undefined),
     };
-    vi.mocked(getCloudflareContext).mockReturnValueOnce({
-      env: { ARTICLE_VIEWS: mockKv },
-    });
+    vi.mocked(getCloudflareContext).mockReturnValueOnce(
+      withArticleViews(mockKv)
+    );
 
     const { POST } = await import("@/app/api/views/[slug]/route");
     const req = new NextRequest(
@@ -238,9 +246,9 @@ describe("POST /api/views/[slug]", () => {
       }),
       put: vi.fn().mockResolvedValue(undefined),
     };
-    vi.mocked(getCloudflareContext).mockReturnValueOnce({
-      env: { ARTICLE_VIEWS: mockKv },
-    });
+    vi.mocked(getCloudflareContext).mockReturnValueOnce(
+      withArticleViews(mockKv)
+    );
 
     const { POST } = await import("@/app/api/views/[slug]/route");
     const req = new NextRequest(
@@ -265,9 +273,9 @@ describe("POST /api/views/[slug]", () => {
       }),
       put: vi.fn().mockResolvedValue(undefined),
     };
-    vi.mocked(getCloudflareContext).mockReturnValueOnce({
-      env: { ARTICLE_VIEWS: mockKv },
-    });
+    vi.mocked(getCloudflareContext).mockReturnValueOnce(
+      withArticleViews(mockKv)
+    );
 
     const { POST } = await import("@/app/api/views/[slug]/route");
     const req = new NextRequest(

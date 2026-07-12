@@ -32,9 +32,15 @@ function getStoredLocale(): Locale | null {
   return null;
 }
 
-export function LocaleProvider({ children }: { children: ReactNode }) {
+export function LocaleProvider({
+  children,
+  initialLocale,
+}: {
+  children: ReactNode;
+  initialLocale?: Locale;
+}) {
   const [locale, setLocaleState] = useState<Locale>(() => {
-    return getStoredLocale() || "zh";
+    return initialLocale || getStoredLocale() || "zh";
   });
 
   const [t, setT] = useState<TranslationDict>(() => getTranslations(locale));

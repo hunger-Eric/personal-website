@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import fs from "node:fs";
+import nodeFs, { type PathLike } from "node:fs";
 import {
   calculateReadingTime,
   FrontmatterSchema,
@@ -13,6 +13,14 @@ import {
   getArticlesByCategory,
   getArticlesByTag,
 } from "@/lib/mdx/mdx";
+
+type MockableFs = {
+  existsSync: typeof nodeFs.existsSync;
+  readdirSync(path: PathLike): string[];
+  readFileSync: typeof nodeFs.readFileSync;
+};
+
+const fs = nodeFs as MockableFs;
 
 // ---------------------------------------------------------------------------
 // Mock node:fs at top level – override per-test via vi.mocked()
@@ -53,7 +61,7 @@ function mdx(fields: Record<string, unknown>): string {
 
 beforeEach(() => {
   vi.restoreAllMocks();
-  delete process.env.NODE_ENV;
+  Reflect.deleteProperty(process.env, "NODE_ENV");
 });
 
 // ---------------------------------------------------------------------------
@@ -156,7 +164,7 @@ describe("getArticles", () => {
   });
 
   it("filters drafts in production", async () => {
-    process.env.NODE_ENV = "production";
+    Reflect.set(process.env, "NODE_ENV", "production");
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.readdirSync).mockReturnValue(["pub.mdx", "draft.mdx"]);
     vi.mocked(fs.readFileSync).mockImplementation((p: any) => {
@@ -296,7 +304,7 @@ describe("getArticleBySlug", () => {
   });
 
   it("returns null for draft articles in production", async () => {
-    process.env.NODE_ENV = "production";
+    Reflect.set(process.env, "NODE_ENV", "production");
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.readdirSync).mockReturnValue(["draft.mdx"]);
     vi.mocked(fs.readFileSync).mockReturnValue(mdx({ title: "Draft", slug: "draft", date: "2025-06-01", draft: true }));

@@ -103,7 +103,8 @@ function isRawExperienceItem(value: unknown): value is RawExperienceItem {
 
 function normalize(items: unknown[]): ExperienceItem[] {
   return items
-    .filter((item) => isRawExperienceItem(item) && item.hidden !== true)
+    .filter(isRawExperienceItem)
+    .filter((item) => item.hidden !== true)
     .map((item) => ({
       id: String(item.id),
       role: String(item.role),

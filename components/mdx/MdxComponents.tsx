@@ -42,7 +42,7 @@ export function Callout({
 }: {
   kind?: CalloutKind;
   title?: string;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   const safe = CALLOUT_STYLES[kind] ?? CALLOUT_STYLES.info;
   const Icon = safe.icon;

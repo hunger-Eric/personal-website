@@ -40,7 +40,7 @@ function buildFlagQuery(
 export function useModalRoute(opts: UseModalRouteOpts = {}) {
   const scheme: Scheme = opts.scheme ?? "kv";
   const key = opts.key ?? (scheme === "kv" ? "modal" : "resume");
-  const value = scheme === "kv" ? (opts.value ?? "resume") : "resume";
+  const value = opts.scheme === "flag" ? "resume" : (opts.value ?? "resume");
   const scroll = opts.scroll ?? false;
 
   const router = useRouter();
