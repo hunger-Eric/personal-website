@@ -8,6 +8,8 @@ const skipDirs = new Set([
   ".next",
   ".open-next",
   ".codegraph",
+  ".artifacts",
+  ".private",
   "node_modules",
   "docker-data",
 ]);

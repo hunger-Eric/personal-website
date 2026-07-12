@@ -1,0 +1,182 @@
+[
+  {
+    "id": "freight-lead-agent",
+    "name": {
+      "zh": "Freight Lead Agent",
+      "en": "Freight Lead Agent"
+    },
+    "publicStatus": "published",
+    "sourceVisibility": "private-curated",
+    "purpose": {
+      "zh": "把分行业导出的企业 Excel 名单，转成可追踪、可人工复核、可导出的货运线索处理批次。",
+      "en": "Turn industry-specific company spreadsheets into traceable, human-reviewed freight lead batches with exportable results."
+    },
+    "originalWorkflow": [
+      {
+        "zh": "运营人员分别整理企业名单、检查网站、寻找公开联系方式，再手工判断线索质量。",
+        "en": "Operators separately cleaned company lists, checked websites, found public contacts, and judged lead quality by hand."
+      },
+      {
+        "zh": "无效行、缺失网站和处理进度分散在不同文件与人工记录中。",
+        "en": "Invalid rows, missing websites, and processing progress were scattered across files and manual notes."
+      }
+    ],
+    "workflowBreakpoints": [
+      {
+        "zh": "Excel 输入质量不一致，错误行容易被静默遗漏。",
+        "en": "Inconsistent spreadsheet quality made invalid rows easy to lose silently."
+      },
+      {
+        "zh": "公开企业信息、判断依据和外联草稿缺少统一的审核界面。",
+        "en": "Public company evidence, scoring rationale, and outreach drafts lacked one review surface."
+      },
+      {
+        "zh": "批次失败后难以判断从哪里继续，导出结果也难以复查。",
+        "en": "After failures it was difficult to know where to resume or how to audit exported results."
+      }
+    ],
+    "systemBoundary": {
+      "zh": "系统在客户控制的 Docker 环境中处理业务 Excel 与公开企业信息；它只生成外联草稿，不自动批量发送，最终使用由人工审核决定。",
+      "en": "The system processes business spreadsheets and public company information in a customer-controlled Docker environment. It generates outreach drafts only; it does not auto-send campaigns, and a human decides final use."
+    },
+    "inputs": [
+      {
+        "zh": "按行业或客户名单导出的 Excel 文件",
+        "en": "Excel exports grouped by industry or customer list"
+      },
+      {
+        "zh": "企业名称、地址、网站等业务字段",
+        "en": "Business fields such as company name, address, and website"
+      },
+      {
+        "zh": "无需登录即可访问的企业公开网页",
+        "en": "Public company pages that do not require login"
+      }
+    ],
+    "processing": [
+      {
+        "zh": "按文件哈希去重并建立可暂停、恢复和重试的处理批次",
+        "en": "Deduplicate files by hash and create pausable, resumable, retryable batches"
+      },
+      {
+        "zh": "清洗行数据，保留无效原因，提取公开企业联系方式",
+        "en": "Clean rows, preserve invalid reasons, and extract public business contacts"
+      },
+      {
+        "zh": "生成线索判断依据与英文外联草稿，写入可审计状态",
+        "en": "Generate lead rationale and English outreach drafts with auditable states"
+      }
+    ],
+    "humanReview": [
+      {
+        "zh": "逐条查看原始字段、公开证据、评分原因与草稿内容",
+        "en": "Review raw fields, public evidence, scoring rationale, and draft content per company"
+      },
+      {
+        "zh": "人工决定是否修改、使用或停止联系；系统不替代合规判断",
+        "en": "A human decides whether to edit, use, or stop contact; the system does not replace compliance judgment"
+      }
+    ],
+    "outputs": [
+      {
+        "zh": "包含批次进度、异常原因和企业证据的运营工作台",
+        "en": "An operations workbench with batch progress, exception reasons, and company evidence"
+      },
+      {
+        "zh": "企业结果表与多条公开联系方式补充表",
+        "en": "A company result sheet plus a supplemental table of public contacts"
+      },
+      {
+        "zh": "可复制、待人工审核的外联邮件主题与正文草稿",
+        "en": "Copyable outreach subject and body drafts pending human review"
+      }
+    ],
+    "failureRecovery": [
+      {
+        "zh": "无效记录不会被删除，而是保留明确原因供复核。",
+        "en": "Invalid records are preserved with explicit reasons instead of being deleted."
+      },
+      {
+        "zh": "批次支持暂停、恢复、重试、事件日志和重复文件保护。",
+        "en": "Batches support pause, resume, retry, event logs, and duplicate-file protection."
+      }
+    ],
+    "currentStatus": {
+      "zh": "已用于真实付费客户交付。公开验收批次处理 601 行：521 行有效、80 行无效、0 行处理失败；公开信息回填后形成 469 条联系方式记录，覆盖 126 家企业。",
+      "en": "Delivered for a real paying client. The disclosed acceptance batch processed 601 rows: 521 valid, 80 invalid, and 0 processing failures. Public-information backfill produced 469 contact records across 126 companies."
+    },
+    "transferableCapabilities": [
+      {
+        "zh": "把不稳定的业务表格转成可恢复的处理队列",
+        "en": "Turn inconsistent business spreadsheets into a recoverable processing queue"
+      },
+      {
+        "zh": "把自动判断与关键人工审核放在同一条流程中",
+        "en": "Combine automated judgment and critical human review in one workflow"
+      },
+      {
+        "zh": "用状态、事件和结构化导出保留完整追踪链",
+        "en": "Preserve traceability through states, events, and structured exports"
+      },
+      {
+        "zh": "以镜像化部署交付客户可独立运行的系统",
+        "en": "Deliver a customer-operated system through image-based deployment"
+      }
+    ],
+    "evidenceArtifacts": [
+      {
+        "id": "workflow-film",
+        "label": {
+          "zh": "流程接管演示",
+          "en": "Workflow handoff demo"
+        },
+        "description": {
+          "zh": "展示从批次输入、公开信息处理、人工审核到结构化导出的系统边界。",
+          "en": "Shows the system boundary from batch input and public-information processing to human review and structured export."
+        },
+        "kind": "demo",
+        "href": "/animations/projects/freight/index.html"
+      },
+      {
+        "id": "docker-acceptance",
+        "label": {
+          "zh": "真实 Docker 验收记录",
+          "en": "Real Docker acceptance record"
+        },
+        "description": {
+          "zh": "服务、API、前端、导出和移动端均使用真实批次完成验收；公开站仅披露经批准的汇总数字。",
+          "en": "Services, API, frontend, exports, and mobile behavior were accepted with a real batch; the public site discloses approved aggregate figures only."
+        },
+        "kind": "validation"
+      }
+    ],
+    "limitations": [
+      {
+        "zh": "只处理公开企业信息，不抓取登录后页面或个人资料。",
+        "en": "Processes public business information only; it does not crawl authenticated pages or personal profiles."
+      },
+      {
+        "zh": "外联内容必须人工审核，系统不提供无差别批量自动发送。",
+        "en": "Outreach content requires human review; the system does not provide indiscriminate automated bulk sending."
+      },
+      {
+        "zh": "公开数字来自一个已验收批次，不代表所有客户或行业都会得到相同结果。",
+        "en": "Published figures come from one accepted batch and do not imply identical results for every client or industry."
+      }
+    ],
+    "reviewedAt": "2026-07-12",
+    "review": {
+      "approvedForPublic": true,
+      "approvedBy": "site-owner"
+    },
+    "featured": true,
+    "sortOrder": 10,
+    "visual": {
+      "animationSrc": "/animations/projects/freight/index.html",
+      "alt": {
+        "zh": "Freight Lead Agent 批次处理与人工审核界面",
+        "en": "Freight Lead Agent batch processing and human-review interface"
+      }
+    }
+  }
+]

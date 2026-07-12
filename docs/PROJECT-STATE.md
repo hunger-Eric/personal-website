@@ -88,6 +88,8 @@ The public website must not mirror all repositories. Before a project becomes a 
 
 Private source identifiers and raw fetched content must stay in ignored local review artifacts, not in the public website repository.
 
+The local-only evidence workflow is now implemented under `scripts/project-evidence/`. One owner-approved private-curated case is published from reviewed evidence. Four additional candidates remain in ignored review artifacts and are not part of the public content model.
+
 ## Known Existing Worktree State
 
 Implementation runs on `codex/enterprise-ai-readable-redesign`; `main` was five commits ahead of `origin/main` when the branch was created.
@@ -99,12 +101,13 @@ Pre-existing untracked paths that are unrelated to this redesign and must not be
 
 ## Immediate Next Step
 
-Build the reviewed public project-case schema and local-only GitHub evidence workflow before writing or publishing case copy.
+Build the shared public identity, service method, and AI-readable route model from the approved positioning and reviewed public case facts.
 
 ## Verification Commands
 
 ```bash
 npm run audit:architecture
+npm run projects:evidence:audit
 npm run lint
 npm run typecheck
 npm test
