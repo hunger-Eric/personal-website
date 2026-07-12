@@ -8,7 +8,7 @@ Redesign the public site from an AI Native personal archive into an enterprise-f
 
 The site should help owners and operations leaders at small and medium businesses recognize a repetitive workflow problem, understand the custom diagnosis-and-delivery method, inspect source-grounded project evidence, and submit the workflow for a possible 30-minute initial diagnosis.
 
-The approved design is documented in [`docs/superpowers/specs/2026-07-12-enterprise-ai-readable-website-redesign-design.md`](superpowers/specs/2026-07-12-enterprise-ai-readable-website-redesign-design.md). No redesign implementation has started yet.
+The approved design is documented in [`docs/superpowers/specs/2026-07-12-enterprise-ai-readable-website-redesign-design.md`](superpowers/specs/2026-07-12-enterprise-ai-readable-website-redesign-design.md). The detailed execution sequence is documented in [`docs/superpowers/plans/2026-07-12-enterprise-ai-readable-website-redesign.md`](superpowers/plans/2026-07-12-enterprise-ai-readable-website-redesign.md). No redesign implementation has started yet.
 
 ## Approved Product Boundaries
 
@@ -99,7 +99,7 @@ Pre-existing untracked paths that are unrelated to this redesign and must not be
 
 ## Immediate Next Step
 
-The user reviews and approves the written design specification. After approval, create a detailed implementation plan. Implementation must begin with dependency/type-gate repair and the GitHub project-source audit before writing public case copy.
+The user reviews the detailed implementation plan. After approval, implementation begins with dependency/type-gate repair and the GitHub project-source audit before writing public case copy.
 
 ## Verification Commands
 
