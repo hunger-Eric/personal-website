@@ -53,11 +53,6 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "unavatar.io",
       },
-      // Photography page demo assets
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
     ],
     // Cache optimized images for 1 year
     minimumCacheTTL: 31536000,
@@ -94,6 +89,14 @@ const nextConfig: NextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
+          },
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
           },
         ],
       },
@@ -147,8 +150,12 @@ const nextConfig: NextConfig = {
         destination: "https://me.itheheda.online/:path+",
         permanent: true,
       },
-      // Redirect old routes if you migrate from another portfolio
-      // { source: '/portfolio', destination: '/projects', permanent: true },
+      { source: "/links", destination: "/contact", permanent: true },
+      { source: "/content", destination: "/", permanent: true },
+      { source: "/photography", destination: "/", permanent: true },
+      { source: "/photography/:path*", destination: "/", permanent: true },
+      { source: "/resume", destination: "/about", permanent: true },
+      { source: "/page/:path*", destination: "/", permanent: true },
     ];
   },
 

@@ -15,84 +15,11 @@ import {
   extractAdminToken,
 } from "@/lib/admin-guard";
 
-const BIO_UTM_SOURCES = new Set([
-  "instagram",
-  "ig",
-  "tiktok",
-  "tt",
-  "youtube",
-  "yt",
-  "twitter",
-  "x",
-  "linkedin",
-  "li",
-  "threads",
-  "facebook",
-  "fb",
-  "snapchat",
-  "snap",
-  "pinterest",
-  "bio",
-  "linkinbio",
-  "link_in_bio",
-  "linktree",
-]);
-
-const SOCIAL_REFERER_HOSTS = [
-  "instagram.com",
-  "l.instagram.com",
-  "tiktok.com",
-  "vm.tiktok.com",
-  "facebook.com",
-  "l.facebook.com",
-  "lm.facebook.com",
-  "m.facebook.com",
-  "threads.net",
-  "threads.com",
-  "linkedin.com",
-  "lnkd.in",
-  "twitter.com",
-  "t.co",
-  "x.com",
-  "youtube.com",
-  "youtu.be",
-  "snapchat.com",
-  "pinterest.com",
-];
-
-function refererIsSocial(referer: string | null): boolean {
-  if (!referer) return false;
-  try {
-    const url = new URL(referer);
-    const host = url.hostname.toLowerCase();
-    return SOCIAL_REFERER_HOSTS.some((h) => host === h || host.endsWith(`.${h}`));
-  } catch {
-    return false;
-  }
-}
-
-function shouldRedirectHomepage(request: NextRequest): boolean {
-  const params = request.nextUrl.searchParams;
-  const utmSource = params.get("utm_source")?.trim().toLowerCase();
-
-  return (
-    (utmSource ? BIO_UTM_SOURCES.has(utmSource) : false) ||
-    params.has("fbclid") ||
-    params.has("ttclid") ||
-    params.has("igshid") ||
-    refererIsSocial(request.headers.get("referer"))
-  );
-}
-
 /** Paths that should be accessible without auth (login page + its API) */
 const PUBLIC_ADMIN_PATHS = ["/admin/login", "/api/admin/login"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  if (pathname === "/" && shouldRedirectHomepage(request)) {
-    return NextResponse.redirect(new URL("/links", request.url));
-  }
 
   if (!pathname.startsWith("/admin") && !pathname.startsWith("/api/admin")) {
     return NextResponse.next();
@@ -150,6 +77,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/admin/:path*", "/api/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };
-

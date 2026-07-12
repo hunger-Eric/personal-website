@@ -135,7 +135,7 @@ describe("NavbarCenteredMobile", () => {
     const NavbarCenteredMobile = defaultExport.default;
     render(React.createElement(NavbarCenteredMobile));
 
-    const hamburger = screen.getByLabelText("Toggle navigation menu");
+    const hamburger = screen.getByLabelText("Menu");
     expect(hamburger).toBeInTheDocument();
     expect(hamburger.tagName).toBe("BUTTON");
   });
@@ -151,15 +151,15 @@ describe("NavbarCenteredMobile", () => {
     const defaultExport = await import("@/components/NavbarCenteredMobile");
     const NavbarCenteredMobile = defaultExport.default;
     render(React.createElement(NavbarCenteredMobile));
-    expect(screen.getByText("FengC")).toBeInTheDocument();
+    expect(screen.getByText("fengc")).toBeInTheDocument();
   });
 
-  it("renders desktop children hidden on mobile (sticky header)", async () => {
+  it("keeps the mobile header fixed and visible", async () => {
     const defaultExport = await import("@/components/NavbarCenteredMobile");
     const NavbarCenteredMobile = defaultExport.default;
     const { container } = render(React.createElement(NavbarCenteredMobile));
     const header = container.querySelector("header");
-    expect(header?.className).toContain("sticky");
+    expect(header?.className).toContain("fixed");
     expect(header?.className).toContain("top-0");
   });
 });

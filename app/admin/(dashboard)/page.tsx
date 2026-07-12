@@ -6,10 +6,8 @@ import {
   Settings,
   Menu,
   User,
-  Image as ImageIcon,
   Palette,
   FilePlus,
-  Camera,
   ExternalLink,
 } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -40,12 +38,6 @@ const CARDS = [
     label: adminCopy.dashboard.cards.theme.label,
     desc: adminCopy.dashboard.cards.theme.description,
     icon: Palette,
-  },
-  {
-    href: "/admin/photography",
-    label: adminCopy.dashboard.cards.photography.label,
-    desc: adminCopy.dashboard.cards.photography.description,
-    icon: ImageIcon,
   },
   {
     href: "/admin/pages",
@@ -88,14 +80,6 @@ export default function AdminDashboard() {
             {adminCopy.dashboard.quickLinks.title}
           </h2>
           <div className="flex flex-wrap gap-3">
-            <ActionButton
-              href="/photography"
-              tone="secondary"
-              icon={<Camera className="h-4 w-4" />}
-            >
-              {adminCopy.dashboard.quickLinks.photography}
-              <ExternalLink className="h-3 w-3" />
-            </ActionButton>
             <ActionButton
               href="/"
               tone="secondary"

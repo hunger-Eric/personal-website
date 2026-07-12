@@ -31,6 +31,7 @@ vi.mock("lucide-react", () => {
   return {
     ChevronDown: S,
     Handshake: S,
+    ArrowUpRight: S,
   };
 });
 
@@ -118,16 +119,17 @@ describe("NavbarCentered", () => {
     expect(header?.className).toContain("sm:block");
   });
 
-  it("renders nav items from config", async () => {
+  it("renders the enterprise decision-path navigation", async () => {
     const { NavbarCentered } = await import(
       "@/components/NavbarCenteredDesktop"
     );
     render(React.createElement(NavbarCentered));
 
     // Check for each nav item label
+    expect(screen.getByText("Method")).toBeInTheDocument();
+    expect(screen.getByText("Cases")).toBeInTheDocument();
     expect(screen.getByText("About")).toBeInTheDocument();
-    expect(screen.getByText("Projects")).toBeInTheDocument();
-    expect(screen.getByText("Articles")).toBeInTheDocument();
+    expect(screen.queryByText("Articles")).not.toBeInTheDocument();
   });
 
   it("includes the LangSwitch component", async () => {
@@ -143,7 +145,7 @@ describe("NavbarCentered", () => {
       "@/components/NavbarCenteredDesktop"
     );
     render(React.createElement(NavbarCentered));
-    expect(screen.getByText("FengC")).toBeInTheDocument();
+    expect(screen.getByText("fengc")).toBeInTheDocument();
   });
 
   it("renders the contact CTA", async () => {
@@ -151,6 +153,6 @@ describe("NavbarCentered", () => {
       "@/components/NavbarCenteredDesktop"
     );
     render(React.createElement(NavbarCentered));
-    expect(screen.getAllByText("Connect").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole("link", { name: /Submit a workflow/i })).toHaveAttribute("href", "/contact");
   });
 });

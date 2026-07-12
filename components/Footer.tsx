@@ -1,102 +1,30 @@
-// components/Footer.tsx
-import {
-  Github,
-  Instagram,
-  Linkedin,
-  Mail,
-  MessageCircle,
-  Music2,
-  Youtube,
-} from "lucide-react";
+"use client";
 
-import { siteConfig, type SocialItem } from "../config/siteConfig";
+import Link from "next/link";
 
-type SocialEntry = {
-  key: string;
-  label: string;
-  href: string;
-};
-
-const SOCIAL_ORDER = [
-  "github",
-  "email",
-  "wechat-official",
-  "wechat",
-  "linkedin",
-  "tiktok",
-  "youtube",
-  "instagram",
-];
-
-function getSocials(): SocialEntry[] {
-  const list: SocialItem[] = siteConfig.socialsList ?? [];
-  const byKey = new Map<string, SocialItem>();
-  for (const item of list) {
-    if (item?.key && item?.href) byKey.set(String(item.key), item);
-  }
-  return SOCIAL_ORDER.map((key) => byKey.get(key))
-    .filter(Boolean)
-    .map((item) => ({
-      key: String(item.key),
-      label: String(item.label || item.key),
-      href: String(item.href),
-    }));
-}
-
-function iconFor(key: string) {
-  switch (key) {
-    case "github":
-      return Github;
-    case "email":
-      return Mail;
-    case "wechat":
-    case "wechat-official":
-      return MessageCircle;
-    case "linkedin":
-      return Linkedin;
-    case "tiktok":
-      return Music2;
-    case "youtube":
-      return Youtube;
-    case "instagram":
-      return Instagram;
-    default:
-      return Github;
-  }
-}
+import { useLocale } from "@/components/LocaleProvider";
 
 export function Footer() {
-  const year = new Date().getFullYear();
-  const socials = getSocials();
-  const name = siteConfig.name || "fengc";
+  const { locale } = useLocale();
+  const zh = locale === "zh";
 
   return (
-    <footer className="mt-12 bg-transparent">
-      <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-4 px-4 py-8 text-center">
-        {socials.length ? (
-          <div className="flex items-center gap-4">
-            {socials.map(({ key, label, href }) => {
-              const Icon = iconFor(key);
-              return (
-                <a
-                  key={key}
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  aria-label={label}
-                  title={label}
-                  className="text-muted-foreground transition-colors duration-150 hover:text-foreground"
-                >
-                  <Icon className="h-[18px] w-[18px]" />
-                </a>
-              );
-            })}
-          </div>
-        ) : null}
-
-        <p className="text-xs text-muted-foreground sm:text-sm">
-          © {year} {name}
-        </p>
+    <footer className="border-t border-hairline bg-surface-paper text-surface-paper-foreground">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-[1fr_auto] sm:items-end">
+        <div>
+          <p className="text-lg font-semibold tracking-tight text-foreground">fengc · AI systems</p>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-muted-foreground">
+            {zh ? "从真实业务流程出发，设计并交付可运行、可审核、可恢复的 AI 自动化系统。" : "Designing and delivering working, reviewable, recoverable AI automation systems from real business workflows."}
+          </p>
+        </div>
+        <nav aria-label={zh ? "页脚导航" : "Footer navigation"} className="flex flex-wrap gap-x-5 gap-y-2 text-sm font-medium text-muted-foreground">
+          <Link href="/projects" className="hover:text-foreground">{zh ? "项目案例" : "Cases"}</Link>
+          <Link href="/about" className="hover:text-foreground">{zh ? "关于" : "About"}</Link>
+          <Link href="/contact" className="hover:text-foreground">{zh ? "联系" : "Contact"}</Link>
+        </nav>
+      </div>
+      <div className="border-t border-hairline px-4 py-4 text-center font-mono text-[11px] uppercase tracking-[0.14em] text-muted-foreground">
+        © {new Date().getFullYear()} fengc · {zh ? "企业 AI 自动化系统设计与交付" : "Enterprise AI automation systems"}
       </div>
     </footer>
   );

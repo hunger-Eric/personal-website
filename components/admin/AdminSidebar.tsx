@@ -7,7 +7,6 @@ import {
   Settings,
   Menu,
   User,
-  Image as ImageIcon,
   Palette,
   FilePlus,
   ArrowLeft,
@@ -28,7 +27,6 @@ const NAV_ITEMS = [
   {
     section: adminCopy.sidebar.content,
     items: [
-      { href: "/admin/photography", label: adminCopy.sidebar.photography, icon: ImageIcon },
       { href: "/admin/pages", label: adminCopy.sidebar.pages, icon: FilePlus },
     ],
   },

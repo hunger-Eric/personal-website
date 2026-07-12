@@ -45,8 +45,13 @@ function textList(values: readonly LocalizedText[] | undefined, locale: Locale) 
 }
 
 function localizeProject(project: PublicProjectCase, locale: Locale) {
+  if (!project.id) {
+    throw new Error("Published project is missing an id");
+  }
+
   return {
     ...project,
+    id: project.id,
     name: text(project.name, locale),
     purpose: project.purpose ? text(project.purpose, locale) : undefined,
     originalWorkflow: textList(project.originalWorkflow, locale),

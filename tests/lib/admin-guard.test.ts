@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   isAdminEnabled,
   verifyAdminToken,
@@ -11,6 +11,7 @@ describe("isAdminEnabled", () => {
 
   afterEach(() => {
     process.env.ENABLE_ADMIN = OLD_ENV;
+    vi.unstubAllEnvs();
   });
 
   it("returns true when ENABLE_ADMIN=true", () => {
@@ -30,6 +31,12 @@ describe("isAdminEnabled", () => {
 
   it("returns false when ENABLE_ADMIN is empty string", () => {
     process.env.ENABLE_ADMIN = "";
+    expect(isAdminEnabled()).toBe(false);
+  });
+
+  it("always stays disabled in production", () => {
+    process.env.ENABLE_ADMIN = "true";
+    vi.stubEnv("NODE_ENV", "production");
     expect(isAdminEnabled()).toBe(false);
   });
 });

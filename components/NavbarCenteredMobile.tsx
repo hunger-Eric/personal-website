@@ -1,428 +1,53 @@
-// components/NavbarCenteredMobile.tsx
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { ChevronDown, Handshake, Mail, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 
-import { LangSwitch } from "./LangSwitch";
-import { IconButton } from "./system";
-import {
-  getNavbarConfig,
-  isExternalHref,
-  type NavDropdownItemCfg,
-  type NavDropdownFooterCfg,
-} from "../config/navbarConfig";
-import { useLocale } from "./LocaleProvider";
+import { LangSwitch } from "@/components/LangSwitch";
+import { useLocale } from "@/components/LocaleProvider";
 
-type NavItem = {
-  key: string;
-  id?: string;
-  label: string;
-  href: string;
-  external: boolean;
-  isButton: boolean;
-  children?: NavDropdownItemCfg[];
-  dropdownFooter?: NavDropdownFooterCfg;
-};
+const labels = {
+  zh: { menu: "菜单", method: "服务方法", projects: "项目案例", about: "关于", contact: "提交流程问题" },
+  en: { menu: "Menu", method: "Method", projects: "Cases", about: "About", contact: "Submit a workflow" },
+} as const;
 
 export default function NavbarCenteredMobile() {
-  const { t, locale } = useLocale();
-  const [isOpen, setIsOpen] = useState(false);
-  const [openKey, setOpenKey] = useState<string | null>(null);
-
-  const pathname = usePathname();
-  const isHome = pathname === "/" || pathname === "";
-
-  const panelRef = useRef<HTMLDivElement | null>(null);
-  const toggleRef = useRef<HTMLButtonElement | null>(null);
-  const navLabelById: Record<string, string> = {
-    home: t.nav.home,
-    about: t.nav.about,
-    projects: t.nav.projects,
-    articles: t.nav.articles,
-    photography: t.nav.photography,
-    more: t.nav.more,
-    "more-articles": t.nav.articles,
-    "more-photography": t.nav.photography,
-  };
-  const resolveNavLabel = (id: string | undefined, fallback: string) =>
-    (id && navLabelById[id]) || fallback;
-
-  // Build mobile nav from navbarConfig (single source of truth)
-  const navbarConfig = useMemo(() => getNavbarConfig(locale), [locale]);
-  const items: NavItem[] = (navbarConfig.centerItems || []).map((it) => {
-    const key = it.id || it.href || it.label;
-    return {
-      key,
-      id: it.id,
-      label: resolveNavLabel(it.id, it.label),
-      href: it.href,
-      external: Boolean(it.external ?? isExternalHref(it.href)),
-      isButton: false,
-      children: it.children ?? [],
-      dropdownFooter: undefined,
-    };
-  });
-
-  const contact = navbarConfig.cta.contact;
-  const primary = navbarConfig.cta.primary;
-
-  const contactLink: NavItem = {
-    key: "cta-contact",
-    id: "contact",
-    label: contact.label,
-    href: contact.href,
-    external: Boolean(contact.external ?? isExternalHref(contact.href)),
-    isButton: true,
-    children: [],
-    dropdownFooter: undefined,
-  };
-
-  const primaryCta: NavItem = {
-    key: "cta-primary",
-    id: "primary",
-    label: primary.label,
-    href: primary.href,
-    external: Boolean(primary.external ?? isExternalHref(primary.href)),
-    isButton: true,
-    children: [],
-    dropdownFooter: undefined,
-  };
-
-  const logo = navbarConfig.logo;
-
-  const menuLinks: NavItem[] = isHome
-    ? items
-    : [
-        {
-          key: "nav-home",
-          id: "home",
-          label: t.nav.home,
-          href: "/",
-          external: false,
-          isButton: false,
-          children: [],
-          dropdownFooter: undefined,
-        },
-        ...items,
-      ];
-
-  // Close on outside click + meaningful scroll (no instant close).
-  // Uses capture-phase click + preventDefault/stopPropagation so the synthesized
-  // click on touch doesn't activate links underneath the drawer (was opening
-  // pages when tapping outside to close).
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const openedAt = Date.now();
-    const openedY = window.scrollY;
-
-    const onClickCapture = (e: MouseEvent) => {
-      const t = e.target as Node | null;
-      if (!t) return;
-      if (panelRef.current?.contains(t) || toggleRef.current?.contains(t))
-        return;
-      e.preventDefault();
-      e.stopPropagation();
-      setOpenKey(null);
-      setIsOpen(false);
-    };
-
-    const onScroll = () => {
-      const dt = Date.now() - openedAt;
-      const dy = Math.abs(window.scrollY - openedY);
-      if (dt < 250) return;
-      if (dy > 12) {
-        setOpenKey(null);
-        setIsOpen(false);
-      }
-    };
-
-    window.addEventListener("click", onClickCapture, true);
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("click", onClickCapture, true);
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, [isOpen]);
-
-  const closeDrawer = () => {
-    setOpenKey(null);
-    setIsOpen(false);
-  };
-
-  // Lock background scroll while drawer is open.
-  // Defensive: also clear on unmount in case the cleanup gets skipped by a
-  // stale render in social in-app webviews (TikTok / IG).
-  useEffect(() => {
-    if (!isOpen) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [isOpen]);
+  const { locale } = useLocale();
+  const copy = labels[locale];
+  const [open, setOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    return () => {
-      // Final safety net: never leave the page locked if this component
-      // unmounts while the drawer was open.
-      if (typeof document !== "undefined") {
-        document.body.style.overflow = "";
-      }
-    };
-  }, []);
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => event.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
-  // Mount-gate so createPortal only runs client-side.
-  const mounted = useSyncExternalStore(
-    () => () => {},
-    () => true,
-    () => false
-  );
-
-  // Close on Escape
-  useEffect(() => {
-    if (!isOpen) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setOpenKey(null);
-        setIsOpen(false);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [isOpen]);
-
-  // 100% opaque always — no see-through.
-  const headerBg = "bg-background";
+  const close = () => setOpen(false);
 
   return (
-    <header
-      className={[
-        "sm:hidden",
-        "sticky top-0 z-[9999] isolate border-b border-border",
-        headerBg,
-        "transition-colors",
-      ].join(" ")}
-    >
-      {/* Top bar */}
-      <div className="mx-auto w-full max-w-6xl px-4">
-        <div className="flex items-center gap-3 py-4">
-          <Link
-            href={logo.href}
-            className="group flex flex-1 items-center gap-2 transition active:scale-95"
-            onClick={(e) => {
-              closeDrawer();
-              // Already on home → scroll to top instead of being a no-op.
-              if (
-                typeof window !== "undefined" &&
-                window.location.pathname === "/" &&
-                logo.href === "/"
-              ) {
-                e.preventDefault();
-                window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-                try {
-                  history.replaceState(null, "", "/");
-                } catch {
-                  // ignore
-                }
-              }
-            }}
-          >
-            {logo.imageSrc ? (
-              <Image
-                src={logo.imageSrc}
-                alt={logo.imageAlt}
-                width={24}
-                height={24}
-                className="shrink-0 rounded-sm"
-              />
-            ) : null}
-            <span className="text-base font-semibold leading-none tracking-tight text-foreground">
-              {logo.label}
-            </span>
-          </Link>
-
-          <LangSwitch />
-
-          <IconButton
-            ref={toggleRef}
-            label={t.nav.openMenu}
-            icon={<Menu className="h-5 w-5" aria-hidden />}
-            aria-expanded={isOpen}
-            onClick={() =>
-              setIsOpen((v) => {
-                if (v) setOpenKey(null);
-                return !v;
-              })
-            }
-            className="border-transparent bg-transparent shadow-none"
-          />
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-hairline bg-surface-paper/95 backdrop-blur sm:hidden">
+      <div className="flex h-16 items-center justify-between px-4">
+        <Link href="/" onClick={close} className="text-lg font-semibold tracking-[-0.03em] text-foreground">fengc</Link>
+        <div className="flex items-center gap-1">
+          <LangSwitch variant="ghost" />
+          <button type="button" aria-label={copy.menu} aria-expanded={open} onClick={() => setOpen((value) => !value)} className="inline-flex h-10 w-10 items-center justify-center text-foreground">
+            {open ? <X className="h-5 w-5" aria-hidden /> : <Menu className="h-5 w-5" aria-hidden />}
+          </button>
         </div>
       </div>
-
-      {/* Backdrop + drawer are portaled to document.body so they escape the
-          sticky <header> ancestor — fixes a known iOS in-app webview bug
-          (TikTok / Instagram) where fixed-inside-sticky leaves the blurred
-          overlay visible after the drawer closes. */}
-      {mounted && createPortal(
-        <>
-          {/* Backdrop */}
-          <div
-            aria-hidden
-            onClick={closeDrawer}
-            className={[
-              "sm:hidden fixed inset-0 z-[10000] bg-surface-graphite/65 backdrop-blur-sm transition-opacity duration-200",
-              isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
-            ].join(" ")}
-          />
-
-          {/* Slide-in drawer from the right */}
-          <div
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label={t.nav.mainMenu}
-            className={[
-              "sm:hidden fixed top-0 right-0 z-[10001] h-[100dvh] w-[85%] max-w-sm",
-              "border-l border-border bg-surface-graphite text-surface-graphite-foreground shadow-surface-strong",
-              "backdrop-blur supports-[backdrop-filter]:backdrop-blur",
-              "transition-transform duration-300 ease-out",
-              isOpen ? "translate-x-0" : "translate-x-full",
-              // Hide entirely when closed so closed-state isn't kept in the
-              // composited layer tree on quirky webviews.
-              isOpen ? "visible" : "invisible",
-            ].join(" ")}
-          >
-        <div className="flex h-full flex-col">
-          <div className="flex items-center justify-between border-b border-border px-4 py-4">
-            <span className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
-              {t.nav.menu}
-            </span>
-            <IconButton
-              label={t.nav.closeMenu}
-              icon={<X className="h-5 w-5" aria-hidden />}
-              onClick={closeDrawer}
-              className="h-9 w-9 border-border bg-transparent text-surface-graphite-foreground hover:bg-muted/20"
-            />
-          </div>
-
-          <div className="flex-1 overflow-y-auto px-4 py-4">
-            <nav className="flex min-h-full flex-col gap-1">
-              {menuLinks.map((item) => {
-                const hasChildren = !!(
-                  item.children && item.children.length > 0
-                );
-                const isItemOpen = openKey === item.key;
-
-                if (!hasChildren) {
-                  return (
-                    <a
-                      key={item.key}
-                      href={item.href || undefined}
-                      target={item.external ? "_blank" : undefined}
-                      rel={item.external ? "noreferrer" : undefined}
-                      onClick={closeDrawer}
-                      className="rounded-control px-3 py-2 text-[1rem] font-semibold text-surface-graphite-foreground transition hover:bg-muted/20"
-                    >
-                      {item.label}
-                    </a>
-                  );
-                }
-
-                return (
-                  <div key={item.key} className="rounded-control">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setOpenKey((k) => (k === item.key ? null : item.key))
-                      }
-                      aria-expanded={isItemOpen}
-                      className="flex w-full items-center justify-between rounded-control px-3 py-2 text-[1rem] font-semibold text-surface-graphite-foreground transition hover:bg-muted/20"
-                    >
-                      <span className="min-w-0 truncate">{item.label}</span>
-
-                      {/* ✅ "View more" + chevron gray (not white) */}
-                      <span className="inline-flex shrink-0 items-center gap-2 text-xs font-semibold text-muted-foreground">
-                        <span>{t.nav.viewMore}</span>
-                        <ChevronDown
-                          className={[
-                            "h-4 w-4 text-muted-foreground transition-transform duration-200",
-                            isItemOpen ? "rotate-180" : "rotate-0",
-                          ].join(" ")}
-                        />
-                      </span>
-                    </button>
-
-                    {isItemOpen && (
-                      <div className="mt-1 flex flex-col gap-1 border-l border-border pl-3">
-                        {item.children!.map((child) => (
-                          <a
-                            key={child.id || child.href}
-                            href={child.href}
-                            target={child.external ? "_blank" : undefined}
-                            rel={child.external ? "noreferrer" : undefined}
-                            onClick={closeDrawer}
-                            className="rounded-control px-3 py-2 transition hover:bg-muted/20"
-                          >
-                            {/* mobile: title only */}
-                            <span className="block text-[0.98rem] font-semibold text-surface-graphite-foreground">
-                              {resolveNavLabel(child.id, child.label)}
-                            </span>
-                          </a>
-                        ))}
-
-                        {/* ✅ removed dropdown footer entirely */}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-
-              {/* Push CTAs to the bottom of the drawer */}
-              <div className="flex-1" />
-
-              {/* CTAs — at the very bottom (Email me is mobile-only, hence
-                  always rendered here regardless of contact.show) */}
-              <div className="mt-6 flex flex-col gap-2">
-                {contactLink.href && (
-                  <a
-                    href={contactLink.href}
-                    target={contactLink.external ? "_blank" : undefined}
-                    rel={contactLink.external ? "noreferrer noopener" : undefined}
-                    onClick={closeDrawer}
-                    className="inline-flex items-center justify-center gap-2 rounded-control border border-border bg-surface-paper px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-accent hover:bg-muted"
-                  >
-                    <Mail className="h-4 w-4 opacity-80" aria-hidden />
-                    <span>{t.nav.connect}</span>
-                  </a>
-                )}
-
-                {navbarConfig.cta.primary.show !== false && (
-                  <a
-                    href={primaryCta.href}
-                    target={primaryCta.external ? "_blank" : undefined}
-                    rel={primaryCta.external ? "noreferrer" : undefined}
-                    onClick={closeDrawer}
-                    className="inline-flex items-center justify-center gap-2 rounded-control border border-accent bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover"
-                  >
-                    <Handshake className="h-4 w-4" aria-hidden />
-                    <span>{t.nav.connect}</span>
-                  </a>
-                )}
-              </div>
-            </nav>
-          </div>
+      {open ? (
+        <div ref={panelRef} className="border-t border-hairline bg-surface-paper px-4 pb-5 pt-3 shadow-overlay">
+          <nav aria-label="移动端主导航" className="grid gap-1">
+            <Link href="/#method" onClick={close} className="border-b border-hairline px-1 py-3 text-base font-medium text-foreground">{copy.method}</Link>
+            <Link href="/projects" onClick={close} className="border-b border-hairline px-1 py-3 text-base font-medium text-foreground">{copy.projects}</Link>
+            <Link href="/about" onClick={close} className="border-b border-hairline px-1 py-3 text-base font-medium text-foreground">{copy.about}</Link>
+            <Link href="/contact" onClick={close} className="mt-3 bg-accent px-4 py-3 text-center text-sm font-semibold text-accent-foreground">{copy.contact}</Link>
+          </nav>
         </div>
-      </div>
-        </>,
-        document.body
-      )}
+      ) : null}
     </header>
   );
 }

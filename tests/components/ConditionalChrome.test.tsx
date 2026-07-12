@@ -21,7 +21,7 @@ describe("ConditionalChrome", () => {
     expect(screen.getByText("Chrome content")).toBeInTheDocument();
   });
 
-  it("returns null on /links route", async () => {
+  it("renders chrome on /links while the route redirects to contact", async () => {
     mockUsePathname.mockReturnValue("/links");
     const { ConditionalChrome } = await import("@/components/ConditionalChrome");
     const { container } = render(
@@ -29,7 +29,7 @@ describe("ConditionalChrome", () => {
         React.createElement("div", { "data-testid": "chrome" }, "Chrome content")
       )
     );
-    expect(container.innerHTML).toBe("");
+    expect(container.innerHTML).not.toBe("");
   });
 
   it("returns null on /admin route", async () => {

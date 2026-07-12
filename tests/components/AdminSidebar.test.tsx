@@ -50,7 +50,6 @@ const navGroups = [
   {
     section: adminCopy.sidebar.content,
     items: [
-      { href: "/admin/photography", label: adminCopy.sidebar.photography },
       { href: "/admin/pages", label: adminCopy.sidebar.pages },
     ],
   },

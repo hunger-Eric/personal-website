@@ -64,17 +64,14 @@ The shared public identity, service method, CTA, and reviewed project model now 
 
 ## Current Evidence
 
-- CodeGraph: 301 files, 3,663 nodes, 5,879 edges; index reported current on 2026-07-12.
-- `npm run audit:architecture`: passes; 297 files scanned and no actionable architecture debt reported by the current audit.
+- CodeGraph was synchronized after the public-route, contact and security-surface changes on 2026-07-12.
+- `npm run audit:architecture`: passes; 310 files scanned and all required AI-readable checks pass.
 - `npm run lint`: 0 errors and 27 warnings.
-- `npm test`: 90 files and 891 tests pass.
+- `npm test`: 93 files and 856 tests pass after retiring photography-specific tests and routes.
 - `npm run typecheck`: passes; the previous 163 TypeScript errors are resolved and production builds no longer skip type validation.
-- `npm run build`: passes with Next.js 16.2.10, runs TypeScript, and currently generates 52 pages.
+- `npm run build`: passes with Next.js 16.2.10, runs TypeScript, and currently generates 45 pages.
 - `npm audit --omit=dev`: reports no high or critical production findings. Three moderate findings remain in the newest stable Next.js line and legacy `gray-matter` transitive dependencies; unsafe downgrade advice is not accepted.
-- Browser audit at desktop and 390px mobile widths found no horizontal overflow.
-- Current `/links` is hard-coded to English and is a social link page rather than a business consultation flow.
-- Current `llms.txt` still describes the old independent-developer/archive positioning and includes photography/content routes.
-- `/.well-known/brand-facts.json` is advertised by route inventory and tests but is not an actual built route.
+- Browser automation is currently blocked by the local browser-control runtime failing to start; visual comparison and interactive browser acceptance remain open and must not be represented as passed.
 
 ## Project Source Audit
 
@@ -101,9 +98,19 @@ Pre-existing untracked paths that are unrelated to this redesign and must not be
 - `.codegraph/`
 - `scripts/sync_feishu_progress.py`
 
+## Implemented Public Experience
+
+- Enterprise homepage with problem recognition, workflow map, case theatre, transferable capabilities, reviewed project evidence, delivery method and repeated contact CTA.
+- Enterprise navigation/footer and unified ivory/graphite/amber tokens.
+- Reviewed `/projects`, `/projects/freight-lead-agent`, `/about` and `/contact` experiences.
+- Contact API using Resend with schema validation, honeypot, body-size cap, same-origin check, frequency limiting, header sanitization and explicit configuration failure.
+- `/links`, `/content`, `/photography`, `/resume` and `/page/*` retired with redirects; photo session/photo delivery/admin photography routes removed.
+- Social campaign traffic now lands on the enterprise homepage instead of the retired link page.
+- Admin is forced off whenever `NODE_ENV=production`, including Cloudflare deployments.
+
 ## Immediate Next Step
 
-Rebuild navigation, homepage, public cases, and contact/about pages on the shared public content model, then retire legacy personal-site routes.
+Complete browser visual comparison at 1440px desktop and 390px mobile, fix any visible mismatch, write `design-qa.md` with `final result: passed`, then commit and deploy after owner approval.
 
 ## Verification Commands
 

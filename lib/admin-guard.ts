@@ -15,7 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
  *  and API from being exposed on the public internet.
  */
 export function isAdminEnabled(): boolean {
-  if (process.env.VERCEL === "1") return false;
+  if (process.env.NODE_ENV === "production") return false;
   return process.env.ENABLE_ADMIN === "true";
 }
 
