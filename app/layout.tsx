@@ -6,6 +6,7 @@ import { JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
 import { publicIdentity } from "@/config/public-identity";
+import { siteConfig } from "@/config/siteConfig";
 import { viewportThemeColors } from "@/config/visualTokens";
 
 import { NavbarCentered } from "@/components/NavbarCenteredDesktop";
@@ -67,8 +68,8 @@ export const metadata: Metadata = {
     "人工审核自动化",
     "中小企业自动化改造",
   ],
-  authors: [{ name: publicIdentity.canonicalName, url: SITE_URL }],
-  creator: publicIdentity.canonicalName,
+  authors: [{ name: siteConfig.name, url: SITE_URL }],
+  creator: siteConfig.name,
   publisher: publicIdentity.canonicalName,
 
   // Icons
@@ -156,6 +157,7 @@ export default function RootLayout({
     <html
       lang="zh-CN"
       className={`${geistSans.className} ${jetbrainsMono.variable}`}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <head>

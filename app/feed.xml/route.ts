@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getArticles } from "@/lib/mdx/mdx";
 import { siteConfig } from "@/config/siteConfig";
+import { publicIdentity } from "@/config/public-identity";
 import { SITE_URL } from "@/lib/site-url";
 
 export const runtime = "nodejs";
@@ -62,11 +63,11 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
 <channel>
-  <title>${escapeXml(siteConfig.name)} — Articles</title>
+  <title>${escapeXml(publicIdentity.canonicalName)} — Articles</title>
   <link>${SITE_URL}/articles</link>
   <atom:link href="${SITE_URL}/feed.xml" rel="self" type="application/rss+xml" />
   <description>${escapeXml(
-    `关于 ${siteConfig.name} 的文章、教程与写作。`
+    `实解智能关于企业 AI 系统、自动化与交付实践的文章。`
   )}</description>
   <language>zh-cn</language>
   <lastBuildDate>${lastBuild}</lastBuildDate>

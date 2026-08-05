@@ -1,41 +1,6 @@
 "use client";
-
 import { Suspense } from "react";
+import Image from "next/image";
 import { useLocale } from "@/components/LocaleProvider";
-import { PageShell, SectionHeader } from "@/components/system";
-import { getSiteCopy } from "@/config/contentCopy";
 import { ArticlesBrowser, type ArticleListItem } from "./ArticlesBrowser";
-
-type Props = {
-  articles: ArticleListItem[];
-};
-
-function ArticlesBrowserFallback() {
-  return (
-    <div className="flex items-center justify-center py-20">
-      <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-primary" />
-    </div>
-  );
-}
-
-export function ArticlesPageClient({ articles }: Props) {
-  const { locale } = useLocale();
-  const copy = getSiteCopy(locale);
-
-  return (
-    <PageShell tone="public" className="min-h-screen px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
-      <main className="mx-auto w-full max-w-7xl">
-        <SectionHeader
-          eyebrow="Knowledge Archive"
-          title={copy.articles.heading}
-          description={copy.articles.description}
-          className="mb-10"
-        />
-
-        <Suspense fallback={<ArticlesBrowserFallback />}>
-          <ArticlesBrowser articles={articles} />
-        </Suspense>
-      </main>
-    </PageShell>
-  );
-}
+export function ArticlesPageClient({articles}:{articles:ArticleListItem[]}){const{locale}=useLocale();const zh=locale==="zh";return <div className="min-h-screen overflow-x-hidden bg-surface-paper pb-20 pt-28 text-surface-paper-foreground sm:pt-32"><header className="mx-auto max-w-6xl px-4"><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">Articles & field notes</p><h1 className="mt-4 text-4xl font-semibold tracking-[-0.045em] text-foreground sm:text-6xl">{zh?"文章与系统实践":"Articles and system practice"}</h1><p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground">{zh?"记录企业 AI 系统、自动化、知识工作流与交付边界。":"Notes on enterprise AI systems, automation, knowledge workflows, and delivery boundaries."}</p></header><section className="mx-auto mt-12 max-w-6xl px-4" aria-label="Article categories and list"><Suspense fallback={<p className="text-sm text-muted-foreground">Loading articles...</p>}><ArticlesBrowser articles={articles}/></Suspense></section><section id="wechat" className="mx-auto mt-16 grid max-w-6xl gap-8 border-t border-hairline px-4 pt-16 md:grid-cols-[1fr_220px] md:items-center"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">WeChat · Independent System</p><h2 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh?"公众号「独立系统」":"WeChat channel: Independent System"}</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground">{zh?"扫码关注，持续获取企业 AI 系统、自动化与独立开发实践。":"Scan to follow notes on enterprise AI systems, automation, and independent building."}</p></div><Image src="/images/contact/wechat-official.jpg" alt="微信公众号「独立系统」二维码" width={220} height={220} className="border border-hairline bg-white p-2"/></section></div>}

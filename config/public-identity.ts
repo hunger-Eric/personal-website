@@ -1,10 +1,14 @@
 export const publicIdentity = {
   schemaVersion: "1.0",
-  updatedAt: "2026-07-12",
-  canonicalName: "fengc",
+  updatedAt: "2026-08-05",
+  canonicalName: "实解智能",
+  slogan: {
+    zh: "让 AI 真正在企业里跑起来。",
+    en: "Make AI run in the real business.",
+  },
   category: {
-    zh: "企业 AI 自动化系统设计与交付",
-    en: "Enterprise AI automation system design and delivery",
+    zh: "企业 AI 系统设计与交付",
+    en: "Enterprise AI system design and delivery",
   },
   positioning: {
     zh: "把依赖人工衔接、容易出错、难以持续运行的业务流程，改造成适合企业实际情况的 AI 自动化系统。",

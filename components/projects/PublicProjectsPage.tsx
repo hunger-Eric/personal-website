@@ -1,37 +1,6 @@
 "use client";
-
 import Link from "next/link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
-
 import { useLocale } from "@/components/LocaleProvider";
-import { getLocalizedPublicContent } from "@/config/public-content";
-
-export function PublicProjectsPage() {
-  const { locale } = useLocale();
-  const content = getLocalizedPublicContent(locale);
-  const zh = locale === "zh";
-
-  return (
-    <div className="min-h-screen bg-surface-paper pb-20 pt-28 text-surface-paper-foreground sm:pt-32">
-      <header className="mx-auto max-w-6xl px-4">
-        <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-accent">Reviewed case evidence</p>
-        <h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-tight tracking-[-0.04em] text-foreground sm:text-5xl">{zh ? "项目是具体案例，不是要求客户复制同一种业务" : "Projects are evidence, not templates clients must copy"}</h1>
-        <p className="mt-6 max-w-3xl text-base leading-8 text-muted-foreground">{zh ? "这里只公开经过审核、允许对外说明的项目事实。每个案例用于展示可迁移的系统能力，同时明确业务边界与限制。" : "Only reviewed and approved project facts are published here. Each case demonstrates transferable system capabilities while making its business boundaries explicit."}</p>
-      </header>
-      <section className="mx-auto mt-12 max-w-6xl px-4">
-        {content.projects.map((project) => (
-          <article key={project.id} className="grid overflow-hidden border border-hairline bg-surface-paper-elevated lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="p-6 sm:p-9">
-              <div className="flex items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-accent"><CheckCircle2 className="h-4 w-4" aria-hidden />{zh ? "真实付费客户交付" : "Paid client delivery"}</div>
-              <h2 className="mt-5 text-3xl font-semibold tracking-tight text-foreground">{project.name}</h2>
-              <p className="mt-4 text-base leading-8 text-muted-foreground">{project.purpose}</p>
-              <p className="mt-6 border-l-2 border-accent pl-4 text-sm font-medium leading-7 text-foreground">{project.currentStatus}</p>
-              <Link href={`/projects/${project.id}`} className="mt-8 inline-flex items-center gap-2 bg-foreground px-5 py-3 text-sm font-semibold text-surface-paper transition hover:bg-accent">{zh ? "查看完整案例" : "View full case"}<ArrowRight className="h-4 w-4" aria-hidden /></Link>
-            </div>
-            {project.visual?.animationSrc ? <iframe title={project.visual.alt || project.name} src={project.visual.animationSrc} className="min-h-[360px] w-full border-0 bg-surface-graphite lg:h-full" loading="lazy" /> : null}
-          </article>
-        ))}
-      </section>
-    </div>
-  );
-}
+import { getWebsiteProjects } from "@/config/website-projects";
+export function PublicProjectsPage(){const{locale}=useLocale();const zh=locale==="zh";const projects=getWebsiteProjects(locale);return <div className="min-h-screen overflow-x-hidden bg-surface-paper pb-20 pt-28 text-surface-paper-foreground sm:pt-32"><header className="mx-auto max-w-6xl px-4"><p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-accent">Project library</p><h1 className="mt-4 max-w-4xl text-4xl font-semibold leading-tight tracking-[-0.045em] text-foreground sm:text-6xl">{zh?"四个系统方向，一套可复核的交付方法":"Four system directions, one reviewable delivery method"}</h1><p className="mt-6 max-w-3xl text-base leading-8 text-muted-foreground">{zh?"已审核事实会明确展示；未完成公开审核的项目只保留名称、方向与边界。本轮唯一参与式体验是 Open GEO Console。":"Reviewed facts are explicit. Projects still in public review show only their name, direction, and boundaries. Open GEO Console is the only participatory experience in this round."}</p></header><section className="mx-auto mt-12 grid max-w-6xl gap-px border border-hairline bg-hairline sm:grid-cols-2" aria-label={zh?"项目列表":"Project list"}>{projects.map((project,index)=><article key={project.id} className="flex flex-col bg-surface-paper-elevated p-6 sm:p-8"><div className="flex items-start justify-between gap-4"><span className="font-mono text-xs text-accent">0{index+1}</span><span className="border border-hairline px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{project.status}</span></div><p className="mt-8 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{project.category}</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{project.name}</h2><p className="mt-4 text-sm leading-7 text-muted-foreground">{project.summary}</p><ul className="mt-5 space-y-2">{project.facts.map(fact=><li key={fact} className="flex gap-2 text-sm leading-6 text-foreground/80"><CheckCircle2 className="mt-1 h-4 w-4 flex-none text-accent" aria-hidden/><span>{fact}</span></li>)}</ul><Link href={`/projects/${project.id}${project.interactive?"#open-geo-demo":""}`} className="mt-8 inline-flex min-h-11 items-center justify-center gap-2 self-start border border-foreground px-4 py-2 text-sm font-semibold text-foreground hover:border-accent hover:text-accent">{project.interactive?(zh?"参与体验":"Try the prototype"):(zh?"查看项目":"View project")}<ArrowRight className="h-4 w-4" aria-hidden/></Link></article>)}</section></div>}

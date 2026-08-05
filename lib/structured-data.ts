@@ -223,10 +223,9 @@ export function generateProfilePageSchema() {
 export function generatePublicPersonSchema() {
   return {
     "@context": "https://schema.org",
-    "@type": "Person",
+    "@type": "Organization",
     name: publicIdentity.canonicalName,
     url: SITE_URL,
-    jobTitle: publicIdentity.category.zh,
     description: publicIdentity.positioning.zh,
     knowsLanguage: publicIdentity.languages,
   };
@@ -237,6 +236,7 @@ export function generatePublicWebSiteSchema() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: `${publicIdentity.canonicalName} — ${publicIdentity.category.zh}`,
+    alternateName: publicIdentity.slogan.zh,
     url: SITE_URL,
     description: publicIdentity.positioning.zh,
     inLanguage: publicIdentity.languages,

@@ -13,7 +13,10 @@ describe("AI-readable route inventory", () => {
       expect.arrayContaining(["/", "/projects", "/articles", "/about", "/contact"])
     );
     expect(groups.project.map((route) => route.path)).toEqual([
+      "/projects/open-geo-console",
+      "/projects/hermes-notebook",
       "/projects/freight-lead-agent",
+      "/projects/enterprise-content-growth",
     ]);
     expect(groups.article.length).toBeGreaterThan(0);
     expect(groups.machine.map((route) => route.path)).toEqual(

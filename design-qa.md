@@ -1,29 +1,31 @@
-# Design QA
+# Design QA (evidence-based)
 
-- Reference: `E:\project\personal-website\docs\superpowers\specs\assets\enterprise-ai-readable-homepage-target.png`
-- Intended desktop viewport: 1440 × 1000
-- Intended mobile viewport: 390 × 844
-- Implementation URL: `http://127.0.0.1:3000/`
+## Evidence reviewed
 
-## Implemented comparison targets
+- Reference: `.tmp/website-master-reference.png` (864 × 1821 px).
+- Implementation captures: `.artifacts/project-evidence/website-redesign/desktop-home-1440x1000.png`, `desktop-open-geo-deliverable-1440x1000.png`, and `desktop-contact-context-1440x1000.png` (each 1425 × 990 px), plus `mobile-home-390x844.png` (375 × 812 px).
+- Direct side-by-side comparison artifact: `C:\Users\fengc\.codex\visualizations\2026\08\05\019fd02b-1e06-71c0-8ad6-b83346537d1c\website-master-comparison.png`.
+- Source of truth: `components/home/EnterpriseHomepage.tsx`, `components/projects/OpenGeoParticipatoryDemo.tsx`, `components/contact/WorkflowInquiryForm.tsx`, `config/open-geo-demo.ts`, and `config/website-projects.ts`.
 
-- warm ivory public canvas, graphite case theatre, caramel amber accent
-- editorial two-column hero with guided problem selection and workflow map
-- case-theatre tabs for current workflow, system takeover and delivered output
-- real Freight Lead Agent case film and reviewed acceptance evidence
-- transferable capability grid, four-step method and repeated contact CTA
-- consistent enterprise navigation/footer and responsive mobile menu
+## Reference vs implementation
 
-## Interaction coverage from component/API tests
+The supplied captures and side-by-side comparison cover the public homepage, Open GEO deliverable state, contact context state, and responsive homepage. The implemented visual system matches the documented warm-paper/ivory surface, graphite theatre, amber accent, editorial sections, case/prototype content, and contact calls to action. The archived captures are 1425×990 and 375×812, while the browser QA receipt verified the requested 1440×1000 desktop and 390×844 mobile viewports.
 
-- problem selector changes selected state
-- case-theatre tab changes visible content
-- all primary CTAs target `/contact`
-- mobile menu opens/closes without scroll-driven dismissal
-- contact API rejects bot-shaped submissions and sends validated submissions
+## Browser interaction receipt
 
-## Browser evidence
+Independent browser QA passed at `http://127.0.0.1:3000`:
 
-The in-app browser runtime failed before initialization with a local kernel-assets error. The required agent-browser fallback also timed out before opening the page. No implementation screenshot, combined visual comparison, console inspection or mobile interaction receipt exists yet.
+- Desktop 1440×1000 and mobile 390×844 rendered successfully.
+- Open GEO full path passed: project → scenario → explicit start → three manual steps → simulated deliverable → contact context.
+- No form submission was performed.
+- No console errors were observed; only a Next development P3 warning was reported.
+- Mobile had no horizontal overflow.
+- Keyboard skip-link and focus behavior passed.
 
-final result: blocked — browser runtime unavailable; visual comparison is still required
+## Simulated-data boundary
+
+Open GEO is explicitly a participatory prototype. The contact context identifies the experience and artifact as simulated data. This QA note does not promote prototype states to production or customer-delivery evidence.
+
+## Final status
+
+**PASS.** Desktop/mobile visual and interaction QA passed with the receipt above. The only reported runtime item is the non-blocking Next development P3 warning; no console errors, submission, deployment, or production-delivery claim is made.

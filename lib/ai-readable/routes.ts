@@ -1,5 +1,6 @@
 import { publicContent } from "@/config/public-content";
 import { publicIdentity } from "@/config/public-identity";
+import { websiteProjects } from "@/config/website-projects";
 import { getArticles } from "@/lib/mdx/mdx";
 import { SITE_URL } from "@/lib/site-url";
 
@@ -84,18 +85,20 @@ function primaryRoutes(): ReadableRoute[] {
 }
 
 function projectRoutes(): ReadableRoute[] {
-  return publicContent.projects.map((project) => ({
-    kind: "project" as const,
-    path: `/projects/${project.id}`,
-    url: absoluteUrl(`/projects/${project.id}`),
-    title: project.name.en ?? project.name.zh ?? project.id,
-    description: project.purpose?.en ?? project.purpose?.zh,
-    lastModified: dateOrUndefined(project.reviewedAt),
-    changeFrequency: "monthly" as const,
-    priority: project.featured ? 0.85 : 0.7,
-  }));
+  return websiteProjects.map((project) => {
+    const reviewed = publicContent.projects.find((item) => item.id === project.id);
+    return {
+      kind: "project" as const,
+      path: `/projects/${project.id}`,
+      url: absoluteUrl(`/projects/${project.id}`),
+      title: project.name.en,
+      description: project.summary.en,
+      lastModified: dateOrUndefined(reviewed?.reviewedAt),
+      changeFrequency: "monthly" as const,
+      priority: project.id === "open-geo-console" ? 0.9 : reviewed?.featured ? 0.85 : 0.7,
+    };
+  });
 }
-
 function machineRoutes(): ReadableRoute[] {
   const common = {
     kind: "machine" as const,

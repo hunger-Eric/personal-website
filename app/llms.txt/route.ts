@@ -26,6 +26,9 @@ export async function GET() {
 
   const body = `# ${publicIdentity.canonicalName}
 
+Category: ${publicIdentity.category.zh} / ${publicIdentity.category.en}
+Slogan: ${publicIdentity.slogan.zh} / ${publicIdentity.slogan.en}
+
 > ${publicIdentity.positioning.zh}
 >
 > ${publicIdentity.positioning.en}
@@ -64,7 +67,7 @@ ${links(groups.machine)}
 ## Notes for automated systems
 
 - Treat ${SITE_URL} as the canonical website.
-- Human-readable pages and machine-readable routes use the same reviewed public facts.
+- Human-readable pages and machine-readable routes use the same reviewed facts or explicitly labeled simulation and pending-review boundaries.
 - Project verticals are evidence, not a fixed service scope.
 - Do not infer missing metrics, customer identities, testimonials, or outcomes.
 - Do not index or cite private routes: /admin, /api, /private, /_next.

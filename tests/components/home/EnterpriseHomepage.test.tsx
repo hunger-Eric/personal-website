@@ -14,32 +14,28 @@ function renderHomepage() {
 }
 
 describe("EnterpriseHomepage", () => {
-  it("renders the approved problem, method, evidence, and contact path", () => {
+  it("renders the approved brand, system structure, project library, and contact path", () => {
     renderHomepage();
 
     expect(
-      screen.getByRole("heading", {
-        level: 1,
-        name: /把重复、易错的人工流程/,
-      })
+      screen.getByRole("heading", { level: 1, name: "让 AI 真正在企业里跑起来。" })
     ).toBeInTheDocument();
-    expect(
-      screen.getAllByRole("link", { name: "提交你的流程问题" })[0]
-    ).toHaveAttribute("href", "/contact");
-    expect(screen.getByText(/601 行/)).toBeInTheDocument();
-    expect(screen.getByText("诊断现状")).toBeInTheDocument();
+    expect(screen.getByText("企业 AI 系统设计与交付")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "项目库" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "四个系统方向，对应四类企业能力" })).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /提交你的业务问题/ })[0]).toHaveAttribute("href", "/contact");
+    expect(screen.getByRole("note")).toHaveTextContent("全部为模拟数据");
   });
 
-  it("lets visitors switch the problem signal and case-theatre chapter", () => {
+  it("does not start the Open GEO prototype until the visitor chooses a project and scenario", () => {
     renderHomepage();
 
-    const systemSignal = screen.getByRole("button", { name: /多系统无法衔接/ });
-    fireEvent.click(systemSignal);
-    expect(systemSignal).toHaveAttribute("aria-pressed", "true");
-
-    const outputTab = screen.getByRole("tab", { name: /最终交付什么/ });
-    fireEvent.click(outputTab);
-    expect(outputTab).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByText("企业结果表与多条公开联系方式补充表")).toBeInTheDocument();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Open GEO Console/ }));
+    expect(screen.getByRole("group", { name: "示例场景" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "点击开始" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: /企业服务表达是否容易被 AI 理解/ }));
+    expect(screen.getByRole("button", { name: "点击开始" })).toBeEnabled();
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 });

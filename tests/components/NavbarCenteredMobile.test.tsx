@@ -151,7 +151,7 @@ describe("NavbarCenteredMobile", () => {
     const defaultExport = await import("@/components/NavbarCenteredMobile");
     const NavbarCenteredMobile = defaultExport.default;
     render(React.createElement(NavbarCenteredMobile));
-    expect(screen.getByText("fengc")).toBeInTheDocument();
+    expect(screen.getByText("实解智能")).toBeInTheDocument();
   });
 
   it("keeps the mobile header fixed and visible", async () => {

@@ -13,6 +13,7 @@ export function GET() {
       updatedAt: publicContent.updatedAt,
       canonicalUrl: SITE_URL,
       name: publicIdentity.canonicalName,
+      slogan: publicIdentity.slogan,
       category: publicIdentity.category,
       positioning: publicIdentity.positioning,
       audience: publicIdentity.audience,

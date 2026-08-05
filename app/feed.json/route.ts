@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { getArticles } from "@/lib/mdx/mdx";
 import { siteConfig } from "@/config/siteConfig";
+import { publicIdentity } from "@/config/public-identity";
 import { SITE_URL } from "@/lib/site-url";
 
 export const runtime = "nodejs";
@@ -32,10 +33,10 @@ export async function GET() {
 
   const feed = {
     version: "https://jsonfeed.org/version/1.1",
-    title: `${siteConfig.name} — Articles`,
+    title: `${publicIdentity.canonicalName} — Articles`,
     home_page_url: `${SITE_URL}/articles`,
     feed_url: `${SITE_URL}/feed.json`,
-    description: `关于 ${siteConfig.name} 的文章、教程与写作。`,
+    description: `实解智能关于企业 AI 系统、自动化与交付实践的文章。`,
     language: "zh-CN",
     authors: [{ name: siteConfig.name, url: SITE_URL }],
     items,

@@ -7,12 +7,17 @@ describe("llms.txt", () => {
     const body = await res.text();
 
     expect(res.headers.get("content-type") || "").toContain("text/plain");
-    expect(body).toContain("# fengc");
+    expect(body).toContain("# 实解智能");
+    expect(body).toContain("Slogan: 让 AI 真正在企业里跑起来。");
     expect(body).toContain("https://me.itheheda.online/");
     expect(body).toContain("https://me.itheheda.online/sitemap.xml");
     expect(body).toContain("把依赖人工衔接");
     expect(body).toContain("## Service method");
     expect(body).toContain("## Project cases");
+    expect(body).toContain("Open GEO Console");
+    expect(body).toContain("Hermes Notebook");
+    expect(body).toContain("Freight Lead Agent");
+    expect(body).toContain("Enterprise Content Growth System");
     expect(body).toContain("## Machine-readable files");
     expect(body).toContain("https://me.itheheda.online/.well-known/brand-facts.json");
     expect(body).toContain("https://me.itheheda.online/ai/services.json");

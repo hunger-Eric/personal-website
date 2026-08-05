@@ -1,144 +1,72 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Cable,
-  Network,
-  RefreshCw,
-  Repeat2,
-  SearchCheck,
-  ShieldCheck,
-  TestTube2,
-  Wrench,
-} from "lucide-react";
+import { ArrowRight, Bot, CheckCircle2, FileSearch, Network, RefreshCw, ShieldCheck, UserRoundCheck } from "lucide-react";
 
 import { useLocale } from "@/components/LocaleProvider";
+import OpenGeoParticipatoryDemo from "@/components/projects/OpenGeoParticipatoryDemo";
 import { getLocalizedPublicContent } from "@/config/public-content";
-import { WorkflowMap } from "./WorkflowMap";
-import { WorkflowTheatre } from "./WorkflowTheatre";
-import { ProjectEvidenceGallery } from "./ProjectEvidenceGallery";
-
-const capabilityIcons = [Network, Repeat2, Cable, RefreshCw];
-const methodIcons = [SearchCheck, ShieldCheck, TestTube2, Wrench];
+import { getWebsiteProjects } from "@/config/website-projects";
 
 export function EnterpriseHomepage() {
   const { locale } = useLocale();
+  const zh = locale === "zh";
   const content = getLocalizedPublicContent(locale);
-  const [signalId, setSignalId] = useState(content.service.problemSignals[0]?.id ?? "");
-  const selectedSignal =
-    content.service.problemSignals.find((signal) => signal.id === signalId) ??
-    content.service.problemSignals[0];
-  const project = content.projects[0];
+  const projects = getWebsiteProjects(locale);
+  const capabilities = [
+    ["多来源信息汇总", "把分散信息形成统一、可追踪的结构化底稿。", Network],
+    ["重复判断与录入", "把稳定规则交给系统，把例外与高风险决策保留给人工。", Bot],
+    ["系统之间的数据接力", "跨文件与业务系统传递状态，减少人工搬运和断点。", RefreshCw],
+    ["异常恢复与人工审核", "记录异常、保留恢复点，让系统真正可持续运行。", ShieldCheck],
+  ] as const;
 
   return (
-    <div className="bg-surface-paper text-surface-paper-foreground">
-      <section className="mx-auto grid max-w-6xl gap-10 px-4 pb-16 pt-28 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:pb-20 lg:pt-36">
+    <div className="overflow-x-hidden bg-surface-paper text-surface-paper-foreground">
+      <section className="mx-auto grid max-w-6xl gap-12 px-4 pb-20 pt-28 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:pt-36">
         <div>
-          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">AI workflow systems</p>
-          <h1 className="mt-5 text-4xl font-semibold leading-[1.08] tracking-[-0.04em] text-foreground sm:text-5xl lg:text-6xl">
-            把重复、易错的人工流程，变成能持续运行的系统
-          </h1>
-          <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground">{content.identity.description}</p>
-
-          <fieldset className="mt-8">
-            <legend className="text-sm font-semibold text-foreground">你的流程现在卡在哪里？</legend>
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
-              {content.service.problemSignals.slice(0, 3).map((signal) => (
-                <button
-                  key={signal.id}
-                  type="button"
-                  aria-pressed={signalId === signal.id}
-                  onClick={() => setSignalId(signal.id)}
-                  className={`min-h-20 border p-3 text-left text-sm font-semibold leading-5 transition-colors ${
-                    signalId === signal.id
-                      ? "border-accent bg-surface-paper-elevated text-foreground"
-                      : "border-hairline text-muted-foreground hover:border-accent hover:text-foreground"
-                  }`}
-                >
-                  {signal.title}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <Link href={content.cta.primary.href} className="inline-flex items-center justify-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent-hover">
-              {content.cta.primary.label} <ArrowRight className="h-4 w-4" aria-hidden />
-            </Link>
-            <a href="#case-theatre" className="inline-flex items-center justify-center gap-2 border border-foreground px-5 py-3 text-sm font-semibold text-foreground hover:border-accent hover:text-accent">
-              {content.cta.secondary.label}
-            </a>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-accent">{content.identity.category}</p>
+          <h1 className="mt-5 text-5xl font-semibold leading-[1.02] tracking-[-0.055em] text-foreground sm:text-6xl lg:text-7xl">{content.identity.slogan}</h1>
+          <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground">{content.identity.positioning}</p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link href="/contact" className="inline-flex min-h-11 items-center justify-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent-hover">{zh ? "提交你的业务问题" : "Submit your business problem"}<ArrowRight className="h-4 w-4" aria-hidden /></Link>
+            <a href="#open-geo-experience" className="inline-flex min-h-11 items-center justify-center border border-foreground px-5 py-3 text-sm font-semibold text-foreground hover:border-accent hover:text-accent">{zh ? "先体验 Open GEO" : "Try Open GEO first"}</a>
           </div>
         </div>
-
-        <WorkflowMap selectedSignal={selectedSignal?.title ?? "业务流程"} />
-      </section>
-
-      {project ? <WorkflowTheatre project={project} /> : null}
-
-      <section className="mx-auto max-w-6xl px-4 py-16 lg:py-24">
-        <div className="max-w-2xl">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">Transferable structure</p>
-          <h2 className="mt-2 text-3xl font-semibold tracking-tight text-foreground">不同行业，相同的流程结构</h2>
-          <p className="mt-3 text-sm leading-7 text-muted-foreground">客户业务不同，但真正值得系统化的问题通常落在信息汇总、重复判断、系统接力和异常恢复上。</p>
-        </div>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            ["多来源信息汇总", "把分散信息形成统一、可追踪的结构化底稿。"],
-            ["重复判断与录入", "把稳定规则自动化，把例外保留给人工。"],
-            ["系统之间的数据接力", "跨系统读写状态，避免人工搬运和断点。"],
-            ["异常恢复与人工审核", "记录异常、保留恢复点，让交付可控。"],
-          ].map(([title, description], index) => {
-            const Icon = capabilityIcons[index];
-            return (
-              <article key={title} className="border border-hairline bg-surface-paper-elevated p-5">
-                <Icon className="h-6 w-6 text-accent" aria-hidden />
-                <h3 className="mt-6 text-lg font-semibold text-foreground">{title}</h3>
-                <p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
-      <ProjectEvidenceGallery projects={content.projects} />
-
-      <section id="method" className="border-y border-hairline bg-surface-paper-elevated">
-        <div className="mx-auto max-w-6xl px-4 py-16 lg:py-24">
-          <h2 className="text-3xl font-semibold tracking-tight text-foreground">我们的交付方法</h2>
-          <div className="mt-9 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {content.service.method.map((step, index) => {
-              const Icon = methodIcons[index];
-              return (
-                <article key={step.id}>
-                  <div className="flex items-center gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-full border border-accent text-accent">
-                      <Icon className="h-5 w-5" aria-hidden />
-                    </span>
-                    <span className="font-mono text-xs text-muted-foreground">0{index + 1}</span>
-                  </div>
-                  <h3 className="mt-5 text-lg font-semibold text-foreground">{step.title}</h3>
-                  <p className="mt-2 text-sm leading-6 text-muted-foreground">{step.description}</p>
-                </article>
-              );
+        <div className="border border-hairline bg-surface-paper-elevated p-5 sm:p-7" aria-label={zh ? "企业 AI 系统交付结构" : "Enterprise AI delivery structure"}>
+          <div className="grid grid-cols-2 gap-px bg-hairline sm:grid-cols-4">
+            {[[FileSearch, zh ? "业务输入" : "Business input"], [Bot, zh ? "AI 处理" : "AI processing"], [UserRoundCheck, zh ? "人工审核" : "Human review"], [CheckCircle2, zh ? "稳定交付" : "Delivery"]].map(([Icon, label], index) => {
+              const ItemIcon = Icon as typeof FileSearch;
+              return <div key={String(label)} className="bg-surface-paper-elevated p-4"><span className="font-mono text-[10px] text-accent">0{index + 1}</span><ItemIcon className="mt-8 h-6 w-6 text-foreground" aria-hidden /><p className="mt-3 text-sm font-semibold">{String(label)}</p></div>;
             })}
           </div>
+          <p className="mt-6 border-t border-hairline pt-5 font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">{zh ? "状态 · 异常 · 恢复 · 审核 · 交付证据" : "State · exception · recovery · review · evidence"}</p>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 lg:py-24">
-        <div className="grid gap-8 bg-surface-graphite px-6 py-10 text-surface-graphite-foreground sm:px-10 lg:grid-cols-[1fr_auto] lg:items-center">
-          <div>
-            <h2 className="text-3xl font-semibold tracking-tight">把你的流程问题交给我们</h2>
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-surface-graphite-foreground/70">描述当前流程、重复频率和最容易出错的步骤。提交后先进行人工筛选，再确认是否安排 30 分钟初步诊断。</p>
-          </div>
-          <Link href="/contact" className="inline-flex items-center justify-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent-hover">
-            提交你的流程问题 <ArrowRight className="h-4 w-4" aria-hidden />
-          </Link>
+      <section id="capabilities" className="mx-auto max-w-6xl px-4 py-16 lg:py-20">
+        <div className="flex items-end justify-between gap-4 border-b border-hairline pb-5"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">01 / Capabilities</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "\u56db\u4e2a\u7cfb\u7edf\u65b9\u5411\uff0c\u5bf9\u5e94\u56db\u7c7b\u4f01\u4e1a\u80fd\u529b" : "Four system directions, four enterprise capabilities"}</h2></div><Link href="/about" className="hidden text-sm font-semibold text-accent sm:inline-flex">{zh ? "查看交付边界" : "See delivery boundaries"} →</Link></div>
+        <div className="grid gap-px border-x border-b border-hairline bg-hairline sm:grid-cols-2">
+          {capabilities.map(([title, description, Icon], index) => <article key={title} className="bg-surface-paper p-6 sm:p-8"><div className="flex items-center justify-between"><span className="font-mono text-xs text-accent">0{index + 1}</span><Icon className="h-5 w-5 text-foreground" aria-hidden /></div><h3 className="mt-10 text-xl font-semibold text-foreground">{title}</h3><p className="mt-3 max-w-md text-sm leading-7 text-muted-foreground">{description}</p></article>)}
         </div>
       </section>
+
+      <section className="mx-auto max-w-6xl px-4 py-16 lg:py-20" aria-labelledby="project-library-title">
+        <div className="flex items-end justify-between gap-4"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">02 / Project library</p><h2 id="project-library-title" className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "项目库" : "Project library"}</h2></div><Link href="/projects" className="text-sm font-semibold text-accent">{zh ? "查看全部项目" : "View all projects"} →</Link></div>
+        <div className="mt-7 grid gap-px border border-hairline bg-hairline sm:grid-cols-2">
+          {projects.map((project, index) => <article key={project.id} className="bg-surface-paper-elevated p-6"><div className="flex items-start justify-between gap-4"><span className="font-mono text-xs text-accent">0{index + 1}</span><span className="border border-hairline px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{project.status}</span></div><p className="mt-8 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{project.category}</p><h3 className="mt-2 text-2xl font-semibold text-foreground">{project.name}</h3><p className="mt-3 text-sm leading-7 text-muted-foreground">{project.summary}</p><Link href={project.interactive ? "#open-geo-experience" : `/projects/${project.id}`} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:text-accent">{project.interactive ? (zh ? "参与体验" : "Try the prototype") : (zh ? "查看项目" : "View project")}<ArrowRight className="h-4 w-4" aria-hidden /></Link></article>)}
+        </div>
+      </section>
+
+      <section id="open-geo-experience" className="bg-surface-graphite px-4 py-16 text-surface-graphite-foreground lg:py-24">
+        <div className="mx-auto max-w-6xl"><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent-light">03 / Participatory prototype</p><h2 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight tracking-[-0.04em]">{zh ? "不要看播放器。亲手推进一次模拟交付。" : "Skip the player. Move a simulated delivery forward yourself."}</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-surface-graphite-foreground/65">{zh ? "本轮只实现 Open GEO Console；确认这套交互后，再扩展其他三个项目。" : "This round covers Open GEO Console only; the other three projects follow after this interaction is approved."}</p><div className="mt-8 border border-inverse"><OpenGeoParticipatoryDemo /></div></div>
+      </section>
+
+      <section id="method" className="mx-auto max-w-6xl px-4 py-16 lg:py-20"><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">04 / Delivery method</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "我们如何把 AI 做成可运行的系统" : "How AI becomes a working system"}</h2><div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">{content.service.method.map((step, index) => <article key={step.id} className="border-t border-hairline pt-5"><span className="font-mono text-xs text-accent">0{index + 1}</span><h3 className="mt-5 text-lg font-semibold text-foreground">{step.title}</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">{step.description}</p></article>)}</div></section>
+
+      <section className="mx-auto grid max-w-6xl gap-8 border-t border-hairline px-4 py-16 md:grid-cols-[1fr_220px] md:items-center lg:py-20" id="wechat"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">05 / Independent System</p><h2 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "公众号「独立系统」" : "WeChat channel: Independent System"}</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground">{zh ? "记录企业 AI 系统、自动化与独立开发实践。扫码进入公众号，或从文章库先看方法与案例。" : "Notes on enterprise AI systems, automation, and independent building."}</p><Link href="/articles" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:text-accent">{zh ? "进入文章库" : "Browse articles"}<ArrowRight className="h-4 w-4" aria-hidden /></Link></div><Image src="/images/contact/wechat-official.jpg" alt="微信公众号「独立系统」二维码" width={220} height={220} className="border border-hairline bg-white p-2" /></section>
+
+      <section className="bg-surface-graphite px-4 py-12 text-surface-graphite-foreground"><div className="mx-auto flex max-w-6xl flex-col gap-6 md:flex-row md:items-center md:justify-between"><div><h2 className="text-3xl font-semibold tracking-[-0.035em]">{zh ? "有一个重复、易错、难以持续的流程？" : "Have a repetitive, fragile workflow?"}</h2><p className="mt-2 text-sm text-surface-graphite-foreground/60">{zh ? "从真实业务问题开始，不从功能清单开始。" : "Start from the real business problem, not a feature list."}</p></div><Link href="/contact" className="inline-flex min-h-11 items-center justify-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent-hover">{zh ? "提交你的业务问题" : "Submit your business problem"}<ArrowRight className="h-4 w-4" aria-hidden /></Link></div></section>
     </div>
   );
 }

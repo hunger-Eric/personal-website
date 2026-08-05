@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Resend } from "resend";
 import { z } from "zod";
+import { getOpenGeoContactContext } from "@/config/open-geo-demo";
 
 const inquirySchema = z.object({
   name: z.string().trim().min(1).max(80),
@@ -10,6 +11,9 @@ const inquirySchema = z.object({
   frequency: z.enum(["daily", "weekly", "monthly", "event"]),
   manualTime: z.string().trim().min(1).max(120),
   website: z.string().max(0).optional().default(""),
+  project: z.literal("open-geo-console").optional(),
+  scenario: z.enum(["service-clarity", "answer-coverage"]).optional(),
+  artifact: z.literal("diagnostic-summary").optional(),
 });
 
 const RATE_WINDOW_MS = 15 * 60 * 1000;
@@ -73,13 +77,17 @@ export async function POST(request: Request) {
   }
 
   const data = parsed.data;
+  const context = getOpenGeoContactContext(data);
+  const contextHtml = context
+    ? `<h2>模拟体验上下文</h2><p><strong>项目：</strong>${escapeHtml(context.projectName)}</p><p><strong>场景：</strong>${escapeHtml(context.scenarioTitle)}</p><p><strong>模拟交付物：</strong>${escapeHtml(context.artifactTitle)}</p>`
+    : "";
   const resend = new Resend(apiKey);
   const { error } = await resend.emails.send({
     from,
     to,
     replyTo: data.email,
-    subject: `[网站流程诊断] ${data.company.replace(/[\r\n]+/g, " ")} · ${data.name.replace(/[\r\n]+/g, " ")}`,
-    html: `<h1>新的流程诊断申请</h1><p><strong>联系人：</strong>${escapeHtml(data.name)}</p><p><strong>邮箱：</strong>${escapeHtml(data.email)}</p><p><strong>公司/场景：</strong>${escapeHtml(data.company)}</p><p><strong>频率：</strong>${escapeHtml(data.frequency)}</p><p><strong>人工投入：</strong>${escapeHtml(data.manualTime)}</p><h2>当前流程</h2><p>${escapeHtml(data.workflow).replace(/\n/g, "<br>")}</p>`,
+    subject: `[网站流程诊断]${context ? "[Open GEO Console]" : ""} ${data.company.replace(/[\r\n]+/g, " ")} · ${data.name.replace(/[\r\n]+/g, " ")}`,
+    html: `<h1>新的流程诊断申请</h1>${contextHtml}<p><strong>联系人：</strong>${escapeHtml(data.name)}</p><p><strong>邮箱：</strong>${escapeHtml(data.email)}</p><p><strong>公司/场景：</strong>${escapeHtml(data.company)}</p><p><strong>频率：</strong>${escapeHtml(data.frequency)}</p><p><strong>人工投入：</strong>${escapeHtml(data.manualTime)}</p><h2>当前流程</h2><p>${escapeHtml(data.workflow).replace(/\n/g, "<br>")}</p>`,
   });
   if (error) {
     return NextResponse.json({ message: "提交失败，请稍后重试。" }, { status: 502 });

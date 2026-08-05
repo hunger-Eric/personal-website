@@ -25,12 +25,22 @@ describe("public AI routes", () => {
     expect(body.service.boundaries.zh.join(" ")).toContain("不销售固定行业模板");
   });
 
-  it("publishes only reviewed project summaries", async () => {
+  it("publishes four explicitly labeled project summaries", async () => {
     const body = await (await getProjects()).json();
 
     expect(body.projects.map((project: { id: string }) => project.id)).toEqual([
+      "open-geo-console",
+      "hermes-notebook",
       "freight-lead-agent",
+      "enterprise-content-growth",
     ]);
+    expect(body.projects.map((project: { reviewStatus: string }) => project.reviewStatus)).toEqual([
+      "simulation",
+      "materials-pending",
+      "reviewed",
+      "materials-pending",
+    ]);
+    expect(body.projects[0].simulationScope).toMatchObject({ usesSimulatedData: true, performsLiveCrawling: false, performsModelCalls: false, isFormalDiagnosis: false });
     expect(JSON.stringify(body)).not.toContain("repository");
   });
 

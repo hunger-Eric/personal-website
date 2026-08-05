@@ -11,9 +11,11 @@ import { Footer } from "@/components/Footer";
 describe("Footer", () => {
   it("keeps only enterprise public navigation", () => {
     render(<Footer />);
-    expect(screen.getByText(/fengc · AI systems/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "项目案例" })).toHaveAttribute("href", "/projects");
-    expect(screen.getByRole("link", { name: "关于" })).toHaveAttribute("href", "/about");
+    expect(screen.getByText("实解智能")).toBeInTheDocument();
+    expect(screen.getByText("企业 AI 系统设计与交付")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "项目库" })).toHaveAttribute("href", "/projects");
+    expect(screen.getByRole("link", { name: "文章" })).toHaveAttribute("href", "/articles");
+    expect(screen.getByRole("link", { name: "公众号" })).toHaveAttribute("href", "/articles#wechat");
     expect(screen.getByRole("link", { name: "联系" })).toHaveAttribute("href", "/contact");
     expect(screen.queryByLabelText(/instagram/i)).not.toBeInTheDocument();
   });

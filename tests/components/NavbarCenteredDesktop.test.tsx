@@ -126,10 +126,10 @@ describe("NavbarCentered", () => {
     render(React.createElement(NavbarCentered));
 
     // Check for each nav item label
-    expect(screen.getByText("Method")).toBeInTheDocument();
-    expect(screen.getByText("Cases")).toBeInTheDocument();
+    expect(screen.getByText("Capabilities")).toBeInTheDocument();
+    expect(screen.getByText("Projects")).toBeInTheDocument();
     expect(screen.getByText("About")).toBeInTheDocument();
-    expect(screen.queryByText("Articles")).not.toBeInTheDocument();
+    expect(screen.getByText("Articles")).to.toBeInTheDocument();
   });
 
   it("includes the LangSwitch component", async () => {
@@ -145,7 +145,7 @@ describe("NavbarCentered", () => {
       "@/components/NavbarCenteredDesktop"
     );
     render(React.createElement(NavbarCentered));
-    expect(screen.getByText("fengc")).toBeInTheDocument();
+    expect(screen.getByText("实解智能")).toBeInTheDocument();
   });
 
   it("renders the contact CTA", async () => {
@@ -153,6 +153,6 @@ describe("NavbarCentered", () => {
       "@/components/NavbarCenteredDesktop"
     );
     render(React.createElement(NavbarCentered));
-    expect(screen.getByRole("link", { name: /Submit a workflow/i })).toHaveAttribute("href", "/contact");
+    expect(screen.getByRole("link", { name: /Submit a business problem/i })).toHaveAttribute("href", "/contact");
   });
 });
