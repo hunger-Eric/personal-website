@@ -13,6 +13,7 @@ export type WebsiteProject = {
   summary: LocalizedText;
   facts: { zh: string[]; en: string[] };
   interactive: boolean;
+  liveUrl?: string;
 };
 
 export const websiteProjects: WebsiteProject[] = [
@@ -31,6 +32,7 @@ export const websiteProjects: WebsiteProject[] = [
       en: ["Uses fictional samples and simulated data only", "Does not run live crawling, model calls, or formal diagnosis"],
     },
     interactive: true,
+    liveUrl: "https://geo.itheheda.online",
   },
   {
     id: "hermes-notebook",
@@ -92,6 +94,7 @@ export function getWebsiteProjects(locale: Locale) {
     summary: project.summary[locale],
     facts: project.facts[locale],
     interactive: project.interactive,
+    liveUrl: project.liveUrl,
   }));
 }
 
