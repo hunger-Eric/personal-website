@@ -60,3 +60,20 @@
 - [D1 Worker API](https://developers.cloudflare.com/d1/worker-api/d1-database/)
 - [Worker routes](https://developers.cloudflare.com/workers/configuration/routing/routes/)
 - [AI Crawl Control GraphQL reference](https://developers.cloudflare.com/ai-crawl-control/reference/graphql-api/)（仅作背景；当前实现不调用 GraphQL）
+
+## 生产路由修复增量（已批准，待部署）
+
+本增量不改变采集合同：官网仍由同一个 Worker 通过 `me.itheheda.online/*` broad route 采集并写入 D1。为修复 Next 服务器读取 analytics 时的路由边界，给该 Worker 增加 origin-only Custom Domain `crawler-observer.itheheda.online`。
+
+Cloudflare Route 不能作为同一 zone 内稳定的 fetch target；因此 Next 不再请求 `me.itheheda.online/_crawler-observer/v1/analytics`，而是向 Custom Domain 发起同一 canonical HMAC 读取。Custom Domain 只允许精确 analytics path（`/_crawler-observer/v1/analytics?range=24h|7d|30d`）：非 GET 返回 `405` 并带 `Allow: GET`，缺失或错误 HMAC 返回 `401`，其他路径返回 `404`；不启用 CORS，并使用 `Cache-Control: no-store`，浏览器仍只访问现有 Basic Auth 页面/API。
+
+不新增环境变量：沿用 `CRAWLER_OBSERVER_READ_SECRET`、`OBSERVER_READ_SECRET` 与 `OPEN_GEO_SELF_TEST_SECRET`，只调整读取 URL 的固定 host 配置。
+
+### 当前生产状态与下一步
+
+- 当前已确认 broad 采集 route 与 D1 写入可用。
+- 同域读取失败已定位为 Cloudflare Route 不能作为 same-zone fetch target。
+- Custom Domain 修复尚未部署，仍需按只读 QA 验证：有效 HMAC analytics、缺失/错误 HMAC 为 401、精确 analytics 路径的非 GET 为 405 且 `Allow: GET`、其他路径为 404、无 CORS/no-store、官网 broad route 回源不变、Basic Auth dashboard 三个窗口。
+- 在上述验收完成前，状态只能写为“broad 采集/D1 可用；同域读取已定位；Custom Domain 修复待部署/验收”。
+
+部署顺序：先创建/绑定 Custom Domain 并部署 Worker，执行 Custom Domain 与 broad route 的只读 QA；通过后再部署 Next.js 读取 host 变更并执行生产只读 QA。失败时先回滚 Next 读取 host，保留 D1 与 broad route，不删除数据库。

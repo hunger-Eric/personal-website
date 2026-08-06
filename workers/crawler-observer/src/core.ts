@@ -5,7 +5,9 @@ const encoder = new TextEncoder();
 const HOUR_SECONDS = 3600;
 const RETENTION_DAYS = 90;
 const HOST = "me.itheheda.online";
+const CUSTOM_DOMAIN_HOST = "crawler-observer.itheheda.online";
 const READ_PATH = "/_crawler-observer/v1/analytics";
+const READ_HOSTS = new Set([HOST, CUSTOM_DOMAIN_HOST]);
 
 type Category = "open_geo_self_test" | "identified_ai_crawler" | "other_automation";
 type Classification = { id: string; name: string; category: Category };
@@ -165,8 +167,10 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
   if (request.method !== "GET") return emptyResponse(405, { allow: "GET" });
   const range = readRange(request);
   if (!range) return emptyResponse(400);
+  const host = new URL(request.url).hostname.toLowerCase();
+  if (!READ_HOSTS.has(host)) return emptyResponse(401);
   const timestamp = request.headers.get("X-Observer-Timestamp");
-  const canonical = `v1\nread\n${timestamp ?? ""}\nGET\n${HOST}\n${READ_PATH}\nrange=${range}`;
+  const canonical = `v1\nread\n${timestamp ?? ""}\nGET\n${host}\n${READ_PATH}\nrange=${range}`;
   if (!(await validHmac(env.OBSERVER_READ_SECRET, timestamp, request.headers.get("X-Observer-Signature"), canonical))) {
     return emptyResponse(401);
   }
@@ -237,7 +241,13 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
 }
 
 export async function handleFetch(request: Request, env: ObserverEnv, ctx: ExecutionContext, originFetch: OriginFetch = fetch): Promise<Response> {
-  if (new URL(request.url).pathname === READ_PATH) return analytics(request, env);
+  const url = new URL(request.url);
+  const host = url.hostname.toLowerCase();
+  if (host === CUSTOM_DOMAIN_HOST) {
+    return url.pathname === READ_PATH ? analytics(request, env) : emptyResponse(404);
+  }
+  if (host !== HOST) return emptyResponse(404);
+  if (url.pathname === READ_PATH) return analytics(request, env);
   const originResponse = await originFetch(request);
   ctx.waitUntil(observe(request, originResponse, env).catch(safeLog));
   return originResponse;

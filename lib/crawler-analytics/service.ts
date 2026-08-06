@@ -1,4 +1,3 @@
-import { SITE_URL } from "../site-url";
 import { crawlerAnalyticsWorkerSchema } from "./worker-schema";
 import {
   CRAWLER_RANGES,
@@ -28,8 +27,7 @@ function resolveSecret(overrides?: ServiceDependencies["env"]) {
 }
 
 function observerUrl() {
-  const url = new URL("/_crawler-observer/v1/analytics", SITE_URL);
-  return url;
+  return new URL("https://crawler-observer.itheheda.online/_crawler-observer/v1/analytics");
 }
 
 async function sign(secret: string, canonical: string) {

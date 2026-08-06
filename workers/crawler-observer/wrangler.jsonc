@@ -5,7 +5,10 @@
   "compatibility_date": "2026-08-06",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": false,
-  "route": { "pattern": "me.itheheda.online/*", "zone_name": "itheheda.online" },
+  "routes": [
+    { "pattern": "me.itheheda.online/*", "zone_name": "itheheda.online" },
+    { "pattern": "crawler-observer.itheheda.online", "custom_domain": true }
+  ],
   "d1_databases": [{ "binding": "DB", "database_name": "personal-website-crawler-observer", "database_id": "0fc1d826-c09c-4d38-b499-2b6ec5a02ede", "migrations_dir": "migrations" }],
   "secrets": {
     "required": ["OPEN_GEO_SELF_TEST_SECRET", "OBSERVER_READ_SECRET"]

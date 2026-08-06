@@ -12,6 +12,15 @@ const response = {
   trend: [], bots: [], paths: [], statuses: [],
 };
 
+function base64Url(bytes: ArrayBuffer): string {
+  return btoa(String.fromCharCode(...new Uint8Array(bytes))).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+}
+
+async function signature(secret: string, canonical: string): Promise<string> {
+  const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  return base64Url(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(canonical)));
+}
+
 describe("crawler observer analytics service", () => {
   it("defaults missing ranges and rejects unsupported ranges", () => {
     expect(parseCrawlerRange(undefined)).toBe("24h");
@@ -22,13 +31,15 @@ describe("crawler observer analytics service", () => {
     await expect(getCrawlerAnalytics("24h", { now, env: { readSecret: "" } })).rejects.toMatchObject({ code: "configuration_missing" });
   });
 
-  it("signs the canonical same-origin request and validates the response", async () => {
+  it("signs the canonical custom-domain request and validates the response", async () => {
     const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(response), { status: 200 }));
     const result = await getCrawlerAnalytics("7d", { now, env: { readSecret: "secret" }, fetch });
     const [url, init] = fetch.mock.calls[0];
-    expect(String(url)).toBe("https://me.itheheda.online/_crawler-observer/v1/analytics?range=7d");
+    expect(String(url)).toBe("https://crawler-observer.itheheda.online/_crawler-observer/v1/analytics?range=7d");
     expect(init).toMatchObject({ method: "GET", cache: "no-store", headers: { "X-Observer-Timestamp": "1786017600" } });
-    expect(init.headers["X-Observer-Signature"]).toMatch(/^[A-Za-z0-9_-]+$/);
+    expect(init.headers["X-Observer-Signature"]).toBe(
+      await signature("secret", "v1\nread\n1786017600\nGET\ncrawler-observer.itheheda.online\n/_crawler-observer/v1/analytics\nrange=7d")
+    );
     expect(result).toEqual(response);
   });
 

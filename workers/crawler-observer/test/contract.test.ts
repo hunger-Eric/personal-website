@@ -1,5 +1,5 @@
 import { env } from "cloudflare:test";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import worker from "../src/index";
 import { analytics, bucketStart, classify, excluded, handleFetch, observedPath, purge, validHmac } from "../src/core";
 import migrationSql from "../migrations/0001_initial.sql?raw";
@@ -42,10 +42,10 @@ function observerEnv(db: D1Database) {
   return { DB: db, OPEN_GEO_SELF_TEST_SECRET: openGeoSecret, OBSERVER_READ_SECRET: readSecret };
 }
 
-async function readRequest(range: "24h" | "7d" | "30d"): Promise<Request> {
+async function readRequest(range: "24h" | "7d" | "30d", host = "me.itheheda.online"): Promise<Request> {
   const timestamp = String(Math.floor(Date.now() / 1000));
-  const canonical = `v1\nread\n${timestamp}\nGET\nme.itheheda.online\n/_crawler-observer/v1/analytics\nrange=${range}`;
-  return new Request(`https://me.itheheda.online/_crawler-observer/v1/analytics?range=${range}`, {
+  const canonical = `v1\nread\n${timestamp}\nGET\n${host}\n/_crawler-observer/v1/analytics\nrange=${range}`;
+  return new Request(`https://${host}/_crawler-observer/v1/analytics?range=${range}`, {
     headers: { "X-Observer-Timestamp": timestamp, "X-Observer-Signature": await signature(readSecret, canonical) },
   });
 }
@@ -189,11 +189,92 @@ describe("crawler observer private analytics", () => {
     await expect(analytics(new Request("https://me.itheheda.online/_crawler-observer/v1/analytics?range=24h", { method: "POST" }), env)).resolves.toMatchObject({ status: 405 });
   });
 
+  it("accepts either configured read host and rejects a host-tampered signature", async () => {
+    const observer = observerEnv(fakeDb({ batchRows }).db as D1Database);
+    await expect(analytics(await readRequest("24h", "me.itheheda.online"), observer)).resolves.toMatchObject({ status: 200 });
+    await expect(analytics(await readRequest("24h", "crawler-observer.itheheda.online"), observer)).resolves.toMatchObject({ status: 200 });
+    const tampered = await readRequest("24h", "me.itheheda.online");
+    const tamperedUrl = new URL(tampered.url);
+    const headers = new Headers(tampered.headers);
+    await expect(analytics(new Request(`https://crawler-observer.itheheda.online${tamperedUrl.pathname}${tamperedUrl.search}`, { headers }), observer)).resolves.toMatchObject({ status: 401 });
+    await expect(analytics(await readRequest("24h", "untrusted.example"), observer)).resolves.toMatchObject({ status: 401 });
+  });
+
   it("purges only counts older than the 90-day retention boundary", async () => {
     const fake = fakeDb();
     await purge({ DB: fake.db as D1Database });
     expect(fake.sql[0]).toContain("DELETE FROM crawler_counts");
     expect(fake.values[0]?.[0]).toBe(bucketStart() - 90 * 24 * 3600);
+  });
+});
+
+describe("crawler observer custom domain isolation", () => {
+  it("serves a valid signed analytics read on its custom domain without calling the origin", async () => {
+    const observer = observerEnv(fakeDb({ batchRows: [[], [], [], [], [], [{ value: "2026-01-01T00:00:00.000Z" }]] }).db as D1Database);
+    const ctx = waitContext();
+    const origin = vi.fn(async () => new Response("must not be called"));
+    const response = await handleFetch(await readRequest("24h", "crawler-observer.itheheda.online"), observer, ctx, origin);
+    expect(response.status).toBe(200);
+    expect(origin).not.toHaveBeenCalled();
+    expect(ctx.tasks).toHaveLength(0);
+  });
+
+  it("serves only the exact analytics path on its custom domain and never calls the origin", async () => {
+    const observer = observerEnv(fakeDb({ batchRows: [[], [], [], [], [], [{ value: "2026-01-01T00:00:00.000Z" }]] }).db as D1Database);
+    const ctx = waitContext();
+    const origin = vi.fn(async () => new Response("must not be called"));
+    const response = await handleFetch(new Request("https://crawler-observer.itheheda.online/not-the-api"), observer, ctx, origin);
+    expect(response.status).toBe(404);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(origin).not.toHaveBeenCalled();
+    expect(ctx.tasks).toHaveLength(0);
+  });
+
+  it("rejects custom-domain analytics POST requests without calling the origin", async () => {
+    const observer = observerEnv(fakeDb().db as D1Database);
+    const ctx = waitContext();
+    const origin = vi.fn(async () => new Response("must not be called"));
+    const response = await handleFetch(new Request("https://crawler-observer.itheheda.online/_crawler-observer/v1/analytics?range=24h", { method: "POST" }), observer, ctx, origin);
+    expect(response.status).toBe(405);
+    expect(response.headers.get("allow")).toBe("GET");
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(origin).not.toHaveBeenCalled();
+    expect(ctx.tasks).toHaveLength(0);
+  });
+
+  it("rejects invalid custom-domain analytics signatures without calling the origin", async () => {
+    const observer = observerEnv(fakeDb().db as D1Database);
+    const ctx = waitContext();
+    const origin = vi.fn(async () => new Response("must not be called"));
+    const request = await readRequest("24h", "crawler-observer.itheheda.online");
+    const headers = new Headers(request.headers);
+    headers.set("X-Observer-Signature", "not-a-valid-hmac");
+    const response = await handleFetch(new Request(request.url, { headers }), observer, ctx, origin);
+    expect(response.status).toBe(401);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(origin).not.toHaveBeenCalled();
+    expect(ctx.tasks).toHaveLength(0);
+  });
+
+  it("rejects unknown hosts without calling the origin", async () => {
+    const observer = observerEnv(fakeDb().db as D1Database);
+    const ctx = waitContext();
+    const origin = vi.fn(async () => new Response("must not be called"));
+    const response = await handleFetch(new Request("https://untrusted.example/"), observer, ctx, origin);
+    expect(response.status).toBe(404);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(origin).not.toHaveBeenCalled();
+    expect(ctx.tasks).toHaveLength(0);
+  });
+
+  it("forwards ordinary me host requests exactly once", async () => {
+    const observer = observerEnv(fakeDb().db as D1Database);
+    const ctx = waitContext();
+    const originResponse = new Response("origin");
+    const origin = vi.fn(async () => originResponse);
+    await expect(handleFetch(new Request("https://me.itheheda.online/ordinary", { headers: { "User-Agent": "Mozilla/5.0" } }), observer, ctx, origin)).resolves.toBe(originResponse);
+    expect(origin).toHaveBeenCalledTimes(1);
+    await Promise.all(ctx.tasks);
   });
 });
 

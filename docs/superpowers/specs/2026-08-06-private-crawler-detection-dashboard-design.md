@@ -79,3 +79,18 @@ type CrawlerAnalyticsResponse = {
 ## 7. 非目标
 
 本版本不做前端埋点、完整访问日志产品、IP/访客画像、邮件告警、导出、多用户权限、Cloudflare GraphQL 历史回填或 Open GEO Console 跨项目改造。
+
+## 8. 已确认的生产路由修复边界（2026-08-06）
+
+- 官网采集仍由同一个专用 Worker 通过 `me.itheheda.online/*` broad route 完成；该 route 不变，不改为把采集请求直接发往 Vercel。
+- 新增同一 Worker 的 origin-only Custom Domain：`crawler-observer.itheheda.online`。它只供 Next.js 服务器签名读取 analytics 使用，不作为浏览器入口，也不承担官网采集。
+- 原因：Cloudflare Route 不能可靠地作为同一 zone 内的 fetch 目标；对 `me.itheheda.online/_crawler-observer/v1/analytics` 的服务器请求可能绕过该 route 或回到源站。Custom Domain 提供可直接 `fetch()` 的 Worker origin，解决同域读取失败，同时保留官网采集 route。
+- Custom Domain 仅允许精确的 analytics 路径 `/_crawler-observer/v1/analytics?range=24h|7d|30d`：非 GET 返回 `405` 并带 `Allow: GET`；缺失或错误 HMAC 返回 `401`；其他路径返回 `404`。响应不提供 CORS，并使用 `Cache-Control: no-store`，不把该 origin 暴露给前端。
+- 不新增环境变量；Next 侧继续使用现有 `CRAWLER_OBSERVER_READ_SECRET`，Worker 继续使用既有 secret 名称。仅把读取 URL 从 `SITE_URL` 推导的同域地址切换为固定的 Custom Domain。
+
+### 当前生产状态（必须如实标注）
+
+- 已确认：`me.itheheda.online/*` broad 采集 route 与 D1 写入可用。
+- 已定位：同域 analytics 读取失败的根因是 Cloudflare Route 不能作为 same-zone fetch target，而非 D1 schema 或 HMAC 合同错误。
+- 未完成：Custom Domain 修复尚未部署，Custom Domain 读取、官网回源不变性以及 Basic Auth 后台联调均待生产只读 QA。
+- 因此在部署与 QA 完成前，只能报告“broad 采集/D1 可用；同域读取已定位；Custom Domain 修复待部署/验收”，不得宣称 dashboard 生产读取已恢复。
