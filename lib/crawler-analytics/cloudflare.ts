@@ -103,7 +103,11 @@ function graphQlError(errors: Array<{ message?: string }>): CrawlerAnalyticsErro
   const messages = errors.map((error) => error.message ?? "").join(" ");
   const code = /cannot query field|unknown argument|unknown type|not supported/i.test(messages)
     ? "unsupported_dataset"
-    : "cloudflare_unavailable";
+    : /not authorized for that account|zones\s*\[.*?\]\s*are not authorized|does not have access to the path|permission denied|insufficient permission|forbidden/i.test(messages)
+      ? "cloudflare_permission_denied"
+      : /unauthorized|(?:invalid|expired)\s+token|authentication/i.test(messages)
+        ? "cloudflare_auth_invalid"
+        : "cloudflare_unavailable";
   return new CrawlerAnalyticsError(code, "Cloudflare analytics query failed", 502);
 }
 
@@ -164,6 +168,9 @@ export async function queryCloudflareWindow(input: QueryInput): Promise<Cloudfla
   const viewer = isRecord(body.data) ? body.data.viewer : undefined;
   const zones = isRecord(viewer) ? viewer.zones : undefined;
   const zone = Array.isArray(zones) ? zones[0] : undefined;
+  if (Array.isArray(zones) && zones.length === 0) {
+    throw new CrawlerAnalyticsError("cloudflare_permission_denied", "Cloudflare permission denied", 502);
+  }
   if (!isRecord(zone)) throw new CrawlerAnalyticsError("cloudflare_unavailable", "Cloudflare zone analytics unavailable", 502);
   const result = {
     total: groups(zone.total), byAgent: groups(zone.byAgent), byTrend: groups(zone.byTrend),

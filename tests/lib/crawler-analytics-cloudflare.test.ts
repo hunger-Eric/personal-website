@@ -50,11 +50,37 @@ describe("Cloudflare crawler query", () => {
     await expect(queryCloudflareWindow({ ...input, fetchImpl })).rejects.toMatchObject({ code: "unsupported_dataset" });
   });
 
-  it("maps GraphQL schema errors and rejects empty zone results", async () => {
+  it.each([
+    "not authorized for that account",
+    "zones [zone] are not authorized",
+    "does not have access to the path",
+    "permission denied",
+  ])("maps GraphQL permission error %s to a safe typed error", async (message) => {
+    const fetchImpl = vi.fn().mockResolvedValue(Response.json({ errors: [{ message }] }));
+
+    await expect(queryCloudflareWindow({ ...input, fetchImpl })).rejects.toMatchObject({
+      code: "cloudflare_permission_denied",
+      message: "Cloudflare analytics query failed",
+    });
+  });
+
+  it("maps GraphQL authentication errors to a safe typed error", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(Response.json({ errors: [{ message: "Unauthorized" }] }));
+
+    await expect(queryCloudflareWindow({ ...input, fetchImpl })).rejects.toMatchObject({
+      code: "cloudflare_auth_invalid",
+      message: "Cloudflare analytics query failed",
+    });
+  });
+
+  it("maps GraphQL schema errors and empty zone results", async () => {
     const schemaError = vi.fn().mockResolvedValue(Response.json({ errors: [{ message: "Cannot query field" }] }));
     await expect(queryCloudflareWindow({ ...input, fetchImpl: schemaError })).rejects.toMatchObject({ code: "unsupported_dataset" });
     const empty = vi.fn().mockResolvedValue(Response.json({ data: { viewer: { zones: [] } } }));
-    await expect(queryCloudflareWindow({ ...input, fetchImpl: empty })).rejects.toMatchObject({ code: "cloudflare_unavailable" });
+    await expect(queryCloudflareWindow({ ...input, fetchImpl: empty })).rejects.toMatchObject({
+      code: "cloudflare_permission_denied",
+      message: "Cloudflare permission denied",
+    });
   });
 
   it.each([
