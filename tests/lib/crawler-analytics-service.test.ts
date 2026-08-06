@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { getCrawlerAnalytics, parseCrawlerRange } from "@/lib/crawler-analytics/service";
 
 const now = new Date("2026-08-06T12:00:00.000Z");
@@ -22,6 +22,10 @@ async function signature(secret: string, canonical: string): Promise<string> {
 }
 
 describe("crawler observer analytics service", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("defaults missing ranges and rejects unsupported ranges", () => {
     expect(parseCrawlerRange(undefined)).toBe("24h");
     expect(() => parseCrawlerRange("all")).toThrow(expect.objectContaining({ code: "invalid_range" }));
@@ -33,6 +37,7 @@ describe("crawler observer analytics service", () => {
 
   it("signs the canonical custom-domain request and validates the response", async () => {
     const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify(response), { status: 200 }));
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
     const result = await getCrawlerAnalytics("7d", { now, env: { readSecret: "secret" }, fetch });
     const [url, init] = fetch.mock.calls[0];
     expect(String(url)).toBe("https://crawler-observer.itheheda.online/_crawler-observer/v1/analytics?range=7d");
@@ -41,6 +46,7 @@ describe("crawler observer analytics service", () => {
       await signature("secret", "v1\nread\n1786017600\nGET\ncrawler-observer.itheheda.online\n/_crawler-observer/v1/analytics\nrange=7d")
     );
     expect(result).toEqual(response);
+    expect(error).not.toHaveBeenCalled();
   });
 
   it.each([
@@ -54,5 +60,49 @@ describe("crawler observer analytics service", () => {
     await expect(getCrawlerAnalytics("24h", { now, env: { readSecret: "secret" }, fetch: vi.fn().mockRejectedValue(new Error("offline")) })).rejects.toMatchObject({ code: "observer_unavailable" });
     const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ...response, summary: {} }), { status: 200 }));
     await expect(getCrawlerAnalytics("7d", { now, env: { readSecret: "secret" }, fetch })).rejects.toMatchObject({ code: "observer_unavailable" });
+  });
+
+  it("logs one safe structured event for a fetch failure", async () => {
+    const secret = "read-secret-must-not-log";
+    const error = new Error(`network ${secret}`);
+    error.cause = { code: "ECONNRESET;Authorization=leak" };
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    await expect(getCrawlerAnalytics("24h", { now, env: { readSecret: secret }, fetch: vi.fn().mockRejectedValue(error) })).rejects.toMatchObject({ code: "observer_unavailable" });
+    expect(consoleError).toHaveBeenCalledOnce();
+    expect(consoleError).toHaveBeenCalledWith(JSON.stringify({
+      event: "crawler_observer_read_failed", stage: "fetch", errorName: "Error", causeCode: "ECONNRESETAuthorizationleak",
+    }));
+    expect(String(consoleError.mock.calls[0][0])).not.toContain(secret);
+  });
+
+  it("logs one safe structured event for a non-ok response", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const bodySecret = "response-body-must-not-log";
+    const fetch = vi.fn().mockResolvedValue(new Response(bodySecret, { status: 503 }));
+    await expect(getCrawlerAnalytics("24h", { now, env: { readSecret: "secret" }, fetch })).rejects.toMatchObject({ code: "observer_unavailable" });
+    expect(consoleError).toHaveBeenCalledOnce();
+    expect(consoleError).toHaveBeenCalledWith(JSON.stringify({
+      event: "crawler_observer_read_failed", stage: "http_status", status: 503,
+    }));
+    expect(String(consoleError.mock.calls[0][0])).not.toContain(bodySecret);
+  });
+
+  it("logs one safe structured event for invalid JSON", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const fetch = vi.fn().mockResolvedValue(new Response("not-json-secret", { status: 200 }));
+    await expect(getCrawlerAnalytics("24h", { now, env: { readSecret: "secret" }, fetch })).rejects.toMatchObject({ code: "observer_unavailable" });
+    expect(consoleError).toHaveBeenCalledOnce();
+    expect(consoleError).toHaveBeenCalledWith(JSON.stringify({ event: "crawler_observer_read_failed", stage: "invalid_json" }));
+    expect(String(consoleError.mock.calls[0][0])).not.toContain("not-json-secret");
+  });
+
+  it("logs one safe structured event for an invalid schema", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const schemaSecret = "schema-value-must-not-log";
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ ...response, meta: { ...response.meta, source: schemaSecret } }), { status: 200 }));
+    await expect(getCrawlerAnalytics("24h", { now, env: { readSecret: "secret" }, fetch })).rejects.toMatchObject({ code: "observer_unavailable" });
+    expect(consoleError).toHaveBeenCalledOnce();
+    expect(consoleError).toHaveBeenCalledWith(JSON.stringify({ event: "crawler_observer_read_failed", stage: "invalid_schema" }));
+    expect(String(consoleError.mock.calls[0][0])).not.toContain(schemaSecret);
   });
 });

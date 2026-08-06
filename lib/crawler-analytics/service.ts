@@ -30,6 +30,32 @@ function observerUrl() {
   return new URL("https://crawler-observer.itheheda.online/_crawler-observer/v1/analytics");
 }
 
+type ObserverReadFailureStage = "fetch" | "http_status" | "invalid_json" | "invalid_schema";
+
+function safeDiagnosticIdentifier(value: unknown, fallback: string): string {
+  if (typeof value !== "string") return fallback;
+  const sanitized = value.replace(/[^A-Za-z0-9_.:-]/g, "").slice(0, 80);
+  return sanitized || fallback;
+}
+
+function logObserverReadFailure(stage: ObserverReadFailureStage, details: Record<string, unknown> = {}) {
+  console.error(JSON.stringify({ event: "crawler_observer_read_failed", stage, ...details }));
+}
+
+function fetchFailureDetails(error: unknown) {
+  const errorName = safeDiagnosticIdentifier(
+    error instanceof Error ? error.name : undefined,
+    "UnknownError"
+  );
+  const cause = error instanceof Error && error.cause && typeof error.cause === "object"
+    ? error.cause as { code?: unknown }
+    : undefined;
+  const causeCode = cause?.code === undefined
+    ? undefined
+    : safeDiagnosticIdentifier(cause.code, "UnknownCode");
+  return causeCode === undefined ? { errorName } : { errorName, causeCode };
+}
+
 async function sign(secret: string, canonical: string) {
   const key = await crypto.subtle.importKey(
     "raw", new TextEncoder().encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]
@@ -62,23 +88,28 @@ export async function getCrawlerAnalytics(
       },
       cache: "no-store",
     });
-  } catch {
+  } catch (error) {
+    logObserverReadFailure("fetch", fetchFailureDetails(error));
     throw new CrawlerAnalyticsError("observer_unavailable", "Crawler observer is unavailable", 502);
   }
   if (response.status === 401) {
+    logObserverReadFailure("http_status", { status: response.status });
     throw new CrawlerAnalyticsError("observer_auth_invalid", "Crawler observer authentication failed", 502);
   }
   if (!response.ok) {
+    logObserverReadFailure("http_status", { status: response.status });
     throw new CrawlerAnalyticsError("observer_unavailable", "Crawler observer is unavailable", 502);
   }
   let body: unknown;
   try {
     body = await response.json();
   } catch {
+    logObserverReadFailure("invalid_json");
     throw new CrawlerAnalyticsError("observer_unavailable", "Crawler observer returned an invalid response", 502);
   }
   const parsed = crawlerAnalyticsWorkerSchema.safeParse(body);
   if (!parsed.success || parsed.data.meta.range !== parsedRange) {
+    logObserverReadFailure("invalid_schema");
     throw new CrawlerAnalyticsError("observer_unavailable", "Crawler observer returned an invalid response", 502);
   }
   return parsed.data;
