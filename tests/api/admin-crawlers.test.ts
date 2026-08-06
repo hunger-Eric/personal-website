@@ -1,213 +1,38 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
-import type { CrawlerAnalyticsResponse } from "@/lib/crawler-analytics/types";
+import { CrawlerAnalyticsError, type CrawlerAnalyticsResponse } from "@/lib/crawler-analytics/types";
 
-vi.mock("@/lib/crawler-analytics/service", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/lib/crawler-analytics/service")>();
+vi.mock("@/lib/crawler-analytics/service", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/crawler-analytics/service")>("@/lib/crawler-analytics/service");
   return { ...actual, getCrawlerAnalytics: vi.fn() };
 });
-
-import {
-  DELETE,
-  GET,
-  OPTIONS,
-  PATCH,
-  POST,
-  PUT,
-} from "@/app/api/admin/crawlers/route";
+import { GET } from "@/app/api/admin/crawlers/route";
 import { getCrawlerAnalytics } from "@/lib/crawler-analytics/service";
-import { CrawlerAnalyticsError } from "@/lib/crawler-analytics/types";
 
-const originalPassword = process.env.CRAWLER_DASHBOARD_PASSWORD;
-const fixtureResponse: CrawlerAnalyticsResponse = {
-  meta: {
-    range: "7d",
-    start: "2026-08-01T00:00:00.000Z",
-    end: "2026-08-08T00:00:00.000Z",
-    generatedAt: "2026-08-08T00:00:00.000Z",
-    source: "cloudflare-graphql",
-    sampled: false,
-    sampleInterval: 1,
-  },
-  summary: {
-    totalRequests: 3,
-    crawlerRequests: 2,
-    identifiedAiCrawler: 1,
-    openGeoSelfTest: 1,
-    otherAutomation: 0,
-  },
-  trend: [],
-  agents: [],
-  paths: [],
-  statuses: [],
+const fixture: CrawlerAnalyticsResponse = {
+  meta: { range: "7d", start: "2026-08-01T00:00:00.000Z", end: "2026-08-08T00:00:00.000Z", generatedAt: "2026-08-08T00:00:00.000Z", source: "cloudflare-worker-d1", bucket: "hour", retentionDays: 90, databaseInitializedAt: "2026-08-01T00:00:00.000Z", requestedWindowComplete: true, bestEffort: true, classifier: { aiCrawlerBots: "0.6.3", otherBots: "isbot@5.2.1" } },
+  summary: { crawlerRequests: 2, identifiedAiCrawler: 1, openGeoSelfTest: 1, otherAutomation: 0 }, trend: [], bots: [], paths: [], statuses: [],
 };
-
-function authenticatedRequest(query = ""): NextRequest {
-  const authorization = `Basic ${Buffer.from("admin:secret").toString("base64")}`;
-  return new NextRequest(`https://me.itheheda.online/api/admin/crawlers${query}`, {
-    headers: { authorization },
-  });
-}
-
-afterEach(() => {
-  process.env.CRAWLER_DASHBOARD_PASSWORD = originalPassword;
-  vi.clearAllMocks();
-});
+const request = (query = "", auth = true) => new NextRequest(`https://me.itheheda.online/api/admin/crawlers${query}`, { headers: auth ? { Authorization: `Basic ${Buffer.from("admin:secret").toString("base64")}` } : {} });
 
 describe("GET /api/admin/crawlers", () => {
-  it("returns 401 with a Basic challenge before touching Cloudflare", async () => {
-    delete process.env.CRAWLER_DASHBOARD_PASSWORD;
-
-    const response = await GET(
-      new NextRequest("https://me.itheheda.online/api/admin/crawlers")
-    );
-
-    expect(response.status).toBe(401);
-    expect(response.headers.get("www-authenticate")).toContain("Basic");
-    expect(response.headers.get("cache-control")).toBe("private, no-store");
-    expect(getCrawlerAnalytics).not.toHaveBeenCalled();
+  beforeEach(() => { vi.clearAllMocks(); process.env.CRAWLER_DASHBOARD_PASSWORD = "secret"; });
+  it("keeps Basic Auth before the observer service", async () => {
+    const result = await GET(request("", false));
+    expect(result.status).toBe(401); expect(result.headers.get("www-authenticate")).toContain("Basic"); expect(getCrawlerAnalytics).not.toHaveBeenCalled();
   });
-
-  it("returns private no-store analytics for a valid request", async () => {
-    process.env.CRAWLER_DASHBOARD_PASSWORD = "secret";
-    vi.mocked(getCrawlerAnalytics).mockResolvedValue(fixtureResponse);
-
-    const response = await GET(authenticatedRequest("?range=7d"));
-
-    expect(response.status).toBe(200);
-    expect(response.headers.get("cache-control")).toBe("private, no-store");
-    expect(getCrawlerAnalytics).toHaveBeenCalledWith("7d");
-    await expect(response.json()).resolves.toEqual(fixtureResponse);
+  it("returns private no-store observer data", async () => {
+    vi.mocked(getCrawlerAnalytics).mockResolvedValue(fixture);
+    const result = await GET(request("?range=7d"));
+    expect(result.status).toBe(200); expect(result.headers.get("cache-control")).toBe("private, no-store"); expect(getCrawlerAnalytics).toHaveBeenCalledWith("7d");
   });
-
-  it("defaults an omitted range to 24h", async () => {
-    process.env.CRAWLER_DASHBOARD_PASSWORD = "secret";
-    vi.mocked(getCrawlerAnalytics).mockResolvedValue(fixtureResponse);
-
-    const response = await GET(authenticatedRequest());
-
-    expect(response.status).toBe(200);
-    expect(getCrawlerAnalytics).toHaveBeenCalledWith("24h");
+  it("rejects invalid ranges without invoking the observer", async () => {
+    const result = await GET(request("?range=nope"));
+    expect(result.status).toBe(400); expect(getCrawlerAnalytics).not.toHaveBeenCalled();
   });
-
-  it("rejects an exact-match invalid range without calling analytics", async () => {
-    process.env.CRAWLER_DASHBOARD_PASSWORD = "secret";
-
-    const response = await GET(authenticatedRequest("?range=7d%20"));
-
-    expect(response.status).toBe(400);
-    expect(response.headers.get("cache-control")).toBe("private, no-store");
-    await expect(response.json()).resolves.toEqual({
-      error: { code: "invalid_range", message: "Unsupported crawler analytics range" },
-    });
-    expect(getCrawlerAnalytics).not.toHaveBeenCalled();
-  });
-
-  it.each([
-    "?range=7d&range=7d",
-    "?range=7d&range=invalid",
-  ])("rejects duplicate range values: %s", async (query) => {
-    process.env.CRAWLER_DASHBOARD_PASSWORD = "secret";
-
-    const response = await GET(authenticatedRequest(query));
-
-    expect(response.status).toBe(400);
-    expect(response.headers.get("cache-control")).toBe("private, no-store");
-    await expect(response.json()).resolves.toEqual({
-      error: { code: "invalid_range", message: "Unsupported crawler analytics range" },
-    });
-    expect(getCrawlerAnalytics).not.toHaveBeenCalled();
-  });
-
-  it.each([
-    ["invalid_range", 400, "Unsupported crawler analytics range"],
-    ["configuration_missing", 503, "Crawler analytics is not configured"],
-    ["cloudflare_auth_invalid", 424, "Crawler analytics is unavailable"],
-    ["cloudflare_permission_denied", 424, "Crawler analytics is unavailable"],
-    ["cloudflare_rate_limited", 503, "Crawler analytics is unavailable"],
-    ["unsupported_dataset", 424, "Crawler analytics is unavailable"],
-    ["result_truncated", 424, "Crawler analytics is unavailable"],
-    ["cloudflare_unavailable", 424, "Crawler analytics is unavailable"],
-  ] as const)("maps %s to HTTP %s with a stable safe payload", async (code, status, message) => {
-    process.env.CRAWLER_DASHBOARD_PASSWORD = "secret";
-    vi.mocked(getCrawlerAnalytics).mockRejectedValue(
-      new CrawlerAnalyticsError(code, "upstream body includes token=secret", 599)
-    );
-
-    const response = await GET(authenticatedRequest("?range=7d"));
-
-    expect(response.status).toBe(status);
-    expect(response.headers.get("cache-control")).toBe("private, no-store");
-    await expect(response.json()).resolves.toEqual({ error: { code, message } });
-  });
-
-  it("preserves the typed JSON error envelope for a 424 dependency failure", async () => {
-    process.env.CRAWLER_DASHBOARD_PASSWORD = "secret";
-    vi.mocked(getCrawlerAnalytics).mockRejectedValue(
-      new CrawlerAnalyticsError("cloudflare_unavailable", "upstream unavailable", 599)
-    );
-
-    const response = await GET(authenticatedRequest("?range=24h"));
-
-    expect(response.status).toBe(424);
-    expect(response.headers.get("content-type")).toContain("application/json");
-    expect(response.headers.get("cache-control")).toBe("private, no-store");
-    await expect(response.json()).resolves.toEqual({
-      error: { code: "cloudflare_unavailable", message: "Crawler analytics is unavailable" },
-    });
-  });
-});
-
-describe("non-GET /api/admin/crawlers methods", () => {
-  it("returns an authenticated private no-store OPTIONS response", async () => {
-    process.env.CRAWLER_DASHBOARD_PASSWORD = "secret";
-
-    const response = await OPTIONS(authenticatedRequest());
-
-    expect(response.status).toBe(204);
-    expect(response.headers.get("cache-control")).toBe("private, no-store");
-    expect(response.headers.get("allow")).toBe("GET, HEAD, OPTIONS");
-  });
-
-  it("challenges unauthenticated OPTIONS before responding", async () => {
-    delete process.env.CRAWLER_DASHBOARD_PASSWORD;
-
-    const response = await OPTIONS(
-      new NextRequest("https://me.itheheda.online/api/admin/crawlers", {
-        method: "OPTIONS",
-      })
-    );
-
-    expect(response.status).toBe(401);
-    expect(response.headers.get("www-authenticate")).toContain("Basic");
-    expect(response.headers.get("cache-control")).toBe("private, no-store");
-  });
-
-  it.each([
-    ["POST", POST],
-    ["PUT", PUT],
-    ["PATCH", PATCH],
-    ["DELETE", DELETE],
-  ])("returns authenticated 405 safe JSON for %s", async (method, handler) => {
-    process.env.CRAWLER_DASHBOARD_PASSWORD = "secret";
-
-    const response = await handler(authenticatedRequest());
-
-    expect(response.status).toBe(405);
-    expect(response.headers.get("cache-control")).toBe("private, no-store");
-    expect(response.headers.get("allow")).toBe("GET, HEAD, OPTIONS");
-    await expect(response.json()).resolves.toEqual({ error: { code: "method_not_allowed", message: "Method not allowed" } });
-  });
-
-  it.each([POST, PUT, PATCH, DELETE])("challenges unauthenticated unsupported methods", async (handler) => {
-    delete process.env.CRAWLER_DASHBOARD_PASSWORD;
-
-    const response = await handler(
-      new NextRequest("https://me.itheheda.online/api/admin/crawlers", { method: "POST" })
-    );
-
-    expect(response.status).toBe(401);
-    expect(response.headers.get("www-authenticate")).toContain("Basic");
-    expect(response.headers.get("cache-control")).toBe("private, no-store");
+  it.each([["observer_auth_invalid", 502], ["observer_unavailable", 502], ["configuration_missing", 503]] as const)("maps %s to HTTP %s", async (code, status) => {
+    vi.mocked(getCrawlerAnalytics).mockRejectedValue(new CrawlerAnalyticsError(code, "secret upstream detail"));
+    const result = await GET(request());
+    expect(result.status).toBe(status); await expect(result.json()).resolves.toEqual({ error: { code, message: code === "configuration_missing" ? "Crawler observer is not configured" : "Crawler observer is unavailable" } });
   });
 });

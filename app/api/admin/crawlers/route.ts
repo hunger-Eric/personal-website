@@ -17,23 +17,15 @@ export const dynamic = "force-dynamic";
 const STATUS_BY_CODE: Record<CrawlerAnalyticsErrorCode, number> = {
   invalid_range: 400,
   configuration_missing: 503,
-  cloudflare_auth_invalid: 424,
-  cloudflare_permission_denied: 424,
-  cloudflare_rate_limited: 503,
-  cloudflare_unavailable: 424,
-  unsupported_dataset: 424,
-  result_truncated: 424,
+  observer_auth_invalid: 502,
+  observer_unavailable: 502,
 };
 
 const MESSAGE_BY_CODE: Record<CrawlerAnalyticsErrorCode, string> = {
   invalid_range: "Unsupported crawler analytics range",
-  configuration_missing: "Crawler analytics is not configured",
-  cloudflare_auth_invalid: "Crawler analytics is unavailable",
-  cloudflare_permission_denied: "Crawler analytics is unavailable",
-  cloudflare_rate_limited: "Crawler analytics is unavailable",
-  cloudflare_unavailable: "Crawler analytics is unavailable",
-  unsupported_dataset: "Crawler analytics is unavailable",
-  result_truncated: "Crawler analytics is unavailable",
+  configuration_missing: "Crawler observer is not configured",
+  observer_auth_invalid: "Crawler observer is unavailable",
+  observer_unavailable: "Crawler observer is unavailable",
 };
 
 const NO_STORE_HEADERS = { "Cache-Control": "private, no-store" };
@@ -63,7 +55,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     const code = error instanceof CrawlerAnalyticsError
       ? error.code
-      : "cloudflare_unavailable";
+      : "observer_unavailable";
     return NextResponse.json(
       { error: { code, message: MESSAGE_BY_CODE[code] } },
       { status: STATUS_BY_CODE[code], headers: NO_STORE_HEADERS }

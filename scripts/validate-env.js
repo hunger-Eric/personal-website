@@ -104,15 +104,9 @@ const ENV_VARS = [
     usedBy: ["Crawler Analytics Admin"],
   },
   {
-    name: "CLOUDFLARE_API_TOKEN",
+    name: "CRAWLER_OBSERVER_READ_SECRET",
     required: false,
-    description: "Zone-scoped Cloudflare Analytics Read token",
-    usedBy: ["Crawler Analytics Admin"],
-  },
-  {
-    name: "CLOUDFLARE_ZONE_ID",
-    required: false,
-    description: "Cloudflare Zone ID for crawler analytics",
+    description: "Crawler Observer signed read secret",
     usedBy: ["Crawler Analytics Admin"],
   },
 ];

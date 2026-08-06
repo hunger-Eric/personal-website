@@ -31,7 +31,7 @@ async function loadDashboard(range: CrawlerRange): Promise<DashboardResult> {
   } catch (error) {
     return {
       range,
-      errorCode: error instanceof CrawlerAnalyticsError ? error.code : "cloudflare_unavailable",
+      errorCode: error instanceof CrawlerAnalyticsError ? error.code : "observer_unavailable",
     };
   }
 }
