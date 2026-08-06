@@ -12,6 +12,7 @@ function DataTable({ title, children }: { title: string; children: ReactNode }) 
 
 const tableClass = "w-full min-w-[560px] text-left text-sm";
 const cellClass = "border-b border-hairline px-3 py-3";
+const visibleRanges: readonly CrawlerRange[] = ["24h", "7d"];
 
 export function formatShare(numerator: number, denominator: number): string {
   if (!Number.isFinite(numerator) || !Number.isFinite(denominator) || denominator <= 0) return "0%";
@@ -32,7 +33,7 @@ function DataProvenance({ data }: { data: CrawlerAnalyticsResponse }) {
 export function CrawlerDashboard({ range, data, errorCode }: Props) {
   return <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-12"><div className="mx-auto max-w-6xl">
     <Link href="/" className="text-sm font-semibold text-muted-foreground hover:text-foreground">← {copy.backToSite}</Link>
-    <header className="mt-6 border-y border-hairline py-7"><p className="font-mono text-xs uppercase tracking-[0.16em] text-accent">{copy.source}</p><h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{copy.title}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{copy.description}</p><nav aria-label="时间范围" className="mt-5 flex flex-wrap gap-2">{Object.entries(copy.ranges).map(([value, label]) => <Link key={value} href={`?range=${value}`} aria-current={range === value ? "page" : undefined} className={`border px-3 py-2 text-sm font-semibold ${range === value ? "border-accent bg-accent text-accent-foreground" : "border-hairline bg-surface-paper hover:border-foreground"}`}>{label}</Link>)}</nav></header>
+    <header className="mt-6 border-y border-hairline py-7"><p className="font-mono text-xs uppercase tracking-[0.16em] text-accent">{copy.source}</p><h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">{copy.title}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{copy.description}</p><nav aria-label="时间范围" className="mt-5 flex flex-wrap gap-2">{visibleRanges.map((value) => <Link key={value} href={`?range=${value}`} aria-current={range === value ? "page" : undefined} className={`border px-3 py-2 text-sm font-semibold ${range === value ? "border-accent bg-accent text-accent-foreground" : "border-hairline bg-surface-paper hover:border-foreground"}`}>{copy.ranges[value]}</Link>)}</nav></header>
     {errorCode ? <section role="alert" className="mt-8 border border-hairline bg-surface-paper-elevated p-6"><h2 className="text-lg font-semibold">数据暂不可用</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.errors[errorCode]}</p></section> : data ? <DashboardData data={data} /> : null}
   </div></main>;
 }

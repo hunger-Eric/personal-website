@@ -17,7 +17,8 @@ describe("CrawlerDashboard", () => {
   it("renders controls, summaries, and exact data rows", () => {
     const { container } = render(<CrawlerDashboard range="24h" data={fixture} />);
     expect(screen.getByRole("heading", { name: "AI 爬虫检测" })).toBeInTheDocument();
-    ["24h", "7d", "30d"].forEach((range) => expect(screen.getByRole("link", { name: range })).toHaveAttribute("href", `?range=${range}`));
+    ["24h", "7d"].forEach((range) => expect(screen.getByRole("link", { name: range })).toHaveAttribute("href", `?range=${range}`));
+    expect(screen.queryByRole("link", { name: "30d" })).not.toBeInTheDocument();
     ["12", "4", "5", "3", "GPTBot/1.2", "/articles", "200"].forEach((value) => expect(screen.getAllByText(value).length).toBeGreaterThan(0));
     ["占比：12%", "占比：33.3%", "占比：41.7%", "占比：25%"].forEach((value) => expect(screen.getByText(value)).toBeInTheDocument());
     expect(container.innerHTML).toContain("overflow-x-auto");
