@@ -1,7 +1,7 @@
 import bots from "@geosuite/ai-crawler-bots/bots.json";
 import { isBot } from "isbot";
 import { classifyIdentity, type VerificationStatus } from "./identity";
-import { syncOpenAiRuleSources, syncPerplexityRuleSources } from "./official-ip-rules";
+import { ensureOfficialRuleSources, syncOpenAiRuleSources, syncPerplexityRuleSources } from "./official-ip-rules";
 
 const encoder = new TextEncoder();
 const HOUR_SECONDS = 3600;
@@ -13,7 +13,7 @@ const READ_HOSTS = new Set([HOST, CUSTOM_DOMAIN_HOST]);
 const RULE_SOURCE_IDS = ["openai_gptbot", "openai_searchbot", "openai_chatgpt_user", "perplexity_bot", "perplexity_user"] as const;
 
 type Category = "open_geo_self_test" | "identified_ai_crawler" | "other_automation";
-type Classification = { id: string; name: string; category: Category };
+type Classification = { id: string; name: string; category: Category; openGeoVerified: boolean };
 type Row = Record<string, unknown>;
 type RuleState = "fresh" | "last_known_good" | "unavailable";
 type ObserverEnv = Pick<Env, "DB" | "OPEN_GEO_SELF_TEST_SECRET" | "OBSERVER_READ_SECRET">;
@@ -77,6 +77,7 @@ export function excluded(pathname: string): boolean {
     pathname.startsWith("/admin/") ||
     pathname === "/api/admin" ||
     pathname.startsWith("/api/admin/") ||
+    pathname.startsWith("/_next/") ||
     pathname.startsWith("/_crawler-observer")
   );
 }
@@ -114,13 +115,21 @@ export async function classify(request: Request, env: Pick<ObserverEnv, "OPEN_GE
   const timestamp = request.headers.get("X-OpenGeo-Timestamp");
   const canonical = `v1\nself-test\n${timestamp ?? ""}\n${request.method}\n${url.hostname.toLowerCase()}\n${url.pathname}`;
   if (await validHmac(env.OPEN_GEO_SELF_TEST_SECRET, timestamp, request.headers.get("X-OpenGeo-Signature"), canonical, now)) {
-    return { id: "open-geo-self-test", name: "Open GEO self-test", category: "open_geo_self_test" };
+    return { id: "open-geo-self-test", name: "Open GEO self-test", category: "open_geo_self_test", openGeoVerified: true };
   }
 
   const userAgent = request.headers.get("User-Agent") ?? "";
+  const normalizedUserAgent = userAgent.toLowerCase();
+  if (normalizedUserAgent.includes("opengeoconsolebot") || normalizedUserAgent.includes("opengeoconsole/")) {
+    return { id: "open-geo-declared-test", name: "Open GEO test (unverified)", category: "other_automation", openGeoVerified: false };
+  }
   const known = knownBots.find((bot) => userAgent.toLowerCase().includes(bot.token));
-  if (known) return { ...known, category: "identified_ai_crawler" };
-  return isBot(userAgent) ? { id: "other-bot", name: "Other automation bot", category: "other_automation" } : null;
+  if (known) return { ...known, category: "identified_ai_crawler", openGeoVerified: false };
+  return isBot(userAgent) ? { id: "other-bot", name: "Other automation bot", category: "other_automation", openGeoVerified: false } : null;
+}
+
+function openGeoStaticAsset(pathname: string): boolean {
+  return /\.(?:avif|css|gif|ico|jpe?g|js|map|png|svg|ttf|webp|woff2?)$/i.test(pathname);
 }
 
 function safeLog(error: unknown): void {
@@ -132,6 +141,7 @@ async function observe(request: Request, originResponse: Response, env: Observer
   if (excluded(url.pathname)) return;
   const item = await classify(request, env);
   if (!item) return;
+  if (item.id === "open-geo-declared-test" && openGeoStaticAsset(url.pathname)) return;
   await env.DB.prepare(
     "INSERT INTO crawler_counts (bucket_start, bot_id, bot_name, category, path, status, count) VALUES (?, ?, ?, ?, ?, ?, 1) ON CONFLICT(bucket_start, bot_id, category, path, status) DO UPDATE SET count = count + 1, bot_name = excluded.bot_name",
   )
@@ -141,7 +151,7 @@ async function observe(request: Request, originResponse: Response, env: Observer
   const identity = await classifyIdentity({
     userAgent: request.headers.get("User-Agent") ?? "",
     clientIp: request.headers.get("CF-Connecting-IP"),
-    openGeoVerified: item.category === "open_geo_self_test",
+    openGeoVerified: item.openGeoVerified,
     genericAutomation: item.category === "other_automation",
   }, env.DB);
   if (!identity) return;
@@ -198,6 +208,8 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
   if (!(await validHmac(env.OBSERVER_READ_SECRET, timestamp, request.headers.get("X-Observer-Signature"), canonical))) {
     return emptyResponse(401);
   }
+
+  await ensureOfficialRuleSources(env.DB);
 
   const hours = range === "24h" ? 24 : range === "7d" ? 168 : 720;
   const generatedAt = new Date();

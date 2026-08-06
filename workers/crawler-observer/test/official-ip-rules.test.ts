@@ -1,6 +1,8 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  ensureOfficialRuleSource,
+  ensureOfficialRuleSources,
   isIpInPrefixes,
   loadUsableRuleSet,
   parseOfficialPrefixPayload,
@@ -43,7 +45,7 @@ describe("official crawler IP rules", () => {
   });
 
   it("stores a validated version and serves it for seven days", async () => {
-    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+    const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({
       creationTime: "2026-08-06T00:00:00.000000",
       prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
     }), { status: 200 }));
@@ -95,5 +97,82 @@ describe("official crawler IP rules", () => {
       "https://www.perplexity.com/perplexitybot.json",
       "https://www.perplexity.com/perplexity-user.json",
     ]);
+  });
+
+  it("bootstraps every official source when the database has no successful rules", async () => {
+    const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({
+      creationTime: "2026-08-06T00:00:00.000000",
+      prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
+    }), { status: 200 }));
+    const now = new Date("2026-08-06T12:00:00.000Z");
+
+    await ensureOfficialRuleSources(env.DB, fetcher, now);
+    await ensureOfficialRuleSources(env.DB, fetcher, new Date("2026-08-06T13:00:00.000Z"));
+
+    expect(fetcher).toHaveBeenCalledTimes(5);
+    const rows = await env.DB.prepare("SELECT source_id, last_success_at FROM crawler_rule_sets ORDER BY source_id").all<{
+      source_id: string;
+      last_success_at: string | null;
+    }>();
+    expect(rows.results).toHaveLength(5);
+    expect(rows.results.every((row) => row.last_success_at === now.toISOString())).toBe(true);
+  });
+
+  it("bootstraps only the requested source for first-request verification", async () => {
+    const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({
+      creationTime: "2026-08-06T00:00:00.000000",
+      prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
+    }), { status: 200 }));
+    const now = new Date("2026-08-06T12:00:00.000Z");
+
+    await ensureOfficialRuleSource(env.DB, "openai_searchbot", fetcher, now);
+    await ensureOfficialRuleSource(env.DB, "openai_searchbot", fetcher, new Date("2026-08-06T13:00:00.000Z"));
+
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    const rows = await env.DB.prepare("SELECT source_id FROM crawler_rule_sets").all<{ source_id: string }>();
+    expect(rows.results).toEqual([{ source_id: "openai_searchbot" }]);
+  });
+
+  it("accepts the fixed Perplexity redirect while retaining the official source URL", async () => {
+    const fetcher = vi.fn()
+      .mockResolvedValueOnce(new Response(null, {
+        status: 302,
+        headers: { Location: "https://www.perplexity.ai/perplexitybot.json" },
+      }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        creationTime: "2026-08-06T00:00:00.000000",
+        prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
+      }), { status: 200 }));
+    const perplexity = PERPLEXITY_RULE_SOURCES[0];
+    expect(perplexity).toBeDefined();
+
+    await syncRuleSource(env.DB, perplexity!, fetcher, new Date("2026-08-06T12:00:00.000Z"));
+
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    const row = await env.DB.prepare("SELECT source_url, last_success_at, last_error_code FROM crawler_rule_sets WHERE source_id = ?")
+      .bind("perplexity_bot")
+      .first<{ source_url: string; last_success_at: string | null; last_error_code: string | null }>();
+    expect(row).toMatchObject({
+      source_url: "https://www.perplexity.com/perplexitybot.json",
+      last_success_at: "2026-08-06T12:00:00.000Z",
+      last_error_code: null,
+    });
+  });
+
+  it("rejects a redirect outside the fixed Perplexity endpoint", async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(null, {
+      status: 302,
+      headers: { Location: "https://attacker.example/rules.json" },
+    }));
+    const perplexity = PERPLEXITY_RULE_SOURCES[0];
+    expect(perplexity).toBeDefined();
+
+    await syncRuleSource(env.DB, perplexity!, fetcher, new Date("2026-08-06T12:00:00.000Z"));
+
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    const row = await env.DB.prepare("SELECT last_success_at, last_error_code FROM crawler_rule_sets WHERE source_id = ?")
+      .bind("perplexity_bot")
+      .first<{ last_success_at: string | null; last_error_code: string | null }>();
+    expect(row).toEqual({ last_success_at: null, last_error_code: "fetch_failed" });
   });
 });

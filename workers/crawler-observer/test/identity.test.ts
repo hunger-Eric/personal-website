@@ -1,5 +1,5 @@
 import { env } from "cloudflare:test";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   classifyIdentity,
   findIdentityCandidate,
@@ -46,6 +46,15 @@ describe("crawler identity contract", () => {
     expect(findIdentityCandidate("ClaudeBot/1.0")).toMatchObject({
       botId: "claudebot",
       providerName: "Anthropic",
+      ruleSourceId: null,
+    });
+  });
+
+  it.each(["OpenGeoConsoleBot/1.0", "OpenGEOConsole/0.1"])('recognizes %s as declared Open GEO test traffic', (userAgent) => {
+    expect(findIdentityCandidate(userAgent)).toMatchObject({
+      botId: "open-geo-declared-test",
+      providerName: "Open GEO",
+      purpose: "self_test",
       ruleSourceId: null,
     });
   });
@@ -124,6 +133,20 @@ describe("crawler identity contract", () => {
       .resolves.toMatchObject({ verificationStatus: "other_automation", verificationMethod: "generic_bot" });
     await expect(classifyIdentity({ userAgent: "GPTBot", clientIp: "203.0.113.8", openGeoVerified: true, genericAutomation: true }, env.DB, now))
       .resolves.toMatchObject({ botId: "open-geo-self-test", verificationStatus: "verified_official", verificationMethod: "signed_hmac" });
+    await expect(classifyIdentity({ userAgent: "OpenGeoConsoleBot/1.0", clientIp: "198.51.100.8", openGeoVerified: false, genericAutomation: true }, env.DB, now))
+      .resolves.toMatchObject({ botId: "open-geo-declared-test", verificationStatus: "declared_unverified", verificationMethod: "ua_only" });
+  });
+
+  it("synchronizes the matching official source before classifying the first request", async () => {
+    const fetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({
+      creationTime: "2026-08-06T00:00:00.000000",
+      prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
+    }), { status: 200 }));
+    const now = new Date("2026-08-06T12:00:00.000Z");
+
+    await expect(classifyIdentity({ userAgent: "OAI-SearchBot", clientIp: "203.0.113.8", openGeoVerified: false, genericAutomation: true }, env.DB, now, fetcher))
+      .resolves.toMatchObject({ verificationStatus: "verified_official", verificationMethod: "official_ip_range" });
+    expect(fetcher).toHaveBeenCalledTimes(1);
   });
 
   it("downgrades an expired official rule to declared identity", async () => {
@@ -131,7 +154,8 @@ describe("crawler identity contract", () => {
     await env.DB.prepare("INSERT INTO crawler_rule_sets (source_id, source_url, prefixes_json, content_sha256, source_created_at, last_attempt_at, last_success_at, last_error_code) VALUES (?, ?, ?, ?, ?, ?, ?, NULL)")
       .bind("openai_gptbot", "https://openai.com/gptbot.json", '["203.0.113.0/24"]', "0".repeat(64), syncedAt.toISOString(), syncedAt.toISOString(), syncedAt.toISOString())
       .run();
-    await expect(classifyIdentity({ userAgent: "GPTBot", clientIp: "198.51.100.8", openGeoVerified: false, genericAutomation: true }, env.DB, new Date("2026-08-13T12:00:01.000Z")))
+    const unavailable = vi.fn().mockRejectedValue(new Error("source unavailable"));
+    await expect(classifyIdentity({ userAgent: "GPTBot", clientIp: "198.51.100.8", openGeoVerified: false, genericAutomation: true }, env.DB, new Date("2026-08-13T12:00:01.000Z"), unavailable))
       .resolves.toMatchObject({ verificationStatus: "declared_unverified", verificationMethod: "ua_only" });
   });
 });

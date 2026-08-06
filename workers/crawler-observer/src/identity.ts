@@ -1,5 +1,5 @@
 import bots from "@geosuite/ai-crawler-bots/bots.json";
-import { isIpInPrefixes, loadUsableRuleSet } from "./official-ip-rules";
+import { ensureOfficialRuleSource, isIpInPrefixes, loadUsableRuleSet } from "./official-ip-rules";
 
 export type VerificationStatus =
   | "verified_official"
@@ -54,6 +54,8 @@ export type IdentityInput = {
 };
 
 const EXPLICIT_IDENTITY_CATALOG: readonly IdentityCandidate[] = [
+  { botId: "open-geo-declared-test", botName: "Open GEO test (unverified)", providerId: "open-geo", providerName: "Open GEO", region: "global", purpose: "self_test", uaToken: "OpenGeoConsoleBot", ruleSourceId: null },
+  { botId: "open-geo-declared-test", botName: "Open GEO test (unverified)", providerId: "open-geo", providerName: "Open GEO", region: "global", purpose: "self_test", uaToken: "OpenGEOConsole/", ruleSourceId: null },
   { botId: "oai-searchbot", botName: "OAI-SearchBot", providerId: "openai", providerName: "OpenAI", region: "global", purpose: "ai_search", uaToken: "OAI-SearchBot", ruleSourceId: "openai_searchbot" },
   { botId: "chatgpt-user", botName: "ChatGPT-User", providerId: "openai", providerName: "OpenAI", region: "global", purpose: "user_fetch", uaToken: "ChatGPT-User", ruleSourceId: "openai_chatgpt_user" },
   { botId: "gptbot", botName: "GPTBot", providerId: "openai", providerName: "OpenAI", region: "global", purpose: "ai_training", uaToken: "GPTBot", ruleSourceId: "openai_gptbot" },
@@ -138,6 +140,7 @@ export async function classifyIdentity(
   input: IdentityInput,
   db: D1Database,
   now = new Date(),
+  ruleFetcher: typeof fetch = fetch,
 ): Promise<IdentityResult | null> {
   if (input.openGeoVerified) {
     return {
@@ -155,7 +158,11 @@ export async function classifyIdentity(
   const candidate = findIdentityCandidate(input.userAgent);
   if (!candidate) return input.genericAutomation ? otherAutomationIdentity() : null;
   if (!candidate.ruleSourceId || !input.clientIp) return fromCandidate(candidate, "declared_unverified", "ua_only");
-  const ruleSet = await loadUsableRuleSet(db, candidate.ruleSourceId, now);
+  let ruleSet = await loadUsableRuleSet(db, candidate.ruleSourceId, now);
+  if (!ruleSet) {
+    await ensureOfficialRuleSource(db, candidate.ruleSourceId, ruleFetcher, now);
+    ruleSet = await loadUsableRuleSet(db, candidate.ruleSourceId, now);
+  }
   if (!ruleSet) return fromCandidate(candidate, "declared_unverified", "ua_only");
   return fromCandidate(
     candidate,

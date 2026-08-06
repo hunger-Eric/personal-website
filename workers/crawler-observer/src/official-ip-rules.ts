@@ -3,6 +3,8 @@ import type { RuleSourceId } from "./identity";
 
 const MAX_RESPONSE_BYTES = 256 * 1024;
 const MAX_RULE_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const RULE_REFRESH_MS = 24 * 60 * 60 * 1000;
+const RULE_RETRY_MS = 15 * 60 * 1000;
 
 export type RuleSyncErrorCode =
   | "fetch_failed" | "http_status" | "response_too_large" | "invalid_json"
@@ -26,6 +28,18 @@ export const PERPLEXITY_RULE_SOURCES: readonly OfficialRuleSource[] = [
   { id: "perplexity_bot", url: "https://www.perplexity.com/perplexitybot.json" },
   { id: "perplexity_user", url: "https://www.perplexity.com/perplexity-user.json" },
 ];
+
+const ALL_RULE_SOURCES: readonly OfficialRuleSource[] = [
+  ...OPENAI_RULE_SOURCES,
+  ...PERPLEXITY_RULE_SOURCES,
+];
+
+const FIXED_REDIRECTS: Partial<Record<RuleSourceId, string>> = {
+  perplexity_bot: "https://www.perplexity.ai/perplexitybot.json",
+  perplexity_user: "https://www.perplexity.ai/perplexity-user.json",
+};
+
+type RuleSyncState = { source_id: string; last_attempt_at: string | null; last_success_at: string | null };
 
 function prefixFrom(value: unknown): string | null {
   if (!value || typeof value !== "object") return null;
@@ -73,6 +87,26 @@ function errorCode(error: unknown): RuleSyncErrorCode {
     ? code as RuleSyncErrorCode : "fetch_failed";
 }
 
+function requestOptions(redirect: "error" | "follow" | "manual"): RequestInit {
+  return {
+    method: "GET",
+    redirect,
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(10_000),
+  };
+}
+
+async function fetchOfficialSource(source: OfficialRuleSource, fetcher: typeof fetch): Promise<Response> {
+  let response = await fetcher(source.url, requestOptions("manual"));
+  if ([301, 302, 303, 307, 308].includes(response.status)) {
+    const location = response.headers.get("location");
+    const target = location ? new URL(location, source.url).toString() : null;
+    if (!target || target !== FIXED_REDIRECTS[source.id]) throw new Error("unsafe_redirect");
+    response = await fetcher(target, requestOptions("error"));
+  }
+  return response;
+}
+
 export async function syncRuleSource(
   db: D1Database,
   source: OfficialRuleSource,
@@ -80,12 +114,7 @@ export async function syncRuleSource(
   now = new Date(),
 ): Promise<void> {
   try {
-    const response = await fetcher(source.url, {
-      method: "GET",
-      redirect: "error",
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(10_000),
-    });
+    const response = await fetchOfficialSource(source, fetcher);
     if (!response.ok) throw new Error("http_status");
     const declaredLength = Number(response.headers.get("content-length") ?? 0);
     if (declaredLength > MAX_RESPONSE_BYTES) throw new Error("response_too_large");
@@ -119,6 +148,43 @@ export async function syncPerplexityRuleSources(
   now = new Date(),
 ): Promise<void> {
   for (const source of PERPLEXITY_RULE_SOURCES) await syncRuleSource(db, source, fetcher, now);
+}
+
+export async function ensureOfficialRuleSources(
+  db: D1Database,
+  fetcher: typeof fetch = fetch,
+  now = new Date(),
+): Promise<void> {
+  const rows = await db.prepare(
+    "SELECT source_id, last_attempt_at, last_success_at FROM crawler_rule_sets",
+  ).all<RuleSyncState>();
+  const bySource = new Map(rows.results.map((row) => [row.source_id, row]));
+  const due = ALL_RULE_SOURCES.filter((source) => ruleSourceDue(bySource.get(source.id), now));
+  await Promise.all(due.map((source) => syncRuleSource(db, source, fetcher, now)));
+}
+
+function ruleSourceDue(row: RuleSyncState | undefined, now: Date): boolean {
+  const nowMs = now.getTime();
+  const lastSuccessMs = row?.last_success_at ? Date.parse(row.last_success_at) : Number.NaN;
+  const successAge = nowMs - lastSuccessMs;
+  if (Number.isFinite(lastSuccessMs) && successAge >= 0 && successAge < RULE_REFRESH_MS) return false;
+  const lastAttemptMs = row?.last_attempt_at ? Date.parse(row.last_attempt_at) : Number.NaN;
+  const attemptAge = nowMs - lastAttemptMs;
+  return !Number.isFinite(lastAttemptMs) || attemptAge < 0 || attemptAge >= RULE_RETRY_MS;
+}
+
+export async function ensureOfficialRuleSource(
+  db: D1Database,
+  sourceId: RuleSourceId,
+  fetcher: typeof fetch = fetch,
+  now = new Date(),
+): Promise<void> {
+  const source = ALL_RULE_SOURCES.find((candidate) => candidate.id === sourceId);
+  if (!source) return;
+  const row = await db.prepare(
+    "SELECT source_id, last_attempt_at, last_success_at FROM crawler_rule_sets WHERE source_id = ?",
+  ).bind(sourceId).first<RuleSyncState>();
+  if (ruleSourceDue(row ?? undefined, now)) await syncRuleSource(db, source, fetcher, now);
 }
 
 export async function loadUsableRuleSet(db: D1Database, sourceId: RuleSourceId, now = new Date()): Promise<UsableRuleSet | null> {

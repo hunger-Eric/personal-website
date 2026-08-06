@@ -20,16 +20,29 @@ async function signature(secret: string, canonical: string): Promise<string> {
 function fakeDb(options: { failRun?: boolean; failIdentityRun?: boolean; batchRows?: Record<string, unknown>[][] } = {}) {
   const sql: string[] = [];
   const values: unknown[][] = [];
-  const prepared = (query: string) => ({
-    bind: (...bound: unknown[]) => {
-      sql.push(query);
-      values.push(bound);
-      return { run: async () => {
+  const freshRuleRows = ["openai_gptbot", "openai_searchbot", "openai_chatgpt_user", "perplexity_bot", "perplexity_user"].map((source_id) => ({
+    source_id,
+    last_attempt_at: new Date().toISOString(),
+    last_success_at: new Date().toISOString(),
+  }));
+  const prepared = (query: string) => {
+    const result = {
+      run: async () => {
         if (options.failRun || (options.failIdentityRun && query.includes("INSERT INTO crawler_identity_counts"))) throw new Error("d1 unavailable");
         return { success: true };
-      }, first: async () => null };
-    },
-  });
+      },
+      first: async () => null,
+      all: async () => ({ results: freshRuleRows }),
+    };
+    return {
+      ...result,
+      bind: (...bound: unknown[]) => {
+        sql.push(query);
+        values.push(bound);
+        return result;
+      },
+    };
+  };
   return {
     db: { prepare: prepared, batch: async () => (options.batchRows ?? []).map((results) => ({ results })) },
     sql,
@@ -80,13 +93,19 @@ describe("crawler observer cryptographic classification", () => {
     }
   });
 
-  it("prioritizes a valid Open GEO signature and never treats an unsigned UA as self-test", async () => {
+  it("prioritizes a valid Open GEO signature and separates declared Open GEO traffic from AI identities", async () => {
     const timestamp = String(Math.floor(Date.now() / 1000));
     const canonical = `v1\nself-test\n${timestamp}\nGET\nme.itheheda.online\n/`;
     const signed = new Request("https://me.itheheda.online/", { headers: { "User-Agent": "GPTBot", "X-OpenGeo-Timestamp": timestamp, "X-OpenGeo-Signature": await signature(openGeoSecret, canonical) } });
     await expect(classify(signed, observerEnv(fakeDb().db as D1Database))).resolves.toMatchObject({ category: "open_geo_self_test" });
     const unsigned = new Request("https://me.itheheda.online/", { headers: { "User-Agent": "GPTBot" } });
     await expect(classify(unsigned, observerEnv(fakeDb().db as D1Database))).resolves.toMatchObject({ category: "identified_ai_crawler" });
+    const declaredOpenGeo = new Request("https://me.itheheda.online/", { headers: { "User-Agent": "OpenGeoConsoleBot/1.0" } });
+    await expect(classify(declaredOpenGeo, observerEnv(fakeDb().db as D1Database))).resolves.toMatchObject({
+      category: "other_automation",
+      id: "open-geo-declared-test",
+      openGeoVerified: false,
+    });
   });
 
   it("identifies known AI, generic automation, and ignores normal traffic", async () => {
@@ -126,6 +145,7 @@ describe("crawler observer website isolation", () => {
     expect(excludedDb.sql).toHaveLength(0);
     expect(excluded("/api/admin/crawlers")).toBe(true);
     expect(excluded("/_crawler-observer/v1/analytics")).toBe(true);
+    expect(excluded("/_next/static/chunks/app.js")).toBe(true);
     expect(observedPath(`/${"x".repeat(2049)}`)).toBe("/__path_too_long__");
 
     const failing = fakeDb({ failRun: true });
@@ -357,6 +377,7 @@ describe("crawler observer Miniflare D1 integration", () => {
     }
     await env.DB.prepare("DELETE FROM crawler_counts").run();
     await env.DB.prepare("DELETE FROM crawler_identity_counts").run();
+    await env.DB.prepare("DELETE FROM crawler_rule_sets").run();
   });
 
   it("applies the migration, upserts real D1 counts, aggregates analytics, and purges through the scheduled handler", async () => {
@@ -368,12 +389,20 @@ describe("crawler observer Miniflare D1 integration", () => {
     const count = await env.DB.prepare("SELECT count, path, status FROM crawler_counts WHERE path = ?").bind("/integration-path").first<{ count: number; path: string; status: number }>();
     expect(count).toEqual({ count: 2, path: "/integration-path", status: 201 });
 
+    const bootstrapFetcher = vi.fn().mockImplementation(async () => new Response(JSON.stringify({
+      creationTime: "2026-08-06T00:00:00.000Z", prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
+    })));
+    vi.stubGlobal("fetch", bootstrapFetcher);
     const report = await analytics(await readRequest("24h"), observerEnv(env.DB));
+    vi.unstubAllGlobals();
     expect(report.status).toBe(200);
     const body = await report.json() as { summary: { crawlerRequests: number }; trend: Array<{ bucket: string }> };
     expect(body.summary.crawlerRequests).toBe(2);
     expect(body.trend).toHaveLength(24);
     expect(body.trend[0]?.bucket).toMatch(/Z$/);
+    expect(bootstrapFetcher).toHaveBeenCalledTimes(5);
+    const bootstrappedRules = await env.DB.prepare("SELECT COUNT(*) count FROM crawler_rule_sets WHERE last_success_at IS NOT NULL").first<{ count: number }>();
+    expect(bootstrappedRules?.count).toBe(5);
 
     const oldBucket = bucketStart() - 90 * 24 * 3600 - 3600;
     await env.DB.prepare("INSERT INTO crawler_counts (bucket_start, bot_id, bot_name, category, path, status, count) VALUES (?, ?, ?, ?, ?, ?, ?)")
@@ -392,6 +421,82 @@ describe("crawler observer Miniflare D1 integration", () => {
     }
     const old = await env.DB.prepare("SELECT count FROM crawler_counts WHERE path = ?").bind("/old").first<{ count: number }>();
     expect(old).toBeNull();
+  });
+
+  it("stores declared Open GEO traffic separately without granting signed trust", async () => {
+    const ctx = waitContext();
+    const request = new Request("https://me.itheheda.online/open-geo-check", {
+      headers: { "User-Agent": "OpenGeoConsoleBot/1.0 (+https://github.com/open-geo-console)" },
+    });
+
+    await handleFetch(request, observerEnv(env.DB), ctx, async () => new Response("origin", { status: 200 }));
+    await Promise.all(ctx.tasks);
+
+    const v1 = await env.DB.prepare("SELECT bot_id, category, path, count FROM crawler_counts WHERE path = ?")
+      .bind("/open-geo-check")
+      .first<{ bot_id: string; category: string; path: string; count: number }>();
+    expect(v1).toEqual({ bot_id: "open-geo-declared-test", category: "other_automation", path: "/open-geo-check", count: 1 });
+    const v2 = await env.DB.prepare("SELECT bot_id, provider_id, verification_status, verification_method FROM crawler_identity_counts WHERE path = ?")
+      .bind("/open-geo-check")
+      .first<{ bot_id: string; provider_id: string; verification_status: string; verification_method: string }>();
+    expect(v2).toEqual({
+      bot_id: "open-geo-declared-test",
+      provider_id: "open-geo",
+      verification_status: "declared_unverified",
+      verification_method: "ua_only",
+    });
+
+    const assetCtx = waitContext();
+    await handleFetch(new Request("https://me.itheheda.online/images/hero.png", {
+      headers: { "User-Agent": "OpenGeoConsoleBot/1.0" },
+    }), env, assetCtx, async () => new Response("image", { status: 200 }));
+    await Promise.all(assetCtx.tasks);
+    const asset = await env.DB.prepare("SELECT count FROM crawler_counts WHERE path = ?").bind("/images/hero.png").first<{ count: number }>();
+    expect(asset).toBeNull();
+  });
+
+  it("persists signed Open GEO traffic as trusted in both V1 and V2", async () => {
+    const timestamp = String(Math.floor(Date.now() / 1000));
+    const path = "/signed-open-geo-check";
+    const canonical = `v1\nself-test\n${timestamp}\nGET\nme.itheheda.online\n${path}`;
+    const request = new Request(`https://me.itheheda.online${path}`, {
+      headers: {
+        "User-Agent": "GPTBot",
+        "X-OpenGeo-Timestamp": timestamp,
+        "X-OpenGeo-Signature": await signature(openGeoSecret, canonical),
+      },
+    });
+    const ctx = waitContext();
+
+    await handleFetch(request, observerEnv(env.DB), ctx, async () => new Response("origin", { status: 200 }));
+    await Promise.all(ctx.tasks);
+
+    const v1 = await env.DB.prepare("SELECT bot_id, category FROM crawler_counts WHERE path = ?").bind(path).first<{ bot_id: string; category: string }>();
+    expect(v1).toEqual({ bot_id: "open-geo-self-test", category: "open_geo_self_test" });
+    const v2 = await env.DB.prepare("SELECT bot_id, verification_status, verification_method FROM crawler_identity_counts WHERE path = ?").bind(path).first<{
+      bot_id: string; verification_status: string; verification_method: string;
+    }>();
+    expect(v2).toEqual({ bot_id: "open-geo-self-test", verification_status: "verified_official", verification_method: "signed_hmac" });
+  });
+
+  it("persists a post-sync official crawler request as verified", async () => {
+    const now = new Date();
+    await env.DB.prepare("INSERT INTO crawler_rule_sets (source_id, source_url, prefixes_json, content_sha256, source_created_at, last_attempt_at, last_success_at, last_error_code) VALUES (?, ?, ?, ?, ?, ?, ?, NULL)")
+      .bind("openai_searchbot", "https://openai.com/searchbot.json", '["203.0.113.0/24"]', "0".repeat(64), now.toISOString(), now.toISOString(), now.toISOString())
+      .run();
+    const path = "/official-oai-check";
+    const request = new Request(`https://me.itheheda.online${path}`, {
+      headers: { "User-Agent": "OAI-SearchBot/1.0", "CF-Connecting-IP": "203.0.113.8" },
+    });
+    const ctx = waitContext();
+
+    await handleFetch(request, env, ctx, async () => new Response("origin", { status: 200 }));
+    await Promise.all(ctx.tasks);
+
+    const v2 = await env.DB.prepare("SELECT bot_id, verification_status, verification_method FROM crawler_identity_counts WHERE path = ?").bind(path).first<{
+      bot_id: string; verification_status: string; verification_method: string;
+    }>();
+    expect(v2).toEqual({ bot_id: "oai-searchbot", verification_status: "verified_official", verification_method: "official_ip_range" });
   });
 
   it("creates privacy-preserving V2 shadow tables", async () => {
