@@ -44,7 +44,7 @@ function parseRequestedRange(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  if (!verifyCrawlerDashboardRequest(request)) {
+  if (!await verifyCrawlerDashboardRequest(request)) {
     return crawlerAuthChallenge("api");
   }
 
@@ -63,8 +63,8 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export function OPTIONS(request: NextRequest) {
-  if (!verifyCrawlerDashboardRequest(request)) {
+export async function OPTIONS(request: NextRequest) {
+  if (!await verifyCrawlerDashboardRequest(request)) {
     return crawlerAuthChallenge("api");
   }
   return new NextResponse(null, {
@@ -73,8 +73,8 @@ export function OPTIONS(request: NextRequest) {
   });
 }
 
-function methodNotAllowed(request: NextRequest) {
-  if (!verifyCrawlerDashboardRequest(request)) {
+async function methodNotAllowed(request: NextRequest) {
+  if (!await verifyCrawlerDashboardRequest(request)) {
     return crawlerAuthChallenge("api");
   }
   return NextResponse.json(

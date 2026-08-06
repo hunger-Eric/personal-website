@@ -6,14 +6,14 @@ vi.mock("@/lib/crawler-analytics/service", async () => {
   const actual = await vi.importActual<typeof import("@/lib/crawler-analytics/service")>("@/lib/crawler-analytics/service");
   return { ...actual, getCrawlerAnalytics: vi.fn() };
 });
-import { GET } from "@/app/api/admin/crawlers/route";
+import { GET, OPTIONS, POST } from "@/app/api/admin/crawlers/route";
 import { getCrawlerAnalytics } from "@/lib/crawler-analytics/service";
 
 const fixture: CrawlerAnalyticsResponse = {
   meta: { range: "7d", start: "2026-08-01T00:00:00.000Z", end: "2026-08-08T00:00:00.000Z", generatedAt: "2026-08-08T00:00:00.000Z", source: "cloudflare-worker-d1", bucket: "hour", retentionDays: 90, databaseInitializedAt: "2026-08-01T00:00:00.000Z", requestedWindowComplete: true, bestEffort: true, classifier: { aiCrawlerBots: "0.6.3", otherBots: "isbot@5.2.1" } },
   summary: { crawlerRequests: 2, identifiedAiCrawler: 1, openGeoSelfTest: 1, otherAutomation: 0 }, trend: [], bots: [], paths: [], statuses: [],
 };
-const request = (query = "", auth = true) => new NextRequest(`https://me.itheheda.online/api/admin/crawlers${query}`, { headers: auth ? { Authorization: `Basic ${Buffer.from("admin:secret").toString("base64")}` } : {} });
+const request = (query = "", auth = true, method = "GET") => new NextRequest(`https://me.itheheda.online/api/admin/crawlers${query}`, { method, headers: auth ? { Authorization: `Basic ${Buffer.from("admin:secret").toString("base64")}` } : {} });
 
 describe("GET /api/admin/crawlers", () => {
   beforeEach(() => { vi.clearAllMocks(); process.env.CRAWLER_DASHBOARD_PASSWORD = "secret"; });
@@ -34,5 +34,26 @@ describe("GET /api/admin/crawlers", () => {
     vi.mocked(getCrawlerAnalytics).mockRejectedValue(new CrawlerAnalyticsError(code, "secret upstream detail"));
     const result = await GET(request());
     expect(result.status).toBe(status); await expect(result.json()).resolves.toEqual({ error: { code, message: code === "configuration_missing" ? "Crawler observer is not configured" : "Crawler observer is unavailable" } });
+  });
+
+  it("requires Basic Auth for OPTIONS and POST", async () => {
+    for (const handler of [OPTIONS, POST]) {
+      const result = await handler(request("", false));
+      expect(result.status).toBe(401);
+      expect(result.headers.get("www-authenticate")).toContain("Basic");
+      expect(result.headers.get("cache-control")).toBe("private, no-store");
+    }
+  });
+
+  it("returns no-store OPTIONS and method-not-allowed responses after authentication", async () => {
+    const options = await OPTIONS(request("", true, "OPTIONS"));
+    expect(options.status).toBe(204);
+    expect(options.headers.get("allow")).toBe("GET, HEAD, OPTIONS");
+    expect(options.headers.get("cache-control")).toBe("private, no-store");
+
+    const post = await POST(request("", true, "POST"));
+    expect(post.status).toBe(405);
+    expect(post.headers.get("allow")).toBe("GET, HEAD, OPTIONS");
+    expect(post.headers.get("cache-control")).toBe("private, no-store");
   });
 });

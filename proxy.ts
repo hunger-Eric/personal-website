@@ -23,11 +23,11 @@ import {
 /** Paths that should be accessible without auth (login page + its API) */
 const PUBLIC_ADMIN_PATHS = ["/admin/login", "/api/admin/login"];
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (isCrawlerDashboardPath(pathname)) {
-    if (!verifyCrawlerDashboardRequest(request)) {
+    if (!await verifyCrawlerDashboardRequest(request)) {
       return crawlerAuthChallenge(pathname.startsWith("/api/") ? "api" : "page");
     }
     return NextResponse.next();

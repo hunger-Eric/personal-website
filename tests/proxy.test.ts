@@ -7,15 +7,15 @@ function request(path = "/", headers?: HeadersInit) {
 }
 
 describe("proxy — homepage traffic", () => {
-  it("keeps campaign and social visitors on the enterprise homepage", () => {
+  it("keeps campaign and social visitors on the enterprise homepage", async () => {
     for (const path of ["/?utm_source=instagram", "/?fbclid=abc", "/?ttclid=xyz", "/?igshid=abc"]) {
-      expect(proxy(request(path)).headers.get("x-middleware-next")).toBe("1");
+      expect((await proxy(request(path))).headers.get("x-middleware-next")).toBe("1");
     }
-    expect(proxy(request("/", { referer: "https://www.tiktok.com/some/path" })).headers.get("x-middleware-next")).toBe("1");
+    expect((await proxy(request("/", { referer: "https://www.tiktok.com/some/path" }))).headers.get("x-middleware-next")).toBe("1");
   });
 
-  it("passes through normal homepage requests", () => {
-    expect(proxy(request("/")).headers.get("x-middleware-next")).toBe("1");
+  it("passes through normal homepage requests", async () => {
+    expect((await proxy(request("/"))).headers.get("x-middleware-next")).toBe("1");
   });
 });
 
@@ -30,39 +30,39 @@ describe("proxy - production crawler dashboard boundary", () => {
     process.env.CRAWLER_DASHBOARD_PASSWORD = oldPassword;
   });
 
-  it("challenges an unauthenticated crawler page", () => {
-    const response = proxy(request("/admin/crawlers"));
+  it("challenges an unauthenticated crawler page", async () => {
+    const response = await proxy(request("/admin/crawlers"));
     expect(response.status).toBe(401);
     expect(response.headers.get("www-authenticate")).toContain("Basic");
   });
 
   it("returns a Basic Auth JSON challenge for an unauthenticated crawler API request", async () => {
-    const response = proxy(request("/api/admin/crawlers"));
+    const response = await proxy(request("/api/admin/crawlers"));
     expect(response.status).toBe(401);
     expect(response.headers.get("www-authenticate")).toContain("Basic");
     await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
   });
 
-  it("passes an authenticated crawler page without enabling the old admin", () => {
+  it("passes an authenticated crawler page without enabling the old admin", async () => {
     const authorization = `Basic ${Buffer.from("admin:crawler-secret").toString("base64")}`;
     expect(
-      proxy(request("/admin/crawlers", { authorization })).headers.get("x-middleware-next")
+      (await proxy(request("/admin/crawlers", { authorization }))).headers.get("x-middleware-next")
     ).toBe("1");
     delete process.env.ENABLE_ADMIN;
-    expect(proxy(request("/admin/site", { authorization })).status).toBe(404);
+    expect((await proxy(request("/admin/site", { authorization }))).status).toBe(404);
   });
 
-  it("passes an authenticated crawler API request", () => {
+  it("passes an authenticated crawler API request", async () => {
     const authorization = `Basic ${Buffer.from("admin:crawler-secret").toString("base64")}`;
     expect(
-      proxy(request("/api/admin/crawlers", { authorization })).headers.get("x-middleware-next")
+      (await proxy(request("/api/admin/crawlers", { authorization }))).headers.get("x-middleware-next")
     ).toBe("1");
   });
 
-  it("keeps crawler API near-matches under the legacy 404 boundary", () => {
+  it("keeps crawler API near-matches under the legacy 404 boundary", async () => {
     delete process.env.ENABLE_ADMIN;
     const authorization = `Basic ${Buffer.from("admin:crawler-secret").toString("base64")}`;
-    expect(proxy(request("/api/admin/crawlers-old", { authorization })).status).toBe(404);
+    expect((await proxy(request("/api/admin/crawlers-old", { authorization }))).status).toBe(404);
   });
 });
 
@@ -80,8 +80,8 @@ describe("proxy — admin auth still works", () => {
     process.env.ADMIN_TOKEN = OLD_TOKEN;
   });
 
-  it("redirects unauthenticated /admin to login", () => {
-    const res = proxy(request("/admin"));
+  it("redirects unauthenticated /admin to login", async () => {
+    const res = await proxy(request("/admin"));
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toContain("/admin/login");
   });

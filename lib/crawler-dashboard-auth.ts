@@ -1,4 +1,3 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
 const USERNAME = "admin";
@@ -10,30 +9,49 @@ function matchesBoundary(pathname: string, prefix: string): boolean {
   return pathname === prefix || pathname.startsWith(`${prefix}/`);
 }
 
-function digest(value: string): Buffer {
-  return createHash("sha256").update(value, "utf8").digest();
+const encoder = new TextEncoder();
+const decoder = new TextDecoder("utf-8", { fatal: true });
+
+function decodeBasicCredentials(value: string): string {
+  const binary = atob(value);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  return decoder.decode(bytes);
 }
 
-function safeEqual(left: string, right: string): boolean {
-  return timingSafeEqual(digest(left), digest(right));
+async function digest(value: string): Promise<Uint8Array> {
+  return new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(value)));
+}
+
+async function safeEqual(left: string, right: string): Promise<boolean> {
+  const [leftDigest, rightDigest] = await Promise.all([digest(left), digest(right)]);
+  let difference = 0;
+  for (let index = 0; index < leftDigest.length; index += 1) {
+    difference |= leftDigest[index] ^ rightDigest[index];
+  }
+  return difference === 0;
 }
 
 export function isCrawlerDashboardPath(pathname: string): boolean {
   return matchesBoundary(pathname, PAGE_PREFIX) || matchesBoundary(pathname, API_PREFIX);
 }
 
-export function verifyCrawlerDashboardRequest(request: NextRequest): boolean {
+export async function verifyCrawlerDashboardRequest(request: NextRequest): Promise<boolean> {
   const expectedPassword = process.env.CRAWLER_DASHBOARD_PASSWORD;
   const authorization = request.headers.get("authorization");
-  if (!expectedPassword || !authorization?.startsWith("Basic ")) return false;
+  const match = authorization?.match(/^Basic +(.+)$/i);
+  if (!expectedPassword || !match) return false;
 
   try {
-    const decoded = Buffer.from(authorization.slice(6), "base64").toString("utf8");
+    const decoded = decodeBasicCredentials(match[1]);
     const separator = decoded.indexOf(":");
     if (separator < 0) return false;
     const username = decoded.slice(0, separator);
     const password = decoded.slice(separator + 1);
-    return safeEqual(username, USERNAME) && safeEqual(password, expectedPassword);
+    const [usernameMatches, passwordMatches] = await Promise.all([
+      safeEqual(username, USERNAME),
+      safeEqual(password, expectedPassword),
+    ]);
+    return usernameMatches && passwordMatches;
   } catch {
     return false;
   }

@@ -33,29 +33,75 @@ describe("crawler dashboard auth", () => {
     (path) => expect(isCrawlerDashboardPath(path)).toBe(false)
   );
 
-  it("accepts only fixed username admin and the configured password", () => {
+  it("accepts only fixed username admin and the configured password", async () => {
     process.env.CRAWLER_DASHBOARD_PASSWORD = "long-random-secret";
     expect(
-      verifyCrawlerDashboardRequest(
+      await verifyCrawlerDashboardRequest(
         request("/admin/crawlers", basic("admin", "long-random-secret"))
       )
     ).toBe(true);
     expect(
-      verifyCrawlerDashboardRequest(
+      await verifyCrawlerDashboardRequest(
         request("/admin/crawlers", basic("owner", "long-random-secret"))
       )
     ).toBe(false);
     expect(
-      verifyCrawlerDashboardRequest(request("/admin/crawlers", basic("admin", "wrong")))
+      await verifyCrawlerDashboardRequest(request("/admin/crawlers", basic("admin", "wrong")))
     ).toBe(false);
   });
 
-  it("fails closed for missing config and malformed headers", () => {
+  it("accepts UTF-8 passwords and rejects an incorrect UTF-8 password", async () => {
+    process.env.CRAWLER_DASHBOARD_PASSWORD = "\u5bc6\u7801\ud83d\udd10";
+    await expect(
+      verifyCrawlerDashboardRequest(request("/admin/crawlers", basic("admin", "\u5bc6\u7801\ud83d\udd10")))
+    ).resolves.toBe(true);
+    await expect(
+      verifyCrawlerDashboardRequest(request("/admin/crawlers", basic("admin", "\u5bc6\u7801\ud83d\udd11")))
+    ).resolves.toBe(false);
+  });
+
+  it("preserves colons after the username separator as part of the password", async () => {
+    process.env.CRAWLER_DASHBOARD_PASSWORD = "part:two:three";
+    await expect(
+      verifyCrawlerDashboardRequest(request("/admin/crawlers", basic("admin", "part:two:three")))
+    ).resolves.toBe(true);
+  });
+
+  it.each(["basic", "BASIC", "BaSiC"]) (
+    "accepts a case-insensitive Basic scheme: %s",
+    async (scheme) => {
+      process.env.CRAWLER_DASHBOARD_PASSWORD = "configured";
+      await expect(
+        verifyCrawlerDashboardRequest(
+          request("/admin/crawlers", `${scheme}   ${basic("admin", "configured").slice(6)}`)
+        )
+      ).resolves.toBe(true);
+    }
+  );
+
+  it("fails closed for missing config and malformed headers", async () => {
     delete process.env.CRAWLER_DASHBOARD_PASSWORD;
-    expect(verifyCrawlerDashboardRequest(request("/admin/crawlers"))).toBe(false);
-    expect(
+    await expect(verifyCrawlerDashboardRequest(request("/admin/crawlers"))).resolves.toBe(false);
+    await expect(
       verifyCrawlerDashboardRequest(request("/admin/crawlers", "Bearer secret"))
-    ).toBe(false);
+    ).resolves.toBe(false);
+    process.env.CRAWLER_DASHBOARD_PASSWORD = "configured";
+    await expect(
+      verifyCrawlerDashboardRequest(request("/admin/crawlers", "Basic not-a-valid-base64"))
+    ).resolves.toBe(false);
+    await expect(
+      verifyCrawlerDashboardRequest(request("/admin/crawlers", "Basic"))
+    ).resolves.toBe(false);
+    await expect(
+      verifyCrawlerDashboardRequest(request("/admin/crawlers", `Basic\t${basic("admin", "configured").slice(6)}`))
+    ).resolves.toBe(false);
+  });
+
+  it("has no Node-only crypto or Buffer dependency", async () => {
+    const source = await import("node:fs/promises").then((fs) =>
+      fs.readFile(new URL("../../lib/crawler-dashboard-auth.ts", import.meta.url), "utf8")
+    );
+    expect(source).not.toMatch(/node:crypto|\bBuffer\b/);
   });
 
   it("returns a browser challenge without leaking secrets", async () => {
