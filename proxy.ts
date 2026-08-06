@@ -14,12 +14,24 @@ import {
   verifyAdminToken,
   extractAdminToken,
 } from "@/lib/admin-guard";
+import {
+  crawlerAuthChallenge,
+  isCrawlerDashboardPath,
+  verifyCrawlerDashboardRequest,
+} from "@/lib/crawler-dashboard-auth";
 
 /** Paths that should be accessible without auth (login page + its API) */
 const PUBLIC_ADMIN_PATHS = ["/admin/login", "/api/admin/login"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  if (isCrawlerDashboardPath(pathname)) {
+    if (!verifyCrawlerDashboardRequest(request)) {
+      return crawlerAuthChallenge(pathname.startsWith("/api/") ? "api" : "page");
+    }
+    return NextResponse.next();
+  }
 
   if (!pathname.startsWith("/admin") && !pathname.startsWith("/api/admin")) {
     return NextResponse.next();

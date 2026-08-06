@@ -19,6 +19,53 @@ describe("proxy — homepage traffic", () => {
   });
 });
 
+describe("proxy - production crawler dashboard boundary", () => {
+  const oldPassword = process.env.CRAWLER_DASHBOARD_PASSWORD;
+
+  beforeEach(() => {
+    process.env.CRAWLER_DASHBOARD_PASSWORD = "crawler-secret";
+  });
+
+  afterEach(() => {
+    process.env.CRAWLER_DASHBOARD_PASSWORD = oldPassword;
+  });
+
+  it("challenges an unauthenticated crawler page", () => {
+    const response = proxy(request("/admin/crawlers"));
+    expect(response.status).toBe(401);
+    expect(response.headers.get("www-authenticate")).toContain("Basic");
+  });
+
+  it("returns a Basic Auth JSON challenge for an unauthenticated crawler API request", async () => {
+    const response = proxy(request("/api/admin/crawlers"));
+    expect(response.status).toBe(401);
+    expect(response.headers.get("www-authenticate")).toContain("Basic");
+    await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
+  });
+
+  it("passes an authenticated crawler page without enabling the old admin", () => {
+    const authorization = `Basic ${Buffer.from("admin:crawler-secret").toString("base64")}`;
+    expect(
+      proxy(request("/admin/crawlers", { authorization })).headers.get("x-middleware-next")
+    ).toBe("1");
+    delete process.env.ENABLE_ADMIN;
+    expect(proxy(request("/admin/site", { authorization })).status).toBe(404);
+  });
+
+  it("passes an authenticated crawler API request", () => {
+    const authorization = `Basic ${Buffer.from("admin:crawler-secret").toString("base64")}`;
+    expect(
+      proxy(request("/api/admin/crawlers", { authorization })).headers.get("x-middleware-next")
+    ).toBe("1");
+  });
+
+  it("keeps crawler API near-matches under the legacy 404 boundary", () => {
+    delete process.env.ENABLE_ADMIN;
+    const authorization = `Basic ${Buffer.from("admin:crawler-secret").toString("base64")}`;
+    expect(proxy(request("/api/admin/crawlers-old", { authorization })).status).toBe(404);
+  });
+});
+
 describe("proxy — admin auth still works", () => {
   const OLD_ENABLE = process.env.ENABLE_ADMIN;
   const OLD_TOKEN = process.env.ADMIN_TOKEN;
