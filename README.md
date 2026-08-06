@@ -23,7 +23,6 @@ This project is a config-driven personal site with:
 - Tailwind CSS
 - Vitest + Testing Library
 - Vercel (primary deploy target)
-- Optional OpenNext/Cloudflare workflow files kept in repo
 
 ## Local Development
 
@@ -128,9 +127,6 @@ npm run validate-env
 - `npm run test:watch`: run Vitest in watch mode
 - `npm run validate-env`: environment checks
 - `npm run setup`: setup helper script
-- `npm run cf:build`: OpenNext Cloudflare build
-- `npm run cf:preview`: OpenNext Cloudflare local preview
-- `npm run cf:deploy`: OpenNext Cloudflare deploy
 
 ## Testing & CI
 
@@ -152,8 +148,6 @@ Current production workflow is GitHub + Vercel.
 
 - Main branch updates can auto-deploy through Vercel Git integration.
 - Admin panel saves can also trigger deployment through Vercel API.
-
-Cloudflare/OpenNext files are retained for optional alternate deployment path, but not the primary production path.
 
 ## Operations Runbook
 

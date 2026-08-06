@@ -6,7 +6,6 @@ const includeExt = new Set([".ts", ".tsx", ".js", ".jsx", ".css", ".json"]);
 const skipDirs = new Set([
   ".git",
   ".next",
-  ".open-next",
   ".codegraph",
   ".artifacts",
   ".private",

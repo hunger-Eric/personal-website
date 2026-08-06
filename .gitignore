@@ -54,8 +54,7 @@ yarn-error.log*
 # vercel
 .vercel
 
-# cloudflare / opennext
-.open-next/
+# local CLI state
 .wrangler/
 
 # typescript

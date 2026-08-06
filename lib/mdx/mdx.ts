@@ -8,7 +8,6 @@ import { z } from "zod";
 const CONTENT_DIR = path.join(process.cwd(), "content/articles");
 
 // Slug must be kebab-style: starts with alphanum, then alphanum/hyphen, max 80 chars.
-// Mirrors the regex used in app/api/views/[slug]/route.ts for KV key safety.
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{0,80}$/i;
 
 // A "parseable date" — anything new Date() can interpret (ISO, YYYY-MM-DD, etc).
