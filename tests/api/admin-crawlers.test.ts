@@ -122,12 +122,12 @@ describe("GET /api/admin/crawlers", () => {
   it.each([
     ["invalid_range", 400, "Unsupported crawler analytics range"],
     ["configuration_missing", 503, "Crawler analytics is not configured"],
-    ["cloudflare_auth_invalid", 502, "Crawler analytics is unavailable"],
-    ["cloudflare_permission_denied", 502, "Crawler analytics is unavailable"],
+    ["cloudflare_auth_invalid", 424, "Crawler analytics is unavailable"],
+    ["cloudflare_permission_denied", 424, "Crawler analytics is unavailable"],
     ["cloudflare_rate_limited", 503, "Crawler analytics is unavailable"],
-    ["unsupported_dataset", 502, "Crawler analytics is unavailable"],
-    ["result_truncated", 502, "Crawler analytics is unavailable"],
-    ["cloudflare_unavailable", 502, "Crawler analytics is unavailable"],
+    ["unsupported_dataset", 424, "Crawler analytics is unavailable"],
+    ["result_truncated", 424, "Crawler analytics is unavailable"],
+    ["cloudflare_unavailable", 424, "Crawler analytics is unavailable"],
   ] as const)("maps %s to HTTP %s with a stable safe payload", async (code, status, message) => {
     process.env.CRAWLER_DASHBOARD_PASSWORD = "secret";
     vi.mocked(getCrawlerAnalytics).mockRejectedValue(
@@ -139,6 +139,22 @@ describe("GET /api/admin/crawlers", () => {
     expect(response.status).toBe(status);
     expect(response.headers.get("cache-control")).toBe("private, no-store");
     await expect(response.json()).resolves.toEqual({ error: { code, message } });
+  });
+
+  it("preserves the typed JSON error envelope for a 424 dependency failure", async () => {
+    process.env.CRAWLER_DASHBOARD_PASSWORD = "secret";
+    vi.mocked(getCrawlerAnalytics).mockRejectedValue(
+      new CrawlerAnalyticsError("cloudflare_unavailable", "upstream unavailable", 599)
+    );
+
+    const response = await GET(authenticatedRequest("?range=24h"));
+
+    expect(response.status).toBe(424);
+    expect(response.headers.get("content-type")).toContain("application/json");
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
+    await expect(response.json()).resolves.toEqual({
+      error: { code: "cloudflare_unavailable", message: "Crawler analytics is unavailable" },
+    });
   });
 });
 

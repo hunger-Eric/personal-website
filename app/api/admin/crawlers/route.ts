@@ -17,12 +17,12 @@ export const dynamic = "force-dynamic";
 const STATUS_BY_CODE: Record<CrawlerAnalyticsErrorCode, number> = {
   invalid_range: 400,
   configuration_missing: 503,
-  cloudflare_auth_invalid: 502,
-  cloudflare_permission_denied: 502,
+  cloudflare_auth_invalid: 424,
+  cloudflare_permission_denied: 424,
   cloudflare_rate_limited: 503,
-  cloudflare_unavailable: 502,
-  unsupported_dataset: 502,
-  result_truncated: 502,
+  cloudflare_unavailable: 424,
+  unsupported_dataset: 424,
+  result_truncated: 424,
 };
 
 const MESSAGE_BY_CODE: Record<CrawlerAnalyticsErrorCode, string> = {
