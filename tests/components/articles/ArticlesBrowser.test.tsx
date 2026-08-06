@@ -72,7 +72,7 @@ describe("ArticlesBrowser", () => {
     navigationState.push.mockClear();
   });
 
-  it("renders article categories as archive cards and keeps articles hidden until a category is selected", () => {
+  it("keeps article titles, summaries, and links readable before a category is selected", () => {
     render(
       React.createElement(ArticlesBrowser, {
         articles: [
@@ -85,8 +85,22 @@ describe("ArticlesBrowser", () => {
 
     expect(screen.getByRole("button", { name: /Dev/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Life/ })).toBeInTheDocument();
-    expect(screen.queryByTestId("article-card")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Article a1/ })).toHaveAttribute("href", "/articles/a1");
+    expect(screen.getByText("Summary a2")).toBeInTheDocument();
     expect(screen.getByText(`2 ${getSiteCopy("zh").articles.articlesCountSuffix}`)).toBeInTheDocument();
+  });
+
+  it("links standalone visual articles to their full crawlable HTML", () => {
+    render(
+      React.createElement(ArticlesBrowser, {
+        articles: [makeArticle("visual", { category: "Dev", publicPath: "/articles/visual.html" })],
+      })
+    );
+
+    expect(screen.getByRole("link", { name: /Article visual/ })).toHaveAttribute(
+      "href",
+      "/articles/visual.html"
+    );
   });
 
   it("pushes the selected category into the article archive URL", () => {

@@ -1,6 +1,6 @@
 export const publicIdentity = {
   schemaVersion: "1.0",
-  updatedAt: "2026-08-05",
+  updatedAt: "2026-08-06",
   canonicalName: "实解智能",
   slogan: {
     zh: "让 AI 真正在企业里跑起来。",
@@ -26,8 +26,8 @@ export const publicIdentity = {
   contact: {
     page: "/contact",
     promise: {
-      zh: "提交后进行人工筛选；是否安排 30 分钟初步诊断由人工确认。",
-      en: "Submissions are screened by a person; a 30-minute initial diagnosis is arranged only after confirmation.",
+      zh: "提交后由人工筛选；如适合继续沟通，将通过表单中的工作邮箱联系，目前不承诺固定响应时限。",
+      en: "Submissions are screened by a person. If further discussion is appropriate, contact is made through the work email in the form; no fixed response time is promised.",
     },
   },
 } as const;

@@ -1,6 +1,6 @@
 import { publicContent } from "@/config/public-content";
 import { publicIdentity } from "@/config/public-identity";
-import { websiteProjects } from "@/config/website-projects";
+import { publicWebsiteProjects } from "@/config/website-projects";
 import { getArticles } from "@/lib/mdx/mdx";
 import { SITE_URL } from "@/lib/site-url";
 
@@ -47,6 +47,15 @@ function primaryRoutes(): ReadableRoute[] {
     },
     {
       kind: "primary",
+      path: "/services",
+      url: absoluteUrl("/services"),
+      title: "Enterprise AI workflow systems",
+      description: "Service fit, required inputs, human review, delivery outputs, and operating boundaries.",
+      changeFrequency: "monthly",
+      priority: 0.95,
+    },
+    {
+      kind: "primary",
       path: "/projects",
       url: absoluteUrl("/projects"),
       title: "Cases",
@@ -85,7 +94,7 @@ function primaryRoutes(): ReadableRoute[] {
 }
 
 function projectRoutes(): ReadableRoute[] {
-  return websiteProjects.map((project) => {
+  return publicWebsiteProjects.map((project) => {
     const reviewed = publicContent.projects.find((item) => item.id === project.id);
     return {
       kind: "project" as const,
@@ -171,8 +180,8 @@ export async function getReadableRoutes(): Promise<ReadableRoute[]> {
   const articles = await getArticles();
   const articleRoutes: ReadableRoute[] = articles.map((article) => ({
     kind: "article",
-    path: `/articles/${article.slug}`,
-    url: absoluteUrl(`/articles/${article.slug}`),
+    path: article.publicPath,
+    url: absoluteUrl(article.publicPath),
     title: article.title,
     description: article.summary,
     lastModified: dateOrUndefined(article.updated || article.date),

@@ -23,25 +23,24 @@ describe("public AI routes", () => {
     expect(body.service.problemSignals.zh.length).toBeGreaterThan(2);
     expect(body.service.method.zh).toHaveLength(4);
     expect(body.service.boundaries.zh.join(" ")).toContain("不销售固定行业模板");
+    expect(body.contact.channel).toContain("work email");
+    expect(body.contact.responseExpectation.zh).toContain("不承诺固定响应时限");
   });
 
-  it("publishes four explicitly labeled project summaries", async () => {
+  it("publishes only reviewed cases and explicitly labeled simulations", async () => {
     const body = await (await getProjects()).json();
 
     expect(body.projects.map((project: { id: string }) => project.id)).toEqual([
       "open-geo-console",
-      "hermes-notebook",
       "freight-lead-agent",
-      "enterprise-content-growth",
     ]);
     expect(body.projects.map((project: { reviewStatus: string }) => project.reviewStatus)).toEqual([
       "simulation",
-      "materials-pending",
       "reviewed",
-      "materials-pending",
     ]);
     expect(body.projects[0].simulationScope).toMatchObject({ usesSimulatedData: true, performsLiveCrawling: false, performsModelCalls: false, isFormalDiagnosis: false });
     expect(JSON.stringify(body)).not.toContain("repository");
+    expect(JSON.stringify(body)).not.toContain("materials-pending");
   });
 
   it("publishes a complete reviewed project and returns 404 for unknown ids", async () => {

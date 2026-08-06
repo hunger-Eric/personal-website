@@ -6,8 +6,8 @@ import { LangSwitch } from "@/components/LangSwitch";
 import { useLocale } from "@/components/LocaleProvider";
 
 const labels = {
-  zh: { capabilities: "能力", projects: "项目库", articles: "文章", about: "关于", contact: "提交业务问题" },
-  en: { capabilities: "Capabilities", projects: "Projects", articles: "Articles", about: "About", contact: "Submit a business problem" },
+  zh: { services: "服务", projects: "项目库", articles: "文章", about: "关于", contact: "提交业务问题" },
+  en: { services: "Services", projects: "Projects", articles: "Articles", about: "About", contact: "Submit a business problem" },
 } as const;
 
 export function NavbarCentered() {
@@ -18,7 +18,7 @@ export function NavbarCentered() {
       <div className="mx-auto flex h-18 max-w-6xl items-center justify-between px-4">
         <Link href="/" className="flex items-baseline gap-2 text-foreground"><span className="text-lg font-semibold tracking-[-0.03em]">实解智能</span><span className="font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">企业 AI 系统设计与交付</span></Link>
         <nav aria-label="主导航" className="flex items-center gap-1">
-          <Link href="/#capabilities" className="px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">{copy.capabilities}</Link>
+          <Link href="/services" className="px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">{copy.services}</Link>
           <Link href="/projects" className="px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">{copy.projects}</Link>
           <Link href="/articles" className="px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">{copy.articles}</Link>
           <Link href="/about" className="px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground">{copy.about}</Link>

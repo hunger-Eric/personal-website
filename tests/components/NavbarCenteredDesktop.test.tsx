@@ -126,10 +126,10 @@ describe("NavbarCentered", () => {
     render(React.createElement(NavbarCentered));
 
     // Check for each nav item label
-    expect(screen.getByText("Capabilities")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Services" })).toHaveAttribute("href", "/services");
     expect(screen.getByText("Projects")).toBeInTheDocument();
     expect(screen.getByText("About")).toBeInTheDocument();
-    expect(screen.getByText("Articles")).to.toBeInTheDocument();
+    expect(screen.getByText("Articles")).toBeInTheDocument();
   });
 
   it("includes the LangSwitch component", async () => {

@@ -7,13 +7,13 @@ import { ArrowRight, Bot, CheckCircle2, FileSearch, Network, RefreshCw, ShieldCh
 import { useLocale } from "@/components/LocaleProvider";
 import OpenGeoParticipatoryDemo from "@/components/projects/OpenGeoParticipatoryDemo";
 import { getLocalizedPublicContent } from "@/config/public-content";
-import { getWebsiteProjects } from "@/config/website-projects";
+import { getPublicWebsiteProjects } from "@/config/website-projects";
 
 export function EnterpriseHomepage() {
   const { locale } = useLocale();
   const zh = locale === "zh";
   const content = getLocalizedPublicContent(locale);
-  const projects = getWebsiteProjects(locale);
+  const projects = getPublicWebsiteProjects(locale);
   const capabilities = [
     ["多来源信息汇总", "把分散信息形成统一、可追踪的结构化底稿。", Network],
     ["重复判断与录入", "把稳定规则交给系统，把例外与高风险决策保留给人工。", Bot],
@@ -45,21 +45,21 @@ export function EnterpriseHomepage() {
       </section>
 
       <section id="capabilities" className="mx-auto max-w-6xl px-4 py-16 lg:py-20">
-        <div className="flex items-end justify-between gap-4 border-b border-hairline pb-5"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">01 / Capabilities</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "\u56db\u4e2a\u7cfb\u7edf\u65b9\u5411\uff0c\u5bf9\u5e94\u56db\u7c7b\u4f01\u4e1a\u80fd\u529b" : "Four system directions, four enterprise capabilities"}</h2></div><Link href="/about" className="hidden text-sm font-semibold text-accent sm:inline-flex">{zh ? "查看交付边界" : "See delivery boundaries"} →</Link></div>
+        <div className="flex items-end justify-between gap-4 border-b border-hairline pb-5"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">01 / Capabilities</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "\u56db\u4e2a\u7cfb\u7edf\u65b9\u5411\uff0c\u5bf9\u5e94\u56db\u7c7b\u4f01\u4e1a\u80fd\u529b" : "Four system directions, four enterprise capabilities"}</h2></div><Link href="/services" className="hidden text-sm font-semibold text-accent sm:inline-flex">{zh ? "查看完整服务事实" : "See complete service facts"} →</Link></div>
         <div className="grid gap-px border-x border-b border-hairline bg-hairline sm:grid-cols-2">
           {capabilities.map(([title, description, Icon], index) => <article key={title} className="bg-surface-paper p-6 sm:p-8"><div className="flex items-center justify-between"><span className="font-mono text-xs text-accent">0{index + 1}</span><Icon className="h-5 w-5 text-foreground" aria-hidden /></div><h3 className="mt-10 text-xl font-semibold text-foreground">{title}</h3><p className="mt-3 max-w-md text-sm leading-7 text-muted-foreground">{description}</p></article>)}
         </div>
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-16 lg:py-20" aria-labelledby="project-library-title">
-        <div className="flex items-end justify-between gap-4"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">02 / Project library</p><h2 id="project-library-title" className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "项目库" : "Project library"}</h2></div><Link href="/projects" className="text-sm font-semibold text-accent">{zh ? "查看全部项目" : "View all projects"} →</Link></div>
+        <div className="flex items-end justify-between gap-4"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">02 / Project library</p><h2 id="project-library-title" className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "公开案例" : "Public cases"}</h2></div><Link href="/projects" className="text-sm font-semibold text-accent">{zh ? "查看公开证据" : "View public evidence"} →</Link></div>
         <div className="mt-7 grid gap-px border border-hairline bg-hairline sm:grid-cols-2">
           {projects.map((project, index) => <article key={project.id} className="bg-surface-paper-elevated p-6"><div className="flex items-start justify-between gap-4"><span className="font-mono text-xs text-accent">0{index + 1}</span><span className="border border-hairline px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{project.status}</span></div><p className="mt-8 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{project.category}</p><h3 className="mt-2 text-2xl font-semibold text-foreground">{project.name}</h3><p className="mt-3 text-sm leading-7 text-muted-foreground">{project.summary}</p><Link href={project.liveUrl ?? (project.interactive ? "#open-geo-experience" : `/projects/${project.id}`)} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:text-accent">{project.liveUrl ? (zh ? "立即体验" : "Try the live site") : project.interactive ? (zh ? "参与体验" : "Try the prototype") : (zh ? "查看项目" : "View project")}<ArrowRight className="h-4 w-4" aria-hidden /></Link></article>)}
         </div>
       </section>
 
       <section id="open-geo-experience" className="bg-surface-graphite px-4 py-16 text-surface-graphite-foreground lg:py-24">
-        <div className="mx-auto max-w-6xl"><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent-light">03 / Participatory prototype</p><h2 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight tracking-[-0.04em]">{zh ? "不要看播放器。亲手推进一次模拟交付。" : "Skip the player. Move a simulated delivery forward yourself."}</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-surface-graphite-foreground/65">{zh ? "本轮只实现 Open GEO Console；确认这套交互后，再扩展其他三个项目。" : "This round covers Open GEO Console only; the other three projects follow after this interaction is approved."}</p><div className="mt-8 border border-inverse"><OpenGeoParticipatoryDemo /></div></div>
+        <div className="mx-auto max-w-6xl"><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent-light">03 / Participatory prototype</p><h2 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight tracking-[-0.04em]">{zh ? "不要看播放器。亲手推进一次模拟交付。" : "Skip the player. Move a simulated delivery forward yourself."}</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-surface-graphite-foreground/65">{zh ? "该体验使用虚构样本与模拟数据，不执行真实抓取、模型调用或正式诊断。" : "This experience uses fictional samples and simulated data; it does not run live crawling, model calls, or a formal diagnosis."}</p><div className="mt-8 border border-inverse"><OpenGeoParticipatoryDemo /></div></div>
       </section>
 
       <section id="method" className="mx-auto max-w-6xl px-4 py-16 lg:py-20"><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">04 / Delivery method</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "我们如何把 AI 做成可运行的系统" : "How AI becomes a working system"}</h2><div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">{content.service.method.map((step, index) => <article key={step.id} className="border-t border-hairline pt-5"><span className="font-mono text-xs text-accent">0{index + 1}</span><h3 className="mt-5 text-lg font-semibold text-foreground">{step.title}</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">{step.description}</p></article>)}</div></section>

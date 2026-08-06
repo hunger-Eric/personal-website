@@ -11,6 +11,7 @@ describe("SEO routes", () => {
 
     expect(entries.length).toBeGreaterThan(0);
     expect(urls).toContain(`${SITE_URL}/projects`);
+    expect(urls).toContain(`${SITE_URL}/services`);
     expect(urls).toContain(`${SITE_URL}/contact`);
     expect(urls).toContain(`${SITE_URL}/about`);
     expect(urls).toContain(`${SITE_URL}/llms.txt`);
@@ -20,6 +21,9 @@ describe("SEO routes", () => {
     expect(urls).toContain(`${SITE_URL}/ai/services.json`);
     expect(urls).toContain(`${SITE_URL}/ai/projects.json`);
     expect(urls.some((url) => url.startsWith(`${SITE_URL}/projects/`))).toBe(true);
+    expect(urls).not.toContain(`${SITE_URL}/projects/hermes-notebook`);
+    expect(urls).not.toContain(`${SITE_URL}/projects/enterprise-content-growth`);
+    expect(urls.some((url) => url.endsWith("/articles/hello-agents-ch01.html"))).toBe(true);
     expect(urls).not.toContain(`${SITE_URL}/content`);
     expect(urls).not.toContain(`${SITE_URL}/photography`);
     expect(urls).not.toContain(`${SITE_URL}/links`);

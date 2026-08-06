@@ -84,6 +84,14 @@ export const websiteProjects: WebsiteProject[] = [
   },
 ];
 
+export function isPublicWebsiteProject(project: WebsiteProject) {
+  return project.statusKind !== "materials-pending";
+}
+
+export const publicWebsiteProjects = websiteProjects.filter(
+  isPublicWebsiteProject
+);
+
 export function getWebsiteProjects(locale: Locale) {
   return websiteProjects.map((project) => ({
     id: project.id,
@@ -98,6 +106,24 @@ export function getWebsiteProjects(locale: Locale) {
   }));
 }
 
+export function getPublicWebsiteProjects(locale: Locale) {
+  return publicWebsiteProjects.map((project) => ({
+    id: project.id,
+    name: project.name[locale],
+    category: project.category[locale],
+    status: project.status[locale],
+    statusKind: project.statusKind,
+    summary: project.summary[locale],
+    facts: project.facts[locale],
+    interactive: project.interactive,
+    liveUrl: project.liveUrl,
+  }));
+}
+
 export function getWebsiteProject(id: string, locale: Locale = "zh") {
   return getWebsiteProjects(locale).find((project) => project.id === id);
+}
+
+export function getPublicWebsiteProject(id: string, locale: Locale = "zh") {
+  return getPublicWebsiteProjects(locale).find((project) => project.id === id);
 }

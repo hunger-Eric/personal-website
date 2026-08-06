@@ -1,5 +1,5 @@
 import { publicContent } from "@/config/public-content";
-import { websiteProjects } from "@/config/website-projects";
+import { publicWebsiteProjects } from "@/config/website-projects";
 import { publicJsonResponse } from "@/lib/ai-readable/response";
 export const dynamic = "force-static";
 export const revalidate = 21600;
@@ -7,7 +7,7 @@ export function GET() {
   return publicJsonResponse({
     schemaVersion: publicContent.schemaVersion,
     updatedAt: publicContent.updatedAt,
-    projects: websiteProjects.map((project) => {
+    projects: publicWebsiteProjects.map((project) => {
       const reviewed = publicContent.projects.find((item) => item.id === project.id);
       return {
         id: project.id,

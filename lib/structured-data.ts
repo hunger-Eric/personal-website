@@ -112,6 +112,7 @@ export function generateProjectSchema(project: {
 export function generateArticleSchema(article: {
   title: string;
   slug: string;
+  publicPath?: string;
   summary?: string;
   date: string;
   updated?: string;
@@ -119,7 +120,7 @@ export function generateArticleSchema(article: {
   tags?: string[];
   readingTime?: number;
 }) {
-  const url = `${SITE_URL}/articles/${article.slug}`;
+  const url = `${SITE_URL}${article.publicPath ?? `/articles/${article.slug}`}`;
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",

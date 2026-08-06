@@ -38,7 +38,7 @@ export async function generateMetadata({
     return { title: "Article Not Found" };
   }
 
-  const canonical = `/articles/${article.slug}`;
+  const canonical = article.publicPath;
   const ogImages = article.imageSrc
     ? [{ url: article.imageSrc, alt: article.imageAlt || article.title }]
     : undefined;
@@ -107,6 +107,7 @@ export default async function ArticlePage({
     imageAlt: a.imageAlt,
     readingTime: a.readingTime,
     author: a.author,
+    publicPath: a.publicPath,
   }));
 
   return (
@@ -115,6 +116,7 @@ export default async function ArticlePage({
         data={generateArticleSchema({
           title: article.title,
           slug: article.slug,
+          publicPath: article.publicPath,
           summary: article.summary,
           date: article.date,
           updated: article.updated,

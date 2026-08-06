@@ -22,6 +22,7 @@ export type ArticleListItem = {
   readingTime: number;
   author?: string;
   chapter?: number;
+  publicPath?: string;
 };
 
 type Props = {
@@ -102,7 +103,7 @@ function ChapterRow({
 
   return (
     <ArchiveCard
-      href={`/articles/${article.slug}`}
+      href={article.publicPath ?? `/articles/${article.slug}`}
       title={article.title}
       description={article.summary}
       meta={
@@ -263,16 +264,34 @@ export function ArticlesBrowser({ articles }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+    <div className="space-y-10">
       {groups.map(({ category, items }) => (
-        <CategoryCard
-          key={category}
-          category={category}
-          count={items.length}
-          countSuffix={copy.articles.articlesCountSuffix}
-          coverImage={getCoverImage(items)}
-          onClick={() => selectCategory(category)}
-        />
+        <section key={category} aria-labelledby={`category-${category}`}>
+          <div className="mb-5 grid gap-4 sm:grid-cols-[minmax(0,280px)_1fr] sm:items-end">
+            <CategoryCard
+              category={category}
+              count={items.length}
+              countSuffix={copy.articles.articlesCountSuffix}
+              coverImage={getCoverImage(items)}
+              onClick={() => selectCategory(category)}
+            />
+            <div className="border-t border-hairline pt-4">
+              <h2 id={`category-${category}`} className="text-xl font-semibold text-foreground">
+                {category}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                {locale === "zh"
+                  ? "以下文章标题、摘要和正文入口无需展开分类即可读取。"
+                  : "Titles, summaries, and full-article links remain readable without opening the category."}
+              </p>
+            </div>
+          </div>
+          <Surface tone="paper" className="px-5">
+            {items.map((article) => (
+              <ChapterRow key={article.slug} article={article} copy={copy} />
+            ))}
+          </Surface>
+        </section>
       ))}
     </div>
   );

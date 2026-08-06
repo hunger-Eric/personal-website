@@ -27,7 +27,7 @@ export function ArticleCard({ article }: Props) {
       : "";
 
   return (
-    <Link href={`/articles/${article.slug}`} className="group block h-full">
+    <Link href={article.publicPath ?? `/articles/${article.slug}`} className="group block h-full">
       <Surface
         tone="paper"
         className="flex h-full flex-col overflow-hidden shadow-card transition-all duration-200 hover:-translate-y-1 hover:shadow-overlay"

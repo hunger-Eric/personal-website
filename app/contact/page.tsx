@@ -1,6 +1,52 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Check,Clock3,ShieldCheck } from "lucide-react";
+import { Check, Clock3, Mail, ShieldCheck } from "lucide-react";
+
 import { WorkflowInquiryForm } from "@/components/contact/WorkflowInquiryForm";
-export const metadata:Metadata={title:"提交业务问题",description:"描述真实流程，或携带 Open GEO Console 模拟体验上下文联系实解智能。",alternates:{canonical:"/contact"}};
-export default function ContactPage(){return <div className="min-h-screen bg-surface-paper pb-20 pt-28 text-surface-paper-foreground sm:pt-32"><div className="mx-auto grid max-w-6xl gap-12 px-4 lg:grid-cols-[0.82fr_1.18fr] lg:gap-20"><section><p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-accent">Workflow diagnosis</p><h1 className="mt-4 text-4xl font-semibold leading-tight tracking-[-0.045em] text-foreground sm:text-5xl">从真实业务问题开始</h1><p className="mt-6 text-base leading-8 text-muted-foreground">这里不是自动报价器。你提供的信息会先由人工查看，再判断 AI 应该介入哪里。</p><div className="mt-9 space-y-5 border-t border-hairline pt-7">{[[Clock3,"约 5 分钟填写","写清流程比选择行业模板更重要。"],[ShieldCheck,"人工筛选","不会因为提交表单就自动进入销售流程。"],[Check,"适合再约 30 分钟","初步诊断用于确认边界、样本和下一步。"]].map(([Icon,title,description])=>{const ItemIcon=Icon as typeof Clock3;return <div key={String(title)} className="flex gap-4"><ItemIcon className="mt-1 h-5 w-5 flex-none text-accent" aria-hidden/><div><h2 className="font-semibold text-foreground">{String(title)}</h2><p className="mt-1 text-sm leading-6 text-muted-foreground">{String(description)}</p></div></div>})}</div></section><section className="border border-hairline bg-surface-paper-elevated p-5 shadow-card sm:p-8"><Suspense fallback={<p className="text-sm text-muted-foreground">正在准备表单…</p>}><WorkflowInquiryForm/></Suspense></section></div></div>}
+
+export const metadata: Metadata = {
+  title: "提交业务问题",
+  description: "描述真实流程，或携带 Open GEO Console 模拟体验上下文联系实解智能。",
+  alternates: { canonical: "/contact" },
+};
+
+const expectations = [
+  [Clock3, "约 5 分钟填写", "写清流程比选择行业模板更重要。"],
+  [ShieldCheck, "人工筛选", "不会因为提交表单就自动进入销售流程。"],
+  [Mail, "通过工作邮箱联系", "如适合继续沟通，将回复你在表单中填写的工作邮箱；目前不承诺固定响应时限。"],
+  [Check, "适合再约 30 分钟", "初步诊断用于确认边界、样本和下一步。"],
+] as const;
+
+export default function ContactPage() {
+  return (
+    <div className="min-h-screen bg-surface-paper pb-20 pt-28 text-surface-paper-foreground sm:pt-32">
+      <div className="mx-auto grid max-w-6xl gap-12 px-4 lg:grid-cols-[0.82fr_1.18fr] lg:gap-20">
+        <section>
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-accent">Workflow diagnosis</p>
+          <h1 className="mt-4 text-4xl font-semibold leading-tight tracking-[-0.045em] text-foreground sm:text-5xl">
+            从真实业务问题开始
+          </h1>
+          <p className="mt-6 text-base leading-8 text-muted-foreground">
+            这里不是自动报价器。你提供的信息会先由人工查看，再判断 AI 应该介入哪里。
+          </p>
+          <div className="mt-9 space-y-5 border-t border-hairline pt-7">
+            {expectations.map(([Icon, title, description]) => (
+              <div key={title} className="flex gap-4">
+                <Icon className="mt-1 h-5 w-5 flex-none text-accent" aria-hidden />
+                <div>
+                  <h2 className="font-semibold text-foreground">{title}</h2>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+        <section className="border border-hairline bg-surface-paper-elevated p-5 shadow-card sm:p-8">
+          <Suspense fallback={<p className="text-sm text-muted-foreground">正在准备表单…</p>}>
+            <WorkflowInquiryForm />
+          </Suspense>
+        </section>
+      </div>
+    </div>
+  );
+}

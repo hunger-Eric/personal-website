@@ -1,4 +1,5 @@
 import { publicContent } from "@/config/public-content";
+import { publicIdentity } from "@/config/public-identity";
 import { serviceMethod } from "@/config/service-method";
 import { publicJsonResponse } from "@/lib/ai-readable/response";
 
@@ -47,7 +48,11 @@ export function GET() {
         suitableWork: localizedLists(serviceMethod.suitableWork),
         boundaries: localizedLists(serviceMethod.boundaries),
       },
-      contact: "/contact",
+      contact: {
+        page: publicIdentity.contact.page,
+        channel: "work email supplied in the inquiry form",
+        responseExpectation: publicIdentity.contact.promise,
+      },
     },
     { contentLocation: "/ai/services.json" }
   );

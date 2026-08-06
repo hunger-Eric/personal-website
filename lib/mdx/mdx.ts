@@ -55,11 +55,25 @@ export interface Article extends ArticleFrontmatter {
   content: string;
   readingTime: number;
   wordCount: number;
+  publicPath: string;
 }
 
 export interface ArticlePreview extends ArticleFrontmatter {
   readingTime: number;
   chapter?: number; // 0 for preface, 1-16 for chapters
+  publicPath: string;
+}
+
+function getPublicArticlePath(slug: string): string {
+  const standalonePath = path.join(
+    process.cwd(),
+    "public",
+    "articles",
+    `${slug}.html`
+  );
+  return fs.existsSync(standalonePath)
+    ? `/articles/${slug}.html`
+    : `/articles/${slug}`;
 }
 
 /**
@@ -187,6 +201,7 @@ export async function getArticles(): Promise<ArticlePreview[]> {
       ...frontmatter,
       readingTime: time,
       chapter,
+      publicPath: getPublicArticlePath(frontmatter.slug),
     });
   }
 
@@ -224,6 +239,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
         content,
         readingTime: time,
         wordCount: words,
+        publicPath: getPublicArticlePath(frontmatter.slug),
       };
     }
   }
