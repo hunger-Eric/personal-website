@@ -31,12 +31,12 @@ describe("crawler analytics service", () => {
     expect(result.agents.map((agent) => agent.userAgent)).not.toContain("Safari");
   });
 
-  it("splits 30 days into five ascending windows no longer than six days", async () => {
+  it("splits 30 days into 30 ascending windows no longer than one day", async () => {
     const queryWindow = vi.fn().mockResolvedValue(emptyWindow);
     await getCrawlerAnalytics("30d", { now, env, queryWindow, bypassCache: true });
-    expect(queryWindow).toHaveBeenCalledTimes(5);
+    expect(queryWindow).toHaveBeenCalledTimes(30);
     const windows = queryWindow.mock.calls.map(([value]) => [Date.parse(value.start), Date.parse(value.end)]);
-    expect(windows.every(([start, end]) => end - start <= 6 * 24 * 60 * 60 * 1000)).toBe(true);
+    expect(windows.every(([start, end]) => end - start <= 24 * 60 * 60 * 1000)).toBe(true);
     expect(windows.slice(1).every(([start], index) => start === windows[index][1])).toBe(true);
   });
 
@@ -78,6 +78,6 @@ describe("crawler analytics service", () => {
     const queryWindow = vi.fn().mockResolvedValue(emptyWindow);
     await getCrawlerAnalytics("7d", { now, env, queryWindow });
     await getCrawlerAnalytics("7d", { now: new Date(now.getTime() + 4 * 60 * 1000), env, queryWindow });
-    expect(queryWindow).toHaveBeenCalledTimes(2);
+    expect(queryWindow).toHaveBeenCalledTimes(7);
   });
 });

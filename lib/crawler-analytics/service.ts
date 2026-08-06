@@ -7,7 +7,7 @@ import {
 } from "./types";
 
 const RANGE_MS = { "24h": 24 * 60 * 60 * 1000, "7d": 7 * 24 * 60 * 60 * 1000, "30d": 30 * 24 * 60 * 60 * 1000 } as const;
-const MAX_WINDOW_MS = 6 * 24 * 60 * 60 * 1000;
+const MAX_WINDOW_MS = 24 * 60 * 60 * 1000;
 const CACHE_MS = 5 * 60 * 1000;
 type ServiceDependencies = { now?: Date; env?: { token: string; zoneId: string; hostname: string }; queryWindow?: typeof queryCloudflareWindow; bypassCache?: boolean };
 type CacheEntry = { expiresAt: number; value: CrawlerAnalyticsResponse };
