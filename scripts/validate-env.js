@@ -97,6 +97,24 @@ const ENV_VARS = [
     description: "Cloudflare Web Analytics site token (privacy-friendly, no cookies)",
     usedBy: ["Analytics"],
   },
+  {
+    name: "CRAWLER_DASHBOARD_PASSWORD",
+    required: false,
+    description: "Private crawler dashboard Basic Auth password",
+    usedBy: ["Crawler Analytics Admin"],
+  },
+  {
+    name: "CLOUDFLARE_API_TOKEN",
+    required: false,
+    description: "Zone-scoped Cloudflare Analytics Read token",
+    usedBy: ["Crawler Analytics Admin"],
+  },
+  {
+    name: "CLOUDFLARE_ZONE_ID",
+    required: false,
+    description: "Cloudflare Zone ID for crawler analytics",
+    usedBy: ["Crawler Analytics Admin"],
+  },
 ];
 
 function validateEnv() {
