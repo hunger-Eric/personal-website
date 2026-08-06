@@ -58,7 +58,14 @@ describe("crawler observer cryptographic classification", () => {
     const signed = await signature(openGeoSecret, canonical);
     await expect(validHmac(openGeoSecret, timestamp, signed, canonical, now)).resolves.toBe(true);
     await expect(validHmac(openGeoSecret, String(Math.floor(now / 1000) - 301), signed, canonical, now)).resolves.toBe(false);
-    await expect(validHmac(openGeoSecret, timestamp, `${signed.slice(0, -1)}A`, canonical, now)).resolves.toBe(false);
+    const byteTampered = `${signed[0] === "A" ? "B" : "A"}${signed.slice(1)}`;
+    await expect(validHmac(openGeoSecret, timestamp, byteTampered, canonical, now)).resolves.toBe(false);
+    const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    const lastIndex = alphabet.indexOf(signed.at(-1) ?? "");
+    expect(lastIndex).toBeGreaterThanOrEqual(0);
+    const nonCanonicalEquivalent = `${signed.slice(0, -1)}${alphabet[lastIndex | 1]}`;
+    expect(nonCanonicalEquivalent).not.toBe(signed);
+    await expect(validHmac(openGeoSecret, timestamp, nonCanonicalEquivalent, canonical, now)).resolves.toBe(false);
     for (const tampered of [
       canonical.replace("GET", "POST"),
       canonical.replace("me.itheheda.online", "attacker.example"),

@@ -76,11 +76,12 @@ export function excluded(pathname: string): boolean {
 }
 
 function base64UrlBytes(value: string): Uint8Array | null {
-  if (!/^[A-Za-z0-9_-]+$/.test(value)) return null;
+  if (!/^[A-Za-z0-9_-]+$/.test(value) || value.length % 4 === 1) return null;
   try {
     const padded = value.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat((4 - (value.length % 4)) % 4);
     const bytes = Uint8Array.from(atob(padded), (char) => char.charCodeAt(0));
-    return bytes.length === 32 ? bytes : null;
+    const canonical = btoa(String.fromCharCode(...bytes)).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
+    return bytes.length === 32 && canonical === value ? bytes : null;
   } catch {
     return null;
   }
