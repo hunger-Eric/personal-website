@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@geosuite/ai-crawler-bots": "0.6.3",
+    "ipaddr.js": "2.5.0",
     "isbot": "5.2.1"
   },
   "devDependencies": {

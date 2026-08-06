@@ -1,6 +1,9 @@
 import { z } from "zod";
 
 const count = z.number().int().nonnegative();
+export const verificationStatusSchema = z.enum(["verified_official", "declared_unverified", "suspected_spoof", "other_automation"]);
+export const verificationMethodSchema = z.enum(["official_ip_range", "signed_hmac", "ua_only", "generic_bot"]);
+export const ruleSourceIdSchema = z.enum(["openai_gptbot", "openai_searchbot", "openai_chatgpt_user", "perplexity_bot", "perplexity_user"]);
 const category = z.enum(["identified_ai_crawler", "open_geo_self_test", "other_automation"]);
 const categorizedCounts = z.object({
   identifiedAiCrawler: count,
@@ -41,6 +44,18 @@ export const crawlerAnalyticsWorkerSchema = z.object({
     total: count,
   }).merge(categorizedCounts).strict()).max(100),
   statuses: z.array(z.object({ status: z.number().int().min(100).max(599), requests: count }).strict()),
+  identityPreview: z.object({
+    mode: z.literal("shadow"),
+    shadowStartedAt: z.string().datetime(),
+    summary: z.object({ requests: count, verifiedOfficial: count, declaredUnverified: count, suspectedSpoof: count, otherAutomation: count }).strict(),
+    bots: z.array(z.object({
+      id: z.string().min(1).max(80), name: z.string().min(1).max(120), providerId: z.string().min(1).max(80), providerName: z.string().min(1).max(120),
+      verificationStatus: verificationStatusSchema, verificationMethod: verificationMethodSchema, requests: count,
+    }).strict()).max(100),
+    rules: z.array(z.object({
+      sourceId: ruleSourceIdSchema, lastAttemptAt: z.string().datetime().nullable(), lastSuccessAt: z.string().datetime().nullable(), state: z.enum(["fresh", "last_known_good", "unavailable"]),
+    }).strict()).length(5),
+  }).strict().optional(),
 }).strict().superRefine((value, context) => {
   if (value.summary.crawlerRequests !== sumCategories(value.summary)) {
     context.addIssue({ code: z.ZodIssueCode.custom, path: ["summary", "crawlerRequests"], message: "crawler request total must equal category totals" });
@@ -50,6 +65,20 @@ export const crawlerAnalyticsWorkerSchema = z.object({
       context.addIssue({ code: z.ZodIssueCode.custom, path: ["paths", index, "total"], message: "path total must equal category totals" });
     }
   });
+  if (value.identityPreview) {
+    const identityTotal = value.identityPreview.summary.verifiedOfficial + value.identityPreview.summary.declaredUnverified + value.identityPreview.summary.suspectedSpoof + value.identityPreview.summary.otherAutomation;
+    if (value.identityPreview.summary.requests !== identityTotal) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["identityPreview", "summary", "requests"], message: "identity preview total must equal verification status totals" });
+    }
+    const ruleIds = new Set(value.identityPreview.rules.map((rule) => rule.sourceId));
+    if (ruleIds.size !== ruleSourceIdSchema.options.length || ruleSourceIdSchema.options.some((sourceId) => !ruleIds.has(sourceId))) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["identityPreview", "rules"], message: "identity preview rules must contain every rule source exactly once" });
+    }
+  }
 });
 
 export type CrawlerAnalyticsWorkerResponse = z.infer<typeof crawlerAnalyticsWorkerSchema>;
+export type CrawlerIdentityPreview = NonNullable<CrawlerAnalyticsWorkerResponse["identityPreview"]>;
+export type CrawlerVerificationStatus = z.infer<typeof verificationStatusSchema>;
+export type CrawlerVerificationMethod = z.infer<typeof verificationMethodSchema>;
+export type CrawlerRuleSourceId = z.infer<typeof ruleSourceIdSchema>;

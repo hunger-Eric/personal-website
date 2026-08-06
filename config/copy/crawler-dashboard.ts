@@ -31,6 +31,37 @@ export const crawlerDashboardCopy = {
   incompleteWindow: "记录器初始化前无历史，当前只展示初始化后数据。",
   bestEffort: "统计为尽力而为的记录器数据。",
   identityDisclaimer: "AI 普通 User-Agent 仅归为声明的 AI 爬虫；只有有效签名的 Open GEO 请求才属于自测，未签名请求由记录器归入其他自动化或忽略。",
+  identityPreview: {
+    title: "V2 身份验证预览",
+    description: "影子模式不会改变当前正式统计；验证结果仅用于 7 天观察。",
+    total: "V2 自动化请求",
+    statuses: {
+      verified_official: "官方可信",
+      declared_unverified: "仅声明身份",
+      suspected_spoof: "疑似伪装",
+      other_automation: "其他自动化",
+    },
+    methods: {
+      official_ip_range: "官方 IP 范围",
+      signed_hmac: "签名验证",
+      ua_only: "User-Agent 声明",
+      generic_bot: "通用自动化识别",
+    },
+    rules: {
+      fresh: "规则今天同步成功",
+      last_known_good: "正在使用最近有效规则",
+      unavailable: "官方规则当前不可用",
+    },
+    ruleUpdatedAt: "规则最近更新时间",
+    neverSynced: "尚无成功同步",
+    ruleSources: {
+      openai_gptbot: "OpenAI GPTBot",
+      openai_searchbot: "OpenAI OAI-SearchBot",
+      openai_chatgpt_user: "OpenAI ChatGPT-User",
+      perplexity_bot: "PerplexityBot",
+      perplexity_user: "Perplexity-User",
+    },
+  },
   errors: {
     configuration_missing: "爬虫检测尚未配置 Worker 读取密钥。",
     observer_auth_invalid: "Crawler Observer 读取签名无效。",

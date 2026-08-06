@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { crawlerDashboardCopy as copy } from "@/config/copy/crawler-dashboard";
-import type { CrawlerAnalyticsErrorCode, CrawlerAnalyticsResponse, CrawlerRange } from "@/lib/crawler-analytics/types";
+import type { CrawlerAnalyticsErrorCode, CrawlerAnalyticsResponse, CrawlerIdentityPreview, CrawlerRange } from "@/lib/crawler-analytics/types";
 import { CrawlerTrendChart } from "./CrawlerTrendChart";
 
 type Props = { range: CrawlerRange; data?: CrawlerAnalyticsResponse; errorCode?: CrawlerAnalyticsErrorCode };
@@ -31,6 +31,26 @@ function DataProvenance({ data }: { data: CrawlerAnalyticsResponse }) {
   </>;
 }
 
+function IdentityPreview({ preview }: { preview: CrawlerIdentityPreview }) {
+  const cards = [
+    [copy.identityPreview.statuses.verified_official, preview.summary.verifiedOfficial],
+    [copy.identityPreview.statuses.declared_unverified, preview.summary.declaredUnverified],
+    [copy.identityPreview.statuses.suspected_spoof, preview.summary.suspectedSpoof],
+    [copy.identityPreview.statuses.other_automation, preview.summary.otherAutomation],
+  ] as const;
+  return <section aria-labelledby="identity-preview-title" className="border-t border-hairline pt-5">
+    <h2 id="identity-preview-title" className="text-lg font-semibold">{copy.identityPreview.title}</h2>
+    <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.identityPreview.description}</p>
+    <div className="mt-4 grid grid-cols-1 gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
+      {cards.map(([label, value]) => <section key={label} className="bg-surface-paper p-5"><p className="text-sm text-muted-foreground">{label}</p><p className="mt-3 text-3xl font-semibold">{value}</p></section>)}
+    </div>
+    <DataTable title={copy.identityPreview.total}><table className={tableClass}><thead className="text-muted-foreground"><tr><th className={cellClass}>名称</th><th className={cellClass}>厂商</th><th className={cellClass}>身份</th><th className={cellClass}>验证方法</th><th className={cellClass}>{copy.requests}</th></tr></thead><tbody>{preview.bots.map((row) => <tr key={`${row.id}:${row.providerId}:${row.verificationStatus}:${row.verificationMethod}`}><td className={cellClass}>{row.name}</td><td className={cellClass}>{row.providerName}</td><td className={cellClass}>{copy.identityPreview.statuses[row.verificationStatus]}</td><td className={cellClass}>{copy.identityPreview.methods[row.verificationMethod]}</td><td className={cellClass}>{row.requests}</td></tr>)}</tbody></table></DataTable>
+    <div className="mt-4 space-y-1 text-sm text-muted-foreground">
+      {preview.rules.map((rule) => <p key={rule.sourceId}>{copy.identityPreview.ruleSources[rule.sourceId]}：{copy.identityPreview.rules[rule.state]}；{copy.identityPreview.ruleUpdatedAt}：{rule.lastSuccessAt ?? copy.identityPreview.neverSynced}</p>)}
+    </div>
+  </section>;
+}
+
 export function CrawlerDashboard({ range, data, errorCode }: Props) {
   return <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-12"><div className="mx-auto max-w-6xl">
     <Link href="/" className="text-sm font-semibold text-muted-foreground hover:text-foreground">← {copy.backToSite}</Link>
@@ -46,9 +66,10 @@ function DashboardData({ data }: { data: CrawlerAnalyticsResponse }) {
     [copy.categories.open_geo_self_test, data.summary.openGeoSelfTest, data.summary.crawlerRequests],
     [copy.categories.other_automation, data.summary.otherAutomation, data.summary.crawlerRequests],
   ] as const;
-  if (data.summary.crawlerRequests === 0) return <section className="mt-8 border border-hairline bg-surface-paper-elevated p-6"><h2 className="text-lg font-semibold">暂无已识别自动化流量</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.empty}</p><div className="mt-4 space-y-1 text-sm text-muted-foreground"><DataProvenance data={data} /></div></section>;
+  if (data.summary.crawlerRequests === 0) return <div className="mt-8 space-y-10"><section className="border border-hairline bg-surface-paper-elevated p-6"><h2 className="text-lg font-semibold">暂无已识别自动化流量</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.empty}</p><div className="mt-4 space-y-1 text-sm text-muted-foreground"><DataProvenance data={data} /></div></section>{data.identityPreview ? <IdentityPreview preview={data.identityPreview} /> : null}</div>;
   return <div className="mt-8 space-y-10">
     <div className="grid grid-cols-1 gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">{cards.map(([label, value, denominator]) => <section key={label} className="bg-surface-paper p-5"><p className="text-sm text-muted-foreground">{label}</p><p className="mt-3 text-3xl font-semibold">{value}</p>{denominator === undefined ? null : <p className="mt-2 text-sm text-muted-foreground">{copy.share}：{formatShare(value, denominator)}</p>}</section>)}</div>
+    {data.identityPreview ? <IdentityPreview preview={data.identityPreview} /> : null}
     <section className="border-t border-hairline pt-5"><h2 className="text-lg font-semibold">{copy.trend}</h2><div className="mt-4"><CrawlerTrendChart trend={data.trend} /></div></section>
     <DataTable title={copy.bots}><table className={tableClass}><thead className="text-muted-foreground"><tr><th className={cellClass}>名称</th><th className={cellClass}>{copy.category}</th><th className={cellClass}>{copy.requests}</th></tr></thead><tbody>{data.bots.map((row) => <tr key={row.id}><td className={cellClass}>{row.name}</td><td className={cellClass}>{copy.categories[row.category]}</td><td className={cellClass}>{row.requests}</td></tr>)}</tbody></table></DataTable>
     <DataTable title={copy.paths}><table className={tableClass}><thead className="text-muted-foreground"><tr><th className={cellClass}>{copy.path}</th><th className={cellClass}>{copy.categories.identified_ai_crawler}</th><th className={cellClass}>{copy.categories.open_geo_self_test}</th><th className={cellClass}>{copy.categories.other_automation}</th><th className={cellClass}>{copy.total}</th></tr></thead><tbody>{data.paths.map((row) => <tr key={row.path}><td className={cellClass}>{row.path}</td><td className={cellClass}>{row.identifiedAiCrawler}</td><td className={cellClass}>{row.openGeoSelfTest}</td><td className={cellClass}>{row.otherAutomation}</td><td className={cellClass}>{row.total}</td></tr>)}</tbody></table></DataTable>

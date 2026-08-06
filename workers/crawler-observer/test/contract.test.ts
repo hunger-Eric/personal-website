@@ -1,8 +1,9 @@
 import { env } from "cloudflare:test";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import worker from "../src/index";
-import { analytics, bucketStart, classify, excluded, handleFetch, observedPath, purge, validHmac } from "../src/core";
+import { analytics, bucketStart, classify, excluded, handleFetch, observedPath, purge, scheduledMaintenance, validHmac } from "../src/core";
 import migrationSql from "../migrations/0001_initial.sql?raw";
+import identityMigrationSql from "../migrations/0002_identity_shadow.sql?raw";
 
 const openGeoSecret = "open-geo-test-secret";
 const readSecret = "observer-read-test-secret";
@@ -16,14 +17,17 @@ async function signature(secret: string, canonical: string): Promise<string> {
   return base64Url(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(canonical)));
 }
 
-function fakeDb(options: { failRun?: boolean; batchRows?: Record<string, unknown>[][] } = {}) {
+function fakeDb(options: { failRun?: boolean; failIdentityRun?: boolean; batchRows?: Record<string, unknown>[][] } = {}) {
   const sql: string[] = [];
   const values: unknown[][] = [];
   const prepared = (query: string) => ({
     bind: (...bound: unknown[]) => {
       sql.push(query);
       values.push(bound);
-      return { run: async () => { if (options.failRun) throw new Error("d1 unavailable"); return { success: true }; } };
+      return { run: async () => {
+        if (options.failRun || (options.failIdentityRun && query.includes("INSERT INTO crawler_identity_counts"))) throw new Error("d1 unavailable");
+        return { success: true };
+      }, first: async () => null };
     },
   });
   return {
@@ -94,12 +98,12 @@ describe("crawler observer cryptographic classification", () => {
 });
 
 describe("crawler observer website isolation", () => {
-  it("calls the origin exactly once, returns its exact response, and strips query and UA from persistence", async () => {
+  it("calls the origin exactly once, returns its exact response, and strips private request data from V1 and V2 persistence", async () => {
     const fake = fakeDb();
     const ctx = waitContext();
     const origin = new Response("origin body", { status: 202, headers: { "x-origin": "yes" } });
     let calls = 0;
-    const request = new Request("https://me.itheheda.online/blog?email=private@example.com", { headers: { "User-Agent": "GPTBot raw-user-agent-value" } });
+    const request = new Request("https://me.itheheda.online/blog?email=private@example.com", { headers: { "User-Agent": "GPTBot raw-user-agent-value", "CF-Connecting-IP": "198.51.100.99" } });
     const returned = await handleFetch(request, observerEnv(fake.db as D1Database), ctx, async () => { calls += 1; return origin; });
     await Promise.all(ctx.tasks);
     expect(calls).toBe(1);
@@ -107,7 +111,11 @@ describe("crawler observer website isolation", () => {
     expect(returned.headers.get("x-origin")).toBe("yes");
     expect(JSON.stringify(fake.values)).not.toContain("private@example.com");
     expect(JSON.stringify(fake.values)).not.toContain("raw-user-agent-value");
+    expect(JSON.stringify(fake.values)).not.toContain("198.51.100.99");
+    expect(JSON.stringify(fake.values)).not.toContain("origin body");
     expect(fake.values.flat()).toContain("/blog");
+    expect(fake.sql[0]).toContain("INSERT INTO crawler_counts");
+    expect(fake.sql.some((query) => query.includes("INSERT INTO crawler_identity_counts"))).toBe(true);
   });
 
   it("never persists excluded paths and isolates D1 failures from the origin response", async () => {
@@ -123,8 +131,36 @@ describe("crawler observer website isolation", () => {
     const failing = fakeDb({ failRun: true });
     const ctx = waitContext();
     const origin = new Response(null, { status: 204 });
-    await expect(handleFetch(new Request("https://me.itheheda.online/", { headers: { "User-Agent": "GPTBot" } }), observerEnv(failing.db as D1Database), ctx, async () => origin)).resolves.toBe(origin);
-    await expect(Promise.all(ctx.tasks)).resolves.toBeDefined();
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      await expect(handleFetch(new Request("https://me.itheheda.online/?secret=query", { headers: { "User-Agent": "GPTBot full-user-agent-suffix", "CF-Connecting-IP": "198.51.100.77" } }), observerEnv(failing.db as D1Database), ctx, async () => origin)).resolves.toBe(origin);
+      await expect(Promise.all(ctx.tasks)).resolves.toBeDefined();
+      const logs = error.mock.calls.flat().join(" ");
+      expect(logs).not.toContain("query");
+      expect(logs).not.toContain("full-user-agent-suffix");
+      expect(logs).not.toContain("198.51.100.77");
+    } finally {
+      error.mockRestore();
+    }
+  });
+
+  it("keeps the origin response and V1 write when the V2 shadow write fails", async () => {
+    const fake = fakeDb({ failIdentityRun: true });
+    const ctx = waitContext();
+    const origin = new Response("origin", { status: 202 });
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      await expect(handleFetch(new Request("https://me.itheheda.online/blog?private=query", {
+        headers: { "User-Agent": "GPTBot raw-user-agent-value", "CF-Connecting-IP": "198.51.100.99" },
+      }), observerEnv(fake.db as D1Database), ctx, async () => origin)).resolves.toBe(origin);
+      await expect(Promise.all(ctx.tasks)).resolves.toBeDefined();
+      expect(fake.sql.some((query) => query.includes("INSERT INTO crawler_counts"))).toBe(true);
+      expect(fake.sql.some((query) => query.includes("INSERT INTO crawler_identity_counts"))).toBe(true);
+      const logs = error.mock.calls.flat().join(" ");
+      ["private=query", "raw-user-agent-value", "198.51.100.99"].forEach((value) => expect(logs).not.toContain(value));
+    } finally {
+      error.mockRestore();
+    }
   });
 
   it("redacts sensitive dynamic segments but preserves useful article slugs before D1 binding", async () => {
@@ -169,6 +205,10 @@ describe("crawler observer private analytics", () => {
     [{ path: "/", openGeoSelfTest: 0, identifiedAiCrawler: 3, otherAutomation: 0, total: 3 }],
     [{ status: 200, requests: 3 }],
     [{ value: "2026-01-01T00:00:00.000Z" }],
+    [{ verification_status: "declared_unverified", requests: 3 }],
+    [{ bot_id: "gptbot", bot_name: "GPTBot", provider_id: "openai", provider_name: "OpenAI", verification_status: "declared_unverified", verification_method: "ua_only", requests: 3 }],
+    [],
+    [{ value: "2026-08-06T00:00:00.000Z" }],
   ];
 
   it.each(["24h", "7d", "30d"] as const)("returns the locked %s API schema", async (range) => {
@@ -180,6 +220,11 @@ describe("crawler observer private analytics", () => {
     expect(body.trend[0]).toHaveProperty("bucket");
     expect(body.trend[0]).not.toHaveProperty("start");
     expect(body.summary).toMatchObject({ crawlerRequests: 3, identifiedAiCrawler: 3, openGeoSelfTest: 0, otherAutomation: 0 });
+    const identityPreview = (body as { identityPreview: { mode: string; summary: Record<string, number>; rules: Array<Record<string, unknown>> } }).identityPreview;
+    expect(identityPreview.mode).toBe("shadow");
+    expect(identityPreview.summary).toMatchObject({ requests: 3, declaredUnverified: 3 });
+    expect(identityPreview.rules).toHaveLength(5);
+    expect(identityPreview.rules[0]).toMatchObject({ sourceId: "openai_gptbot", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" });
   });
 
   it("rejects unauthenticated, malformed, and non-GET reads", async () => {
@@ -204,13 +249,37 @@ describe("crawler observer private analytics", () => {
     const fake = fakeDb();
     await purge({ DB: fake.db as D1Database });
     expect(fake.sql[0]).toContain("DELETE FROM crawler_counts");
-    expect(fake.values[0]?.[0]).toBe(bucketStart() - 90 * 24 * 3600);
+    expect(fake.sql[1]).toContain("DELETE FROM crawler_identity_counts");
+    expect(fake.values.map((value) => value[0])).toEqual([bucketStart() - 90 * 24 * 3600, bucketStart() - 90 * 24 * 3600]);
+  });
+
+  it("continues purging and syncing Perplexity when OpenAI rule sources fail", async () => {
+    const fake = fakeDb();
+    const fetcher = vi.fn().mockImplementation(async (url: string) => {
+      if (url.startsWith("https://openai.com/")) throw new Error("source unavailable");
+      return new Response(JSON.stringify({
+        creationTime: "2026-08-06T00:00:00.000000",
+        prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
+      }));
+    });
+    vi.stubGlobal("fetch", fetcher);
+    try {
+      await scheduledMaintenance(observerEnv(fake.db as D1Database));
+    } finally {
+      vi.unstubAllGlobals();
+    }
+    expect(fake.sql.some((query) => query.includes("DELETE FROM crawler_counts"))).toBe(true);
+    expect(fetcher).toHaveBeenCalledTimes(5);
+    expect(fetcher.mock.calls.map(([url]) => url)).toEqual(expect.arrayContaining([
+      "https://www.perplexity.com/perplexitybot.json",
+      "https://www.perplexity.com/perplexity-user.json",
+    ]));
   });
 });
 
 describe("crawler observer custom domain isolation", () => {
   it("serves a valid signed analytics read on its custom domain without calling the origin", async () => {
-    const observer = observerEnv(fakeDb({ batchRows: [[], [], [], [], [], [{ value: "2026-01-01T00:00:00.000Z" }]] }).db as D1Database);
+    const observer = observerEnv(fakeDb({ batchRows: [[], [], [], [], [], [{ value: "2026-01-01T00:00:00.000Z" }], [], [], [], [{ value: "2026-08-06T00:00:00.000Z" }]] }).db as D1Database);
     const ctx = waitContext();
     const origin = vi.fn(async () => new Response("must not be called"));
     const response = await handleFetch(await readRequest("24h", "crawler-observer.itheheda.online"), observer, ctx, origin);
@@ -283,7 +352,11 @@ describe("crawler observer Miniflare D1 integration", () => {
     for (const statement of migrationSql.split(/;\s*(?:\r?\n|$)/).map((item) => item.trim()).filter(Boolean)) {
       await env.DB.prepare(statement).run();
     }
+    for (const statement of identityMigrationSql.split(/;\s*(?:\r?\n|$)/).map((item) => item.trim()).filter(Boolean)) {
+      await env.DB.prepare(statement).run();
+    }
     await env.DB.prepare("DELETE FROM crawler_counts").run();
+    await env.DB.prepare("DELETE FROM crawler_identity_counts").run();
   });
 
   it("applies the migration, upserts real D1 counts, aggregates analytics, and purges through the scheduled handler", async () => {
@@ -306,10 +379,33 @@ describe("crawler observer Miniflare D1 integration", () => {
     await env.DB.prepare("INSERT INTO crawler_counts (bucket_start, bot_id, bot_name, category, path, status, count) VALUES (?, ?, ?, ?, ?, ?, ?)")
       .bind(oldBucket, "gptbot", "GPTBot", "identified_ai_crawler", "/old", 200, 1)
       .run();
-    const scheduledCtx = waitContext();
-    worker.scheduled({} as ScheduledEvent, env, scheduledCtx);
-    await Promise.all(scheduledCtx.tasks);
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      creationTime: "2026-08-06T00:00:00.000Z", prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
+    })));
+    vi.stubGlobal("fetch", fetcher);
+    try {
+      const scheduledCtx = waitContext();
+      worker.scheduled({} as ScheduledEvent, env, scheduledCtx);
+      await Promise.all(scheduledCtx.tasks);
+    } finally {
+      vi.unstubAllGlobals();
+    }
     const old = await env.DB.prepare("SELECT count FROM crawler_counts WHERE path = ?").bind("/old").first<{ count: number }>();
     expect(old).toBeNull();
+  });
+
+  it("creates privacy-preserving V2 shadow tables", async () => {
+    for (const statement of identityMigrationSql.split(/;\s*(?:\r?\n|$)/).map((item) => item.trim()).filter(Boolean)) {
+      await env.DB.prepare(statement).run();
+    }
+    const columns = await env.DB.prepare("PRAGMA table_info(crawler_identity_counts)").all<{ name: string }>();
+    const names = columns.results.map((column) => column.name);
+    expect(names).toContain("verification_status");
+    expect(names).toContain("verification_method");
+    expect(names).not.toContain("ip");
+    expect(names).not.toContain("ip_hash");
+    expect(names).not.toContain("user_agent");
+    const meta = await env.DB.prepare("SELECT value FROM crawler_identity_meta WHERE key = 'shadow_started_at'").first<{ value: string }>();
+    expect(meta?.value).toMatch(/Z$/);
   });
 });

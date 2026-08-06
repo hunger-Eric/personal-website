@@ -6,7 +6,13 @@ export type VisibleCrawlerCategory =
   | "open_geo_self_test"
   | "other_automation";
 
-export type { CrawlerAnalyticsWorkerResponse as CrawlerAnalyticsResponse } from "./worker-schema";
+export type {
+  CrawlerAnalyticsWorkerResponse as CrawlerAnalyticsResponse,
+  CrawlerIdentityPreview,
+  CrawlerRuleSourceId,
+  CrawlerVerificationMethod,
+  CrawlerVerificationStatus,
+} from "./worker-schema";
 
 export type CrawlerAnalyticsErrorCode =
   | "configuration_missing"

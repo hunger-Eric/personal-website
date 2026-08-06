@@ -1,5 +1,7 @@
 import bots from "@geosuite/ai-crawler-bots/bots.json";
 import { isBot } from "isbot";
+import { classifyIdentity, type VerificationStatus } from "./identity";
+import { syncOpenAiRuleSources, syncPerplexityRuleSources } from "./official-ip-rules";
 
 const encoder = new TextEncoder();
 const HOUR_SECONDS = 3600;
@@ -8,10 +10,12 @@ const HOST = "me.itheheda.online";
 const CUSTOM_DOMAIN_HOST = "crawler-observer.itheheda.online";
 const READ_PATH = "/_crawler-observer/v1/analytics";
 const READ_HOSTS = new Set([HOST, CUSTOM_DOMAIN_HOST]);
+const RULE_SOURCE_IDS = ["openai_gptbot", "openai_searchbot", "openai_chatgpt_user", "perplexity_bot", "perplexity_user"] as const;
 
 type Category = "open_geo_self_test" | "identified_ai_crawler" | "other_automation";
 type Classification = { id: string; name: string; category: Category };
 type Row = Record<string, unknown>;
+type RuleState = "fresh" | "last_known_good" | "unavailable";
 type ObserverEnv = Pick<Env, "DB" | "OPEN_GEO_SELF_TEST_SECRET" | "OBSERVER_READ_SECRET">;
 type OriginFetch = (request: Request) => Promise<Response>;
 
@@ -133,6 +137,19 @@ async function observe(request: Request, originResponse: Response, env: Observer
   )
     .bind(bucketStart(), item.id, item.name, item.category, observedPath(url.pathname), originResponse.status)
     .run();
+
+  const identity = await classifyIdentity({
+    userAgent: request.headers.get("User-Agent") ?? "",
+    clientIp: request.headers.get("CF-Connecting-IP"),
+    openGeoVerified: item.category === "open_geo_self_test",
+    genericAutomation: item.category === "other_automation",
+  }, env.DB);
+  if (!identity) return;
+  await env.DB.prepare(
+    "INSERT INTO crawler_identity_counts (bucket_start, bot_id, bot_name, provider_id, provider_name, region, purpose, verification_status, verification_method, path, status, count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1) ON CONFLICT(bucket_start, bot_id, provider_id, purpose, verification_status, verification_method, path, status) DO UPDATE SET count = count + 1, bot_name = excluded.bot_name, provider_name = excluded.provider_name",
+  )
+    .bind(bucketStart(), identity.botId, identity.botName, identity.providerId, identity.providerName, identity.region, identity.purpose, identity.verificationStatus, identity.verificationMethod, observedPath(url.pathname), originResponse.status)
+    .run();
 }
 
 function jsonResponse(body: unknown, status = 200, headers: HeadersInit = {}): Response {
@@ -154,6 +171,13 @@ function numberValue(row: Row, key: string): number {
 function stringValue(row: Row, key: string): string {
   const value = row[key];
   return typeof value === "string" ? value : "";
+}
+
+function ruleState(lastSuccessAt: string | null, lastErrorCode: string | null, now: Date): RuleState {
+  if (lastSuccessAt === null) return "unavailable";
+  const age = now.getTime() - Date.parse(lastSuccessAt);
+  if (!Number.isFinite(age) || age < 0 || age > 7 * 24 * 60 * 60 * 1000) return "unavailable";
+  return lastErrorCode !== null || age >= 24 * 60 * 60 * 1000 ? "last_known_good" : "fresh";
 }
 
 function readRange(request: Request): "24h" | "7d" | "30d" | null {
@@ -186,11 +210,17 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
     env.DB.prepare("SELECT path, SUM(CASE WHEN category = 'open_geo_self_test' THEN count ELSE 0 END) openGeoSelfTest, SUM(CASE WHEN category = 'identified_ai_crawler' THEN count ELSE 0 END) identifiedAiCrawler, SUM(CASE WHEN category = 'other_automation' THEN count ELSE 0 END) otherAutomation, SUM(count) total FROM crawler_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY path ORDER BY total DESC LIMIT 100").bind(queryStart, queryEnd),
     env.DB.prepare("SELECT status, SUM(count) requests FROM crawler_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY status ORDER BY status").bind(queryStart, queryEnd),
     env.DB.prepare("SELECT value FROM observer_meta WHERE key = 'database_initialized_at'"),
+    env.DB.prepare("SELECT verification_status, SUM(count) requests FROM crawler_identity_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY verification_status").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT bot_id, bot_name, provider_id, provider_name, verification_status, verification_method, SUM(count) requests FROM crawler_identity_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY bot_id, bot_name, provider_id, provider_name, verification_status, verification_method ORDER BY requests DESC LIMIT 100").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT source_id, last_attempt_at, last_success_at, last_error_code FROM crawler_rule_sets ORDER BY source_id"),
+    env.DB.prepare("SELECT value FROM crawler_identity_meta WHERE key = 'shadow_started_at'"),
   ];
   const results = await env.DB.batch<Row>(statements);
   const rows = (index: number): Row[] => results[index]?.results ?? [];
   const initialized = stringValue(rows(5)[0] ?? {}, "value");
   if (Number.isNaN(Date.parse(initialized))) return jsonResponse({ error: "database_not_initialized" }, 503);
+  const shadowStartedAt = stringValue(rows(9)[0] ?? {}, "value");
+  if (Number.isNaN(Date.parse(shadowStartedAt))) return jsonResponse({ error: "identity_shadow_not_initialized" }, 503);
 
   const categories: Record<Category, number> = { open_geo_self_test: 0, identified_ai_crawler: 0, other_automation: 0 };
   for (const item of rows(0)) {
@@ -207,6 +237,12 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
     const target = byBucket.get(point);
     if (target && category in target) target[category as Category] = numberValue(item, "requests");
   }
+  const identityStatuses: Record<VerificationStatus, number> = { verified_official: 0, declared_unverified: 0, suspected_spoof: 0, other_automation: 0 };
+  for (const item of rows(6)) {
+    const status = stringValue(item, "verification_status");
+    if (status in identityStatuses) identityStatuses[status as VerificationStatus] = numberValue(item, "requests");
+  }
+  const ruleRows = new Map(rows(8).map((item) => [stringValue(item, "source_id"), item]));
 
   return jsonResponse({
     meta: {
@@ -237,6 +273,28 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
     bots: rows(2).map((item) => ({ id: stringValue(item, "bot_id"), name: stringValue(item, "bot_name"), category: stringValue(item, "category"), requests: numberValue(item, "requests") })),
     paths: rows(3).map((item) => ({ path: stringValue(item, "path"), openGeoSelfTest: numberValue(item, "openGeoSelfTest"), identifiedAiCrawler: numberValue(item, "identifiedAiCrawler"), otherAutomation: numberValue(item, "otherAutomation"), total: numberValue(item, "total") })),
     statuses: rows(4).map((item) => ({ status: numberValue(item, "status"), requests: numberValue(item, "requests") })),
+    identityPreview: {
+      mode: "shadow",
+      shadowStartedAt,
+      summary: {
+        requests: Object.values(identityStatuses).reduce((total, count) => total + count, 0),
+        verifiedOfficial: identityStatuses.verified_official,
+        declaredUnverified: identityStatuses.declared_unverified,
+        suspectedSpoof: identityStatuses.suspected_spoof,
+        otherAutomation: identityStatuses.other_automation,
+      },
+      bots: rows(7).map((item) => ({
+        id: stringValue(item, "bot_id"), name: stringValue(item, "bot_name"), providerId: stringValue(item, "provider_id"), providerName: stringValue(item, "provider_name"),
+        verificationStatus: stringValue(item, "verification_status"), verificationMethod: stringValue(item, "verification_method"), requests: numberValue(item, "requests"),
+      })),
+      rules: RULE_SOURCE_IDS.map((sourceId) => {
+        const row = ruleRows.get(sourceId);
+        const lastAttemptAt = row ? stringValue(row, "last_attempt_at") || null : null;
+        const lastSuccessAt = row ? stringValue(row, "last_success_at") || null : null;
+        const lastErrorCode = row ? stringValue(row, "last_error_code") || null : null;
+        return { sourceId, lastAttemptAt, lastSuccessAt, state: ruleState(lastSuccessAt, lastErrorCode, generatedAt) };
+      }),
+    },
   });
 }
 
@@ -255,7 +313,15 @@ export async function handleFetch(request: Request, env: ObserverEnv, ctx: Execu
 
 export async function purge(env: Pick<ObserverEnv, "DB">): Promise<void> {
   const cutoff = bucketStart() - RETENTION_DAYS * 24 * HOUR_SECONDS;
-  await env.DB.prepare("DELETE FROM crawler_counts WHERE bucket_start < ?").bind(cutoff).run();
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM crawler_counts WHERE bucket_start < ?").bind(cutoff),
+    env.DB.prepare("DELETE FROM crawler_identity_counts WHERE bucket_start < ?").bind(cutoff),
+  ]);
+}
+
+export async function scheduledMaintenance(env: ObserverEnv): Promise<void> {
+  const results = await Promise.allSettled([purge(env), syncOpenAiRuleSources(env.DB), syncPerplexityRuleSources(env.DB)]);
+  for (const result of results) if (result.status === "rejected") safeLog(result.reason);
 }
 
 const worker = {
@@ -263,7 +329,7 @@ const worker = {
     return handleFetch(request, env, ctx);
   },
   scheduled(_event, env, ctx): void {
-    ctx.waitUntil(purge(env).catch(safeLog));
+    ctx.waitUntil(scheduledMaintenance(env));
   },
 } satisfies ExportedHandler<Env>;
 

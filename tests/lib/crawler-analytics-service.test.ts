@@ -10,6 +10,10 @@ const response = {
   },
   summary: { crawlerRequests: 2, identifiedAiCrawler: 1, openGeoSelfTest: 1, otherAutomation: 0 },
   trend: [], bots: [], paths: [], statuses: [],
+  identityPreview: { mode: "shadow", shadowStartedAt: "2026-08-06T00:00:00.000Z", summary: { requests: 4, verifiedOfficial: 1, declaredUnverified: 1, suspectedSpoof: 1, otherAutomation: 1 }, bots: [{ id: "gptbot", name: "GPTBot", providerId: "openai", providerName: "OpenAI", verificationStatus: "verified_official", verificationMethod: "official_ip_range", requests: 1 }], rules: [
+    { sourceId: "openai_gptbot", lastAttemptAt: "2026-08-06T00:00:00.000Z", lastSuccessAt: "2026-08-06T00:00:00.000Z", state: "fresh" },
+    { sourceId: "openai_searchbot", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" }, { sourceId: "openai_chatgpt_user", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" }, { sourceId: "perplexity_bot", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" }, { sourceId: "perplexity_user", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" },
+  ] },
 };
 
 function base64Url(bytes: ArrayBuffer): string {
@@ -47,6 +51,13 @@ describe("crawler observer analytics service", () => {
     );
     expect(result).toEqual(response);
     expect(error).not.toHaveBeenCalled();
+  });
+
+  it("accepts a valid V1 worker response without the transitional identity preview", async () => {
+    const v1 = { ...response };
+    delete v1.identityPreview;
+    const result = await getCrawlerAnalytics("7d", { now, env: { readSecret: "secret" }, fetch: vi.fn().mockResolvedValue(new Response(JSON.stringify(v1), { status: 200 })) });
+    expect(result).toEqual(v1);
   });
 
   it.each([
