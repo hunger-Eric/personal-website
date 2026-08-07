@@ -175,6 +175,7 @@ describe("official crawler IP rules", () => {
   });
 
   it("does not follow redirects returned by the fixed Perplexity destination", async () => {
+    const warning = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const fetcher = vi.fn().mockResolvedValue(new Response(null, {
       status: 302,
       headers: { Location: "https://attacker.example/rules.json" },
@@ -189,5 +190,7 @@ describe("official crawler IP rules", () => {
       .bind("perplexity_bot")
       .first<{ last_success_at: string | null; last_error_code: string | null }>();
     expect(row).toEqual({ last_success_at: null, last_error_code: "http_status" });
+    expect(warning).toHaveBeenCalledWith(expect.stringContaining('"event":"crawler_rule_sync_failed"'));
+    expect(warning).toHaveBeenCalledWith(expect.stringContaining('"sourceId":"perplexity_bot"'));
   });
 });

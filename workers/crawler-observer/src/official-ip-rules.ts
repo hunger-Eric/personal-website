@@ -82,6 +82,26 @@ function errorCode(error: unknown): RuleSyncErrorCode {
     ? code as RuleSyncErrorCode : "fetch_failed";
 }
 
+function diagnosticValue(value: unknown, fallback: string): string {
+  if (typeof value !== "string") return fallback;
+  const normalized = value.replace(/[^A-Za-z0-9_.:/ -]/g, "").slice(0, 160);
+  return normalized || fallback;
+}
+
+function logSyncFailure(sourceId: RuleSourceId, error: unknown): void {
+  const cause = error instanceof Error && error.cause && typeof error.cause === "object"
+    ? error.cause as { code?: unknown }
+    : undefined;
+  console.warn(JSON.stringify({
+    event: "crawler_rule_sync_failed",
+    sourceId,
+    errorCode: errorCode(error),
+    errorName: diagnosticValue(error instanceof Error ? error.name : undefined, "UnknownError"),
+    errorMessage: diagnosticValue(error instanceof Error ? error.message : undefined, "unknown"),
+    causeCode: cause?.code === undefined ? undefined : diagnosticValue(cause.code, "UnknownCode"),
+  }));
+}
+
 function requestOptions(): RequestInit {
   return {
     method: "GET",
@@ -116,6 +136,7 @@ export async function syncRuleSource(
       "INSERT INTO crawler_rule_sets (source_id, source_url, prefixes_json, content_sha256, source_created_at, last_attempt_at, last_success_at, last_error_code) VALUES (?, ?, ?, ?, ?, ?, ?, NULL) ON CONFLICT(source_id) DO UPDATE SET source_url = excluded.source_url, prefixes_json = excluded.prefixes_json, content_sha256 = excluded.content_sha256, source_created_at = excluded.source_created_at, last_attempt_at = excluded.last_attempt_at, last_success_at = excluded.last_success_at, last_error_code = NULL"
     ).bind(source.id, source.url, prefixesJson, await sha256(prefixesJson), parsed.creationTime, iso(now), iso(now)).run();
   } catch (error) {
+    logSyncFailure(source.id, error);
     await db.prepare(
       "INSERT INTO crawler_rule_sets (source_id, source_url, prefixes_json, content_sha256, source_created_at, last_attempt_at, last_success_at, last_error_code) VALUES (?, ?, NULL, NULL, NULL, ?, NULL, ?) ON CONFLICT(source_id) DO UPDATE SET source_url = excluded.source_url, last_attempt_at = excluded.last_attempt_at, last_error_code = excluded.last_error_code"
     ).bind(source.id, source.url, iso(now), errorCode(error)).run();
