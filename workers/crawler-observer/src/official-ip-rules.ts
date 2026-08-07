@@ -25,8 +25,8 @@ export const OPENAI_RULE_SOURCES: readonly OfficialRuleSource[] = [
 ];
 
 export const PERPLEXITY_RULE_SOURCES: readonly OfficialRuleSource[] = [
-  { id: "perplexity_bot", url: "https://www.perplexity.com/perplexitybot.json" },
-  { id: "perplexity_user", url: "https://www.perplexity.com/perplexity-user.json" },
+  { id: "perplexity_bot", url: "https://www.perplexity.ai/perplexitybot.json" },
+  { id: "perplexity_user", url: "https://www.perplexity.ai/perplexity-user.json" },
 ];
 
 const ALL_RULE_SOURCES: readonly OfficialRuleSource[] = [
@@ -34,12 +34,7 @@ const ALL_RULE_SOURCES: readonly OfficialRuleSource[] = [
   ...PERPLEXITY_RULE_SOURCES,
 ];
 
-const FIXED_REDIRECTS: Partial<Record<RuleSourceId, string>> = {
-  perplexity_bot: "https://www.perplexity.ai/perplexitybot.json",
-  perplexity_user: "https://www.perplexity.ai/perplexity-user.json",
-};
-
-type RuleSyncState = { source_id: string; last_attempt_at: string | null; last_success_at: string | null };
+type RuleSyncState = { source_id: string; source_url: string | null; last_attempt_at: string | null; last_success_at: string | null };
 
 function prefixFrom(value: unknown): string | null {
   if (!value || typeof value !== "object") return null;
@@ -87,24 +82,17 @@ function errorCode(error: unknown): RuleSyncErrorCode {
     ? code as RuleSyncErrorCode : "fetch_failed";
 }
 
-function requestOptions(redirect: "error" | "follow" | "manual"): RequestInit {
+function requestOptions(): RequestInit {
   return {
     method: "GET",
-    redirect,
+    redirect: "error",
     headers: { Accept: "application/json" },
     signal: AbortSignal.timeout(10_000),
   };
 }
 
 async function fetchOfficialSource(source: OfficialRuleSource, fetcher: typeof fetch): Promise<Response> {
-  let response = await fetcher(source.url, requestOptions("manual"));
-  if ([301, 302, 303, 307, 308].includes(response.status)) {
-    const location = response.headers.get("location");
-    const target = location ? new URL(location, source.url).toString() : null;
-    if (!target || target !== FIXED_REDIRECTS[source.id]) throw new Error("unsafe_redirect");
-    response = await fetcher(target, requestOptions("error"));
-  }
-  return response;
+  return fetcher(source.url, requestOptions());
 }
 
 export async function syncRuleSource(
@@ -156,14 +144,15 @@ export async function ensureOfficialRuleSources(
   now = new Date(),
 ): Promise<void> {
   const rows = await db.prepare(
-    "SELECT source_id, last_attempt_at, last_success_at FROM crawler_rule_sets",
+    "SELECT source_id, source_url, last_attempt_at, last_success_at FROM crawler_rule_sets",
   ).all<RuleSyncState>();
   const bySource = new Map(rows.results.map((row) => [row.source_id, row]));
-  const due = ALL_RULE_SOURCES.filter((source) => ruleSourceDue(bySource.get(source.id), now));
+  const due = ALL_RULE_SOURCES.filter((source) => ruleSourceDue(bySource.get(source.id), source, now));
   await Promise.all(due.map((source) => syncRuleSource(db, source, fetcher, now)));
 }
 
-function ruleSourceDue(row: RuleSyncState | undefined, now: Date): boolean {
+function ruleSourceDue(row: RuleSyncState | undefined, source: OfficialRuleSource, now: Date): boolean {
+  if (row?.source_url && row.source_url !== source.url) return true;
   const nowMs = now.getTime();
   const lastSuccessMs = row?.last_success_at ? Date.parse(row.last_success_at) : Number.NaN;
   const successAge = nowMs - lastSuccessMs;
@@ -182,9 +171,9 @@ export async function ensureOfficialRuleSource(
   const source = ALL_RULE_SOURCES.find((candidate) => candidate.id === sourceId);
   if (!source) return;
   const row = await db.prepare(
-    "SELECT source_id, last_attempt_at, last_success_at FROM crawler_rule_sets WHERE source_id = ?",
+    "SELECT source_id, source_url, last_attempt_at, last_success_at FROM crawler_rule_sets WHERE source_id = ?",
   ).bind(sourceId).first<RuleSyncState>();
-  if (ruleSourceDue(row ?? undefined, now)) await syncRuleSource(db, source, fetcher, now);
+  if (ruleSourceDue(row ?? undefined, source, now)) await syncRuleSource(db, source, fetcher, now);
 }
 
 export async function loadUsableRuleSet(db: D1Database, sourceId: RuleSourceId, now = new Date()): Promise<UsableRuleSet | null> {

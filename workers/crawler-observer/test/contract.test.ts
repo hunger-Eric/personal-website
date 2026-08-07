@@ -291,8 +291,8 @@ describe("crawler observer private analytics", () => {
     expect(fake.sql.some((query) => query.includes("DELETE FROM crawler_counts"))).toBe(true);
     expect(fetcher).toHaveBeenCalledTimes(5);
     expect(fetcher.mock.calls.map(([url]) => url)).toEqual(expect.arrayContaining([
-      "https://www.perplexity.com/perplexitybot.json",
-      "https://www.perplexity.com/perplexity-user.json",
+      "https://www.perplexity.ai/perplexitybot.json",
+      "https://www.perplexity.ai/perplexity-user.json",
     ]));
   });
 });

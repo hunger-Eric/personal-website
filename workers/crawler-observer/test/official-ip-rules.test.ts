@@ -85,8 +85,8 @@ describe("official crawler IP rules", () => {
 
   it("keeps Perplexity sources fixed and separate from OpenAI", async () => {
     expect(PERPLEXITY_RULE_SOURCES).toEqual([
-      { id: "perplexity_bot", url: "https://www.perplexity.com/perplexitybot.json" },
-      { id: "perplexity_user", url: "https://www.perplexity.com/perplexity-user.json" },
+      { id: "perplexity_bot", url: "https://www.perplexity.ai/perplexitybot.json" },
+      { id: "perplexity_user", url: "https://www.perplexity.ai/perplexity-user.json" },
     ]);
     const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({
       creationTime: "2026-08-06T00:00:00.000000",
@@ -94,8 +94,8 @@ describe("official crawler IP rules", () => {
     })));
     await syncPerplexityRuleSources(env.DB, fetcher, new Date("2026-08-06T12:00:00.000Z"));
     expect(fetcher.mock.calls.map(([url]) => url)).toEqual([
-      "https://www.perplexity.com/perplexitybot.json",
-      "https://www.perplexity.com/perplexity-user.json",
+      "https://www.perplexity.ai/perplexitybot.json",
+      "https://www.perplexity.ai/perplexity-user.json",
     ]);
   });
 
@@ -133,13 +133,27 @@ describe("official crawler IP rules", () => {
     expect(rows.results).toEqual([{ source_id: "openai_searchbot" }]);
   });
 
-  it("accepts the fixed Perplexity redirect while retaining the official source URL", async () => {
-    const fetcher = vi.fn()
-      .mockResolvedValueOnce(new Response(null, {
-        status: 302,
-        headers: { Location: "https://www.perplexity.ai/perplexitybot.json" },
-      }))
-      .mockResolvedValueOnce(new Response(JSON.stringify({
+  it("immediately retries when a fixed source URL changes", async () => {
+    const previousAttempt = "2026-08-06T12:00:00.000Z";
+    await env.DB.prepare("INSERT INTO crawler_rule_sets (source_id, source_url, prefixes_json, content_sha256, source_created_at, last_attempt_at, last_success_at, last_error_code) VALUES (?, ?, NULL, NULL, NULL, ?, NULL, ?)")
+      .bind("perplexity_bot", "https://www.perplexity.com/perplexitybot.json", previousAttempt, "fetch_failed")
+      .run();
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      creationTime: "2026-08-06T00:00:00.000000",
+      prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
+    }), { status: 200 }));
+
+    await ensureOfficialRuleSource(env.DB, "perplexity_bot", fetcher, new Date("2026-08-06T12:01:00.000Z"));
+
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    const row = await env.DB.prepare("SELECT source_url, last_success_at FROM crawler_rule_sets WHERE source_id = ?")
+      .bind("perplexity_bot")
+      .first<{ source_url: string; last_success_at: string | null }>();
+    expect(row).toEqual({ source_url: "https://www.perplexity.ai/perplexitybot.json", last_success_at: "2026-08-06T12:01:00.000Z" });
+  });
+
+  it("fetches and records the fixed Perplexity destination", async () => {
+    const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({
         creationTime: "2026-08-06T00:00:00.000000",
         prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
       }), { status: 200 }));
@@ -148,18 +162,19 @@ describe("official crawler IP rules", () => {
 
     await syncRuleSource(env.DB, perplexity!, fetcher, new Date("2026-08-06T12:00:00.000Z"));
 
-    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    expect(fetcher).toHaveBeenCalledWith("https://www.perplexity.ai/perplexitybot.json", expect.objectContaining({ redirect: "error" }));
     const row = await env.DB.prepare("SELECT source_url, last_success_at, last_error_code FROM crawler_rule_sets WHERE source_id = ?")
       .bind("perplexity_bot")
       .first<{ source_url: string; last_success_at: string | null; last_error_code: string | null }>();
     expect(row).toMatchObject({
-      source_url: "https://www.perplexity.com/perplexitybot.json",
+      source_url: "https://www.perplexity.ai/perplexitybot.json",
       last_success_at: "2026-08-06T12:00:00.000Z",
       last_error_code: null,
     });
   });
 
-  it("rejects a redirect outside the fixed Perplexity endpoint", async () => {
+  it("does not follow redirects returned by the fixed Perplexity destination", async () => {
     const fetcher = vi.fn().mockResolvedValue(new Response(null, {
       status: 302,
       headers: { Location: "https://attacker.example/rules.json" },
@@ -173,6 +188,6 @@ describe("official crawler IP rules", () => {
     const row = await env.DB.prepare("SELECT last_success_at, last_error_code FROM crawler_rule_sets WHERE source_id = ?")
       .bind("perplexity_bot")
       .first<{ last_success_at: string | null; last_error_code: string | null }>();
-    expect(row).toEqual({ last_success_at: null, last_error_code: "fetch_failed" });
+    expect(row).toEqual({ last_success_at: null, last_error_code: "http_status" });
   });
 });
