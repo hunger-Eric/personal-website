@@ -237,7 +237,7 @@ The writer must cite with source tokens such as `[[S001]]`, must not emit source
 **Steps:**
 
 - [ ] Write failing request-contract tests for endpoint construction, authorization headers, configured model name, temperatures 0.2 for planning and 0.4 for writing, and capability-driven inclusion or omission of `response_format`.
-- [ ] Write a failing replaceability test using a second in-memory `ModelPort` implementation and prove `core.ts` requires no provider-specific branch.
+- [ ] Write a failing adapter-boundary test using a second in-memory `ModelPort` implementation and prove the provider-neutral model task runner needs no provider-specific branch. Task 5 must separately prove `core.ts` imports only `ModelPort`.
 - [ ] Write failing response tests for non-JSON, unknown keys, invalid source IDs, invented URLs, missing assessments, empty prose, and upstream non-2xx responses.
 - [ ] Write failing assessment tests proving the model can classify only existing source IDs and cannot set the human-confirmation field.
 - [ ] Add blank environment keys to `.env.example` without exposing real values.
@@ -277,6 +277,7 @@ The writer must cite with source tokens such as `[[S001]]`, must not emit source
 - [ ] Write tests proving publication remains disabled until the user has confirmed at least two distinct authoritative source candidates.
 - [ ] Write tests proving `submitPublication` cannot run before `validated`; repeated submission with the same slug and content hash returns the existing receipt/status without another write; and the publisher is never invoked again after a receipt exists.
 - [ ] Implement orchestration only against the five ports. Keep HTTP, React, filesystem paths, and provider-specific payloads outside the core.
+- [ ] Add a structural/behavioral test proving `core.ts` works with an in-memory `ModelPort` and contains no provider/model-specific branch.
 - [ ] Store typed failure fields: stage, code, safe message, occurred-at timestamp, and whether user action is required.
 - [ ] Run:
 
