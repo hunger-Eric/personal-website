@@ -115,6 +115,14 @@ contentHash: "${result.publicationRecord.contentHash}"
     expect(() => formatArticle({ article: { ...proposal, body: `${body}\n\n正文。[[S001]] [[S002]]` }, sources, defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
   });
 
+  it.each(["import/*comment*/\"module\"", "export/*comment*/*from\"module\""])("rejects comment-delimited MDX ESM %s", (body) => {
+    expect(() => formatArticle({ article: { ...proposal, body: `${body}\n\n正文。[[S001]] [[S002]]` }, sources, defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
+  });
+
+  it("keeps ordinary prose words with import/export prefixes", () => {
+    expect(formatArticle({ article: { ...proposal, body: "An important exporter writes prose. [[S001]] [[S002]]" }, sources, defaults: { date: "2026-08-09", author: "fengc" } }).renderedMdx).toContain("important exporter");
+  });
+
   it("escapes source URL parentheses in the generated Markdown destination", () => {
     const result = formatArticle({ article: proposal, sources: [{ ...sources[0], url: "https://example.com/a_(b)" }, sources[1]], defaults: { date: "2026-08-09", author: "fengc" } });
     expect(result.renderedMdx).toContain("https://example.com/a_%28b%29");

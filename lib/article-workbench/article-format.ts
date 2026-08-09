@@ -110,7 +110,7 @@ function validateSafeMdxBody(body: string): void {
     /^\s*#(?!#)\s+/m.test(executableText) ||
     /^\s*#{1,6}\s*(?:sources|参考来源|相关链接)\s*[:：]?\s*$/im.test(executableText) ||
     /https?:\/\/|(^|[^:])\/\/\S|(?:^|[\s(\[])www\./im.test(executableText) ||
-    /^\s*(?:import|export)(?=\s|["'*{])/m.test(executableText) ||
+    /^\s*(?:import|export)\b/m.test(executableText) ||
     /<\/?[A-Za-z][^>]*>/m.test(executableText) ||
     /[{}]/.test(executableText)
   ) {
