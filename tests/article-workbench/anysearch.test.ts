@@ -193,6 +193,7 @@ describe("AnySearch research adapter", () => {
           result: { content: [{ type: "text", text: searchMarkdown }] },
           metadata: {
             apiKey: "must-not-persist",
+            providerMessage: "Bearer must-not-persist-in-a-string",
             nested: {
               authorization: "must-not-persist",
               password: "must-not-persist",
@@ -220,6 +221,8 @@ describe("AnySearch research adapter", () => {
     expect(result.status).toBe("ok");
     expect(fetch.mock.calls[0][1]?.headers).toEqual({ "content-type": "application/json" });
     expect(JSON.stringify(persisted)).not.toContain("must-not-persist");
+    expect(JSON.stringify(persisted)).not.toContain("full extracted content");
+    expect(JSON.stringify(persisted)).not.toContain("## 1. [One]");
   });
 
   it("fails closed for an unavailable transport and malformed provider envelopes", async () => {
@@ -246,6 +249,29 @@ describe("AnySearch research adapter", () => {
       persistRawResponse: () => { throw new Error("disk unavailable"); },
     });
     await expect(persistenceFailure.collect({ queries: [{ id: "Q001", query: "evidence", type: "general" }] })).rejects.toThrow("ANYSEARCH_PERSISTENCE_FAILED");
+  });
+
+  it("preserves the provider error when failure receipt persistence also fails", async () => {
+    const providerFailure = createAnySearchResearchAdapter({
+      fetch: vi.fn().mockResolvedValue(jsonResponse({ error: { message: "provider failed" } }, 502)),
+      persistRawResponse: () => { throw new Error("receipt store failed"); },
+    });
+    await expect(providerFailure.collect({ queries: [{ id: "Q001", query: "evidence", type: "general" }] })).rejects.toThrow("ANYSEARCH_REQUEST_FAILED");
+  });
+
+  it("fails closed when an otherwise successful extraction cannot persist its receipt", async () => {
+    const adapter = createAnySearchResearchAdapter({
+      fetch: async (_url, init) => {
+        const request = JSON.parse(String(init?.body));
+        return request.params.name === "batch_search"
+          ? rpcText(searchMarkdown)
+          : rpcText("full extracted content with enough public evidence detail");
+      },
+      persistRawResponse: (receipt) => {
+        if ((receipt as { toolName?: string }).toolName === "extract") throw new Error("disk unavailable");
+      },
+    });
+    await expect(adapter.collect({ queries: [{ id: "Q001", query: "evidence", type: "general" }] })).rejects.toThrow("ANYSEARCH_PERSISTENCE_FAILED");
   });
 
   it("accepts only the first valid academic sub-domain contract and emits its required parameters", async () => {

@@ -20,6 +20,7 @@ export const ArticleWorkbenchFailureCodeSchema = z.enum([
   "SOURCES_INSUFFICIENT",
   "SOURCES_INVALID",
   "ARTICLE_MODEL_OUTPUT_INVALID",
+  "PROVIDER_RECEIPT_PERSISTENCE_FAILED",
   "PUBLISHER_CONFLICT",
   "VERIFICATION_MISMATCH",
 ]);
@@ -178,7 +179,7 @@ export const ArticleWorkbenchRunSchema = z.object({
 export type ArticleWorkbenchRun = z.infer<typeof ArticleWorkbenchRunSchema>;
 
 export const ArticleWorkbenchArtifactSchema = z.enum([
-  "input", "researchPlan", "sourcePacket", "modelResponse", "validatedArticle", "articleEdits", "publicationRecord", "publicationAttempt", "publicationConflictEvidence", "verificationAttempt", "renderedMdx", "publicationReceipt",
+  "input", "publicationDefaults", "researchPlan", "sourcePacket", "modelResponse", "modelProviderReceipts", "searchProviderReceipts", "validatedArticle", "articleEdits", "publicationRecord", "publicationAttempt", "publicationConflictEvidence", "verificationAttempt", "renderedMdx", "publicationReceipt",
 ]);
 export type ArticleWorkbenchArtifact = z.infer<typeof ArticleWorkbenchArtifactSchema>;
 

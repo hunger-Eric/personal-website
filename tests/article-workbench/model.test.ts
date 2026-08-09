@@ -94,6 +94,7 @@ describe("OpenAI-compatible article model provider", () => {
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(JSON.parse(String(fetch.mock.calls[0][1].body))).toMatchObject({ model: "deepseek-v4-flash", temperature: 0.4 });
     expect(JSON.stringify(persisted)).not.toContain("test-key");
+    expect(JSON.stringify(persisted)).not.toContain("Supported claim");
     expect(persisted[0]).toMatchObject({ provider: "opencode_zen", model: "deepseek-v4-flash", protocol: "openai_compatible", responseId: "chatcmpl-safe" });
   });
 
@@ -149,7 +150,7 @@ describe("OpenAI-compatible article model provider", () => {
     const receipts: unknown[] = [];
     const provider = new OpenAICompatibleModelProvider({ fetch: async () => { throw new Error("network down"); }, persistReceipt: (receipt) => { receipts.push(receipt); }, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
     await expect(provider.proposeResearchPlan(planInput)).rejects.toThrow("ARTICLE_MODEL_REQUEST_FAILED");
-    expect(receipts).toEqual([expect.objectContaining({ outcome: "failure", errorCode: "ARTICLE_MODEL_REQUEST_FAILED", responseHash: undefined, responseText: undefined })]);
+    expect(receipts).toEqual([expect.objectContaining({ outcome: "failure", errorCode: "ARTICLE_MODEL_REQUEST_FAILED", responseHash: undefined })]);
   });
 
   it.each([
@@ -164,8 +165,13 @@ describe("OpenAI-compatible article model provider", () => {
     expect(receipts[0]).toMatchObject({ outcome: "failure", errorCode: code });
   });
 
-  it("fails with a fixed error when failure receipt persistence fails", async () => {
+  it("preserves the provider error when failure receipt persistence also fails", async () => {
     const provider = new OpenAICompatibleModelProvider({ fetch: async () => new Response("not JSON", { status: 502 }), persistReceipt: () => { throw new Error("storage secret"); }, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
+    await expect(provider.proposeResearchPlan(planInput)).rejects.toThrow("ARTICLE_MODEL_REQUEST_FAILED");
+  });
+
+  it("fails closed when a successful model response cannot persist its receipt", async () => {
+    const provider = new OpenAICompatibleModelProvider({ fetch: async () => completion(validPlan), persistReceipt: () => { throw new Error("storage secret"); }, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
     await expect(provider.proposeResearchPlan(planInput)).rejects.toThrow("ARTICLE_MODEL_PERSISTENCE_FAILED");
   });
 

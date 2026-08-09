@@ -39,4 +39,11 @@ describe("article generation API", () => {
     const response = await POST(new NextRequest("http://localhost/api/admin/articles/generate", { method: "POST", headers: { "x-admin-token": "test" }, body: JSON.stringify({ topic: "Evidence", articleRules: ["Use sources"] }) }));
     expect(await response.json()).toEqual({ run: { id: "awr_aaaaaaaaaaaaaaaaaaaaaaaa", status: "validated" } });
   });
+  it.each(["ARTICLE_MODEL_PERSISTENCE_FAILED", "ANYSEARCH_PERSISTENCE_FAILED", "PROVIDER_RECEIPT_PERSISTENCE_FAILED"])("maps provider receipt persistence failure %s to 502", async (code) => {
+    vi.stubEnv("NODE_ENV", "test"); process.env.ENABLE_ADMIN = "true"; process.env.ADMIN_TOKEN = "test";
+    getArticleWorkbenchServer.mockReturnValue({ generate: vi.fn().mockRejectedValue(new Error(code)) });
+    const response = await POST(new NextRequest("http://localhost/api/admin/articles/generate", { method: "POST", headers: { "x-admin-token": "test" }, body: JSON.stringify({ topic: "Evidence", articleRules: ["Use sources"] }) }));
+    expect(response.status).toBe(502);
+    expect(await response.json()).toEqual({ error: "Article provider unavailable" });
+  });
 });

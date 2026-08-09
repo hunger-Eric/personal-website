@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { z } from "zod";
 
 import {
   ExtractedSourceSchema,
@@ -12,10 +13,16 @@ import { canonicalizePublicHttpUrl } from "./safe-url";
 
 const FORMAT_ERROR = "ARTICLE_FORMAT_INVALID";
 
-export interface ArticlePublicationDefaults {
-  date: string;
-  author: string;
-}
+export const ArticlePublicationDefaultsSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  author: z.string().trim().min(1).max(200),
+}).strict().superRefine((defaults, context) => {
+  const parsed = new Date(`${defaults.date}T00:00:00.000Z`);
+  if (Number.isNaN(parsed.valueOf()) || parsed.toISOString().slice(0, 10) !== defaults.date) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["date"], message: "Publication date must be a real UTC calendar date" });
+  }
+});
+export type ArticlePublicationDefaults = z.infer<typeof ArticlePublicationDefaultsSchema>;
 
 export interface FormattedArticle {
   publicationRecord: ArticlePublicationRecord;

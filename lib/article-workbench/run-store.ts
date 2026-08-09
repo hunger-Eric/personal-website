@@ -28,9 +28,12 @@ const secretKeyPattern = /api[-_]?key|authorization|token|secret|cookie/i;
 
 const artifactFiles = {
   input: "input.json",
+  publicationDefaults: "publication-defaults.json",
   researchPlan: "research-plan.json",
   sourcePacket: "source-packet.json",
   modelResponse: "model-response.json",
+  modelProviderReceipts: "model-provider-receipts.json",
+  searchProviderReceipts: "search-provider-receipts.json",
   validatedArticle: "validated-article.json",
   articleEdits: "article-edits.json",
   publicationRecord: "publication-record.json",

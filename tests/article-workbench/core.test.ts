@@ -28,9 +28,11 @@ class MemoryStore implements RunStorePort {
   readonly events: string[] = [];
   failNextPublicationReceiptSave = false;
   failNextPublicationConflictEvidenceSave = false;
+  private runCount = 0;
 
   async createRun(): Promise<ArticleWorkbenchRun> {
-    const run = { id: "awr_aaaaaaaaaaaaaaaaaaaaaaaa", status: "created" as const };
+    const idCharacter = this.runCount++ === 0 ? "a" : "b";
+    const run = { id: `awr_${idCharacter.repeat(24)}`, status: "created" as const };
     this.runs.set(run.id, run);
     this.events.push("store:create");
     return run;
@@ -81,6 +83,9 @@ function createWorkflow(options: {
   recovered?: (record: { slug?: string; contentHash?: string }) => unknown;
   publisher?: PublisherPort;
   verified?: (receipt: { id?: string; slug?: string; contentHash?: string; status?: "submitted" | "published" }) => unknown;
+  publicationDefaultsForRun?: () => { date: string; author: string };
+  modelPlanError?: Error;
+  searchError?: Error;
 } = {}) {
   const profile = options.profile ?? defaultArticleBusinessProfile;
   const packet = options.packet ?? { status: "ok" as const, sources: [...sources] };
@@ -89,6 +94,7 @@ function createWorkflow(options: {
     async proposeResearchPlan() {
       expect(store.events).toContain("store:artifact:input");
       store.events.push("model:plan");
+      if (options.modelPlanError) throw options.modelPlanError;
       return (options.plan ?? { queries: [{ query: "official guidance", type: "general" }, { query: "primary research", type: "academic" }] }) as never;
     },
     async writeSourceBoundArticle() {
@@ -112,6 +118,7 @@ function createWorkflow(options: {
       expect(plan.queries.map((query) => query.id)).toEqual(["Q001", "Q002"]);
       expect(store.events).toContain("store:status:research_planned");
       store.events.push("search:collect");
+      if (options.searchError) throw options.searchError;
       return packet;
     },
   };
@@ -129,7 +136,7 @@ function createWorkflow(options: {
     async verify(receipt) { verifications += 1; return (options.verified?.(receipt) ?? { ...receipt, status: "published" }) as never; },
   };
   const publisher = options.publisher ?? fakePublisher;
-  return { store, publisher, submissions: () => submissions, recoveries: () => recoveries, submittedRecord: () => submittedRecord, verifications: () => verifications, workflow: createArticleWorkflow({ profile: { getProfile: async () => profile }, model, search, store, publisher, publicationDefaults: { date: "2026-08-09", author: "fengc" } }) };
+  return { store, publisher, submissions: () => submissions, recoveries: () => recoveries, submittedRecord: () => submittedRecord, verifications: () => verifications, workflow: createArticleWorkflow({ profile: { getProfile: async () => profile }, generationPortsForRun: () => ({ model, search }), store, publisher, publicationDefaultsForRun: options.publicationDefaultsForRun ?? (() => ({ date: "2026-08-09", author: "fengc" })) }) };
 }
 
 describe("article workbench workflow", () => {
@@ -139,7 +146,7 @@ describe("article workbench workflow", () => {
 
     expect(run.status).toBe("validated");
     expect(store.events).toEqual([
-      "store:create", "store:artifact:input", "model:plan",
+      "store:create", "store:artifact:publicationDefaults", "store:artifact:input", "model:plan",
       "store:artifact:researchPlan", "store:status:research_planned", "search:collect",
       "store:artifact:sourcePacket", "store:status:sources_ready", "model:write",
       "store:artifact:modelResponse", "store:status:article_generated", "store:artifact:validatedArticle", "store:artifact:renderedMdx", "store:artifact:publicationRecord", "store:status:validated",
@@ -153,6 +160,19 @@ describe("article workbench workflow", () => {
     const run = [...store.runs.values()][0];
     expect(run).toMatchObject({ status: "failed", failure: { stage: "profile", code: "BUSINESS_PROFILE_INVALID", userActionRequired: true } });
     expect(store.events).not.toContain("model:plan");
+  });
+
+  it.each([
+    ["model", { modelPlanError: new Error("ARTICLE_MODEL_PERSISTENCE_FAILED") }, "research_plan"],
+    ["AnySearch", { searchError: new Error("ANYSEARCH_PERSISTENCE_FAILED") }, "sources"],
+  ] as const)("keeps %s receipt persistence failures server-side and stops downstream checkpoints", async (_provider, options, stage) => {
+    const { store, workflow } = createWorkflow(options);
+    await expect(workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] })).rejects.toThrow("PROVIDER_RECEIPT_PERSISTENCE_FAILED");
+    const run = [...store.runs.values()][0];
+    expect(run).toMatchObject({ status: "failed", failure: { stage, code: "PROVIDER_RECEIPT_PERSISTENCE_FAILED", userActionRequired: true } });
+    expect(store.events).not.toContain("model:write");
+    expect(store.artifacts.get(`${run.id}:modelResponse`)).toBeUndefined();
+    expect(store.artifacts.get(`${run.id}:sourcePacket`)).toBeUndefined();
   });
 
   it("records insufficient sources at the source stage without calling the writer", async () => {
@@ -476,5 +496,33 @@ describe("article workbench workflow", () => {
   it("rejects unknown runs before invoking any port", async () => {
     const { workflow } = createWorkflow();
     await expect(workflow.submitPublication("awr_bbbbbbbbbbbbbbbbbbbbbbbb")).rejects.toThrow("ARTICLE_RUN_NOT_FOUND");
+  });
+
+  it("captures publication defaults per run across midnight and preserves the original path on later edits", async () => {
+    let date = "2026-08-09";
+    const { store, workflow } = createWorkflow({ publicationDefaultsForRun: () => ({ date, author: "fengc" }) });
+    const first = await workflow.generateArticle({ topic: "First", articleRules: ["Use supplied sources only"] });
+    date = "2026-08-10";
+    const second = await workflow.generateArticle({ topic: "Second", articleRules: ["Use supplied sources only"] });
+
+    expect(store.artifacts.get(`${first.id}:publicationDefaults`)).toEqual({ date: "2026-08-09", author: "fengc" });
+    expect(store.artifacts.get(`${second.id}:publicationDefaults`)).toEqual({ date: "2026-08-10", author: "fengc" });
+    expect(store.artifacts.get(`${first.id}:publicationRecord`)).toMatchObject({ path: "content/articles/2026-08-09-evidence-led-article.mdx" });
+    expect(store.artifacts.get(`${second.id}:publicationRecord`)).toMatchObject({ path: "content/articles/2026-08-10-evidence-led-article.mdx" });
+
+    date = "2026-08-11";
+    await workflow.saveArticleEdits(first.id, { confirmations: [], title: "Edited later" });
+    expect(store.artifacts.get(`${first.id}:publicationRecord`)).toMatchObject({ title: "Edited later", path: "content/articles/2026-08-09-evidence-led-article.mdx" });
+  });
+
+  it("fails closed instead of recomputing missing publication defaults during edits", async () => {
+    const { store, workflow } = createWorkflow();
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    const before = store.artifacts.get(`${run.id}:publicationRecord`);
+    store.artifacts.delete(`${run.id}:publicationDefaults`);
+
+    await expect(workflow.saveArticleEdits(run.id, { confirmations: [], title: "Must not persist" })).rejects.toThrow("ARTICLE_WORKBENCH_READ_FAILED");
+    expect(store.artifacts.get(`${run.id}:publicationRecord`)).toBe(before);
+    expect(store.artifacts.get(`${run.id}:articleEdits`)).toBeUndefined();
   });
 });

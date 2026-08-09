@@ -21,7 +21,7 @@ import {
   type SourceConfirmation,
 } from "./contracts";
 import { z } from "zod";
-import { formatArticle, type ArticlePublicationDefaults } from "./article-format";
+import { ArticlePublicationDefaultsSchema, formatArticle, type ArticlePublicationDefaults } from "./article-format";
 
 const authoritativeCategories = new Set(["official", "standard", "original_research", "peer_reviewed"]);
 
@@ -39,11 +39,10 @@ export type ArticleEditsInput = z.infer<typeof ArticleEditsInputSchema>;
 
 export interface ArticleWorkflowDependencies {
   profile: BusinessProfilePort;
-  model: ModelPort;
-  search: SearchPort;
+  generationPortsForRun(runId: string): { model: ModelPort; search: SearchPort };
   store: RunStorePort;
   publisher: PublisherPort;
-  publicationDefaults: ArticlePublicationDefaults;
+  publicationDefaultsForRun(): ArticlePublicationDefaults;
   now?: () => Date;
 }
 
@@ -55,9 +54,12 @@ class ArticleWorkflow {
   constructor(private readonly dependencies: ArticleWorkflowDependencies) {}
 
   async generateArticle(input: GenerateArticleInput): Promise<ArticleWorkbenchRun> {
-    const { store, profile: profilePort, model, search } = this.dependencies;
+    const { store, profile: profilePort } = this.dependencies;
     const run = await store.createRun();
+    const publicationDefaults = ArticlePublicationDefaultsSchema.parse(this.dependencies.publicationDefaultsForRun());
+    await store.saveArtifact(run.id, "publicationDefaults", publicationDefaults);
     await store.saveArtifact(run.id, "input", input);
+    const { model, search } = this.dependencies.generationPortsForRun(run.id);
     const profile = await this.atStage(run.id, "profile", "BUSINESS_PROFILE_INVALID", true, async () =>
       BusinessProfileSchema.parse(await profilePort.getProfile())
     );
@@ -87,7 +89,7 @@ class ArticleWorkflow {
     await store.saveArtifact(run.id, "modelResponse", article);
     await store.updateRunStatus(run.id, "article_generated");
     const formatted = await this.atStage(run.id, "article", "ARTICLE_MODEL_OUTPUT_INVALID", false, async () =>
-      formatArticle({ article, sources: packet.sources, defaults: this.dependencies.publicationDefaults })
+      formatArticle({ article, sources: packet.sources, defaults: publicationDefaults })
     );
     await store.saveArtifact(run.id, "validatedArticle", article);
     await store.saveArtifact(run.id, "renderedMdx", formatted.renderedMdx);
@@ -111,7 +113,8 @@ class ArticleWorkflow {
     const previous = await this.edits(runId);
     const editable = { title: article.title, slugProposal: article.slugProposal, summary: article.summary, tags: article.tags, body: article.body };
     const merged = { ...article, ...editable, ...pickEditable(previous), ...pickEditable(parsedEdits), sourceAssessments: article.sourceAssessments };
-    const formatted = formatArticle({ article: merged, sources: packet.sources, defaults: this.dependencies.publicationDefaults });
+    const defaults = await this.publicationDefaults(runId);
+    const formatted = formatArticle({ article: merged, sources: packet.sources, defaults });
     const validatedArticle = { ...merged, slugProposal: formatted.publicationRecord.slug };
     await this.dependencies.store.saveArtifact(runId, "articleEdits", { ...pickEditable(previous), ...pickEditable(parsedEdits), confirmations });
     await this.dependencies.store.saveArtifact(runId, "validatedArticle", validatedArticle);
@@ -203,6 +206,14 @@ class ArticleWorkflow {
     return ArticleEditsInputSchema.parse(value);
   }
 
+  private async publicationDefaults(runId: string): Promise<ArticlePublicationDefaults> {
+    const parsed = ArticlePublicationDefaultsSchema.safeParse(
+      await this.dependencies.store.loadArtifact(runId, "publicationDefaults")
+    );
+    if (!parsed.success) throw new Error("ARTICLE_WORKBENCH_READ_FAILED");
+    return parsed.data;
+  }
+
   private async requireRun(runId: string): Promise<ArticleWorkbenchRun> {
     const run = await this.dependencies.store.getRun(runId);
     if (!run) throw new Error("ARTICLE_RUN_NOT_FOUND");
@@ -224,7 +235,10 @@ class ArticleWorkflow {
   private async atStage<T>(runId: string, stage: ArticleRunFailure["stage"], code: ArticleWorkbenchFailureCode, userActionRequired: boolean, operation: () => Promise<T>): Promise<T> {
     try {
       return await operation();
-    } catch {
+    } catch (error) {
+      if (isProviderReceiptPersistenceFailure(error)) {
+        return this.fail(runId, stage, "PROVIDER_RECEIPT_PERSISTENCE_FAILED", true);
+      }
       return this.fail(runId, stage, code, userActionRequired);
     }
   }
@@ -239,6 +253,10 @@ class ArticleWorkflow {
       return this.fail(runId, "publication", "PUBLISHER_CONFLICT", true);
     }
   }
+}
+
+function isProviderReceiptPersistenceFailure(error: unknown): boolean {
+  return error instanceof Error && ["ARTICLE_MODEL_PERSISTENCE_FAILED", "ANYSEARCH_PERSISTENCE_FAILED"].includes(error.message);
 }
 
 function pickEditable(value: ArticleEditsInput): Omit<ArticleEditsInput, "confirmations"> {

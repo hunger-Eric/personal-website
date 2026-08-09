@@ -48,7 +48,12 @@ export interface SafeRun {
   publication?: { id: string; slug: string; contentHash: string; status: "submitted" | "published" };
 }
 
-export interface ArticleWorkbenchServerOptions { rootDir?: string; }
+export interface ArticleWorkbenchServerOptions {
+  rootDir?: string;
+  now?: () => Date;
+  modelFetch?: typeof globalThis.fetch;
+  searchFetch?: typeof globalThis.fetch;
+}
 
 export function createArticleWorkbenchServer(environment: Record<string, string | undefined> = process.env, options: ArticleWorkbenchServerOptions = {}): ArticleWorkbenchServer {
   const store = createArticleWorkbenchRunStore({ rootDir: options.rootDir });
@@ -58,16 +63,34 @@ export function createArticleWorkbenchServer(environment: Record<string, string 
     },
   };
   const fixtures = offlineFixturesFor(environment);
-  const model = fixtures?.model ?? new OpenAICompatibleModelProvider({ config: createArticleModelConfig(environment) });
-  const search = fixtures?.search ?? createAnySearchResearchAdapter({ apiKey: environment.ANYSEARCH_API_KEY });
+  const modelConfig = fixtures ? undefined : createArticleModelConfig(environment);
   const publisher = fixtures?.publisher ?? createPersonalWebsitePublisher({ siteUrl: environment.NEXT_PUBLIC_BASE_URL });
   const workflow = createArticleWorkflow({
     profile: profilePort,
-    model,
-    search,
+    generationPortsForRun(runId) {
+      if (fixtures) return { model: fixtures.model, search: fixtures.search };
+      const appendModelReceipt = createSerializedArtifactAppender(store, runId, "modelProviderReceipts");
+      const appendSearchReceipt = createSerializedArtifactAppender(store, runId, "searchProviderReceipts");
+      return {
+        model: new OpenAICompatibleModelProvider({
+          config: modelConfig!,
+          ...(options.modelFetch ? { fetch: options.modelFetch } : {}),
+          persistReceipt: appendModelReceipt,
+        }),
+        search: createAnySearchResearchAdapter({
+          apiKey: environment.ANYSEARCH_API_KEY,
+          ...(options.searchFetch ? { fetch: options.searchFetch } : {}),
+          persistRawResponse: appendSearchReceipt,
+        }),
+      };
+    },
     store,
     publisher,
-    publicationDefaults: { date: new Date().toISOString().slice(0, 10), author: defaultArticleBusinessProfile.identity.name },
+    publicationDefaultsForRun: () => ({
+      date: (options.now?.() ?? new Date()).toISOString().slice(0, 10),
+      author: defaultArticleBusinessProfile.identity.name,
+    }),
+    now: options.now,
   });
 
   return {
@@ -97,6 +120,27 @@ export function createArticleWorkbenchServer(environment: Record<string, string 
     },
     async submit(runId) { runIdSchema.parse(runId); return PublicationReceiptSchema.parse(await workflow.submitPublication(runId)) as { id: string; slug: string; contentHash: string; status: "submitted" | "published" }; },
     async refresh(runId) { runIdSchema.parse(runId); return PublicationReceiptSchema.parse(await workflow.refreshPublication(runId)) as { id: string; slug: string; contentHash: string; status: "submitted" | "published" }; },
+  };
+}
+
+function createSerializedArtifactAppender(
+  store: ReturnType<typeof createArticleWorkbenchRunStore>,
+  runId: string,
+  artifact: "modelProviderReceipts" | "searchProviderReceipts"
+): (receipt: unknown) => Promise<void> {
+  let tail: Promise<void> = Promise.resolve();
+  return (receipt) => {
+    const operation = tail.then(async () => {
+      const current = await store.loadArtifact(runId, artifact);
+      let receipts: unknown[] = [];
+      if (current !== null) {
+        if (!Array.isArray(current)) throw new Error("ARTICLE_WORKBENCH_READ_FAILED");
+        receipts = current;
+      }
+      await store.saveArtifact(runId, artifact, [...receipts, receipt]);
+    });
+    tail = operation.catch(() => undefined);
+    return operation;
   };
 }
 

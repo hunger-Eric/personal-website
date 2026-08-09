@@ -36,7 +36,6 @@ export interface SafeModelReceipt {
   status?: number;
   responseHash?: string;
   durationMs: number;
-  responseText?: string;
 }
 
 export interface OpenAICompatibleModelProviderOptions {
@@ -114,12 +113,16 @@ export class OpenAICompatibleModelProvider implements ModelPort {
     try { output = JSON.parse(content); } catch { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_RESPONSE_INVALID", response.status, responseText, responseId); }
     let result: T;
     try { result = validate(output); } catch { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_OUTPUT_INVALID", response.status, responseText, responseId); }
-    await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, requestHash: hash(JSON.stringify(payload)), responseId, outcome: "success", status: response.status, responseHash: hash(responseText), durationMs: Date.now() - startedAt, responseText: safeResponseText(responseText) });
+    await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, requestHash: hash(JSON.stringify(payload)), responseId, outcome: "success", status: response.status, responseHash: hash(responseText), durationMs: Date.now() - startedAt });
     return result;
   }
 
   private async fail<T>(task: SafeModelReceipt["task"], payload: unknown, startedAt: number, errorCode: NonNullable<SafeModelReceipt["errorCode"]>, status?: number, responseText?: string, responseId?: string): Promise<T> {
-    await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, requestHash: hash(JSON.stringify(payload)), responseId, outcome: "failure", errorCode, status, responseHash: responseText === undefined ? undefined : hash(responseText), durationMs: Date.now() - startedAt, responseText: responseText === undefined ? undefined : safeResponseText(responseText) });
+    try {
+      await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, requestHash: hash(JSON.stringify(payload)), responseId, outcome: "failure", errorCode, status, responseHash: responseText === undefined ? undefined : hash(responseText), durationMs: Date.now() - startedAt });
+    } catch {
+      // The provider error is the primary failure. Receipt storage must never mask it.
+    }
     throw new Error(errorCode);
   }
 
@@ -145,12 +148,6 @@ function promptFor(task: SafeModelReceipt["task"], input: unknown): string {
 }
 
 function hash(value: string): string { return createHash("sha256").update(value).digest("hex"); }
-
-function safeResponseText(value: string): string {
-  return value.slice(0, 4_000)
-    .replace(/(["']?(?:authorization|api[-_]?key|token|secret|password)["']?)\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s,}\]]+)/gi, "$1=[REDACTED]")
-    .replace(/Bearer\s+[^\s<]+/gi, "Bearer [REDACTED]");
-}
 
 const researchPlanJsonSchema = {
   type: "object", additionalProperties: false, required: ["queries"],

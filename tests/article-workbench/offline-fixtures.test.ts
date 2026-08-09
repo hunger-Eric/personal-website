@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { createArticleWorkbenchServer } from "@/lib/article-workbench/server";
+import { createArticleWorkbenchRunStore } from "@/lib/article-workbench/run-store";
 
 const fixtureEnvironment = {
   ARTICLE_WORKBENCH_OFFLINE_FIXTURES: "true",
@@ -51,5 +52,22 @@ describe("offline article workbench fixtures", () => {
     expect(refreshed).toEqual(submitted);
     expect((await reloaded.getRun(generated.id))?.status).toBe("publish_submitted");
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it("captures a fresh publication date for each run while edits retain the original path", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "article-offline-dates-"));
+    roots.push(root);
+    let now = new Date("2026-08-09T23:59:59.000Z");
+    const server = createArticleWorkbenchServer(fixtureEnvironment, { rootDir: root, now: () => now });
+    const first = await server.generate({ topic: "First run", articleRules: ["Use supplied sources only"] });
+    now = new Date("2026-08-10T00:00:01.000Z");
+    const second = await server.generate({ topic: "Second run", articleRules: ["Use supplied sources only"] });
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+
+    expect(await store.loadArtifact(first.id, "publicationRecord")).toMatchObject({ path: expect.stringMatching(/^content\/articles\/2026-08-09-/) });
+    expect(await store.loadArtifact(second.id, "publicationRecord")).toMatchObject({ path: expect.stringMatching(/^content\/articles\/2026-08-10-/) });
+    now = new Date("2026-08-11T00:00:01.000Z");
+    await server.saveEdits(first.id, { confirmations: [], title: "Edited after midnight" });
+    expect(await store.loadArtifact(first.id, "publicationRecord")).toMatchObject({ title: "Edited after midnight", path: expect.stringMatching(/^content\/articles\/2026-08-09-/) });
   });
 });

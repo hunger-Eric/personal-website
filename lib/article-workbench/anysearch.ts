@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import { normalizeEvidenceText, type ExtractedSource, type ResearchPlan, type SearchPort, type SourcePacketResult } from "./contracts";
 import { canonicalizePublicHttpUrl } from "./safe-url";
 
@@ -7,7 +9,6 @@ const EXTRACTION_CONCURRENCY = 3;
 const MAX_SOURCE_CHARACTERS = 20_000;
 const MAX_PACKET_CHARACTERS = 80_000;
 const MIN_EXTRACTED_SOURCES = 4;
-const secretKeyPattern = /api[-_]?key|authorization|token|secret|cookie|password|passphrase|credential|private[-_]?key|access[-_]?key|session[-_]?key/i;
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
@@ -16,6 +17,17 @@ export interface AnySearchResearchAdapterOptions {
   apiKey?: string;
   /** Caller supplies a current-run-only persistence boundary. Responses are redacted before this hook. */
   persistRawResponse?: (response: unknown) => Promise<void> | void;
+}
+
+export interface SafeAnySearchReceipt {
+  toolName: string;
+  requestId: number;
+  outcome: "success" | "failure";
+  status?: number;
+  errorCode?: "ANYSEARCH_REQUEST_FAILED" | "ANYSEARCH_RESPONSE_INVALID";
+  requestHash: string;
+  responseHash?: string;
+  durationMs: number;
 }
 
 interface SearchHeading {
@@ -70,7 +82,8 @@ export class AnySearchResearchAdapter implements SearchPort {
         const response = await this.rpc("extract", { url: candidate.url });
         const content = responseText(response).slice(0, MAX_SOURCE_CHARACTERS);
         return content.trim() ? { ...candidate, content } : null;
-      } catch {
+      } catch (error) {
+        if (error instanceof Error && error.message === "ANYSEARCH_PERSISTENCE_FAILED") throw error;
         return null;
       }
     });
@@ -101,36 +114,54 @@ export class AnySearchResearchAdapter implements SearchPort {
     const headers: Record<string, string> = { "content-type": "application/json" };
     if (this.apiKey) headers.authorization = `Bearer ${this.apiKey}`;
     let response: Response;
+    const requestId = this.nextRequestId++;
+    const startedAt = Date.now();
+    const payload = {
+      jsonrpc: "2.0",
+      id: requestId,
+      method: "tools/call",
+      params: { name: toolName, arguments: toolArgs },
+    };
+    const requestHash = hash(JSON.stringify(payload));
     try {
       response = await this.fetcher(ENDPOINT, {
         method: "POST",
         headers,
-        body: JSON.stringify({
-          jsonrpc: "2.0",
-          id: this.nextRequestId++,
-          method: "tools/call",
-          params: { name: toolName, arguments: toolArgs },
-        }),
+        body: JSON.stringify(payload),
       });
     } catch {
+      await this.persistFailure({ toolName, requestId, outcome: "failure", errorCode: "ANYSEARCH_REQUEST_FAILED", requestHash, durationMs: Date.now() - startedAt });
       throw new Error("ANYSEARCH_REQUEST_FAILED");
     }
     let body: unknown;
     try {
       body = await response.json();
     } catch {
+      await this.persistFailure({ toolName, requestId, outcome: "failure", status: response.status, errorCode: "ANYSEARCH_RESPONSE_INVALID", requestHash, durationMs: Date.now() - startedAt });
       throw new Error("ANYSEARCH_RESPONSE_INVALID");
     }
     if (!response.ok || !body || typeof body !== "object" || "error" in body) {
+      await this.persistFailure({ toolName, requestId, outcome: "failure", status: response.status, errorCode: "ANYSEARCH_REQUEST_FAILED", requestHash, responseHash: hash(JSON.stringify(body)), durationMs: Date.now() - startedAt });
       throw new Error("ANYSEARCH_REQUEST_FAILED");
     }
-    if (!("result" in body)) throw new Error("ANYSEARCH_RESPONSE_INVALID");
+    if (!("result" in body)) {
+      await this.persistFailure({ toolName, requestId, outcome: "failure", status: response.status, errorCode: "ANYSEARCH_RESPONSE_INVALID", requestHash, responseHash: hash(JSON.stringify(body)), durationMs: Date.now() - startedAt });
+      throw new Error("ANYSEARCH_RESPONSE_INVALID");
+    }
     try {
-      await this.persistRawResponse?.(redactSecretLikeValues(body));
+      await this.persistRawResponse?.({ toolName, requestId, outcome: "success", status: response.status, requestHash, responseHash: hash(JSON.stringify(body)), durationMs: Date.now() - startedAt } satisfies SafeAnySearchReceipt);
     } catch {
       throw new Error("ANYSEARCH_PERSISTENCE_FAILED");
     }
     return (body as { result: unknown }).result;
+  }
+
+  private async persistFailure(receipt: SafeAnySearchReceipt): Promise<void> {
+    try {
+      await this.persistRawResponse?.(receipt);
+    } catch {
+      // The provider error is the primary failure. Receipt storage must never mask it.
+    }
   }
 }
 
@@ -239,12 +270,4 @@ async function mapWithConcurrency<T, R>(items: T[], concurrency: number, operati
   return results;
 }
 
-function redactSecretLikeValues(value: unknown): unknown {
-  if (Array.isArray(value)) return value.map(redactSecretLikeValues);
-  if (!value || typeof value !== "object") return value;
-  return Object.fromEntries(
-    Object.entries(value).flatMap(([key, nestedValue]) =>
-      secretKeyPattern.test(key) ? [] : [[key, redactSecretLikeValues(nestedValue)]]
-    )
-  );
-}
+function hash(value: string): string { return createHash("sha256").update(value).digest("hex"); }

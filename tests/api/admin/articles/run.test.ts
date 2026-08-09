@@ -38,7 +38,7 @@ describe("article run API", () => {
       expect(projection?.article?.sourceAssessments[1]).toMatchObject({ sourceId: "S002", category: "standard", rationale: "Independent standard" });
     } finally { await rm(root, { recursive: true, force: true }); }
   });
-  it.each([["ARTICLE_WORKBENCH_READ_FAILED", 502], ["ARTICLE_WORKBENCH_PERSISTENCE_FAILED", 502], ["PUBLICATION_RECEIPT_MISSING", 409], ["PUBLICATION_RECORD_REQUIRED", 409], ["VERIFICATION_MISMATCH", 502]] as const)("maps %s to %i", (code, status) => {
+  it.each([["ARTICLE_WORKBENCH_READ_FAILED", 502], ["ARTICLE_WORKBENCH_PERSISTENCE_FAILED", 502], ["PROVIDER_RECEIPT_PERSISTENCE_FAILED", 502], ["PUBLICATION_RECEIPT_MISSING", 409], ["PUBLICATION_RECORD_REQUIRED", 409], ["VERIFICATION_MISMATCH", 502]] as const)("maps %s to %i", (code, status) => {
     expect(articleApiError(new Error(code)).status).toBe(status);
   });
 
@@ -101,6 +101,58 @@ describe("article run API", () => {
       const safe = await server.getRun(run.id);
       expect(safe).toEqual({ id: run.id, status: "created" });
       expect(await server.getProfile()).toMatchObject({ identity: { name: expect.any(String) } });
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
+  it("persists run-isolated model and concurrent search receipts without exposing them through the safe API projection", async () => {
+    const root = await mkdtemp(path.join(tmpdir(), "article-server-receipts-"));
+    try {
+      let modelCall = 0;
+      const modelFetch = vi.fn(async () => {
+        modelCall += 1;
+        const content = modelCall % 2 === 1
+          ? { queries: [{ query: "official evidence", type: "general" }, { query: "standard evidence", type: "general" }] }
+          : {
+              title: "Receipt-safe article", slugProposal: "receipt-safe-article", summary: "A verified summary.", tags: ["evidence"],
+              body: "One [[S001]], two [[S002]], three [[S003]], and four [[S004]].",
+              sourceAssessments: ["S001", "S002", "S003", "S004"].map((sourceId, index) => ({ sourceId, category: index % 2 === 0 ? "official" : "standard", rationale: `Assessment ${index + 1}`, claimsSupported: [`Claim ${index + 1}`] })),
+            };
+        return new Response(JSON.stringify({ id: `model-${modelCall}`, choices: [{ message: { content: JSON.stringify(content) } }] }), { status: 200 });
+      });
+      const searchFetch = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+        const request = JSON.parse(String(init?.body)) as { params: { name: string; arguments: { url?: string } } };
+        if (request.params.name === "extract") {
+          const delay = request.params.arguments.url?.endsWith("source-1") ? 200 : request.params.arguments.url?.endsWith("source-2") ? 120 : 5;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
+        const text = request.params.name === "batch_search"
+          ? [1, 2, 3, 4].map((index) => `## ${index}. [Source ${index}](https://example.com/source-${index})`).join("\n")
+          : `Extracted public evidence for ${request.params.arguments.url} with enough detail for source validation.`;
+        return new Response(JSON.stringify({ jsonrpc: "2.0", result: { content: [{ type: "text", text }] }, metadata: { internalMarker: "PROVIDER_ONLY_MARKER", apiKey: "must-not-persist" } }), { status: 200, headers: { "content-type": "application/json" } });
+      });
+      const environment = { ARTICLE_MODEL_PROVIDER: "test", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://models.example.test/v1", ARTICLE_MODEL_NAME: "test-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only", NEXT_PUBLIC_BASE_URL: "https://example.com" };
+      const server = createArticleWorkbenchServer(environment, { rootDir: root, modelFetch, searchFetch });
+      const first = await server.generate({ topic: "First receipt run", articleRules: ["Use supplied sources only"] });
+      const second = await server.generate({ topic: "Second receipt run", articleRules: ["Use supplied sources only"] });
+      const store = createArticleWorkbenchRunStore({ rootDir: root });
+
+      for (const run of [first, second]) {
+        expect(await store.loadArtifact(run.id, "modelProviderReceipts")).toHaveLength(2);
+        expect(await store.loadArtifact(run.id, "searchProviderReceipts")).toHaveLength(5);
+        const stored = JSON.stringify([await store.loadArtifact(run.id, "modelProviderReceipts"), await store.loadArtifact(run.id, "searchProviderReceipts")]);
+        expect(stored).not.toContain("PROVIDER_ONLY_MARKER");
+        expect(stored).not.toContain("must-not-persist");
+        expect(stored).not.toContain("Receipt-safe article");
+        expect(stored).not.toContain("Extracted public evidence");
+        expect(JSON.stringify(await server.getRun(run.id))).not.toContain("PROVIDER_ONLY_MARKER");
+      }
+      expect((await store.loadArtifact(first.id, "modelProviderReceipts") as Array<{ responseId: string }>).map((receipt) => receipt.responseId)).toEqual(["model-1", "model-2"]);
+      expect((await store.loadArtifact(second.id, "modelProviderReceipts") as Array<{ responseId: string }>).map((receipt) => receipt.responseId)).toEqual(["model-3", "model-4"]);
+      expect((await store.loadArtifact(first.id, "searchProviderReceipts") as Array<{ requestId: number }>).map((receipt) => receipt.requestId)).toEqual([1, 4, 5, 3, 2]);
+      expect((await store.loadArtifact(second.id, "searchProviderReceipts") as Array<{ requestId: number }>).map((receipt) => receipt.requestId)).toEqual([1, 4, 5, 3, 2]);
+      expect(first.id).not.toBe(second.id);
+      expect(modelFetch).toHaveBeenCalledTimes(4);
+      expect(searchFetch).toHaveBeenCalledTimes(10);
     } finally { await rm(root, { recursive: true, force: true }); }
   });
 });
