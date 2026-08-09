@@ -1,4 +1,4 @@
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -15,6 +15,16 @@ async function createTemporaryRoot(): Promise<string> {
   const root = await mkdtemp(path.join(os.tmpdir(), "article-workbench-store-"));
   temporaryRoots.push(root);
   return root;
+}
+
+async function captureError(operation: Promise<void>): Promise<Error> {
+  try {
+    await operation;
+  } catch (error) {
+    if (error instanceof Error) return error;
+    throw new Error("Expected an Error instance");
+  }
+  throw new Error("Expected the operation to fail");
 }
 
 afterEach(async () => {
@@ -35,6 +45,19 @@ describe("article workbench run store", () => {
     await store.saveProfile(defaultArticleBusinessProfile);
 
     await expect(store.loadProfile()).resolves.toEqual(defaultArticleBusinessProfile);
+  });
+
+  it("rejects an on-disk profile with unknown keys", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    await mkdir(root, { recursive: true });
+    await writeFile(
+      path.join(root, "profile.json"),
+      JSON.stringify({ ...defaultArticleBusinessProfile, unexpected: true }),
+      "utf8"
+    );
+
+    await expect(store.loadProfile()).rejects.toThrow();
   });
 
   it("redacts nested secret-like artifact fields before persistence", async () => {
@@ -77,6 +100,21 @@ describe("article workbench run store", () => {
     await expect(
       readFile(path.join(root, "runs", created.id, "run.json"), "utf8")
     ).resolves.toContain('"status": "research_planned"');
+  });
+
+  it("rejects invalid on-disk run manifests", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    const runId = "awr_aaaaaaaaaaaaaaaaaaaaaaaa";
+    const runDirectory = path.join(root, "runs", runId);
+    await mkdir(runDirectory, { recursive: true });
+    await writeFile(
+      path.join(runDirectory, "run.json"),
+      JSON.stringify({ id: "awr_bbbbbbbbbbbbbbbbbbbbbbbb", status: "queued" }),
+      "utf8"
+    );
+
+    await expect(store.getRun(runId)).rejects.toThrow();
   });
 
   it("rejects traversal-shaped run identifiers before constructing a path", async () => {
@@ -124,7 +162,7 @@ describe("article workbench run store", () => {
 
     await expect(
       interruptedStore.saveArtifact(run.id, "sourcePacket", { version: "new" })
-    ).rejects.toThrow("simulated interruption");
+    ).rejects.toThrow("ARTICLE_WORKBENCH_PERSISTENCE_FAILED");
     await expect(stableStore.loadArtifact(run.id, "sourcePacket")).resolves.toEqual({
       version: "stable",
     });
@@ -138,5 +176,59 @@ describe("article workbench run store", () => {
     await expect(store.saveArtifact(run.id, "../escape" as never, { value: true })).rejects.toThrow(
       /artifact/i
     );
+  });
+
+  it("does not expose secrets when artifact preparation throws", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    const run = await store.createRun();
+    const secret = "actual-token";
+    const unsafeArtifact = {
+      toJSON() {
+        throw new Error(`Authorization: Bearer ${secret}`);
+      },
+    };
+
+    const error = await captureError(store.saveArtifact(run.id, "modelResponse", unsafeArtifact));
+
+    expect(error.message).toBe("ARTICLE_WORKBENCH_PERSISTENCE_FAILED");
+    expect(error.message).not.toContain(secret);
+    expect(error.message).not.toContain("Bearer");
+  });
+
+  it("does not expose secrets from accessors or filesystem failures", async () => {
+    const root = await createTemporaryRoot();
+    const stableStore = createArticleWorkbenchRunStore({ rootDir: root });
+    const run = await stableStore.createRun();
+    const accessorSecret = "actual-token";
+    const unsafeArtifact = Object.defineProperty({}, "token", {
+      enumerable: true,
+      get() {
+        throw new Error(`Authorization: Bearer ${accessorSecret}`);
+      },
+    });
+    const accessorError = await captureError(
+      stableStore.saveArtifact(run.id, "modelResponse", unsafeArtifact)
+    );
+
+    const failingStore = createArticleWorkbenchRunStore({
+      rootDir: root,
+      filesystem: {
+        writeFile: async () => {
+          throw new Error("apiKey=api-key-value token=token-value cookie=cookie-value");
+        },
+      },
+    });
+    const filesystemError = await captureError(
+      failingStore.saveArtifact(run.id, "modelResponse", { value: "safe" })
+    );
+
+    for (const error of [accessorError, filesystemError]) {
+      expect(error.message).toBe("ARTICLE_WORKBENCH_PERSISTENCE_FAILED");
+      expect(error.message).not.toContain("actual-token");
+      expect(error.message).not.toContain("api-key-value");
+      expect(error.message).not.toContain("token-value");
+      expect(error.message).not.toContain("cookie-value");
+    }
   });
 });

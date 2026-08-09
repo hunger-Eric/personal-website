@@ -36,7 +36,10 @@ const artifactFiles = {
 } as const;
 
 export type ArticleWorkbenchArtifact = keyof typeof artifactFiles;
-export type ArticleWorkbenchRun = z.infer<typeof RunManifestSchema>;
+export interface ArticleWorkbenchRun {
+  id: string;
+  status: ArticleRunStatus;
+}
 
 type FileOperations = Pick<typeof import("node:fs/promises"), "mkdir" | "readFile" | "rename" | "rm" | "writeFile">;
 
@@ -80,7 +83,10 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
   }
 
   async getRun(id: string): Promise<ArticleWorkbenchRun | null> {
-    return this.readJsonIfPresent(this.runManifestPath(id), RunManifestSchema);
+    return this.readJsonIfPresent(
+      this.runManifestPath(id),
+      RunManifestSchema as z.ZodType<ArticleWorkbenchRun>
+    );
   }
 
   async updateRunStatus(id: string, status: ArticleRunStatus): Promise<void> {
@@ -95,11 +101,15 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
 
   async saveArtifact(id: string, artifact: ArticleWorkbenchArtifact, value: unknown): Promise<void> {
     const artifactPath = this.artifactPath(id, artifact);
-    const safeValue = redactSecretLikeValues(value);
-    const serialized = artifact === "renderedMdx" && typeof safeValue === "string"
-      ? safeValue
-      : JSON.stringify(safeValue, null, 2) + "\n";
-    await this.writeAtomically(artifactPath, serialized);
+    try {
+      const safeValue = redactSecretLikeValues(value);
+      const serialized = artifact === "renderedMdx" && typeof safeValue === "string"
+        ? safeValue
+        : JSON.stringify(safeValue, null, 2) + "\n";
+      await this.writeAtomically(artifactPath, serialized);
+    } catch {
+      throw persistenceError();
+    }
   }
 
   async loadArtifact(id: string, artifact: ArticleWorkbenchArtifact): Promise<unknown | null> {
@@ -109,7 +119,7 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
       return artifact === "renderedMdx" ? content : JSON.parse(content);
     } catch (error) {
       if (isMissingFileError(error)) return null;
-      throw redactedError(error);
+      throw readError();
     }
   }
 
@@ -136,7 +146,7 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
       return schema.parse(JSON.parse(raw));
     } catch (error) {
       if (isMissingFileError(error)) return null;
-      throw redactedError(error);
+      throw readError();
     }
   }
 
@@ -147,13 +157,13 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
   private async writeAtomically(filePath: string, contents: string): Promise<void> {
     const directory = path.dirname(filePath);
     const temporaryPath = path.join(directory, `.${path.basename(filePath)}.${randomBytes(8).toString("hex")}.tmp`);
-    await this.filesystem.mkdir(directory, { recursive: true });
     try {
+      await this.filesystem.mkdir(directory, { recursive: true });
       await this.filesystem.writeFile(temporaryPath, contents, "utf8");
       await this.filesystem.rename(temporaryPath, filePath);
-    } catch (error) {
+    } catch {
       await this.filesystem.rm(temporaryPath, { force: true }).catch(() => undefined);
-      throw redactedError(error);
+      throw persistenceError();
     }
   }
 }
@@ -173,7 +183,10 @@ function isMissingFileError(error: unknown): error is NodeJS.ErrnoException {
   return Boolean(error && typeof error === "object" && "code" in error && error.code === "ENOENT");
 }
 
-function redactedError(error: unknown): Error {
-  const message = error instanceof Error ? error.message : String(error);
-  return new Error(message.replace(/(api[-_]?key|authorization|token|secret|cookie)\s*[:=]\s*[^\s,;}]+/gi, "$1=[REDACTED]"));
+function persistenceError(): Error {
+  return new Error("ARTICLE_WORKBENCH_PERSISTENCE_FAILED");
+}
+
+function readError(): Error {
+  return new Error("ARTICLE_WORKBENCH_READ_FAILED");
 }
