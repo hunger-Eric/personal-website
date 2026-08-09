@@ -1,0 +1,6 @@
+import { NextRequest, NextResponse } from "next/server";
+import { adminGuard } from "@/lib/admin-guard";
+import { articleApiError, ArticleEditsRequestSchema, getArticleWorkbenchServer, parseRunId, readJsonBody } from "@/lib/article-workbench/server";
+type Context = { params: Promise<{ runId: string }> };
+export async function GET(request: NextRequest, context: Context) { const guard = adminGuard(request); if (guard) return guard; try { const run = await getArticleWorkbenchServer().getRun(parseRunId((await context.params).runId)); if (!run) return NextResponse.json({ error: "Not Found" }, { status: 404 }); return NextResponse.json({ run }); } catch (error) { const result = articleApiError(error); return NextResponse.json(result.body, { status: result.status }); } }
+export async function PUT(request: NextRequest, context: Context) { const guard = adminGuard(request); if (guard) return guard; try { const run = await getArticleWorkbenchServer().saveEdits(parseRunId((await context.params).runId), ArticleEditsRequestSchema.parse(await readJsonBody(request))); return NextResponse.json({ run }); } catch (error) { const result = articleApiError(error); return NextResponse.json(result.body, { status: result.status }); } }
