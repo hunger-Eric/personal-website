@@ -65,6 +65,7 @@ export async function generateMetadata({
       description: article.summary,
       images: article.imageSrc ? [article.imageSrc] : undefined,
     },
+    ...(article.contentHash ? { other: { "article-content-hash": article.contentHash } } : {}),
   };
 }
 

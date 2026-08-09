@@ -53,6 +53,10 @@ describe("FrontmatterSchema", () => {
       expect(r.data.featured).toBe(false);
     }
   });
+
+  it("accepts an optional content hash for published workbench articles", () => {
+    expect(FrontmatterSchema.safeParse({ title: "Hi", date: "2026-04-01", contentHash: "sha256:expected" }).data).toMatchObject({ contentHash: "sha256:expected" });
+  });
 });
 
 describe("calculateReadingTime", () => {

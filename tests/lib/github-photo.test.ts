@@ -73,11 +73,13 @@ describe("getRepoFile", () => {
 describe("upsertRepoFile", () => {
   it("creates a file with utf-8 encoding (default)", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ content: {} }), { status: 201 })
+      new Response(JSON.stringify({ content: { sha: "content-sha" }, commit: { sha: "commit-sha" } }), { status: 201 })
     );
 
     const { upsertRepoFile } = await import("@/lib/github-photo");
-    await upsertRepoFile("config/test.json", JSON.stringify({ key: "val" }), "feat: add test");
+    const receipt = await upsertRepoFile("config/test.json", JSON.stringify({ key: "val" }), "feat: add test");
+
+    expect(receipt).toEqual({ contentSha: "content-sha", commitSha: "commit-sha", path: "config/test.json" });
 
     expect(fetch).toHaveBeenCalledWith(
       "https://api.github.com/repos/hunger-Eric/personal-website/contents/config/test.json",

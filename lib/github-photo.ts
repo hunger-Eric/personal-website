@@ -16,6 +16,12 @@ type GitHubDirectoryItem = {
   name: string;
 };
 
+export interface RepoFileWriteReceipt {
+  contentSha: string;
+  commitSha: string;
+  path: string;
+}
+
 /**
  * Get the GitHub API token from env.
  */
@@ -57,7 +63,7 @@ export async function upsertRepoFile(
   message: string,
   encoding: "base64" | "utf-8" = "utf-8",
   existingSha?: string
-): Promise<void> {
+): Promise<RepoFileWriteReceipt> {
   const body: {
     message: string;
     branch: string;
@@ -92,6 +98,12 @@ export async function upsertRepoFile(
     const err = await res.text();
     throw new Error(`GitHub API error on PUT (${res.status}): ${err}`);
   }
+  const result = await res.json() as { content?: { sha?: string }; commit?: { sha?: string } };
+  return {
+    contentSha: result.content?.sha ?? "",
+    commitSha: result.commit?.sha ?? "",
+    path,
+  };
 }
 
 /**

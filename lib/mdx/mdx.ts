@@ -33,6 +33,7 @@ export const FrontmatterSchema = z.object({
   imageSrc: z.string().optional(),
   imageAlt: z.string().optional(),
   author: z.string().optional(),
+  contentHash: z.string().optional(),
 });
 
 export interface ArticleFrontmatter {
@@ -48,6 +49,7 @@ export interface ArticleFrontmatter {
   imageSrc?: string;
   imageAlt?: string;
   author?: string;
+  contentHash?: string;
 }
 
 export interface Article extends ArticleFrontmatter {
@@ -169,6 +171,7 @@ function parseArticleFile(
     imageSrc: fm.imageSrc,
     imageAlt: fm.imageAlt,
     author: fm.author,
+    contentHash: fm.contentHash,
   };
 
   return { frontmatter, content };
