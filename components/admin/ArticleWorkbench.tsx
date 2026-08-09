@@ -13,6 +13,7 @@ type Publication = { id: string; slug: string; contentHash: string; status: "sub
 type Run = { id: string; status: string; failure?: { message: string }; article?: Article; sources?: Source[]; confirmations?: { sourceId: string; confirmed: true }[]; previewMdx?: string; publication?: Publication };
 
 const inputClass = "w-full rounded-control border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-accent focus:ring-2 focus:ring-accent/25 disabled:cursor-not-allowed disabled:opacity-60";
+const AUTHORITATIVE_CATEGORIES = new Set(["official", "standard", "original_research", "peer_reviewed"]);
 
 async function request<T>(path: string, options: RequestInit = {}, signal?: AbortSignal): Promise<T> {
   const response = await fetch(path, { ...options, headers: { "Content-Type": "application/json", ...options.headers }, signal });
@@ -25,7 +26,8 @@ export function ArticleWorkbench({ initialRun }: { initialRun?: Run } = {}) {
   const abortRef = useRef<AbortController | null>(null);
   const actionAbortRef = useRef<AbortController | null>(null);
   const pollAbortRef = useRef<AbortController | null>(null);
-  const publishClaimRef = useRef(Boolean(initialRun?.publication));
+  const attemptedRunIdsRef = useRef(new Set(initialRun?.publication ? [initialRun.id] : []));
+  const [attemptedRunIds, setAttemptedRunIds] = useState(() => new Set(initialRun?.publication ? [initialRun.id] : []));
   const [profile, setProfile] = useState<Profile | null>(null);
   const [profileText, setProfileText] = useState("");
   const [topic, setTopic] = useState("");
@@ -75,8 +77,14 @@ export function ArticleWorkbench({ initialRun }: { initialRun?: Run } = {}) {
 
   const updateArticle = (key: keyof Article, value: string | string[]) => setRun((current) => current?.article ? { ...current, article: { ...current.article, [key]: value } } : current);
   const confirmedIds = useMemo(() => new Set(run?.confirmations?.map((item) => item.sourceId) ?? []), [run]);
+  const authoritativeSourceIds = useMemo(() => new Set((run?.sources ?? []).flatMap((source) => {
+    const assessment = run?.article?.sourceAssessments.find((item) => item.sourceId === source.id);
+    return assessment && AUTHORITATIVE_CATEGORIES.has(assessment.category) ? [source.id] : [];
+  })), [run]);
+  const confirmedAuthoritativeIds = useMemo(() => new Set([...confirmedIds].filter((sourceId) => authoritativeSourceIds.has(sourceId))), [authoritativeSourceIds, confirmedIds]);
   const toggleConfirmation = (sourceId: string) => setRun((current) => {
     if (!current) return current;
+    if (!authoritativeSourceIds.has(sourceId)) return current;
     const confirmations = current.confirmations ?? [];
     return { ...current, confirmations: confirmedIds.has(sourceId) ? confirmations.filter((item) => item.sourceId !== sourceId) : [...confirmations, { sourceId, confirmed: true }] };
   });
@@ -112,26 +120,28 @@ export function ArticleWorkbench({ initialRun }: { initialRun?: Run } = {}) {
   }, [refreshPublication, run?.id, publicationStatus]);
 
   const publish = async () => {
-    if (!run || publishing || run.publication || publishClaimRef.current) return;
-    publishClaimRef.current = true;
+    if (!run || publishing || run.publication || attemptedRunIdsRef.current.has(run.id)) return;
+    attemptedRunIdsRef.current.add(run.id);
+    setAttemptedRunIds((current) => new Set(current).add(run.id));
     setPublishing(true); setMessage(null);
     const controller = new AbortController(); actionAbortRef.current?.abort(); actionAbortRef.current = controller;
     try {
       const payload = await request<{ publication: Publication }>(`/api/admin/articles/runs/${run.id}/publish`, { method: "POST" }, controller.signal);
       setRun((current) => current ? { ...current, publication: payload.publication } : current);
       setMessage(payload.publication.status === "published" ? "已发布。" : "已提交发布，正在确认网站可读状态。");
-    } catch (error) { publishClaimRef.current = false; setMessage(error instanceof Error ? error.message : "上传并发布失败"); }
+    } catch (error) { setMessage(error instanceof Error ? error.message : "上传并发布失败"); }
     finally { setPublishing(false); }
   };
 
-  const enoughConfirmations = confirmedIds.size >= 2;
-  const canPublish = Boolean(run?.article && run.previewMdx && enoughConfirmations && !publishing && !run.publication);
+  const enoughConfirmations = confirmedAuthoritativeIds.size >= 2;
+  const canPublish = Boolean(run?.article && run.previewMdx && enoughConfirmations && !publishing && !run.publication && !attemptedRunIds.has(run.id));
 
   return (
     <div className="min-h-[100dvh] bg-background pb-16 md:pl-64">
-      <AdminSidebar />
+      <div className="hidden md:block"><AdminSidebar /></div>
       <main className="mx-auto max-w-[1400px] px-5 py-8 sm:px-8 lg:py-10">
         <header className="border-b border-border pb-7">
+          <Link href="/admin" className="mb-5 inline-flex text-sm font-semibold text-muted-foreground hover:text-accent focus:outline-none focus-visible:ring-2 focus-visible:ring-accent md:hidden">返回管理台</Link>
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">Article workbench</p>
           <h1 className="mt-2 text-3xl font-bold tracking-tight text-foreground">业务文章工作台</h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">从业务背景和公开来源出发，生成可人工编辑并明确发布的网页文章。</p>
@@ -155,7 +165,7 @@ export function ArticleWorkbench({ initialRun }: { initialRun?: Run } = {}) {
           </div>
           <aside className="space-y-6 lg:sticky lg:top-6 lg:self-start" aria-label="文章证据与发布状态">
             <section className="border-t border-border pt-5"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">运行状态</p><p className="mt-2 font-semibold text-foreground">{run ? run.status : "尚未生成"}</p>{run?.failure ? <p className="mt-2 text-sm text-destructive">{run.failure.message}</p> : <p className="mt-2 text-sm leading-6 text-muted-foreground">生成后在这里核对来源、确认编辑，再执行一次最终发布。</p>}</section>
-            {run?.sources?.length ? <section className="border-t border-border pt-5"><h2 className="font-semibold">来源确认</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">请确认至少两条权威来源。发布前会再次验证绑定关系。</p><div className="mt-4 divide-y divide-border border-y border-border">{run.sources.map((source) => { const assessment = run.article?.sourceAssessments.find((item) => item.sourceId === source.id); return <label key={source.id} className="block py-4"><span className="flex items-start gap-3"><input aria-label={`确认来源 ${source.id}`} type="checkbox" checked={confirmedIds.has(source.id)} onChange={() => toggleConfirmation(source.id)} className="mt-1 h-4 w-4 accent-[var(--accent)]" /><span className="min-w-0"><a href={source.url} target="_blank" rel="noreferrer" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-accent">{source.title}</a><span className="mt-1 block text-xs text-muted-foreground">{source.id} · {assessment?.category ?? "待分类"}{source.publisher ? ` · ${source.publisher}` : ""}</span>{assessment?.rationale ? <span className="mt-2 block text-sm leading-5 text-muted-foreground">{assessment.rationale}</span> : null}</span></span></label>; })}</div><p className="mt-3 text-xs font-medium text-muted-foreground">已确认 {confirmedIds.size} / 2 条权威来源</p></section> : null}
+            {run?.sources?.length ? <section className="border-t border-border pt-5"><h2 className="font-semibold">来源确认</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">请确认至少两条权威来源。发布前会再次验证绑定关系。</p><div className="mt-4 divide-y divide-border border-y border-border">{run.sources.map((source) => { const assessment = run.article?.sourceAssessments.find((item) => item.sourceId === source.id); const authoritative = authoritativeSourceIds.has(source.id); return <label key={source.id} className={`block py-4 ${authoritative ? "" : "opacity-60"}`}><span className="flex items-start gap-3"><input aria-label={`确认来源 ${source.id}`} type="checkbox" disabled={!authoritative} checked={confirmedAuthoritativeIds.has(source.id)} onChange={() => toggleConfirmation(source.id)} className="mt-1 h-4 w-4 accent-[var(--accent)]" /><span className="min-w-0"><a href={source.url} target="_blank" rel="noreferrer" className="font-medium text-foreground underline decoration-border underline-offset-4 hover:decoration-accent">{source.title}</a><span className="mt-1 block text-xs text-muted-foreground">{source.id} · {assessment?.category ?? "未获权威分类"}{source.publisher ? ` · ${source.publisher}` : ""}</span>{assessment?.rationale ? <span className="mt-2 block text-sm leading-5 text-muted-foreground">{assessment.rationale}</span> : null}{!authoritative ? <span className="mt-2 block text-xs text-muted-foreground">此来源尚无可确认的权威分类，不能计入发布确认。</span> : null}</span></span></label>; })}</div><p className="mt-3 text-xs font-medium text-muted-foreground">已确认 {confirmedAuthoritativeIds.size} / 2 条权威来源</p></section> : null}
             <section className="border-t border-border pt-5"><p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">发布</p>{run?.publication?.status === "published" ? <p className="mt-2 font-semibold text-emerald-700">已发布</p> : <><p className="mt-2 text-sm leading-6 text-muted-foreground">本地预览，尚未发布</p><button type="button" onClick={() => void publish()} disabled={!canPublish} className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-control bg-accent px-4 py-3 text-sm font-semibold text-accent-foreground transition active:translate-y-px hover:brightness-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">{publishing ? <LoaderCircle className="h-4 w-4 animate-spin motion-reduce:animate-none" /> : <Send className="h-4 w-4" />}上传并发布</button><p className="mt-3 text-xs leading-5 text-muted-foreground">发布只提交一次；提交后仅轮询网站可读状态，最多 5 分钟。</p></>}</section>
           </aside>
         </div>
