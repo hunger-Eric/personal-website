@@ -35,6 +35,7 @@ const artifactFiles = {
   articleEdits: "article-edits.json",
   publicationRecord: "publication-record.json",
   publicationAttempt: "publication-attempt.json",
+  verificationAttempt: "verification-attempt.json",
   renderedMdx: "rendered.mdx",
   publicationReceipt: "publication-receipt.json",
 } as const;
@@ -99,9 +100,10 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
     if (!current) {
       throw new Error(`Article workbench run not found: ${runId}`);
     }
-    if (!isLegalTransition(current.status, nextStatus)) throw new Error("ARTICLE_WORKBENCH_TRANSITION_INVALID");
+    if (current.status === nextStatus || !isLegalTransition(current.status, nextStatus)) throw new Error("ARTICLE_WORKBENCH_TRANSITION_INVALID");
     if ((nextStatus === "failed") !== Boolean(failure)) throw new Error("ARTICLE_WORKBENCH_FAILURE_STATE_INVALID");
-    await this.writeJsonAtomically(this.runManifestPath(runId), { id: current.id, status: nextStatus, ...(failure ? { failure } : {}) });
+    const next = ArticleWorkbenchRunSchema.parse({ id: current.id, status: nextStatus, ...(failure ? { failure } : {}) });
+    await this.writeJsonAtomically(this.runManifestPath(runId), next);
   }
 
   async saveArtifact(id: string, artifact: ArticleWorkbenchArtifact, value: unknown): Promise<void> {
@@ -209,7 +211,6 @@ function isExistsFileError(error: unknown): error is NodeJS.ErrnoException {
 }
 
 function isLegalTransition(current: ArticleRunStatus, next: ArticleRunStatus): boolean {
-  if (current === next) return true;
   return ({
     created: ["research_planned", "failed"], research_planned: ["sources_ready", "failed"],
     sources_ready: ["article_generated", "failed"], article_generated: ["validated", "failed"],

@@ -51,7 +51,6 @@ class ArticleWorkflow {
     const { store, profile: profilePort, model, search } = this.dependencies;
     const run = await store.createRun();
     await store.saveArtifact(run.id, "input", input);
-    await store.updateRunStatus(run.id, "created");
     const profile = await this.atStage(run.id, "profile", "BUSINESS_PROFILE_INVALID", true, async () =>
       BusinessProfileSchema.parse(await profilePort.getProfile())
     );
@@ -143,8 +142,10 @@ class ArticleWorkflow {
     const storedValue = await store.loadArtifact(runId, "publicationReceipt");
     if (!storedValue) throw new Error("PUBLICATION_RECEIPT_MISSING");
     const stored = PublicationReceiptSchema.parse(storedValue);
+    const verificationResponse = await this.atStage(runId, "verification", "VERIFICATION_MISMATCH", true, async () => publisher.verify(stored));
+    await store.saveArtifact(runId, "verificationAttempt", verificationResponse);
     const verified = await this.atStage(runId, "verification", "VERIFICATION_MISMATCH", true, async () =>
-      PublicationReceiptSchema.parse(await publisher.verify(stored))
+      PublicationReceiptSchema.parse(verificationResponse)
     );
     if (verified.id !== stored.id || verified.slug !== stored.slug || verified.contentHash !== stored.contentHash) {
       return this.fail(runId, "verification", "VERIFICATION_MISMATCH", true);

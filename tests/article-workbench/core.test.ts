@@ -74,7 +74,6 @@ function createWorkflow(options: {
   const model: ModelPort = {
     async proposeResearchPlan() {
       expect(store.events).toContain("store:artifact:input");
-      expect(store.events).toContain("store:status:created");
       store.events.push("model:plan");
       return (options.plan ?? { queries: [{ query: "official guidance", type: "general" }, { query: "primary research", type: "academic" }] }) as never;
     },
@@ -121,7 +120,7 @@ describe("article workbench workflow", () => {
 
     expect(run.status).toBe("validated");
     expect(store.events).toEqual([
-      "store:create", "store:artifact:input", "store:status:created", "model:plan",
+      "store:create", "store:artifact:input", "model:plan",
       "store:artifact:researchPlan", "store:status:research_planned", "search:collect",
       "store:artifact:sourcePacket", "store:status:sources_ready", "model:write",
       "store:artifact:modelResponse", "store:status:article_generated", "store:artifact:validatedArticle", "store:status:validated",
@@ -228,6 +227,7 @@ describe("article workbench workflow", () => {
     await workflow.submitPublication(run.id);
     await expect(workflow.refreshPublication(run.id)).rejects.toThrow("VERIFICATION_MISMATCH");
     expect(store.events.filter((event) => event === "store:status:failed")).toHaveLength(1);
+    expect(store.artifacts.get(`${run.id}:verificationAttempt`)).toMatchObject({ contentHash: "sha256:other" });
   });
 
   it("returns a published receipt without another verification", async () => {

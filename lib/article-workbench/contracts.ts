@@ -178,7 +178,7 @@ export const ArticleWorkbenchRunSchema = z.object({
 export type ArticleWorkbenchRun = z.infer<typeof ArticleWorkbenchRunSchema>;
 
 export const ArticleWorkbenchArtifactSchema = z.enum([
-  "input", "researchPlan", "sourcePacket", "modelResponse", "validatedArticle", "articleEdits", "publicationRecord", "publicationAttempt", "renderedMdx", "publicationReceipt",
+  "input", "researchPlan", "sourcePacket", "modelResponse", "validatedArticle", "articleEdits", "publicationRecord", "publicationAttempt", "verificationAttempt", "renderedMdx", "publicationReceipt",
 ]);
 export type ArticleWorkbenchArtifact = z.infer<typeof ArticleWorkbenchArtifactSchema>;
 

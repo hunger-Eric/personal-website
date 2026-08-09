@@ -115,6 +115,29 @@ describe("article workbench run store", () => {
     await expect(store.updateRunStatus(run.id, "created")).rejects.toThrow("ARTICLE_WORKBENCH_TRANSITION_INVALID");
   });
 
+  it("rejects malformed or unknown failures before changing the manifest", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    const run = await store.createRun();
+    const manifest = path.join(root, "runs", run.id, "run.json");
+    const before = await readFile(manifest, "utf8");
+
+    await expect(store.updateRunStatus(run.id, "failed", { stage: "profile", code: "NOT_A_CODE", message: "bad.", occurredAt: "2026-08-09T00:00:00.000Z", userActionRequired: true } as never)).rejects.toThrow();
+    await expect(store.updateRunStatus(run.id, "failed", { stage: "profile", code: "BUSINESS_PROFILE_INVALID", message: "", occurredAt: "not-a-date", userActionRequired: true } as never)).rejects.toThrow();
+    await expect(readFile(manifest, "utf8")).resolves.toBe(before);
+  });
+
+  it("does not allow a terminal failure to be overwritten", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    const run = await store.createRun();
+    const failure = { stage: "profile" as const, code: "BUSINESS_PROFILE_INVALID" as const, message: "business profile invalid.", occurredAt: "2026-08-09T00:00:00.000Z", userActionRequired: true };
+    await store.updateRunStatus(run.id, "failed", failure);
+
+    await expect(store.updateRunStatus(run.id, "failed", { ...failure, code: "RESEARCH_PLAN_INVALID" })).rejects.toThrow("ARTICLE_WORKBENCH_TRANSITION_INVALID");
+    await expect(store.getRun(run.id)).resolves.toMatchObject({ status: "failed", failure });
+  });
+
   it("rejects manifests whose failure does not match their status", async () => {
     const root = await createTemporaryRoot();
     const store = createArticleWorkbenchRunStore({ rootDir: root });
