@@ -129,6 +129,8 @@ describe("OpenAI-compatible article model provider", () => {
     ["plain Sources label", { ...validArticle, summary: "Sources" }],
     ["Chinese source label", { ...validArticle, tags: ["参考来源"] }],
     ["malformed citation token", { ...validArticle, body: "Evidence [[S01]] [[S001]] [[S002]]" }],
+    ["unmatched opening delimiter", { ...validArticle, body: "Evidence [[S001]] [[S002]] and [[S999" }],
+    ["unmatched closing delimiter", { ...validArticle, body: "Evidence [[S001]] [[S002]] and S999]]" }],
   ])("rejects output-wide forbidden content in %s", async (_label, article) => {
     const provider = new OpenAICompatibleModelProvider({ fetch: async () => completion(article), config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
     await expect(provider.writeSourceBoundArticle(writeInput)).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");

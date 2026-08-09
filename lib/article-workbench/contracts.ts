@@ -251,6 +251,10 @@ export function validateSourceBoundArticleProposal(
   if (!citationTokens.length || citationTokens.some((sourceId) => !/^S\d{3}$/.test(sourceId) || !sourceIds.has(sourceId))) {
     throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
   }
+  const nonCitationBody = article.body.replace(/\[\[S\d{3}\]\]/g, "");
+  if (nonCitationBody.includes("[[") || nonCitationBody.includes("]]")) {
+    throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
+  }
   const outputText = [
     article.title,
     article.summary,
