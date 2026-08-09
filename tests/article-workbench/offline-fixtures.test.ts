@@ -14,7 +14,10 @@ const fixtureEnvironment = {
 
 describe("offline article workbench fixtures", () => {
   const roots: string[] = [];
-  afterEach(async () => { await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true }))); });
+  afterEach(async () => {
+    vi.restoreAllMocks();
+    await Promise.all(roots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
+  });
 
   it("are rejected in production instead of falling back to real providers", () => {
     expect(() => createArticleWorkbenchServer({ ...fixtureEnvironment, NODE_ENV: "production" })).toThrow("ARTICLE_OFFLINE_FIXTURES_DISABLED");
@@ -48,6 +51,5 @@ describe("offline article workbench fixtures", () => {
     expect(refreshed).toEqual(submitted);
     expect((await reloaded.getRun(generated.id))?.status).toBe("publish_submitted");
     expect(fetchSpy).not.toHaveBeenCalled();
-    fetchSpy.mockRestore();
   });
 });
