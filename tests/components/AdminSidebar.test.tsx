@@ -32,6 +32,7 @@ vi.mock("lucide-react", () => {
     Image: Icon,
     Palette: Icon,
     FilePlus: Icon,
+    FilePenLine: Icon,
     ArrowLeft: Icon,
   };
 });
@@ -51,6 +52,7 @@ const navGroups = [
     section: adminCopy.sidebar.content,
     items: [
       { href: "/admin/pages", label: adminCopy.sidebar.pages },
+      { href: "/admin/articles", label: "文章工作台" },
     ],
   },
 ];

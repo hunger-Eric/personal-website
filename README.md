@@ -117,6 +117,23 @@ Validate current env:
 npm run validate-env
 ```
 
+### Article workbench (local Admin only)
+
+The article workbench lives at `/admin/articles`. It is deliberately a local Admin tool, not a public CMS: set `ENABLE_ADMIN=true`, `ADMIN_TOKEN`, and `ADMIN_PASSWORD`, then use the normal Admin login flow before opening it.
+
+Its server-only model adapter is replaceable. The initial configured route is OpenCode Zen Go, but the workflow core only depends on its model port:
+
+- `ARTICLE_MODEL_PROVIDER=opencode_zen`
+- `ARTICLE_MODEL_PROTOCOL=openai_compatible`
+- `ARTICLE_MODEL_BASE_URL=https://opencode.ai/zen/go/v1`
+- `ARTICLE_MODEL_NAME=deepseek-v4-flash`
+- `ARTICLE_MODEL_API_KEY=`
+- `ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE=prompt_only`
+
+Set `ANYSEARCH_API_KEY` to enable public-source research. The publisher uses `GITHUB_TOKEN` (or the existing `PHOTO_GITHUB_TOKEN` fallback) with GitHub Contents access to `hunger-Eric/personal-website` on `main`; `NEXT_PUBLIC_BASE_URL` must be the canonical HTTPS site URL used to verify the published article. Local run records, research packets, rendered MDX, and publication receipts are stored under `output/article-workbench/`, which is ignored by Git.
+
+Generating an article never publishes it. Publishing occurs only after the authenticated user explicitly clicks **上传并发布** for that run; the create-only GitHub write does not overwrite an existing article path. Real model calls, AnySearch calls, GitHub writes, deployment effects, and public verification are separate authorization and acceptance steps—do not treat local tests as permission to perform them.
+
 ## Scripts
 
 - `npm run dev`: start dev server

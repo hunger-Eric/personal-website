@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import type { ResearchPlan } from "@/lib/article-workbench/contracts";
 import {
+  AnySearchResearchAdapter,
   createAnySearchResearchAdapter,
   parseNumberedMarkdownResults,
 } from "@/lib/article-workbench/anysearch";
@@ -219,5 +220,62 @@ describe("AnySearch research adapter", () => {
     expect(result.status).toBe("ok");
     expect(fetch.mock.calls[0][1]?.headers).toEqual({ "content-type": "application/json" });
     expect(JSON.stringify(persisted)).not.toContain("must-not-persist");
+  });
+
+  it("fails closed for an unavailable transport and malformed provider envelopes", async () => {
+    expect(() => new AnySearchResearchAdapter({ fetch: null as never })).toThrow("ANYSEARCH_FETCH_UNAVAILABLE");
+
+    for (const response of [
+      new Response("not-json", { status: 200 }),
+      jsonResponse({ error: { message: "provider error" } }, 200),
+      jsonResponse({ unexpected: true }),
+    ]) {
+      const adapter = createAnySearchResearchAdapter({ fetch: vi.fn().mockResolvedValue(response) });
+      await expect(adapter.collect({ queries: [{ id: "Q001", query: "evidence", type: "general" }] })).rejects.toMatchObject({ message: expect.stringMatching(/^ANYSEARCH_(REQUEST_FAILED|RESPONSE_INVALID)$/) });
+    }
+  });
+
+  it("fails closed when academic discovery is malformed or receipt persistence fails", async () => {
+    const invalidAcademic = createAnySearchResearchAdapter({
+      fetch: vi.fn().mockResolvedValue(rpcText("not json")),
+    });
+    await expect(invalidAcademic.collect(plan)).rejects.toThrow("ANYSEARCH_ACADEMIC_CONTRACT_INVALID");
+
+    const persistenceFailure = createAnySearchResearchAdapter({
+      fetch: vi.fn().mockResolvedValue(rpcText(searchMarkdown)),
+      persistRawResponse: () => { throw new Error("disk unavailable"); },
+    });
+    await expect(persistenceFailure.collect({ queries: [{ id: "Q001", query: "evidence", type: "general" }] })).rejects.toThrow("ANYSEARCH_PERSISTENCE_FAILED");
+  });
+
+  it("accepts only the first valid academic sub-domain contract and emits its required parameters", async () => {
+    const calls: unknown[] = [];
+    const adapter = createAnySearchResearchAdapter({
+      fetch: async (_url, init) => {
+        const request = JSON.parse(String(init?.body));
+        calls.push(request);
+        if (request.params.name === "get_sub_domains") {
+          return rpcText(JSON.stringify({ sub_domains: [null, { sub_domain: "" }, {
+            name: "fallback-academic",
+            params: [null, { required: true }, { name: "required", required: "required" }, { name: "optional", required: false }, { name: "open_access", required: false }],
+          }] }));
+        }
+        return rpcText("");
+      },
+    });
+
+    await expect(adapter.collect({ queries: [{ id: "Q001", query: "academic evidence", type: "academic" }] })).resolves.toEqual({ status: "insufficient_sources", sources: [] });
+    expect((calls[1] as { params: { arguments: { queries: Array<Record<string, unknown>> } } }).params.arguments.queries[0]).toMatchObject({
+      domain: "academic", sub_domain: "fallback-academic", sub_domain_params: { required: "", open_access: true },
+    });
+  });
+
+  it.each([
+    ["a non-object result", null],
+    ["a non-array content field", { content: {} }],
+    ["a content list without text", { content: [{ type: "image", data: "ignored" }] }],
+  ])("rejects %s before attempting extraction", async (_label, result) => {
+    const adapter = createAnySearchResearchAdapter({ fetch: async () => jsonResponse({ result }) });
+    await expect(adapter.collect({ queries: [{ id: "Q001", query: "evidence", type: "general" }] })).rejects.toThrow("ANYSEARCH_RESPONSE_INVALID");
   });
 });

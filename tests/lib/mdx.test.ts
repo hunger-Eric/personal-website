@@ -279,6 +279,19 @@ describe("getArticles", () => {
 // ---------------------------------------------------------------------------
 
 describe("getArticleBySlug", () => {
+  it("loads legacy frontmatter when contentHash is absent", async () => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readdirSync).mockReturnValue(["legacy.mdx"]);
+    vi.mocked(fs.readFileSync).mockReturnValue(
+      mdx({ title: "Legacy", slug: "legacy", date: "2025-06-01" }),
+    );
+
+    await expect(getArticleBySlug("legacy")).resolves.toMatchObject({
+      title: "Legacy",
+      contentHash: undefined,
+    });
+  });
+
   it("returns the full article for a matching slug", async () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.readdirSync).mockReturnValue(["post-1.mdx", "post-2.mdx"]);

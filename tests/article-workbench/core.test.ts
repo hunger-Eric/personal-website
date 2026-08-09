@@ -447,4 +447,34 @@ describe("article workbench workflow", () => {
     expect(store.runs.get(run.id)?.status).toBe("published");
     expect(verifications()).toBe(2);
   });
+
+  it("rejects edit and publication operations for the state or evidence that has not been persisted", async () => {
+    const { store, workflow } = createWorkflow();
+    const created = await store.createRun();
+    await expect(workflow.saveArticleEdits(created.id, { confirmations: [] })).rejects.toThrow("ARTICLE_EDIT_STATE_INVALID");
+    await expect(workflow.refreshPublication(created.id)).rejects.toThrow("PUBLICATION_REFRESH_STATE_INVALID");
+
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await expect(workflow.saveArticleEdits(run.id, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S001", confirmed: true }] })).rejects.toThrow("SOURCE_CONFIRMATION_INVALID");
+    await expect(workflow.saveArticleEdits(run.id, { confirmations: [{ sourceId: "S999", confirmed: true }] })).rejects.toThrow("SOURCE_CONFIRMATION_INVALID");
+    await store.saveArtifact(run.id, "sourcePacket", { status: "insufficient_sources", sources: [...sources] });
+    await expect(workflow.saveArticleEdits(run.id, { confirmations: [] })).rejects.toThrow("ARTICLE_EDIT_STATE_INVALID");
+  });
+
+  it("requires persisted receipts and records before accepting already terminal publication states", async () => {
+    const { store, workflow } = createWorkflow();
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await confirmAndSeedPublication(store, workflow, run.id);
+    store.artifacts.delete(`${run.id}:publicationRecord`);
+    await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLICATION_RECORD_REQUIRED");
+
+    store.runs.set(run.id, { id: run.id, status: "published" });
+    await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLICATION_RECEIPT_MISSING");
+    await expect(workflow.refreshPublication(run.id)).rejects.toThrow("PUBLICATION_RECEIPT_MISSING");
+  });
+
+  it("rejects unknown runs before invoking any port", async () => {
+    const { workflow } = createWorkflow();
+    await expect(workflow.submitPublication("awr_bbbbbbbbbbbbbbbbbbbbbbbb")).rejects.toThrow("ARTICLE_RUN_NOT_FOUND");
+  });
 });

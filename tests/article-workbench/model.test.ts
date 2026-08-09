@@ -184,4 +184,24 @@ describe("OpenAI-compatible article model provider", () => {
   it("rejects unsupported configuration at composition", () => {
     expect(() => createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "other", ARTICLE_MODEL_PROTOCOL: "other", ARTICLE_MODEL_BASE_URL: "http://example.test/v1/chat/completions", ARTICLE_MODEL_NAME: "model", ARTICLE_MODEL_API_KEY: "key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "bad" })).toThrow("ARTICLE_MODEL_CONFIG_INVALID");
   });
+
+  it.each([
+    ["missing provider", { ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://models.example.test/v1", ARTICLE_MODEL_NAME: "model", ARTICLE_MODEL_API_KEY: "key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }],
+    ["HTTP base URL", { ARTICLE_MODEL_PROVIDER: "provider", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "http://models.example.test/v1", ARTICLE_MODEL_NAME: "model", ARTICLE_MODEL_API_KEY: "key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }],
+    ["chat completions base URL", { ARTICLE_MODEL_PROVIDER: "provider", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://models.example.test/v1/chat/completions", ARTICLE_MODEL_NAME: "model", ARTICLE_MODEL_API_KEY: "key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }],
+    ["missing structured-output mode", { ARTICLE_MODEL_PROVIDER: "provider", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://models.example.test/v1", ARTICLE_MODEL_NAME: "model", ARTICLE_MODEL_API_KEY: "key" }],
+  ])("rejects %s at configuration time", (_label, environment) => {
+    expect(() => createArticleModelConfig(environment)).toThrow("ARTICLE_MODEL_CONFIG_INVALID");
+  });
+
+  it("accepts a successful provider response without an optional response id", async () => {
+    const receipts: unknown[] = [];
+    const provider = new OpenAICompatibleModelProvider({
+      fetch: async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(validPlan) } }] }), { status: 200 }),
+      persistReceipt: (receipt) => { receipts.push(receipt); },
+      config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "provider", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://models.example.test/v1", ARTICLE_MODEL_NAME: "model", ARTICLE_MODEL_API_KEY: "key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }),
+    });
+    await expect(provider.proposeResearchPlan(planInput)).resolves.toEqual(validPlan);
+    expect(receipts[0]).toHaveProperty("responseId", undefined);
+  });
 });

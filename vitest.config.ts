@@ -25,6 +25,8 @@ export default defineConfig({
         "lib/devto.ts",
         "lib/github/contributions.ts",
         "lib/mdx/mdx.ts",
+        "lib/article-workbench/**/*.ts",
+        "config/article-business-profile.ts",
         "components/PageBlocks.tsx",
         "components/PhotographyGallery.tsx",
         "components/PhotoPinModal.tsx",

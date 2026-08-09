@@ -170,4 +170,14 @@ contentHash: "${result.publicationRecord.contentHash}"
     expect(first.renderedMdx).not.toContain("\r");
     expect(first.publicationRecord.contentHash).toBe(second.publicationRecord.contentHash);
   });
+
+  it.each([
+    ["one supplied source", [sources[0]], { date: "2026-08-09", author: "fengc" }, proposal],
+    ["duplicate source identity", [sources[0], { ...sources[0] }], { date: "2026-08-09", author: "fengc" }, proposal],
+    ["missing default author", sources, { date: "2026-08-09", author: " " }, proposal],
+    ["impossible calendar date", sources, { date: "2026-02-30", author: "fengc" }, proposal],
+    ["unclosed citation marker", sources, { date: "2026-08-09", author: "fengc" }, { ...proposal, body: "Independent wording [[S001]] [[S002]] [[" }],
+  ] as const)("rejects %s before emitting an MDX document", (_label, articleSources, defaults, article) => {
+    expect(() => formatArticle({ article, sources: articleSources, defaults })).toThrow("ARTICLE_FORMAT_INVALID");
+  });
 });

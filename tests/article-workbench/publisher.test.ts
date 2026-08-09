@@ -130,4 +130,59 @@ describe("PersonalWebsitePublisher", () => {
 
     await expect(subject.verify({ id: "commit-sha", slug: article.slug, contentHash: article.contentHash, status: "submitted" })).resolves.toMatchObject({ status: "submitted" });
   });
+
+  it.each(["http://example.com", "https://example.com/path", "https://user@example.com"])
+  ("rejects an unsafe canonical site URL: %s", (siteUrl) => {
+    expect(() => createPersonalWebsitePublisher({ siteUrl })).toThrow("PUBLISHER_CONFIGURATION_INVALID");
+  });
+
+  it("fails closed on malformed remote files and incomplete create receipts", async () => {
+    const malformedRemote = publisher({
+      getRepoFile: vi.fn().mockResolvedValue({ path: article.path, encoding: "utf-8", content: "not-base64", sha: "remote" }),
+    });
+    await expect(malformedRemote.publisher.submit(article)).rejects.toThrow("PUBLISHER_PROVIDER_FAILED");
+
+    const incompleteWrite = publisher({
+      createRepoFile: vi.fn().mockResolvedValue({ contentSha: "", commitSha: "", path: article.path }),
+    });
+    await expect(incompleteWrite.publisher.submit(article)).rejects.toThrow("PUBLISHER_PROVIDER_FAILED");
+  });
+
+  it("rejects provider responses that cannot bind to the record-owned identity", async () => {
+    const wrongRemotePath = publisher({
+      getRepoFile: vi.fn().mockResolvedValue({ ...existing(article.contentHash), path: "content/articles/other.mdx" }),
+    });
+    await expect(wrongRemotePath.publisher.recover(article)).rejects.toThrow("PUBLISHER_PROVIDER_FAILED");
+
+    const missingHash = publisher({
+      getRepoFile: vi.fn().mockResolvedValue({ ...existing(article.contentHash), content: Buffer.from("---\ntitle: missing hash\n---\nBody").toString("base64") }),
+    });
+    await expect(missingHash.publisher.recover(article)).rejects.toThrow("PUBLISHER_PROVIDER_FAILED");
+
+    const wrongWritePath = publisher({
+      createRepoFile: vi.fn().mockResolvedValue({ contentSha: "content", commitSha: "commit", path: "content/articles/other.mdx" }),
+    });
+    await expect(wrongWritePath.publisher.submit(article)).rejects.toThrow("PUBLISHER_PROVIDER_FAILED");
+  });
+
+  it("keeps a successful public response pending when its exact metadata is absent or the slug is invalid", async () => {
+    const { publisher: subject } = publisher({ fetch: vi.fn().mockResolvedValue(new Response("<main>ready</main>", { status: 200 })) });
+    await expect(subject.verify({ id: "commit", slug: article.slug, contentHash: article.contentHash, status: "submitted" })).resolves.toMatchObject({ status: "submitted" });
+    await expect(subject.verify({ id: "commit", slug: "not safe" as never, contentHash: article.contentHash, status: "submitted" })).resolves.toMatchObject({ status: "submitted" });
+  });
+
+  it("keeps the default site configuration local and rejects incomplete same-hash remote identities", async () => {
+    expect(() => createPersonalWebsitePublisher()).not.toThrow();
+    const { publisher: subject } = publisher({
+      getRepoFile: vi.fn().mockResolvedValue({ ...existing(article.contentHash), sha: "" }),
+    });
+    await expect(subject.recover(article)).rejects.toThrow("PUBLISHER_PROVIDER_FAILED");
+  });
+
+  it("records a hash conflict even when the remote response has no optional SHA identifier", async () => {
+    const remote = existing(differentHash);
+    delete (remote as { sha?: string }).sha;
+    const { publisher: subject } = publisher({ getRepoFile: vi.fn().mockResolvedValue(remote) });
+    await expect(subject.recover(article)).rejects.toThrow("PUBLISHER_CONFLICT");
+  });
 });

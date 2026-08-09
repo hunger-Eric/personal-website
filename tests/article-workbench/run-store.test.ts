@@ -314,4 +314,23 @@ describe("article workbench run store", () => {
       expect(error.message).not.toContain("cookie-value");
     }
   });
+
+  it("rejects an update for a missing canonical run and corrupt non-artifact JSON", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    const id = "awr_aaaaaaaaaaaaaaaaaaaaaaaa";
+    await expect(store.updateRunStatus(id, "research_planned")).rejects.toThrow(`Article workbench run not found: ${id}`);
+    await mkdir(path.join(root, "runs", id), { recursive: true });
+    await writeFile(path.join(root, "runs", id, "source-packet.json"), "not-json", "utf8");
+    await expect(store.loadArtifact(id, "sourcePacket")).rejects.toThrow("ARTICLE_WORKBENCH_READ_FAILED");
+  });
+
+  it("fails closed when an existing publication claim names a different record", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    const run = await store.createRun();
+    const record = { title: "Title", body: "Body", slug: "title", contentHash: `sha256:${"a".repeat(64)}`, path: "content/articles/2026-08-09-title.mdx" };
+    await store.claimPublication(run.id, record);
+    await expect(store.claimPublication(run.id, { ...record, contentHash: `sha256:${"b".repeat(64)}` })).rejects.toThrow("PUBLICATION_CLAIM_CONFLICT");
+  });
 });
