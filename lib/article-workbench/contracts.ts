@@ -17,6 +17,11 @@ export const ArticleWorkbenchFailureCodeSchema = z.enum([
   "RESEARCH_PLAN_PROPOSAL_INVALID",
   "RESEARCH_PLAN_INVALID",
   "SOURCE_ASSESSMENT_INVALID",
+  "SOURCES_INSUFFICIENT",
+  "SOURCES_INVALID",
+  "ARTICLE_MODEL_OUTPUT_INVALID",
+  "PUBLISHER_CONFLICT",
+  "VERIFICATION_MISMATCH",
 ]);
 export type ArticleWorkbenchFailureCode = z.infer<
   typeof ArticleWorkbenchFailureCodeSchema
@@ -153,6 +158,27 @@ export const SourceConfirmationSchema = z
   .strict();
 export type SourceConfirmation = z.infer<typeof SourceConfirmationSchema>;
 
+export const ArticleRunFailureSchema = z.object({
+  stage: z.enum(["profile", "research_plan", "sources", "article", "publication", "verification"]),
+  code: z.string().regex(/^[A-Z0-9_]+$/),
+  message: nonEmptyText.max(500),
+  occurredAt: z.string().datetime(),
+  userActionRequired: z.boolean(),
+}).strict();
+export type ArticleRunFailure = z.infer<typeof ArticleRunFailureSchema>;
+
+export const ArticleWorkbenchRunSchema = z.object({
+  id: z.string().regex(/^awr_[a-f0-9]{24}$/),
+  status: ArticleRunStatusSchema,
+  failure: ArticleRunFailureSchema.optional(),
+}).strict();
+export type ArticleWorkbenchRun = z.infer<typeof ArticleWorkbenchRunSchema>;
+
+export const ArticleWorkbenchArtifactSchema = z.enum([
+  "input", "researchPlan", "sourcePacket", "modelResponse", "validatedArticle", "articleEdits", "renderedMdx", "publicationReceipt",
+]);
+export type ArticleWorkbenchArtifact = z.infer<typeof ArticleWorkbenchArtifactSchema>;
+
 export interface SearchRequest {
   query: string;
   type: ResearchQueryType;
@@ -194,7 +220,7 @@ export interface BusinessProfilePort {
 }
 
 export interface SearchPort {
-  search(request: SearchRequest): Promise<SourceCandidate[]>;
+  collect(plan: ResearchPlan): Promise<SourcePacketResult>;
 }
 
 export const ArticleResearchPlanInputSchema = z
@@ -209,6 +235,12 @@ export const ExtractedSourceSchema = SourceCandidateSchema.extend({
   content: nonEmptyText.max(20_000),
 }).strict();
 export type ExtractedSource = z.infer<typeof ExtractedSourceSchema>;
+
+export const SourcePacketResultSchema = z.discriminatedUnion("status", [
+  z.object({ status: z.literal("ok"), sources: z.array(ExtractedSourceSchema).min(1).max(8) }).strict(),
+  z.object({ status: z.literal("insufficient_sources"), sources: z.array(ExtractedSourceSchema).max(8) }).strict(),
+]);
+export type SourcePacketResult = z.infer<typeof SourcePacketResultSchema>;
 
 export const ArticleSourceBoundWriteInputSchema = z
   .object({
@@ -278,10 +310,30 @@ export interface ModelPort {
 }
 
 export interface RunStorePort {
-  createRun(): Promise<{ id: string; status: ArticleRunStatus }>;
-  updateRunStatus(id: string, status: ArticleRunStatus): Promise<void>;
+  createRun(): Promise<ArticleWorkbenchRun>;
+  getRun(id: string): Promise<ArticleWorkbenchRun | null>;
+  updateRunStatus(id: string, status: ArticleRunStatus, failure?: ArticleRunFailure): Promise<void>;
+  saveArtifact(id: string, artifact: ArticleWorkbenchArtifact, value: unknown): Promise<void>;
+  loadArtifact(id: string, artifact: ArticleWorkbenchArtifact): Promise<unknown | null>;
 }
 
+export const ArticlePublicationRecordSchema = z.object({
+  title: nonEmptyText.max(200),
+  body: nonEmptyText.max(40_000),
+  slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(160),
+  contentHash: nonEmptyText.max(500),
+}).strict();
+export type ArticlePublicationRecord = z.infer<typeof ArticlePublicationRecordSchema>;
+
+export const PublicationReceiptSchema = z.object({
+  id: nonEmptyText.max(500),
+  slug: ArticlePublicationRecordSchema.shape.slug,
+  contentHash: ArticlePublicationRecordSchema.shape.contentHash,
+  status: z.enum(["submitted", "published"]),
+}).strict();
+export type PublicationReceipt = z.infer<typeof PublicationReceiptSchema>;
+
 export interface PublisherPort {
-  submit(article: { title: string; body: string }): Promise<{ id: string }>;
+  submit(article: ArticlePublicationRecord): Promise<PublicationReceipt>;
+  verify(receipt: PublicationReceipt): Promise<PublicationReceipt>;
 }

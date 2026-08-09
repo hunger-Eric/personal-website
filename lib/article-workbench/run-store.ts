@@ -11,7 +11,11 @@ import { z } from "zod";
 
 import {
   ArticleRunStatusSchema,
+  ArticleWorkbenchRunSchema,
   BusinessProfileSchema,
+  type ArticleWorkbenchArtifact,
+  type ArticleWorkbenchRun,
+  type ArticleRunFailure,
   type ArticleRunStatus,
   type BusinessProfile,
   type RunStorePort,
@@ -20,26 +24,16 @@ import {
 const RUN_ID_PATTERN = /^awr_[a-f0-9]{24}$/;
 const secretKeyPattern = /api[-_]?key|authorization|token|secret|cookie/i;
 
-const RunManifestSchema = z
-  .object({
-    id: z.string().regex(RUN_ID_PATTERN),
-    status: ArticleRunStatusSchema,
-  })
-  .strict();
-
 const artifactFiles = {
+  input: "input.json",
   researchPlan: "research-plan.json",
   sourcePacket: "source-packet.json",
   modelResponse: "model-response.json",
+  validatedArticle: "validated-article.json",
+  articleEdits: "article-edits.json",
   renderedMdx: "rendered.mdx",
   publicationReceipt: "publication-receipt.json",
 } as const;
-
-export type ArticleWorkbenchArtifact = keyof typeof artifactFiles;
-export interface ArticleWorkbenchRun {
-  id: string;
-  status: ArticleRunStatus;
-}
 
 type FileOperations = Pick<typeof import("node:fs/promises"), "mkdir" | "readFile" | "rename" | "rm" | "writeFile">;
 
@@ -86,7 +80,7 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
     const runId = this.validateRunId(id);
     const run = await this.readJsonIfPresent(
       this.runManifestPath(runId),
-      RunManifestSchema as z.ZodType<ArticleWorkbenchRun>
+      ArticleWorkbenchRunSchema as z.ZodType<ArticleWorkbenchRun>
     );
     if (run && run.id !== runId) {
       throw readError();
@@ -94,14 +88,14 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
     return run;
   }
 
-  async updateRunStatus(id: string, status: ArticleRunStatus): Promise<void> {
+  async updateRunStatus(id: string, status: ArticleRunStatus, failure?: ArticleRunFailure): Promise<void> {
     const runId = this.validateRunId(id);
     const nextStatus = ArticleRunStatusSchema.parse(status);
     const current = await this.getRun(runId);
     if (!current) {
       throw new Error(`Article workbench run not found: ${runId}`);
     }
-    await this.writeJsonAtomically(this.runManifestPath(runId), { ...current, status: nextStatus });
+    await this.writeJsonAtomically(this.runManifestPath(runId), { ...current, status: nextStatus, ...(failure ? { failure } : {}) });
   }
 
   async saveArtifact(id: string, artifact: ArticleWorkbenchArtifact, value: unknown): Promise<void> {

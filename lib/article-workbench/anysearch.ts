@@ -1,4 +1,4 @@
-import type { ResearchPlan } from "./contracts";
+import type { ExtractedSource, ResearchPlan, SearchPort, SourcePacketResult } from "./contracts";
 import { canonicalizePublicHttpUrl } from "./safe-url";
 
 const ENDPOINT = "https://api.anysearch.com/mcp";
@@ -10,17 +10,6 @@ const MIN_EXTRACTED_SOURCES = 4;
 const secretKeyPattern = /api[-_]?key|authorization|token|secret|cookie|password|passphrase|credential|private[-_]?key|access[-_]?key|session[-_]?key/i;
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
-
-export interface ExtractedSource {
-  id: string;
-  title: string;
-  url: string;
-  content: string;
-}
-
-export type SourcePacketResult =
-  | { status: "ok"; sources: ExtractedSource[] }
-  | { status: "insufficient_sources"; sources: ExtractedSource[] };
 
 export interface AnySearchResearchAdapterOptions {
   fetch?: FetchLike;
@@ -45,7 +34,7 @@ export function createAnySearchResearchAdapter(
   return new AnySearchResearchAdapter(options);
 }
 
-export class AnySearchResearchAdapter {
+export class AnySearchResearchAdapter implements SearchPort {
   private readonly fetcher: FetchLike;
   private readonly apiKey?: string;
   private readonly persistRawResponse?: (response: unknown) => Promise<void> | void;
@@ -93,7 +82,7 @@ export class AnySearchResearchAdapter {
       const content = source.content.slice(0, remaining);
       if (!content) continue;
       remaining -= content.length;
-      sources.push({ id: `S${String(sources.length + 1).padStart(3, "0")}`, ...source, content });
+      sources.push({ id: `S${String(sources.length + 1).padStart(3, "0")}`, ...source, excerpt: content.slice(0, 2_000), content });
     }
 
     return sources.length >= MIN_EXTRACTED_SOURCES
