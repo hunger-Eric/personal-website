@@ -25,7 +25,7 @@ describe("getRepoFile", () => {
 
     expect(result).toEqual(mockData);
     expect(fetch).toHaveBeenCalledWith(
-      "https://api.github.com/repos/hunger-Eric/personal-website/contents/config/test.json",
+      "https://api.github.com/repos/hunger-Eric/personal-website/contents/config/test.json?ref=main",
       expect.objectContaining({
         headers: expect.objectContaining({
           Authorization: "Bearer test-token",
@@ -42,6 +42,28 @@ describe("getRepoFile", () => {
     const { getRepoFile } = await import("@/lib/github-photo");
     const result = await getRepoFile("config/nonexistent.json");
     expect(result).toBeNull();
+  });
+
+  it("reads an explicitly selected safe branch", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ path: "config/test.json" }), { status: 200 })
+    );
+
+    const { getRepoFile } = await import("@/lib/github-photo");
+    await getRepoFile("config/test.json", "release/2026");
+
+    expect(fetch).toHaveBeenCalledWith(
+      "https://api.github.com/repos/hunger-Eric/personal-website/contents/config/test.json?ref=release%2F2026",
+      expect.any(Object)
+    );
+  });
+
+  it("rejects malformed branch input without exposing it", async () => {
+    const fetchSpy = vi.spyOn(global, "fetch");
+    const { getRepoFile } = await import("@/lib/github-photo");
+
+    await expect(getRepoFile("config/test.json", "main?token=super-secret")).rejects.toThrow("GITHUB_BRANCH_INVALID");
+    expect(fetchSpy).not.toHaveBeenCalled();
   });
 
   it("throws on non-404 error status", async () => {
@@ -181,6 +203,17 @@ describe("createRepoFile", () => {
     await expect(createRepoFile("content/articles/example.mdx", "Body", "create")).resolves.toEqual({ contentSha: "content-sha", commitSha: "commit-sha", path: "content/articles/example.mdx" });
   });
 
+  it("writes an explicitly selected branch", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ content: { sha: "content-sha", path: "content/articles/example.mdx" }, commit: { sha: "commit-sha" } }), { status: 201 })
+    );
+    const { createRepoFile } = await import("@/lib/github-photo");
+
+    await createRepoFile("content/articles/example.mdx", "Body", "create", "utf-8", "release/2026");
+    const call = vi.mocked(fetch).mock.calls[0];
+    expect(JSON.parse(call[1]!.body as string).branch).toBe("release/2026");
+  });
+
   it("rejects a malformed successful write response", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
       new Response(JSON.stringify({ content: { sha: "content-sha", path: "other.mdx" }, commit: {} }), { status: 201 })
@@ -296,6 +329,9 @@ describe("saveConfig", () => {
     const { saveConfig } = await import("@/lib/github-photo");
     await saveConfig({ projects: [] });
 
+    expect(vi.mocked(fetch).mock.calls[0][0]).toBe(
+      "https://api.github.com/repos/hunger-Eric/personal-website/contents/config/photography.json?ref=main"
+    );
     // Verify the PUT request includes the SHA
     const putCall = vi.mocked(fetch).mock.calls[1];
     const body = JSON.parse(putCall[1]!.body as string);

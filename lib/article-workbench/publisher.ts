@@ -1,6 +1,6 @@
 import matter from "gray-matter";
 
-import { createRepoFile, getRepoFile, type RepoFileWriteReceipt } from "@/lib/github-photo";
+import { createRepoFile, DEFAULT_REPO_BRANCH, getRepoFile, isValidRepoBranch, type RepoFileWriteReceipt } from "@/lib/github-photo";
 import { SITE_URL } from "@/lib/site-url";
 
 import { PublisherConflictError, type ArticlePublicationRecord, type PublicationReceipt, type PublisherPort } from "./contracts";
@@ -9,13 +9,14 @@ type RepoFile = Awaited<ReturnType<typeof getRepoFile>>;
 
 export interface PersonalWebsitePublisherOptions {
   siteUrl?: string;
-  getRepoFile?: (path: string) => Promise<RepoFile>;
+  branch?: string;
+  getRepoFile?: (path: string, branch?: string) => Promise<RepoFile>;
   createRepoFile?: (
     path: string,
     content: string | Buffer,
     message: string,
     encoding?: "base64" | "utf-8",
-    existingSha?: string,
+    branch?: string,
   ) => Promise<RepoFileWriteReceipt>;
   fetch?: typeof globalThis.fetch;
 }
@@ -23,6 +24,7 @@ export interface PersonalWebsitePublisherOptions {
 export function createPersonalWebsitePublisher(options: PersonalWebsitePublisherOptions = {}): PublisherPort {
   return new PersonalWebsitePublisher({
     siteUrl: options.siteUrl ?? SITE_URL,
+    branch: options.branch ?? DEFAULT_REPO_BRANCH,
     getRepoFile: options.getRepoFile ?? getRepoFile,
     createRepoFile: options.createRepoFile ?? createRepoFile,
     fetch: options.fetch ?? globalThis.fetch,
@@ -34,6 +36,7 @@ class PersonalWebsitePublisher implements PublisherPort {
 
   constructor(private readonly options: Required<PersonalWebsitePublisherOptions>) {
     this.siteUrl = canonicalSiteUrl(options.siteUrl);
+    if (!isValidRepoBranch(options.branch)) throw new Error("PUBLISHER_CONFIGURATION_INVALID");
   }
 
   async submit(article: ArticlePublicationRecord): Promise<PublicationReceipt> {
@@ -41,7 +44,7 @@ class PersonalWebsitePublisher implements PublisherPort {
       const recovered = await this.recover(article);
       if (recovered) return recovered;
       try {
-        const write = await this.options.createRepoFile(article.path, article.body, `feat(article): publish ${article.slug}`, "utf-8");
+        const write = await this.options.createRepoFile(article.path, article.body, `feat(article): publish ${article.slug}`, "utf-8", this.options.branch);
         return receiptFromWrite(write, article);
       } catch {
         const afterCreateFailure = await this.recover(article);
@@ -56,7 +59,7 @@ class PersonalWebsitePublisher implements PublisherPort {
 
   async recover(article: ArticlePublicationRecord): Promise<PublicationReceipt | null> {
     try {
-      const existing = await this.options.getRepoFile(article.path);
+      const existing = await this.options.getRepoFile(article.path, this.options.branch);
       return existing ? existingReceipt(existing, article) : null;
     } catch (error) {
       if (isKnownPublisherError(error)) throw error;

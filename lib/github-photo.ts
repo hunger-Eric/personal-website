@@ -3,7 +3,8 @@
 
 const OWNER = "hunger-Eric";
 const REPO = "personal-website";
-const BRANCH = "main";
+export const DEFAULT_REPO_BRANCH = "main";
+const BRANCH = DEFAULT_REPO_BRANCH;
 
 type GitHubContent = {
   sha?: string;
@@ -27,6 +28,18 @@ type GitHubWriteResponse = {
   commit?: { sha?: unknown };
 };
 
+export function isValidRepoBranch(branch: string): boolean {
+  return /^[A-Za-z0-9][A-Za-z0-9._/-]{0,255}$/.test(branch)
+    && !branch.includes("..")
+    && !branch.includes("//")
+    && !/[./]$/.test(branch);
+}
+
+function validatedRepoBranch(branch: string): string {
+  if (!isValidRepoBranch(branch)) throw new Error("GITHUB_BRANCH_INVALID");
+  return branch;
+}
+
 /**
  * Get the GitHub API token from env.
  */
@@ -41,9 +54,12 @@ function getToken(): string {
 /**
  * Fetch a file from the GitHub repo. Returns null if not found.
  */
-export async function getRepoFile(path: string): Promise<GitHubContent | null> {
+export async function getRepoFile(path: string, branch: string = DEFAULT_REPO_BRANCH): Promise<GitHubContent | null> {
+  const targetBranch = validatedRepoBranch(branch);
+  const url = new URL(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`);
+  url.search = new URLSearchParams({ ref: targetBranch }).toString();
   const res = await fetch(
-    `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`,
+    url.toString(),
     {
       headers: {
         Authorization: `Bearer ${getToken()}`,
@@ -67,9 +83,10 @@ export async function upsertRepoFile(
   content: string | Buffer,
   message: string,
   encoding: "base64" | "utf-8" = "utf-8",
-  existingSha?: string
+  existingSha?: string,
+  branch: string = DEFAULT_REPO_BRANCH,
 ): Promise<RepoFileWriteReceipt> {
-  return writeRepoFile(path, content, message, encoding, existingSha);
+  return writeRepoFile(path, content, message, encoding, existingSha, branch);
 }
 
 /**
@@ -81,8 +98,9 @@ export async function createRepoFile(
   content: string | Buffer,
   message: string,
   encoding: "base64" | "utf-8" = "utf-8",
+  branch: string = DEFAULT_REPO_BRANCH,
 ): Promise<RepoFileWriteReceipt> {
-  return writeRepoFile(path, content, message, encoding);
+  return writeRepoFile(path, content, message, encoding, undefined, branch);
 }
 
 async function writeRepoFile(
@@ -91,7 +109,9 @@ async function writeRepoFile(
   message: string,
   encoding: "base64" | "utf-8",
   existingSha?: string,
+  branch: string = DEFAULT_REPO_BRANCH,
 ): Promise<RepoFileWriteReceipt> {
+  const targetBranch = validatedRepoBranch(branch);
   const body: {
     message: string;
     branch: string;
@@ -99,7 +119,7 @@ async function writeRepoFile(
     sha?: string;
   } = {
     message,
-    branch: BRANCH,
+    branch: targetBranch,
     content:
       encoding === "base64"
         ? typeof content === "string"

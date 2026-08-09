@@ -39,10 +39,11 @@ function publisher(options: Partial<Parameters<typeof createPersonalWebsitePubli
 
 describe("PersonalWebsitePublisher", () => {
   it("creates exactly the record-owned path and returns a submitted receipt", async () => {
-    const { publisher: subject, createRepoFile, fetch } = publisher();
+    const { publisher: subject, getRepoFile, createRepoFile, fetch } = publisher();
 
     await expect(subject.submit(article)).resolves.toEqual({ id: "commit-sha", slug: article.slug, contentHash: article.contentHash, status: "submitted" });
-    expect(createRepoFile).toHaveBeenCalledWith(article.path, article.body, "feat(article): publish evidence-led-article", "utf-8");
+    expect(getRepoFile).toHaveBeenCalledWith(article.path, "main");
+    expect(createRepoFile).toHaveBeenCalledWith(article.path, article.body, "feat(article): publish evidence-led-article", "utf-8", "main");
     expect(fetch).not.toHaveBeenCalled();
   });
 
@@ -50,6 +51,25 @@ describe("PersonalWebsitePublisher", () => {
     const { publisher: subject, createRepoFile } = publisher({ getRepoFile: vi.fn().mockResolvedValue(existing(article.contentHash)) });
 
     await expect(subject.submit(article)).resolves.toEqual({ id: "existing-content-sha", slug: article.slug, contentHash: article.contentHash, status: "submitted" });
+    expect(createRepoFile).not.toHaveBeenCalled();
+  });
+
+  it("uses one alternate branch for read and create", async () => {
+    const getRepoFile = vi.fn().mockResolvedValue(null);
+    const createRepoFile = vi.fn().mockResolvedValue({ contentSha: "content-sha", commitSha: "commit-sha", path: article.path });
+    const { publisher: subject } = publisher({ branch: "release/2026", getRepoFile, createRepoFile });
+
+    await subject.submit(article);
+    expect(getRepoFile).toHaveBeenCalledWith(article.path, "release/2026");
+    expect(createRepoFile).toHaveBeenCalledWith(article.path, article.body, "feat(article): publish evidence-led-article", "utf-8", "release/2026");
+  });
+
+  it("fails safely before any provider call for a malformed target branch", () => {
+    const getRepoFile = vi.fn();
+    const createRepoFile = vi.fn();
+
+    expect(() => publisher({ branch: "main?token=super-secret", getRepoFile, createRepoFile })).toThrow("PUBLISHER_CONFIGURATION_INVALID");
+    expect(getRepoFile).not.toHaveBeenCalled();
     expect(createRepoFile).not.toHaveBeenCalled();
   });
 
@@ -74,6 +94,9 @@ describe("PersonalWebsitePublisher", () => {
     await expect(subject.submit(article)).resolves.toMatchObject({ id: "existing-content-sha", status: "submitted" });
     expect(getRepoFile).toHaveBeenCalledTimes(2);
     expect(createRepoFile).toHaveBeenCalledTimes(1);
+    expect(getRepoFile).toHaveBeenNthCalledWith(1, article.path, "main");
+    expect(getRepoFile).toHaveBeenNthCalledWith(2, article.path, "main");
+    expect(createRepoFile).toHaveBeenCalledWith(article.path, article.body, "feat(article): publish evidence-led-article", "utf-8", "main");
   });
 
   it.each([
