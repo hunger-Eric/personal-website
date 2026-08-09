@@ -319,6 +319,16 @@ describe("article workbench workflow", () => {
     expect(store.artifacts.get(`${run.id}:articleEdits`)).toBeUndefined();
   });
 
+  it("fails and does not save a human edit that replays a complete short source", async () => {
+    const { store, workflow } = createWorkflow();
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    const previous = store.artifacts.get(`${run.id}:validatedArticle`);
+    await expect(workflow.saveArticleEdits(run.id, { confirmations: [], body: "Evidence one [[S001]] and Evidence two [[S002]]." })).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");
+    expect(store.runs.get(run.id)?.status).toBe("failed");
+    expect(store.artifacts.get(`${run.id}:validatedArticle`)).toBe(previous);
+    expect(store.artifacts.get(`${run.id}:articleEdits`)).toBeUndefined();
+  });
+
   it("rejects forged publication fields without changing artifacts", async () => {
     const { workflow, store } = createWorkflow();
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });

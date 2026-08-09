@@ -190,7 +190,7 @@ export function articleApiError(error: unknown): { status: number; body: { error
   if (code === "ARTICLE_REQUEST_TOO_LARGE") return { status: 413, body: { error: "Request body too large" } };
   if (code === "ARTICLE_RUN_NOT_FOUND") return { status: 404, body: { error: "Not Found" } };
   if (code.includes("STATE_INVALID") || code.includes("CONFIRMATION_REQUIRED") || code.includes("ALREADY_CLAIMED") || code.includes("PUBLISHER_CONFLICT") || code.includes("CLAIM_CONFLICT") || code.includes("TRANSITION_INVALID") || code.includes("RECEIPT_MISSING") || code.includes("RECORD_REQUIRED")) return { status: 409, body: { error: "Article workflow conflict" } };
-  if (code.includes("REQUEST_FAILED") || code.includes("PROVIDER_FAILED") || code.includes("PERSISTENCE_FAILED") || code.includes("WORKBENCH_READ_FAILED")) return { status: 502, body: { error: "Article provider unavailable" } };
+  if (code.includes("REQUEST_FAILED") || code.includes("PROVIDER_FAILED") || code.includes("PERSISTENCE_FAILED") || code.includes("WORKBENCH_READ_FAILED") || code === "VERIFICATION_MISMATCH") return { status: 502, body: { error: "Article provider unavailable" } };
   if (error instanceof z.ZodError || code === "ARTICLE_REQUEST_INVALID") return { status: 400, body: { error: "Invalid request" } };
   if (code.includes("INVALID") || code.includes("SOURCES_INSUFFICIENT")) return { status: 422, body: { error: "Article input or evidence is invalid" } };
   return { status: 400, body: { error: "Invalid request" } };

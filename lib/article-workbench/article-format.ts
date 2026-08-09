@@ -34,6 +34,7 @@ export function formatArticle(input: {
   const article = parseArticle(input.article);
   const sources = parseSources(input.sources);
   const defaults = parseDefaults(input.defaults);
+  rejectExtractedSourceReplay(article, sources);
   const body = normalizeBody(article.body);
   validateSafeMdxBody(body);
   const citedSourceIds = citationIds(body, sources, article);
@@ -45,6 +46,29 @@ export function formatArticle(input: {
   const slug = article.slugProposal;
 
   return { publicationRecord: { title: article.title, body: renderedMdx, slug, contentHash, path: `content/articles/${defaults.date}-${slug}.mdx` }, renderedMdx };
+}
+
+/**
+ * The model owns prose, but source-page text is evidence, not browser output.
+ * This deliberately only normalizes whitespace before comparing; it never
+ * synthesizes substitute wording for the model or an editor.
+ */
+function rejectExtractedSourceReplay(article: SourceBoundArticleProposal, sources: readonly ExtractedSource[]): void {
+  const sourceTexts = sources.map((source) => normalizedEvidence(source.content));
+  const browserText = [
+    article.title,
+    article.summary,
+    ...article.tags,
+    article.body.replace(/\[\[S\d{3}\]\]/g, ""),
+    ...article.sourceAssessments.map((assessment) => assessment.rationale),
+  ].map(normalizedEvidence);
+  const claims = article.sourceAssessments.flatMap((assessment) => assessment.claimsSupported);
+  const claimTexts = [claims.join(" "), claims.join("")].map(normalizedEvidence);
+  if (sourceTexts.some((sourceText) => sourceText && [...browserText, ...claimTexts].some((text) => text.includes(sourceText)))) throw formatError();
+}
+
+function normalizedEvidence(value: string): string {
+  return value.replace(/\r\n?/g, "\n").replace(/\s+/g, " ").trim();
 }
 
 function parseArticle(input: SourceBoundArticleProposal): SourceBoundArticleProposal {

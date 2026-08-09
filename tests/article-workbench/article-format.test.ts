@@ -123,6 +123,21 @@ contentHash: "${result.publicationRecord.contentHash}"
     expect(formatArticle({ article: { ...proposal, body: "An important exporter writes prose. [[S001]] [[S002]]" }, sources, defaults: { date: "2026-08-09", author: "fengc" } }).renderedMdx).toContain("important exporter");
   });
 
+  it("rejects complete extracted-source replay, including short sources and split claims", () => {
+    const replaySources = [
+      { ...sources[0], content: "short source" },
+      { ...sources[1], content: "a complete source sentence" },
+    ];
+    expect(() => formatArticle({ article: { ...proposal, body: "short source [[S001]] and independent wording [[S002]]." }, sources: replaySources, defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
+    expect(() => formatArticle({ article: { ...proposal, body: "Independent wording [[S001]] and corroboration [[S002]].", sourceAssessments: [{ ...proposal.sourceAssessments[0], claimsSupported: ["a complete", "source sentence"] }, proposal.sourceAssessments[1]] }, sources: replaySources, defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
+    expect(() => formatArticle({ article: { ...proposal, summary: "a complete source sentence", body: "Independent wording [[S001]] and corroboration [[S002]]." }, sources: replaySources, defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
+  });
+
+  it("keeps safe paraphrase distinct from the extracted source", () => {
+    const replaySources = [{ ...sources[0], content: "a complete source sentence" }, { ...sources[1], content: "another evidence page" }];
+    expect(formatArticle({ article: { ...proposal, body: "The guidance supports a cautious approach. [[S001]] Independent evidence corroborates it. [[S002]]" }, sources: replaySources, defaults: { date: "2026-08-09", author: "fengc" } }).renderedMdx).toContain("cautious approach");
+  });
+
   it("escapes source URL parentheses in the generated Markdown destination", () => {
     const result = formatArticle({ article: proposal, sources: [{ ...sources[0], url: "https://example.com/a_(b)" }, sources[1]], defaults: { date: "2026-08-09", author: "fengc" } });
     expect(result.renderedMdx).toContain("https://example.com/a_%28b%29");

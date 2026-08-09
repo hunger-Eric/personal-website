@@ -38,7 +38,7 @@ describe("article run API", () => {
       expect(projection?.article?.sourceAssessments[1]).toMatchObject({ sourceId: "S002", category: "standard", rationale: "Independent standard" });
     } finally { await rm(root, { recursive: true, force: true }); }
   });
-  it.each([["ARTICLE_WORKBENCH_READ_FAILED", 502], ["ARTICLE_WORKBENCH_PERSISTENCE_FAILED", 502], ["PUBLICATION_RECEIPT_MISSING", 409], ["PUBLICATION_RECORD_REQUIRED", 409]] as const)("maps %s to %i", (code, status) => {
+  it.each([["ARTICLE_WORKBENCH_READ_FAILED", 502], ["ARTICLE_WORKBENCH_PERSISTENCE_FAILED", 502], ["PUBLICATION_RECEIPT_MISSING", 409], ["PUBLICATION_RECORD_REQUIRED", 409], ["VERIFICATION_MISMATCH", 502]] as const)("maps %s to %i", (code, status) => {
     expect(articleApiError(new Error(code)).status).toBe(status);
   });
 });
