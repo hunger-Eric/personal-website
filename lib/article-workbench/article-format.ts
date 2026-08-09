@@ -110,7 +110,7 @@ function validateSafeMdxBody(body: string): void {
     /^\s*#(?!#)\s+/m.test(executableText) ||
     /^\s*#{1,6}\s*(?:sources|参考来源|相关链接)\s*[:：]?\s*$/im.test(executableText) ||
     /https?:\/\/|(^|[^:])\/\/\S|(?:^|[\s(\[])www\./im.test(executableText) ||
-    /^\s*(?:import|export)\s+/m.test(executableText) ||
+    /^\s*(?:import|export)(?=\s|["'*{])/m.test(executableText) ||
     /<\/?[A-Za-z][^>]*>/m.test(executableText) ||
     /[{}]/.test(executableText)
   ) {
@@ -122,7 +122,7 @@ function renderBody(body: string, citedIds: readonly string[], sources: readonly
   const citationNumber = new Map(citedIds.map((id, index) => [id, index + 1]));
   const citedSources = citedIds.map((id) => sources.find((source) => source.id === id)!);
   const citedBody = body.replace(/\[\[(S\d{3})\]\]/g, (_token, id: string) => `〔${citationNumber.get(id)}〕`);
-  const references = citedSources.map((source, index) => `${index + 1}. [${source.title}](${source.url})${source.publisher ? `（${source.publisher}）` : ""}`).join("\n");
+  const references = citedSources.map((source, index) => `${index + 1}. [${source.title}](${markdownDestination(source.url)})${source.publisher ? `（${source.publisher}）` : ""}`).join("\n");
   return `${citedBody}\n\n## 参考来源\n\n${references}\n\n## 相关链接\n\n- [项目](/projects)\n- [服务](/services)\n- [联系](/contact)\n`;
 }
 
@@ -138,6 +138,10 @@ function safeSourceLabel(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
   if (!normalized || /[\r\n\x00-\x1f{}<>\[\]()`]/.test(normalized)) throw formatError();
   return normalized.replace(/\\/g, "\\\\");
+}
+
+function markdownDestination(url: string): string {
+  return url.replace(/[()\\\s]/g, (character) => `%${character.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`);
 }
 
 function maskCode(body: string): string {

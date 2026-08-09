@@ -111,6 +111,15 @@ contentHash: "${result.publicationRecord.contentHash}"
     expect(() => formatArticle({ article: { ...proposal, body }, sources, defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
   });
 
+  it.each(["import\"module\"", "import*as module from 'x'", "export{}"])("rejects MDX ESM syntax %s", (body) => {
+    expect(() => formatArticle({ article: { ...proposal, body: `${body}\n\n正文。[[S001]] [[S002]]` }, sources, defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
+  });
+
+  it("escapes source URL parentheses in the generated Markdown destination", () => {
+    const result = formatArticle({ article: proposal, sources: [{ ...sources[0], url: "https://example.com/a_(b)" }, sources[1]], defaults: { date: "2026-08-09", author: "fengc" } });
+    expect(result.renderedMdx).toContain("https://example.com/a_%28b%29");
+  });
+
   it("rejects unsafe source titles and renders a known publisher", () => {
     expect(() => formatArticle({ article: proposal, sources: [{ ...sources[0], title: "bad\n<Widget>{x}" }, sources[1]], defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
     expect(formatArticle({ article: proposal, sources: [{ ...sources[0], publisher: "国务院" }, sources[1]], defaults: { date: "2026-08-09", author: "fengc" } }).renderedMdx).toContain("（国务院）");

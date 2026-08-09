@@ -213,6 +213,19 @@ describe("article workbench workflow", () => {
     expect(store.artifacts.get(`${run.id}:validatedArticle`)).toMatchObject({ title: "First edit", body: "Edited claim [[S001]] and corroboration [[S002]]." });
   });
 
+  it("persists the formatter-normalized slug across later edits and publication", async () => {
+    const { workflow, store, submittedRecord } = createWorkflow();
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await workflow.saveArticleEdits(run.id, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }], slugProposal: "New Slug" });
+    await workflow.saveArticleEdits(run.id, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }], title: "Later edit" });
+    const article = store.artifacts.get(`${run.id}:validatedArticle`) as { slugProposal: string };
+    const record = store.artifacts.get(`${run.id}:publicationRecord`) as { slug: string; path: string; contentHash: string };
+    expect(article.slugProposal).toBe("new-slug");
+    expect(record).toMatchObject({ slug: "new-slug", path: "content/articles/2026-08-09-new-slug.mdx" });
+    await workflow.submitPublication(run.id);
+    expect(submittedRecord()).toMatchObject({ slug: record.slug, path: record.path, contentHash: record.contentHash });
+  });
+
   it("fails unsafe prose before validated artifacts are written", async () => {
     const { workflow, store } = createWorkflow({ article: { title: "Evidence-led article", slugProposal: "evidence-led-article", summary: "A source-bound summary.", tags: ["research"], body: "{\nprocess.env.SECRET\n}\n\n[[S001]] [[S002]]", sourceAssessments: [{ sourceId: "S001", category: "official", rationale: "Primary", claimsSupported: ["A"] }, { sourceId: "S002", category: "standard", rationale: "Standard", claimsSupported: ["B"] }] } });
     await expect(workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] })).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");

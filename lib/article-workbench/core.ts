@@ -111,8 +111,9 @@ class ArticleWorkflow {
     const editable = { title: article.title, slugProposal: article.slugProposal, summary: article.summary, tags: article.tags, body: article.body };
     const merged = { ...article, ...editable, ...pickEditable(previous), ...pickEditable(parsedEdits), sourceAssessments: article.sourceAssessments };
     const formatted = formatArticle({ article: merged, sources: packet.sources, defaults: this.dependencies.publicationDefaults });
+    const validatedArticle = { ...merged, slugProposal: formatted.publicationRecord.slug };
     await this.dependencies.store.saveArtifact(runId, "articleEdits", { ...pickEditable(previous), ...pickEditable(parsedEdits), confirmations });
-    await this.dependencies.store.saveArtifact(runId, "validatedArticle", merged);
+    await this.dependencies.store.saveArtifact(runId, "validatedArticle", validatedArticle);
     await this.dependencies.store.saveArtifact(runId, "renderedMdx", formatted.renderedMdx);
     await this.dependencies.store.saveArtifact(runId, "publicationRecord", formatted.publicationRecord);
     return this.requireRun(runId);
