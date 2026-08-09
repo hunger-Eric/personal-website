@@ -36,11 +36,11 @@ describe("article workbench formatter", () => {
     const result = formatArticle({ article: proposal, sources, defaults: { date: "2026-08-09", author: "fengc" } });
 
     expect(result).toMatchObject({
-      path: "content/articles/2026-08-09-enterprise-ai-workflow.mdx",
       publicationRecord: {
         title: proposal.title,
         slug: "enterprise-ai-workflow",
         contentHash: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+        path: "content/articles/2026-08-09-enterprise-ai-workflow.mdx",
       },
     });
     expect(result.renderedMdx).toBe(`---
@@ -101,6 +101,19 @@ contentHash: "${result.publicationRecord.contentHash}"
       sources,
       defaults: { date: "2026-08-09", author: "fengc" },
     })).toThrow("ARTICLE_FORMAT_INVALID");
+  });
+
+  it.each([
+    ["multiline expression", "{\nprocess.env.SECRET\n}\n\n正文。[[S001]] [[S002]]"],
+    ["full-width source heading", "## 参考来源：\n\n正文。[[S001]] [[S002]]"],
+    ["related links heading", "## 相关链接 :\n\n正文。[[S001]] [[S002]]"],
+  ])("rejects %s", (_name, body) => {
+    expect(() => formatArticle({ article: { ...proposal, body }, sources, defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
+  });
+
+  it("rejects unsafe source titles and renders a known publisher", () => {
+    expect(() => formatArticle({ article: proposal, sources: [{ ...sources[0], title: "bad\n<Widget>{x}" }, sources[1]], defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
+    expect(formatArticle({ article: proposal, sources: [{ ...sources[0], publisher: "国务院" }, sources[1]], defaults: { date: "2026-08-09", author: "fengc" } }).renderedMdx).toContain("（国务院）");
   });
 
   it("escapes frontmatter values and has a stable LF-only hash", () => {

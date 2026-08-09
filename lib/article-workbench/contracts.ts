@@ -236,6 +236,7 @@ export type ArticleResearchPlanInput = z.infer<typeof ArticleResearchPlanInputSc
 
 export const ExtractedSourceSchema = SourceCandidateSchema.extend({
   content: nonEmptyText.max(20_000),
+  publisher: nonEmptyText.max(200).optional(),
 }).strict();
 export type ExtractedSource = z.infer<typeof ExtractedSourceSchema>;
 
@@ -321,18 +322,24 @@ export interface RunStorePort {
   claimPublication(id: string, record: ArticlePublicationRecord): Promise<PublicationClaimResult>;
 }
 
-export const ArticlePublicationRecordSchema = z.object({
+const publicationPathSchema = z.string().regex(/^content\/articles\/\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*\.mdx$/);
+const articlePublicationRecordBaseSchema = z.object({
   title: nonEmptyText.max(200),
   body: nonEmptyText.max(40_000),
   slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(160),
   contentHash: nonEmptyText.max(500),
+  path: publicationPathSchema,
 }).strict();
+export const ArticlePublicationRecordSchema = articlePublicationRecordBaseSchema.superRefine((record, context) => {
+  const match = /^content\/articles\/(\d{4}-\d{2}-\d{2})-([a-z0-9]+(?:-[a-z0-9]+)*)\.mdx$/.exec(record.path);
+  if (!match || Number.isNaN(new Date(`${match[1]}T00:00:00.000Z`).valueOf()) || new Date(`${match[1]}T00:00:00.000Z`).toISOString().slice(0, 10) !== match[1] || match[2] !== record.slug) context.addIssue({ code: z.ZodIssueCode.custom, path: ["path"], message: "Publication path must match its canonical date and slug" });
+});
 export type ArticlePublicationRecord = z.infer<typeof ArticlePublicationRecordSchema>;
 
 export const PublicationReceiptSchema = z.object({
   id: nonEmptyText.max(500),
-  slug: ArticlePublicationRecordSchema.shape.slug,
-  contentHash: ArticlePublicationRecordSchema.shape.contentHash,
+  slug: articlePublicationRecordBaseSchema.shape.slug,
+  contentHash: articlePublicationRecordBaseSchema.shape.contentHash,
   status: z.enum(["submitted", "published"]),
 }).strict();
 export type PublicationReceipt = z.infer<typeof PublicationReceiptSchema>;

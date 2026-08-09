@@ -10,6 +10,7 @@ import {
   assignResearchPlanIds,
   bindSourceAssessment,
   ArticleSourceBoundWriteInputSchema,
+  ArticlePublicationRecordSchema,
 } from "@/lib/article-workbench/contracts";
 
 describe("article-workbench contracts", () => {
@@ -153,5 +154,11 @@ describe("article-workbench contracts", () => {
       }, topic: "AI controls", articleRules: ["Be useful"], sources: [{ id: "S001", title: "Guide", url: "https://example.com/guide", excerpt: "Excerpt", content: "Evidence" }],
       provider: "opencode_zen",
     }).success).toBe(false);
+  });
+
+  it("requires a code-owned publication path to match the record slug and real date", () => {
+    const record = { title: "Title", body: "Body", slug: "title", contentHash: "sha256:abc", path: "content/articles/2026-08-09-title.mdx" };
+    expect(ArticlePublicationRecordSchema.safeParse(record).success).toBe(true);
+    expect(ArticlePublicationRecordSchema.safeParse({ ...record, path: "content/articles/2026-02-30-other.mdx" }).success).toBe(false);
   });
 });

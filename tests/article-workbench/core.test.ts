@@ -54,11 +54,10 @@ class MemoryStore implements RunStorePort {
   }
 }
 
-const publicationRecord = { title: "Evidence-led article", body: "Rendered article", slug: "evidence-led-article", contentHash: "sha256:abc" };
+const publicationRecord = { title: "Evidence-led article", body: "Rendered article", slug: "evidence-led-article", contentHash: "sha256:abc", path: "content/articles/2026-08-09-evidence-led-article.mdx" };
 
 async function confirmAndSeedPublication(store: MemoryStore, workflow: ReturnType<typeof createArticleWorkflow>, runId: string) {
   await workflow.saveArticleEdits(runId, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }] });
-  await store.saveArtifact(runId, "publicationRecord", publicationRecord);
 }
 
 function createWorkflow(options: {
@@ -103,15 +102,17 @@ function createWorkflow(options: {
     },
   };
   let submissions = 0;
+  let submittedRecord: unknown;
   let verifications = 0;
   const publisher: PublisherPort = {
     async submit(record) {
       submissions += 1;
+      submittedRecord = record;
       return (options.submitted?.(record) ?? { id: "publication-1", slug: record.slug, contentHash: record.contentHash, status: "submitted" }) as never;
     },
     async verify(receipt) { verifications += 1; return (options.verified?.(receipt) ?? { ...receipt, status: "published" }) as never; },
   };
-  return { store, publisher, submissions: () => submissions, verifications: () => verifications, workflow: createArticleWorkflow({ profile: { getProfile: async () => profile }, model, search, store, publisher }) };
+  return { store, publisher, submissions: () => submissions, submittedRecord: () => submittedRecord, verifications: () => verifications, workflow: createArticleWorkflow({ profile: { getProfile: async () => profile }, model, search, store, publisher, publicationDefaults: { date: "2026-08-09", author: "fengc" } }) };
 }
 
 describe("article workbench workflow", () => {
@@ -124,7 +125,7 @@ describe("article workbench workflow", () => {
       "store:create", "store:artifact:input", "model:plan",
       "store:artifact:researchPlan", "store:status:research_planned", "search:collect",
       "store:artifact:sourcePacket", "store:status:sources_ready", "model:write",
-      "store:artifact:modelResponse", "store:status:article_generated", "store:artifact:validatedArticle", "store:status:validated",
+      "store:artifact:modelResponse", "store:status:article_generated", "store:artifact:validatedArticle", "store:artifact:renderedMdx", "store:artifact:publicationRecord", "store:status:validated",
     ]);
   });
 
@@ -184,11 +185,38 @@ describe("article workbench workflow", () => {
     expect(store.artifacts.get(`${run.id}:articleEdits`)).toBeUndefined();
   });
 
-  it("requires the Task 6 publication artifact even when edit input carries a forged record", async () => {
-    const { workflow } = createWorkflow();
+  it("rejects forged publication fields without changing artifacts", async () => {
+    const { workflow, store } = createWorkflow();
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
-    await workflow.saveArticleEdits(run.id, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }], publication: publicationRecord } as never);
-    await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLICATION_RECORD_REQUIRED");
+    const before = store.artifacts.get(`${run.id}:publicationRecord`);
+    await expect(workflow.saveArticleEdits(run.id, { confirmations: [], publicationRecord } as never)).rejects.toThrow();
+    expect(store.artifacts.get(`${run.id}:publicationRecord`)).toBe(before);
+  });
+
+  it("reformats partial human edits and gives the publisher the formatter path", async () => {
+    const { workflow, store, submittedRecord } = createWorkflow();
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    const before = store.artifacts.get(`${run.id}:publicationRecord`) as { contentHash: string };
+    await workflow.saveArticleEdits(run.id, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }], title: "Edited article" });
+    const record = store.artifacts.get(`${run.id}:publicationRecord`) as { title: string; path: string; contentHash: string };
+    expect(record).toMatchObject({ title: "Edited article", path: "content/articles/2026-08-09-evidence-led-article.mdx" });
+    expect(record.contentHash).not.toBe(before.contentHash);
+    await workflow.submitPublication(run.id);
+    expect(submittedRecord()).toMatchObject({ path: record.path, contentHash: record.contentHash });
+  });
+
+  it("keeps earlier human fields when a later partial edit changes the body", async () => {
+    const { workflow, store } = createWorkflow();
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await workflow.saveArticleEdits(run.id, { confirmations: [], title: "First edit" });
+    await workflow.saveArticleEdits(run.id, { confirmations: [], body: "Edited claim [[S001]] and corroboration [[S002]]." });
+    expect(store.artifacts.get(`${run.id}:validatedArticle`)).toMatchObject({ title: "First edit", body: "Edited claim [[S001]] and corroboration [[S002]]." });
+  });
+
+  it("fails unsafe prose before validated artifacts are written", async () => {
+    const { workflow, store } = createWorkflow({ article: { title: "Evidence-led article", slugProposal: "evidence-led-article", summary: "A source-bound summary.", tags: ["research"], body: "{\nprocess.env.SECRET\n}\n\n[[S001]] [[S002]]", sourceAssessments: [{ sourceId: "S001", category: "official", rationale: "Primary", claimsSupported: ["A"] }, { sourceId: "S002", category: "standard", rationale: "Standard", claimsSupported: ["B"] }] } });
+    await expect(workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] })).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");
+    expect(store.artifacts.get("awr_aaaaaaaaaaaaaaaaaaaaaaaa:publicationRecord")).toBeUndefined();
   });
 
   it("allows only one concurrent publisher submission for a claimed run", async () => {

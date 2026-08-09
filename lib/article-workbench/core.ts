@@ -19,6 +19,8 @@ import {
   type SearchPort,
   type SourceConfirmation,
 } from "./contracts";
+import { z } from "zod";
+import { formatArticle, type ArticlePublicationDefaults } from "./article-format";
 
 const authoritativeCategories = new Set(["official", "standard", "original_research", "peer_reviewed"]);
 
@@ -27,9 +29,12 @@ export interface GenerateArticleInput {
   articleRules: string[];
 }
 
-export interface ArticleEditsInput {
-  confirmations: SourceConfirmation[];
-}
+export const ArticleEditsInputSchema = z.object({
+  confirmations: z.array(SourceConfirmationSchema),
+  title: z.string().optional(), slugProposal: z.string().optional(), summary: z.string().optional(),
+  tags: z.array(z.string()).optional(), body: z.string().optional(),
+}).strict();
+export type ArticleEditsInput = z.infer<typeof ArticleEditsInputSchema>;
 
 export interface ArticleWorkflowDependencies {
   profile: BusinessProfilePort;
@@ -37,6 +42,7 @@ export interface ArticleWorkflowDependencies {
   search: SearchPort;
   store: RunStorePort;
   publisher: PublisherPort;
+  publicationDefaults: ArticlePublicationDefaults;
   now?: () => Date;
 }
 
@@ -79,7 +85,12 @@ class ArticleWorkflow {
     });
     await store.saveArtifact(run.id, "modelResponse", article);
     await store.updateRunStatus(run.id, "article_generated");
+    const formatted = await this.atStage(run.id, "article", "ARTICLE_MODEL_OUTPUT_INVALID", false, async () =>
+      formatArticle({ article, sources: packet.sources, defaults: this.dependencies.publicationDefaults })
+    );
     await store.saveArtifact(run.id, "validatedArticle", article);
+    await store.saveArtifact(run.id, "renderedMdx", formatted.renderedMdx);
+    await store.saveArtifact(run.id, "publicationRecord", formatted.publicationRecord);
     await store.updateRunStatus(run.id, "validated");
     return this.requireRun(run.id);
   }
@@ -87,13 +98,23 @@ class ArticleWorkflow {
   async saveArticleEdits(runId: string, edits: ArticleEditsInput): Promise<ArticleWorkbenchRun> {
     const run = await this.requireRun(runId);
     if (run.status !== "validated") throw new Error("ARTICLE_EDIT_STATE_INVALID");
-    const confirmations: SourceConfirmation[] = edits.confirmations.map((value) => SourceConfirmationSchema.parse(value) as SourceConfirmation);
+    const parsedEdits = ArticleEditsInputSchema.parse(edits);
+    const confirmations: SourceConfirmation[] = parsedEdits.confirmations;
     const distinct = new Set(confirmations.map((value) => value.sourceId));
     if (distinct.size !== confirmations.length) throw new Error("SOURCE_CONFIRMATION_INVALID");
     const article = await this.validatedArticle(runId);
     const assessedIds = new Set(article.sourceAssessments.map((assessment) => assessment.sourceId));
     if (confirmations.some((confirmation) => !assessedIds.has(confirmation.sourceId))) throw new Error("SOURCE_CONFIRMATION_INVALID");
-    await this.dependencies.store.saveArtifact(runId, "articleEdits", { confirmations });
+    const packet = SourcePacketResultSchema.parse(await this.dependencies.store.loadArtifact(runId, "sourcePacket"));
+    if (packet.status !== "ok") throw new Error("ARTICLE_EDIT_STATE_INVALID");
+    const previous = await this.edits(runId);
+    const editable = { title: article.title, slugProposal: article.slugProposal, summary: article.summary, tags: article.tags, body: article.body };
+    const merged = { ...article, ...editable, ...pickEditable(previous), ...pickEditable(parsedEdits), sourceAssessments: article.sourceAssessments };
+    const formatted = formatArticle({ article: merged, sources: packet.sources, defaults: this.dependencies.publicationDefaults });
+    await this.dependencies.store.saveArtifact(runId, "articleEdits", { ...pickEditable(previous), ...pickEditable(parsedEdits), confirmations });
+    await this.dependencies.store.saveArtifact(runId, "validatedArticle", merged);
+    await this.dependencies.store.saveArtifact(runId, "renderedMdx", formatted.renderedMdx);
+    await this.dependencies.store.saveArtifact(runId, "publicationRecord", formatted.publicationRecord);
     return this.requireRun(runId);
   }
 
@@ -162,13 +183,10 @@ class ArticleWorkflow {
 
   private async edits(runId: string): Promise<ArticleEditsInput> {
     const value = await this.dependencies.store.loadArtifact(runId, "articleEdits");
-    if (!value || typeof value !== "object" || !Array.isArray((value as { confirmations?: unknown }).confirmations)) {
+    if (!value) {
       return { confirmations: [] };
     }
-    const candidate = value as { confirmations: unknown[] };
-    return {
-      confirmations: candidate.confirmations.map((item) => SourceConfirmationSchema.parse(item) as SourceConfirmation),
-    };
+    return ArticleEditsInputSchema.parse(value);
   }
 
   private async requireRun(runId: string): Promise<ArticleWorkbenchRun> {
@@ -196,6 +214,11 @@ class ArticleWorkflow {
       return this.fail(runId, stage, code, userActionRequired);
     }
   }
+}
+
+function pickEditable(value: ArticleEditsInput): Omit<ArticleEditsInput, "confirmations"> {
+  const { confirmations: _confirmations, ...editable } = value;
+  return editable;
 }
 
 function safeMessage(code: string): string {

@@ -19,7 +19,6 @@ export interface ArticlePublicationDefaults {
 export interface FormattedArticle {
   publicationRecord: ArticlePublicationRecord;
   renderedMdx: string;
-  path: string;
 }
 
 /**
@@ -45,11 +44,7 @@ export function formatArticle(input: {
   const renderedMdx = `${frontmatterWithoutHash}contentHash: ${yamlString(contentHash)}\n---\n\n${renderedBody}`;
   const slug = article.slugProposal;
 
-  return {
-    publicationRecord: { title: article.title, body: renderedMdx, slug, contentHash },
-    renderedMdx,
-    path: `content/articles/${defaults.date}-${slug}.mdx`,
-  };
+  return { publicationRecord: { title: article.title, body: renderedMdx, slug, contentHash, path: `content/articles/${defaults.date}-${slug}.mdx` }, renderedMdx };
 }
 
 function parseArticle(input: SourceBoundArticleProposal): SourceBoundArticleProposal {
@@ -65,7 +60,7 @@ function parseSources(input: readonly ExtractedSource[]): ExtractedSource[] {
     const sources = input.map((source) => ExtractedSourceSchema.parse(source));
     const ids = new Set(sources.map((source) => source.id));
     if (sources.length < 2 || ids.size !== sources.length) throw formatError();
-    return sources.map((source) => ({ ...source, url: canonicalizePublicHttpUrl(source.url) }));
+    return sources.map((source) => ({ ...source, url: canonicalizePublicHttpUrl(source.url), title: safeSourceLabel(source.title), ...(source.publisher ? { publisher: safeSourceLabel(source.publisher) } : {}) }));
   } catch {
     throw formatError();
   }
@@ -113,11 +108,11 @@ function validateSafeMdxBody(body: string): void {
   const executableText = maskCode(body);
   if (
     /^\s*#(?!#)\s+/m.test(executableText) ||
-    /^\s*#{1,6}\s*(?:sources|参考来源)\s*:?\s*$/im.test(executableText) ||
+    /^\s*#{1,6}\s*(?:sources|参考来源|相关链接)\s*[:：]?\s*$/im.test(executableText) ||
     /https?:\/\/|(^|[^:])\/\/\S|(?:^|[\s(\[])www\./im.test(executableText) ||
     /^\s*(?:import|export)\s+/m.test(executableText) ||
     /<\/?[A-Za-z][^>]*>/m.test(executableText) ||
-    /(?<!\\)\{[^\n}]*\}/m.test(executableText)
+    /[{}]/.test(executableText)
   ) {
     throw formatError();
   }
@@ -127,7 +122,7 @@ function renderBody(body: string, citedIds: readonly string[], sources: readonly
   const citationNumber = new Map(citedIds.map((id, index) => [id, index + 1]));
   const citedSources = citedIds.map((id) => sources.find((source) => source.id === id)!);
   const citedBody = body.replace(/\[\[(S\d{3})\]\]/g, (_token, id: string) => `〔${citationNumber.get(id)}〕`);
-  const references = citedSources.map((source, index) => `${index + 1}. [${escapeMarkdownText(source.title)}](${source.url})`).join("\n");
+  const references = citedSources.map((source, index) => `${index + 1}. [${source.title}](${source.url})${source.publisher ? `（${source.publisher}）` : ""}`).join("\n");
   return `${citedBody}\n\n## 参考来源\n\n${references}\n\n## 相关链接\n\n- [项目](/projects)\n- [服务](/services)\n- [联系](/contact)\n`;
 }
 
@@ -139,8 +134,10 @@ function yamlString(value: string): string {
   return JSON.stringify(value.replace(/\s+/g, " ").trim());
 }
 
-function escapeMarkdownText(value: string): string {
-  return value.replace(/([\\[\]])/g, "\\$1");
+function safeSourceLabel(value: string): string {
+  const normalized = value.replace(/\s+/g, " ").trim();
+  if (!normalized || /[\r\n\x00-\x1f{}<>\[\]()`]/.test(normalized)) throw formatError();
+  return normalized.replace(/\\/g, "\\\\");
 }
 
 function maskCode(body: string): string {
