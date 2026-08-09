@@ -8,6 +8,7 @@ import {
   User,
   Palette,
   FilePlus,
+  FilePenLine,
   ExternalLink,
 } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -44,6 +45,12 @@ const CARDS = [
     label: adminCopy.dashboard.cards.pages.label,
     desc: adminCopy.dashboard.cards.pages.description,
     icon: FilePlus,
+  },
+  {
+    href: "/admin/articles",
+    label: "文章工作台",
+    desc: "基于业务事实、公开来源和人工编辑生成网页文章。",
+    icon: FilePenLine,
   },
 ];
 

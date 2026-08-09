@@ -60,6 +60,35 @@ Locale-specific leaf components should be progressively moved into this resolver
 - Private repository identifiers, raw evidence documents, customer identities and internal paths never enter public bundles.
 - Retired photography authentication and photo APIs must not remain in the production route table.
 
+## Local article workbench
+
+`/admin/articles` is a local-only working surface for researching, editing and
+publishing one business article at a time. It uses the existing warm-paper,
+graphite and caramel-amber system; amber remains the only action accent. Do not
+use product-marketing gradients, glows or a second status palette.
+
+On desktop, the workbench is a left-aligned header followed by an asymmetric
+two-column grid: the wider editing rail holds the business profile, topic,
+editor fields and source confirmations; the narrow evidence rail holds run
+status, source category/rationale and publication state. On mobile this becomes
+one reading-order column: status, topic, evidence, editor, preview and final
+action. Inputs have labels above them, clear empty/loading/error states, and
+visible keyboard focus.
+
+The page must always state `仅限本地管理台使用；生产环境不会提供此入口。` near
+the header. Preview state is worded exactly `本地预览，尚未发布`; its companion
+action is exactly `上传并发布`. Amber is reserved for that deliberate final
+action. Neutral graphite/gray states describe loading and queued work; a muted
+green may only indicate a verified `已发布` result, and restrained red only
+indicates a failure or blocked validation. No status color alone may carry
+meaning.
+
+The source rail shows each source's category and rationale, then requires at
+least two explicit authoritative-source confirmations before the final action
+is enabled. The preview must use the same server MDX renderer as public
+articles; it is not a client-side approximation. After the one final action,
+the UI may poll publication status but must never submit again automatically.
+
 ## Acceptance
 
 - `npm run projects:evidence:audit`

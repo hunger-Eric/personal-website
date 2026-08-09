@@ -9,6 +9,7 @@ import {
   User,
   Palette,
   FilePlus,
+  FilePenLine,
   ArrowLeft,
 } from "lucide-react";
 import { adminCopy } from "@/config/copy/admin";
@@ -28,12 +29,13 @@ const NAV_ITEMS = [
     section: adminCopy.sidebar.content,
     items: [
       { href: "/admin/pages", label: adminCopy.sidebar.pages, icon: FilePlus },
+      { href: "/admin/articles", label: "文章工作台", icon: FilePenLine },
     ],
   },
 ];
 
 export function AdminSidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
 
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-border bg-surface-admin">
