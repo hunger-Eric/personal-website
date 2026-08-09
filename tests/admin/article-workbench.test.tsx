@@ -2,6 +2,9 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const replaceMock = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: replaceMock }), usePathname: () => "/admin/articles" }));
+
 import { ArticleWorkbench } from "@/components/admin/ArticleWorkbench";
 
 const profile = { identity: { name: "Site", category: "AI", positioning: "Automation", description: "Description" }, services: ["Service"], audience: "Operators", geographicScope: [], differentiators: ["Evidence"], approvedEvidence: [], disallowedClaims: ["No claim"] };
@@ -28,6 +31,7 @@ describe("ArticleWorkbench", () => {
     fireEvent.change(screen.getByLabelText("文章选题"), { target: { value: "如何写业务文章" } });
     fireEvent.click(screen.getByRole("button", { name: "生成文章" }));
     expect(await screen.findByLabelText("标题")).toHaveValue("原标题");
+    expect(replaceMock).toHaveBeenCalledWith(`/admin/articles?run=${run.id}`);
     fireEvent.change(screen.getByLabelText("标题"), { target: { value: "人工修改标题" } });
     fireEvent.click(screen.getByRole("checkbox", { name: "确认来源 S001" }));
     fireEvent.click(screen.getByRole("checkbox", { name: "确认来源 S002" }));

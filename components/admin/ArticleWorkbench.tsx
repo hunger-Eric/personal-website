@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, LoaderCircle, Send, ShieldCheck } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -23,6 +24,7 @@ async function request<T>(path: string, options: RequestInit = {}, signal?: Abor
 }
 
 export function ArticleWorkbench({ initialRun }: { initialRun?: Run } = {}) {
+  const router = useRouter();
   const abortRef = useRef<AbortController | null>(null);
   const actionAbortRef = useRef<AbortController | null>(null);
   const pollAbortRef = useRef<AbortController | null>(null);
@@ -70,7 +72,7 @@ export function ArticleWorkbench({ initialRun }: { initialRun?: Run } = {}) {
       const articleRules = rules.split("\n").map((rule) => rule.trim()).filter(Boolean);
       const payload = await request<{ run: Pick<Run, "id" | "status" | "failure"> }>("/api/admin/articles/generate", { method: "POST", body: JSON.stringify({ topic, articleRules }) }, controller.signal);
       const loaded = await request<{ run: Run }>(`/api/admin/articles/runs/${payload.run.id}`, {}, controller.signal);
-      setRun(loaded.run); setMessage("文章已生成，请核对来源与正文。");
+      setRun(loaded.run); router.replace(`/admin/articles?run=${encodeURIComponent(loaded.run.id)}`); setMessage("文章已生成，请核对来源与正文。");
     } catch (error) { setMessage(error instanceof Error ? error.message : "生成未完成"); }
     finally { setSaving(false); }
   };
