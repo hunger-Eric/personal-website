@@ -70,8 +70,12 @@ function isPrivateIpv6(host: string): boolean {
   if (groups[0] === 0x2001 && groups[1] === 0x0db8) return true; // 2001:db8::/32 documentation
   if (groups[0] === 0x0100 && groups.slice(1, 4).every((group) => group === 0)) return true; // 100::/64 discard-only
 
-  // IPv4-compatible and IPv4-mapped IPv6 addresses must obey IPv4 restrictions too.
-  if (groups.slice(0, 6).every((group) => group === 0) || groups.slice(0, 5).every((group) => group === 0) && groups[5] === 0xffff) {
+  // IPv4-compatible, IPv4-mapped, and IPv4-translated IPv6 addresses must obey IPv4 restrictions too.
+  if (
+    groups.slice(0, 6).every((group) => group === 0) ||
+    groups.slice(0, 5).every((group) => group === 0) && groups[5] === 0xffff ||
+    groups.slice(0, 4).every((group) => group === 0) && groups[4] === 0xffff && groups[5] === 0
+  ) {
     const ipv4 = (groups[6] << 16) + groups[7];
     return isPrivateIpv4([
       (ipv4 >>> 24) & 0xff,

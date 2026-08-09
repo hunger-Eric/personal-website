@@ -8,6 +8,7 @@ describe("canonicalizePublicHttpUrl", () => {
     ["HTTP://EXAMPLE.COM:80/a#section", "http://example.com/a"],
     ["https://8.8.8.8/research", "https://8.8.8.8/research"],
     ["https://[2606:4700:4700::1111]/", "https://[2606:4700:4700::1111]/"],
+    ["http://[::ffff:0:8.8.8.8]/", "http://[::ffff:0:808:808]/"],
   ])("accepts a public URL: %s", (input, expected) => {
     expect(canonicalizePublicHttpUrl(input)).toBe(expected);
   });
@@ -42,6 +43,8 @@ describe("canonicalizePublicHttpUrl", () => {
     "http://[2001:db8::1]/",
     "http://[::127.0.0.1]/",
     "http://[::ffff:127.0.0.1]/",
+    "http://[::ffff:0:127.0.0.1]/",
+    "http://[::ffff:0:10.0.0.1]/",
     "http://localhost/",
     "http://printer.local/",
   ])("rejects a non-public target URL: %s", (input) => {
