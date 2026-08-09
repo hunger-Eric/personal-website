@@ -11,6 +11,28 @@ describe("article generation API", () => {
     vi.stubEnv("NODE_ENV", "test");
     await expect(readJsonBody(new Request("http://localhost/api/admin/articles/generate", { method: "POST", body: `"${"x".repeat(65_536)}"` }))).rejects.toThrow("ARTICLE_REQUEST_TOO_LARGE");
   });
+  it("rejects oversized streamed bodies despite absent or forged content length", async () => {
+    vi.stubEnv("NODE_ENV", "test"); process.env.ENABLE_ADMIN = "true"; process.env.ADMIN_TOKEN = "test";
+    for (const length of [undefined, "2"]) {
+      let cancelled = false;
+      const stream = new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(new TextEncoder().encode(`"${"x".repeat(65_536)}"`)); }, cancel() { cancelled = true; } });
+      const request = { headers: new Headers({ ...(length ? { "content-length": length } : {}) }), body: stream } as unknown as Request;
+      await expect(readJsonBody(request)).rejects.toThrow("ARTICLE_REQUEST_TOO_LARGE");
+      await Promise.resolve();
+      expect(cancelled).toBe(true);
+    }
+  });
+  it("maps oversized standard Request streams to 413 at the route boundary", async () => {
+    vi.stubEnv("NODE_ENV", "test"); process.env.ENABLE_ADMIN = "true"; process.env.ADMIN_TOKEN = "test";
+    getArticleWorkbenchServer.mockReturnValue({ generate: vi.fn() });
+    for (const length of [undefined, "2"]) {
+      const oversizedPayload = JSON.stringify({ topic: "x".repeat(65_536), articleRules: ["Use sources"] });
+      const request = new Request("http://localhost/api/admin/articles/generate", { method: "POST", headers: { "x-admin-token": "test" }, body: new ReadableStream<Uint8Array>({ start(controller) { controller.enqueue(new TextEncoder().encode(oversizedPayload)); } }), duplex: "half" } as unknown as RequestInit);
+      if (length) request.headers.set("content-length", length);
+      Object.defineProperties(request, { nextUrl: { value: new URL(request.url) }, cookies: { value: { get: () => undefined } } });
+      expect((await POST(request as unknown as NextRequest)).status).toBe(413);
+    }
+  });
   it("projects only run identity", async () => {
     vi.stubEnv("NODE_ENV", "test"); process.env.ENABLE_ADMIN = "true"; process.env.ADMIN_TOKEN = "test";
     getArticleWorkbenchServer.mockReturnValue({ generate: vi.fn().mockResolvedValue({ id: "awr_aaaaaaaaaaaaaaaaaaaaaaaa", status: "validated", secret: "no" }) });
