@@ -16,7 +16,7 @@ type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<
 type StructuredOutputMode = "prompt_only" | "json_object" | "json_schema";
 
 export interface ArticleModelConfig {
-  provider: "opencode_zen";
+  provider: string;
   protocol: "openai_compatible";
   baseUrl: string;
   model: string;
@@ -31,9 +31,12 @@ export interface SafeModelReceipt {
   task: "article_research_plan" | "article_source_bound_write";
   requestHash: string;
   responseId?: string;
-  responseHash: string;
+  outcome: "success" | "failure";
+  errorCode?: "ARTICLE_MODEL_REQUEST_FAILED" | "ARTICLE_MODEL_RESPONSE_INVALID" | "ARTICLE_MODEL_OUTPUT_INVALID";
+  status?: number;
+  responseHash?: string;
   durationMs: number;
-  responseText: string;
+  responseText?: string;
 }
 
 export interface OpenAICompatibleModelProviderOptions {
@@ -50,7 +53,7 @@ export function createArticleModelConfig(environment: Record<string, string | un
   const apiKey = environment.ARTICLE_MODEL_API_KEY?.trim();
   const structuredOutputMode = environment.ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE;
   if (
-    provider !== "opencode_zen" || protocol !== "openai_compatible" || !baseUrl || !model || !apiKey ||
+    !provider?.trim() || protocol !== "openai_compatible" || !baseUrl || !model || !apiKey ||
     !["prompt_only", "json_object", "json_schema"].includes(structuredOutputMode ?? "")
   ) throw new Error("ARTICLE_MODEL_CONFIG_INVALID");
   let parsed: URL;
@@ -58,7 +61,7 @@ export function createArticleModelConfig(environment: Record<string, string | un
   if (parsed.protocol !== "https:" || /\/chat\/completions$/i.test(parsed.pathname)) {
     throw new Error("ARTICLE_MODEL_CONFIG_INVALID");
   }
-  return { provider, protocol, baseUrl, model, apiKey, structuredOutputMode: structuredOutputMode as StructuredOutputMode };
+  return { provider: provider.trim(), protocol, baseUrl, model, apiKey, structuredOutputMode: structuredOutputMode as StructuredOutputMode };
 }
 
 export class OpenAICompatibleModelProvider implements ModelPort {
@@ -96,23 +99,32 @@ export class OpenAICompatibleModelProvider implements ModelPort {
       response = await this.fetcher(`${this.options.config.baseUrl}/chat/completions`, {
         method: "POST", headers: { "content-type": "application/json", authorization: `Bearer ${this.options.config.apiKey}` }, body: JSON.stringify(payload),
       });
-    } catch { throw new Error("ARTICLE_MODEL_REQUEST_FAILED"); }
+    } catch { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_REQUEST_FAILED"); }
+    let responseText: string;
+    try { responseText = await response.text(); } catch { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_RESPONSE_INVALID", response.status); }
+    if (!response.ok) return this.fail(task, payload, startedAt, "ARTICLE_MODEL_REQUEST_FAILED", response.status, responseText);
     let envelope: unknown;
-    try { envelope = await response.json(); } catch { throw new Error("ARTICLE_MODEL_RESPONSE_INVALID"); }
-    if (!response.ok) throw new Error("ARTICLE_MODEL_REQUEST_FAILED");
+    try { envelope = JSON.parse(responseText); } catch { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_RESPONSE_INVALID", response.status, responseText); }
     const responseId = envelope && typeof envelope === "object" && typeof (envelope as { id?: unknown }).id === "string" ? (envelope as { id: string }).id : undefined;
     const content = envelope && typeof envelope === "object"
       ? (envelope as { choices?: Array<{ message?: { content?: unknown } }> }).choices?.[0]?.message?.content
       : undefined;
-    if (typeof content !== "string") throw new Error("ARTICLE_MODEL_RESPONSE_INVALID");
+    if (typeof content !== "string") return this.fail(task, payload, startedAt, "ARTICLE_MODEL_RESPONSE_INVALID", response.status, responseText, responseId);
     let output: unknown;
-    try { output = JSON.parse(content); } catch { throw new Error("ARTICLE_MODEL_RESPONSE_INVALID"); }
+    try { output = JSON.parse(content); } catch { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_RESPONSE_INVALID", response.status, responseText, responseId); }
     let result: T;
-    try { result = validate(output); } catch { throw new Error("ARTICLE_MODEL_OUTPUT_INVALID"); }
-    try {
-      await this.persistReceipt?.({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, requestHash: hash(JSON.stringify(payload)), responseId, responseHash: hash(content), durationMs: Date.now() - startedAt, responseText: content });
-    } catch { throw new Error("ARTICLE_MODEL_PERSISTENCE_FAILED"); }
+    try { result = validate(output); } catch { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_OUTPUT_INVALID", response.status, responseText, responseId); }
+    await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, requestHash: hash(JSON.stringify(payload)), responseId, outcome: "success", status: response.status, responseHash: hash(responseText), durationMs: Date.now() - startedAt, responseText: safeResponseText(responseText) });
     return result;
+  }
+
+  private async fail<T>(task: SafeModelReceipt["task"], payload: unknown, startedAt: number, errorCode: NonNullable<SafeModelReceipt["errorCode"]>, status?: number, responseText?: string, responseId?: string): Promise<T> {
+    await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, requestHash: hash(JSON.stringify(payload)), responseId, outcome: "failure", errorCode, status, responseHash: responseText === undefined ? undefined : hash(responseText), durationMs: Date.now() - startedAt, responseText: responseText === undefined ? undefined : safeResponseText(responseText) });
+    throw new Error(errorCode);
+  }
+
+  private async persist(receipt: SafeModelReceipt): Promise<void> {
+    try { await this.persistReceipt?.(receipt); } catch { throw new Error("ARTICLE_MODEL_PERSISTENCE_FAILED"); }
   }
 }
 
@@ -123,7 +135,7 @@ export function runResearchPlanning(port: ModelPort, input: ArticleResearchPlanI
 function responseFormat(mode: StructuredOutputMode, task: SafeModelReceipt["task"]): Record<string, unknown> {
   if (mode === "prompt_only") return {};
   if (mode === "json_object") return { response_format: { type: "json_object" } };
-  return { response_format: { type: "json_schema", json_schema: { name: task, strict: true, schema: { type: "object" } } } };
+  return { response_format: { type: "json_schema", json_schema: { name: task, strict: true, schema: task === "article_research_plan" ? researchPlanJsonSchema : sourceBoundArticleJsonSchema } } };
 }
 
 function promptFor(task: SafeModelReceipt["task"], input: unknown): string {
@@ -133,3 +145,22 @@ function promptFor(task: SafeModelReceipt["task"], input: unknown): string {
 }
 
 function hash(value: string): string { return createHash("sha256").update(value).digest("hex"); }
+
+function safeResponseText(value: string): string {
+  return value.slice(0, 4_000)
+    .replace(/(["']?(?:authorization|api[-_]?key|token|secret|password)["']?)\s*[=:]\s*(?:"[^"]*"|'[^']*'|[^\s,}\]]+)/gi, "$1=[REDACTED]")
+    .replace(/Bearer\s+[^\s<]+/gi, "Bearer [REDACTED]");
+}
+
+const researchPlanJsonSchema = {
+  type: "object", additionalProperties: false, required: ["queries"],
+  properties: { queries: { type: "array", minItems: 2, maxItems: 5, items: { type: "object", additionalProperties: false, required: ["query", "type"], properties: { query: { type: "string", minLength: 1, maxLength: 2000 }, type: { type: "string", enum: ["general", "academic"] } } } } },
+};
+const sourceBoundArticleJsonSchema = {
+  type: "object", additionalProperties: false, required: ["title", "slugProposal", "summary", "tags", "body", "sourceAssessments"],
+  properties: {
+    title: { type: "string", minLength: 1, maxLength: 200 }, slugProposal: { type: "string", pattern: "^[a-z0-9]+(?:-[a-z0-9]+)*$", maxLength: 160 }, summary: { type: "string", minLength: 1, maxLength: 2000 },
+    tags: { type: "array", minItems: 1, maxItems: 10, items: { type: "string", minLength: 1, maxLength: 100 } }, body: { type: "string", minLength: 1, maxLength: 40000 },
+    sourceAssessments: { type: "array", minItems: 1, maxItems: 8, items: { type: "object", additionalProperties: false, required: ["sourceId", "category", "rationale", "claimsSupported"], properties: { sourceId: { type: "string", pattern: "^S\\d{3}$" }, category: { type: "string", enum: ["official", "standard", "original_research", "peer_reviewed"] }, rationale: { type: "string", minLength: 1, maxLength: 2000 }, claimsSupported: { type: "array", minItems: 1, maxItems: 20, items: { type: "string", minLength: 1, maxLength: 2000 } } } } },
+  },
+};

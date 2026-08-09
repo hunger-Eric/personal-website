@@ -247,14 +247,25 @@ export function validateSourceBoundArticleProposal(
   if (assessments.size !== sourceIds.size || [...assessments].some((id) => !sourceIds.has(id))) {
     throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
   }
-  const tokens = [...article.body.matchAll(/\[\[(S\d{3})\]\]/g)].map((match) => match[1]);
-  if (!tokens.length || tokens.some((sourceId) => !sourceIds.has(sourceId))) {
+  const citationTokens = [...article.body.matchAll(/\[\[([^\]]*)\]\]/g)].map((match) => match[1]);
+  if (!citationTokens.length || citationTokens.some((sourceId) => !/^S\d{3}$/.test(sourceId) || !sourceIds.has(sourceId))) {
     throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
   }
-  if (/https?:\/\//i.test(article.body) || /^\s{0,3}#{1,6}\s*(sources|参考来源)\s*$/im.test(article.body)) {
+  const outputText = [
+    article.title,
+    article.summary,
+    ...article.tags,
+    article.body,
+    ...article.sourceAssessments.flatMap((assessment) => [assessment.rationale, ...assessment.claimsSupported]),
+  ];
+  if (outputText.some(isForbiddenModelOutputText)) {
     throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
   }
   return article;
+}
+
+function isForbiddenModelOutputText(value: string): boolean {
+  return /https?:\/\/|\/\/\S|(?:^|[\s(\[])www\./i.test(value) || /^\s*(?:#{1,6}\s*)?(?:sources|参考来源)\s*:?[\s]*$/im.test(value);
 }
 
 export interface ModelPort {

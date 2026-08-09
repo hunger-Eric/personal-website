@@ -66,7 +66,24 @@ describe("OpenAI-compatible article model provider", () => {
     const schemaFetch = vi.fn<FetchLike>(async () => completion(validPlan));
     const jsonSchema = new OpenAICompatibleModelProvider({ fetch: schemaFetch, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "json_schema" }) });
     await jsonSchema.proposeResearchPlan(planInput);
-    expect(JSON.parse(String(schemaFetch.mock.calls[0][1].body))).toMatchObject({ response_format: { type: "json_schema" } });
+    const schemaRequest = JSON.parse(String(schemaFetch.mock.calls[0][1].body));
+    expect(schemaRequest.response_format).toMatchObject({ type: "json_schema", json_schema: { strict: true, schema: { additionalProperties: false, required: ["queries"] } } });
+    expect(schemaRequest.response_format.json_schema.schema.properties.queries.items).toMatchObject({ additionalProperties: false, required: ["query", "type"], properties: { type: { enum: ["general", "academic"] } } });
+
+    const writerFetch = vi.fn<FetchLike>(async () => completion(validArticle));
+    const writer = new OpenAICompatibleModelProvider({ fetch: writerFetch, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "json_schema" }) });
+    await writer.writeSourceBoundArticle(writeInput);
+    const writerSchema = JSON.parse(String(writerFetch.mock.calls[0][1].body)).response_format.json_schema.schema;
+    expect(writerSchema).toMatchObject({ additionalProperties: false, required: ["title", "slugProposal", "summary", "tags", "body", "sourceAssessments"] });
+    expect(writerSchema.properties.sourceAssessments.items).toMatchObject({ additionalProperties: false, required: ["sourceId", "category", "rationale", "claimsSupported"], properties: { category: { enum: ["official", "standard", "original_research", "peer_reviewed"] } } });
+  });
+
+  it("accepts another configured OpenAI-compatible provider without a shared-contract branch", async () => {
+    const fetch = vi.fn<FetchLike>(async () => completion(validPlan));
+    const provider = new OpenAICompatibleModelProvider({ fetch, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "another_provider", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://models.example.test/v2", ARTICLE_MODEL_NAME: "another-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
+    await expect(provider.proposeResearchPlan(planInput)).resolves.toEqual(validPlan);
+    expect(fetch.mock.calls[0][0]).toBe("https://models.example.test/v2/chat/completions");
+    expect(JSON.parse(String(fetch.mock.calls[0][1].body))).toMatchObject({ model: "another-model" });
   });
 
   it("writes once at temperature 0.4 and persists only safe receipt fields", async () => {
@@ -100,6 +117,61 @@ describe("OpenAI-compatible article model provider", () => {
   ])("rejects writer output with %s", async (_label, article) => {
     const provider = new OpenAICompatibleModelProvider({ fetch: async () => completion(article), config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
     await expect(provider.writeSourceBoundArticle(writeInput)).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");
+  });
+
+  it.each([
+    ["title", { ...validArticle, title: "Read www.evil.example" }],
+    ["summary", { ...validArticle, summary: "//evil.example" }],
+    ["tags", { ...validArticle, tags: ["https://evil.example"] }],
+    ["body protocol-relative Markdown", { ...validArticle, body: "[bad](//evil.example) [[S001]] [[S002]]" }],
+    ["assessment rationale", { ...validArticle, sourceAssessments: [{ ...validArticle.sourceAssessments[0], rationale: "See http://evil.example" }, validArticle.sourceAssessments[1]] }],
+    ["assessment claims", { ...validArticle, sourceAssessments: [{ ...validArticle.sourceAssessments[0], claimsSupported: ["See www.evil.example"] }, validArticle.sourceAssessments[1]] }],
+    ["plain Sources label", { ...validArticle, summary: "Sources" }],
+    ["Chinese source label", { ...validArticle, tags: ["参考来源"] }],
+    ["malformed citation token", { ...validArticle, body: "Evidence [[S01]] [[S001]] [[S002]]" }],
+  ])("rejects output-wide forbidden content in %s", async (_label, article) => {
+    const provider = new OpenAICompatibleModelProvider({ fetch: async () => completion(article), config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
+    await expect(provider.writeSourceBoundArticle(writeInput)).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");
+  });
+
+  it("classifies an HTML non-2xx response as request failure and persists one redacted receipt", async () => {
+    const receipts: unknown[] = [];
+    const provider = new OpenAICompatibleModelProvider({ fetch: async () => new Response("<html>Bearer secret-token</html>", { status: 502 }), persistReceipt: (receipt) => { receipts.push(receipt); }, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
+    await expect(provider.proposeResearchPlan(planInput)).rejects.toThrow("ARTICLE_MODEL_REQUEST_FAILED");
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]).toMatchObject({ outcome: "failure", errorCode: "ARTICLE_MODEL_REQUEST_FAILED", status: 502 });
+    expect(JSON.stringify(receipts)).not.toContain("secret-token");
+  });
+
+  it("persists a no-body request-failure receipt when the network rejects", async () => {
+    const receipts: unknown[] = [];
+    const provider = new OpenAICompatibleModelProvider({ fetch: async () => { throw new Error("network down"); }, persistReceipt: (receipt) => { receipts.push(receipt); }, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
+    await expect(provider.proposeResearchPlan(planInput)).rejects.toThrow("ARTICLE_MODEL_REQUEST_FAILED");
+    expect(receipts).toEqual([expect.objectContaining({ outcome: "failure", errorCode: "ARTICLE_MODEL_REQUEST_FAILED", responseHash: undefined, responseText: undefined })]);
+  });
+
+  it.each([
+    ["malformed envelope", { id: "request-id" }, "ARTICLE_MODEL_RESPONSE_INVALID"],
+    ["malformed content JSON", "not JSON", "ARTICLE_MODEL_RESPONSE_INVALID"],
+    ["invalid output", { ...validPlan, extra: true }, "ARTICLE_MODEL_OUTPUT_INVALID"],
+  ])("persists one failure receipt for %s", async (_label, content, code) => {
+    const receipts: unknown[] = [];
+    const provider = new OpenAICompatibleModelProvider({ fetch: async () => _label === "malformed envelope" ? new Response(JSON.stringify(content), { status: 200 }) : completion(content), persistReceipt: (receipt) => { receipts.push(receipt); }, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
+    await expect(provider.proposeResearchPlan(planInput)).rejects.toThrow(code);
+    expect(receipts).toHaveLength(1);
+    expect(receipts[0]).toMatchObject({ outcome: "failure", errorCode: code });
+  });
+
+  it("fails with a fixed error when failure receipt persistence fails", async () => {
+    const provider = new OpenAICompatibleModelProvider({ fetch: async () => new Response("not JSON", { status: 502 }), persistReceipt: () => { throw new Error("storage secret"); }, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
+    await expect(provider.proposeResearchPlan(planInput)).rejects.toThrow("ARTICLE_MODEL_PERSISTENCE_FAILED");
+  });
+
+  it("redacts quoted secret-like error fields in failure receipts", async () => {
+    const receipts: unknown[] = [];
+    const provider = new OpenAICompatibleModelProvider({ fetch: async () => new Response('{"error":{"api_key":"quoted-secret"}}', { status: 502 }), persistReceipt: (receipt) => { receipts.push(receipt); }, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
+    await expect(provider.proposeResearchPlan(planInput)).rejects.toThrow("ARTICLE_MODEL_REQUEST_FAILED");
+    expect(JSON.stringify(receipts)).not.toContain("quoted-secret");
   });
 
   it("runs against any provider-neutral ModelPort without a provider branch", async () => {
