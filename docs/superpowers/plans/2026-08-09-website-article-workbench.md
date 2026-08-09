@@ -204,7 +204,9 @@ Tests should mirror the implementation under `tests/article-workbench`, `tests/a
 **Files:**
 
 - Create: `lib/article-workbench/model.ts`
+- Modify: `lib/article-workbench/contracts.ts`
 - Test: `tests/article-workbench/model.test.ts`
+- Modify: `tests/article-workbench/contracts.test.ts`
 - Modify: `.env.example`
 
 **Environment contract:**
@@ -233,6 +235,8 @@ Secret example values remain blank. Non-secret defaults may document the initial
 2. `article_source_bound_write`: receives the profile, topic, extracted source packet, and article rules; returns structured title, slug proposal, summary, tags, body, and source assessments.
 
 The writer must cite with source tokens such as `[[S001]]`, must not emit source URLs, must not create a `参考来源` section, and must identify which claims each source supports.
+
+Task 4 expands the provider-neutral `ModelPort` contract from Task 1 with structured planning and source-bound writing inputs/results. Provider request payloads remain private to `model.ts`; the shared contracts contain no provider, HTTP, or OpenAI-specific fields.
 
 **Steps:**
 
