@@ -24,8 +24,8 @@ const planInput: ArticleResearchPlanInput = { profile, topic: "AI workflow contr
 const writeInput: ArticleSourceBoundWriteInput = {
   profile, topic: "AI workflow controls", articleRules: ["Use a practical tone."],
   sources: [
-    { id: "S001", title: "Official guide", url: "https://example.com/guide", excerpt: "Guide", content: "Official evidence." },
-    { id: "S002", title: "Research", url: "https://example.org/study", excerpt: "Study", content: "Research evidence." },
+    { id: "S001", title: "Official guide", url: "https://example.com/guide", excerpt: "Guide", content: "Official evidence with a complete public explanation." },
+    { id: "S002", title: "Research", url: "https://example.org/study", excerpt: "Study", content: "Research evidence with a complete public explanation." },
   ],
 };
 

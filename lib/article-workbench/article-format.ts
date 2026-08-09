@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import {
   ExtractedSourceSchema,
   SourceBoundArticleProposalSchema,
+  normalizeEvidenceText,
   type ArticlePublicationRecord,
   type ExtractedSource,
   type SourceBoundArticleProposal,
@@ -54,21 +55,25 @@ export function formatArticle(input: {
  * synthesizes substitute wording for the model or an editor.
  */
 function rejectExtractedSourceReplay(article: SourceBoundArticleProposal, sources: readonly ExtractedSource[]): void {
-  const sourceTexts = sources.map((source) => normalizedEvidence(source.content));
+  const sourceTexts = sources.map((source) => normalizeEvidenceText(source.content));
   const browserText = [
     article.title,
     article.summary,
     ...article.tags,
     article.body.replace(/\[\[S\d{3}\]\]/g, ""),
     ...article.sourceAssessments.map((assessment) => assessment.rationale),
-  ].map(normalizedEvidence);
+  ].map(normalizeEvidenceText);
   const claims = article.sourceAssessments.flatMap((assessment) => assessment.claimsSupported);
-  const claimTexts = [claims.join(" "), claims.join("")].map(normalizedEvidence);
-  if (sourceTexts.some((sourceText) => sourceText && [...browserText, ...claimTexts].some((text) => text.includes(sourceText)))) throw formatError();
-}
-
-function normalizedEvidence(value: string): string {
-  return value.replace(/\r\n?/g, "\n").replace(/\s+/g, " ").trim();
+  const combinedBrowserText = normalizeEvidenceText([
+    article.title,
+    article.summary,
+    ...article.tags,
+    article.body.replace(/\[\[S\d{3}\]\]/g, ""),
+    ...article.sourceAssessments.map((assessment) => assessment.rationale),
+    ...claims,
+  ].join(" "));
+  const claimTexts = [claims.join(" "), claims.join("")].map(normalizeEvidenceText);
+  if (sourceTexts.some((sourceText) => sourceText && [...browserText, combinedBrowserText, ...claimTexts].some((text) => text.includes(sourceText)))) throw formatError();
 }
 
 function parseArticle(input: SourceBoundArticleProposal): SourceBoundArticleProposal {

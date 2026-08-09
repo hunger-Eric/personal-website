@@ -8,14 +8,14 @@ const sources = [
     title: "国家标准化管理委员会：生成式人工智能服务管理暂行办法",
     url: "https://www.gov.cn/zhengce/2023-07/13/content_6891600.htm",
     excerpt: "官方规定。",
-    content: "官方全文。",
+    content: "This official source contains enough public evidence detail for deterministic attribution.",
   },
   {
     id: "S002",
     title: "NIST AI Risk Management Framework",
     url: "https://www.nist.gov/itl/ai-risk-management-framework",
     excerpt: "风险管理框架。",
-    content: "NIST framework text.",
+    content: "The NIST framework source contains enough public evidence detail for deterministic attribution.",
   },
 ];
 
@@ -134,8 +134,19 @@ contentHash: "${result.publicationRecord.contentHash}"
   });
 
   it("keeps safe paraphrase distinct from the extracted source", () => {
-    const replaySources = [{ ...sources[0], content: "a complete source sentence" }, { ...sources[1], content: "another evidence page" }];
+    const replaySources = [{ ...sources[0], content: "a complete source sentence with enough evidence" }, { ...sources[1], content: "another evidence page with enough public detail" }];
     expect(formatArticle({ article: { ...proposal, body: "The guidance supports a cautious approach. [[S001]] Independent evidence corroborates it. [[S002]]" }, sources: replaySources, defaults: { date: "2026-08-09", author: "fengc" } }).renderedMdx).toContain("cautious approach");
+  });
+
+  it("allows ordinary short terms when the admitted source has sufficient evidence", () => {
+    const evidenceSources = [{ ...sources[0], content: "A sufficiently detailed public AI evidence passage for 2024." }, { ...sources[1], content: "Another sufficiently detailed public evidence passage for 2024." }];
+    expect(formatArticle({ article: { ...proposal, title: "AI 2024 controls", body: "AI planning in 2024 needs review. [[S001]] Evidence supports the same practice. [[S002]]" }, sources: evidenceSources, defaults: { date: "2026-08-09", author: "fengc" } }).renderedMdx).toContain("AI 2024 controls");
+  });
+
+  it("rejects a source reconstructed across browser-visible fields", () => {
+    const crossFieldSources = [{ ...sources[0], content: "a complete supplied source passage" }, { ...sources[1], content: "another evidence page with enough public detail" }];
+    expect(() => formatArticle({ article: { ...proposal, title: "a complete supplied", summary: "source passage", body: "Independent wording [[S001]] and corroboration [[S002]]." }, sources: crossFieldSources, defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
+    expect(() => formatArticle({ article: { ...proposal, body: "a complete supplied source [[S001]] [[S002]]", sourceAssessments: [{ ...proposal.sourceAssessments[0], rationale: "passage" }, proposal.sourceAssessments[1]] }, sources: crossFieldSources, defaults: { date: "2026-08-09", author: "fengc" } })).toThrow("ARTICLE_FORMAT_INVALID");
   });
 
   it("escapes source URL parentheses in the generated Markdown destination", () => {

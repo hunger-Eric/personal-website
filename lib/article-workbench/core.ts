@@ -111,9 +111,7 @@ class ArticleWorkflow {
     const previous = await this.edits(runId);
     const editable = { title: article.title, slugProposal: article.slugProposal, summary: article.summary, tags: article.tags, body: article.body };
     const merged = { ...article, ...editable, ...pickEditable(previous), ...pickEditable(parsedEdits), sourceAssessments: article.sourceAssessments };
-    const formatted = await this.atStage(runId, "article", "ARTICLE_MODEL_OUTPUT_INVALID", true, async () =>
-      formatArticle({ article: merged, sources: packet.sources, defaults: this.dependencies.publicationDefaults })
-    );
+    const formatted = formatArticle({ article: merged, sources: packet.sources, defaults: this.dependencies.publicationDefaults });
     const validatedArticle = { ...merged, slugProposal: formatted.publicationRecord.slug };
     await this.dependencies.store.saveArtifact(runId, "articleEdits", { ...pickEditable(previous), ...pickEditable(parsedEdits), confirmations });
     await this.dependencies.store.saveArtifact(runId, "validatedArticle", validatedArticle);

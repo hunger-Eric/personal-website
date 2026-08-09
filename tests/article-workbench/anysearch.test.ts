@@ -174,6 +174,15 @@ describe("AnySearch research adapter", () => {
     expect(fetch).toHaveBeenCalledTimes(6);
   });
 
+  it("filters too-short extracted pages and reports typed insufficient_sources", async () => {
+    const fetch = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
+      const request = JSON.parse(String(init?.body));
+      if (request.params.name === "batch_search") return rpcText(searchMarkdown);
+      return rpcText(request.params.arguments.url.endsWith("1") ? "AI" : "2024");
+    });
+    await expect(createAnySearchResearchAdapter({ fetch }).collect({ queries: [{ id: "Q001", query: "evidence", type: "general" }] })).resolves.toMatchObject({ status: "insufficient_sources", sources: [] });
+  });
+
   it("omits authorization when unconfigured and redacts provider responses before current-run persistence", async () => {
     const persisted: unknown[] = [];
     const fetch = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
@@ -197,7 +206,7 @@ describe("AnySearch research adapter", () => {
           },
         });
       }
-      return rpcText("full extracted content");
+      return rpcText("full extracted content with enough public evidence detail");
     });
 
     const result = await createAnySearchResearchAdapter({

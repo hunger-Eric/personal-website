@@ -12,6 +12,7 @@ import {
   ArticleSourceBoundWriteInputSchema,
   ArticlePublicationRecordSchema,
   PublicationConflictEvidenceSchema,
+  ExtractedSourceSchema,
 } from "@/lib/article-workbench/contracts";
 
 describe("article-workbench contracts", () => {
@@ -152,9 +153,16 @@ describe("article-workbench contracts", () => {
       profile: {
         identity: { name: "Example", category: "Consulting", positioning: "Practical", description: "Help." },
         services: ["Strategy"], audience: "Leaders", geographicScope: [], differentiators: ["Hands-on"], approvedEvidence: [], disallowedClaims: ["best"],
-      }, topic: "AI controls", articleRules: ["Be useful"], sources: [{ id: "S001", title: "Guide", url: "https://example.com/guide", excerpt: "Excerpt", content: "Evidence" }],
+      }, topic: "AI controls", articleRules: ["Be useful"], sources: [{ id: "S001", title: "Guide", url: "https://example.com/guide", excerpt: "Excerpt", content: "Evidence with enough public source detail." }],
       provider: "opencode_zen",
     }).success).toBe(false);
+  });
+
+  it("rejects extracted evidence too short for deterministic attribution", () => {
+    const base = { id: "S001", title: "Guide", url: "https://example.com/guide", excerpt: "Excerpt" };
+    expect(ExtractedSourceSchema.safeParse({ ...base, content: "AI" }).success).toBe(false);
+    expect(ExtractedSourceSchema.safeParse({ ...base, content: "2024" }).success).toBe(false);
+    expect(ExtractedSourceSchema.safeParse({ ...base, content: "A normal extracted public evidence passage." }).success).toBe(true);
   });
 
   it("requires a code-owned publication path to match the record slug and real date", () => {

@@ -237,8 +237,16 @@ export type ArticleResearchPlanInput = z.infer<typeof ArticleResearchPlanInputSc
 export const ExtractedSourceSchema = SourceCandidateSchema.extend({
   content: nonEmptyText.max(20_000),
   publisher: nonEmptyText.max(200).optional(),
-}).strict();
+}).strict().superRefine((source, context) => {
+  if (normalizeEvidenceText(source.content).length < 24) {
+    context.addIssue({ code: z.ZodIssueCode.custom, path: ["content"], message: "Extracted source content is too short for evidence attribution" });
+  }
+});
 export type ExtractedSource = z.infer<typeof ExtractedSourceSchema>;
+
+export function normalizeEvidenceText(value: string): string {
+  return value.replace(/\r\n?/g, "\n").replace(/\s+/g, " ").trim();
+}
 
 export const SourcePacketResultSchema = z.discriminatedUnion("status", [
   z.object({ status: z.literal("ok"), sources: z.array(ExtractedSourceSchema).min(1).max(8) }).strict(),

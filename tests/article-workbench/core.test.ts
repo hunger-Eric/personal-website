@@ -17,8 +17,8 @@ import type {
 } from "@/lib/article-workbench/contracts";
 
 const sources = [
-  { id: "S001", title: "Primary source", url: "https://example.com/one", excerpt: "Evidence one", content: "Evidence one" },
-  { id: "S002", title: "Standard", url: "https://example.com/two", excerpt: "Evidence two", content: "Evidence two" },
+  { id: "S001", title: "Primary source", url: "https://example.com/one", excerpt: "Evidence one", content: "Evidence one is a complete extracted public source passage." },
+  { id: "S002", title: "Standard", url: "https://example.com/two", excerpt: "Evidence two", content: "Evidence two is a complete extracted public standard passage." },
 ] as const;
 
 class MemoryStore implements RunStorePort {
@@ -319,12 +319,12 @@ describe("article workbench workflow", () => {
     expect(store.artifacts.get(`${run.id}:articleEdits`)).toBeUndefined();
   });
 
-  it("fails and does not save a human edit that replays a complete short source", async () => {
+  it("rejects and does not save a human edit that replays a complete source", async () => {
     const { store, workflow } = createWorkflow();
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
     const previous = store.artifacts.get(`${run.id}:validatedArticle`);
-    await expect(workflow.saveArticleEdits(run.id, { confirmations: [], body: "Evidence one [[S001]] and Evidence two [[S002]]." })).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");
-    expect(store.runs.get(run.id)?.status).toBe("failed");
+    await expect(workflow.saveArticleEdits(run.id, { confirmations: [], body: "Evidence one is a complete extracted public source passage. [[S001]] and corroboration [[S002]]." })).rejects.toThrow("ARTICLE_FORMAT_INVALID");
+    expect(store.runs.get(run.id)?.status).toBe("validated");
     expect(store.artifacts.get(`${run.id}:validatedArticle`)).toBe(previous);
     expect(store.artifacts.get(`${run.id}:articleEdits`)).toBeUndefined();
   });

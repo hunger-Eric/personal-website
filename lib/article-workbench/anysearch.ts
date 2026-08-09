@@ -1,4 +1,4 @@
-import type { ExtractedSource, ResearchPlan, SearchPort, SourcePacketResult } from "./contracts";
+import { normalizeEvidenceText, type ExtractedSource, type ResearchPlan, type SearchPort, type SourcePacketResult } from "./contracts";
 import { canonicalizePublicHttpUrl } from "./safe-url";
 
 const ENDPOINT = "https://api.anysearch.com/mcp";
@@ -80,7 +80,7 @@ export class AnySearchResearchAdapter implements SearchPort {
     for (const source of extracted) {
       if (!source || remaining <= 0) continue;
       const content = source.content.slice(0, remaining);
-      if (!content) continue;
+      if (normalizeEvidenceText(content).length < 24) continue;
       remaining -= content.length;
       sources.push({ id: `S${String(sources.length + 1).padStart(3, "0")}`, ...source, excerpt: content.slice(0, 2_000), content });
     }
