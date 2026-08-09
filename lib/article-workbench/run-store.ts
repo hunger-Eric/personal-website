@@ -83,10 +83,15 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
   }
 
   async getRun(id: string): Promise<ArticleWorkbenchRun | null> {
-    return this.readJsonIfPresent(
-      this.runManifestPath(id),
+    const runId = this.validateRunId(id);
+    const run = await this.readJsonIfPresent(
+      this.runManifestPath(runId),
       RunManifestSchema as z.ZodType<ArticleWorkbenchRun>
     );
+    if (run && run.id !== runId) {
+      throw readError();
+    }
+    return run;
   }
 
   async updateRunStatus(id: string, status: ArticleRunStatus): Promise<void> {

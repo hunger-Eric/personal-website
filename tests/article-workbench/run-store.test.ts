@@ -102,7 +102,16 @@ describe("article workbench run store", () => {
     ).resolves.toContain('"status": "research_planned"');
   });
 
-  it("rejects invalid on-disk run manifests", async () => {
+  it("rejects malformed on-disk profile JSON", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    await mkdir(root, { recursive: true });
+    await writeFile(path.join(root, "profile.json"), "{ malformed", "utf8");
+
+    await expect(store.loadProfile()).rejects.toThrow("ARTICLE_WORKBENCH_READ_FAILED");
+  });
+
+  it("rejects an on-disk manifest with an invalid run id", async () => {
     const root = await createTemporaryRoot();
     const store = createArticleWorkbenchRunStore({ rootDir: root });
     const runId = "awr_aaaaaaaaaaaaaaaaaaaaaaaa";
@@ -110,11 +119,28 @@ describe("article workbench run store", () => {
     await mkdir(runDirectory, { recursive: true });
     await writeFile(
       path.join(runDirectory, "run.json"),
-      JSON.stringify({ id: "awr_bbbbbbbbbbbbbbbbbbbbbbbb", status: "queued" }),
+      JSON.stringify({ id: "awr_not-hex", status: "created" }),
       "utf8"
     );
 
-    await expect(store.getRun(runId)).rejects.toThrow();
+    await expect(store.getRun(runId)).rejects.toThrow("ARTICLE_WORKBENCH_READ_FAILED");
+  });
+
+  it("rejects a canonical manifest id that differs from its requested directory", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    const requestedRunId = "awr_aaaaaaaaaaaaaaaaaaaaaaaa";
+    const runDirectory = path.join(root, "runs", requestedRunId);
+    await mkdir(runDirectory, { recursive: true });
+    await writeFile(
+      path.join(runDirectory, "run.json"),
+      JSON.stringify({ id: "awr_bbbbbbbbbbbbbbbbbbbbbbbb", status: "created" }),
+      "utf8"
+    );
+
+    await expect(store.getRun(requestedRunId)).rejects.toThrow(
+      "ARTICLE_WORKBENCH_READ_FAILED"
+    );
   });
 
   it("rejects traversal-shaped run identifiers before constructing a path", async () => {
