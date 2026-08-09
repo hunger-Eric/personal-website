@@ -119,4 +119,12 @@ describe("PersonalWebsitePublisher", () => {
     await expect(subject.verify(receipt)).resolves.toMatchObject({ status: "published" });
     expect(fetch).toHaveBeenCalledTimes(2);
   });
+
+  it("ignores similar element names such as meta-data", async () => {
+    const { publisher: subject } = publisher({
+      fetch: vi.fn().mockResolvedValue(new Response('<meta-data name="article-content-hash" content="sha256:expected">', { status: 200 })),
+    });
+
+    await expect(subject.verify({ id: "commit-sha", slug: article.slug, contentHash: article.contentHash, status: "submitted" })).resolves.toMatchObject({ status: "submitted" });
+  });
 });

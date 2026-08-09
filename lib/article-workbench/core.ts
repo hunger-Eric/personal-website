@@ -15,6 +15,7 @@ import {
   type BusinessProfilePort,
   type ModelPort,
   type PublisherPort,
+  PublisherConflictError,
   type RunStorePort,
   type SearchPort,
   type SourceConfirmation,
@@ -140,7 +141,7 @@ class ArticleWorkflow {
     const record = ArticlePublicationRecordSchema.parse(recordValue);
     const claim = await store.claimPublication(runId, record);
     if (claim.status === "already_claimed") {
-      const recoveredValue = await this.atStage(runId, "publication", "PUBLISHER_CONFLICT", true, () => publisher.recover(record));
+      const recoveredValue = await this.atPublicationStage(runId, () => publisher.recover(record));
       const recovered = recoveredValue === null ? null : PublicationReceiptSchema.parse(recoveredValue);
       if (recovered === null) throw new Error("PUBLICATION_ALREADY_CLAIMED");
       if (recovered.slug !== record.slug || recovered.contentHash !== record.contentHash) {
@@ -152,7 +153,7 @@ class ArticleWorkflow {
       await store.updateRunStatus(runId, "publish_submitted");
       return submittedRecovery;
     }
-    const submitted = await this.atStage(runId, "publication", "PUBLISHER_CONFLICT", true, async () =>
+    const submitted = await this.atPublicationStage(runId, async () =>
       PublicationReceiptSchema.parse(await publisher.submit(record))
     );
     if (submitted.slug !== record.slug || submitted.contentHash !== record.contentHash) {
@@ -225,6 +226,17 @@ class ArticleWorkflow {
       return await operation();
     } catch {
       return this.fail(runId, stage, code, userActionRequired);
+    }
+  }
+
+  private async atPublicationStage<T>(runId: string, operation: () => Promise<T>): Promise<T> {
+    try {
+      return await operation();
+    } catch (error) {
+      if (error instanceof PublisherConflictError) {
+        await this.dependencies.store.saveArtifact(runId, "publicationConflictEvidence", error.evidence);
+      }
+      return this.fail(runId, "publication", "PUBLISHER_CONFLICT", true);
     }
   }
 }

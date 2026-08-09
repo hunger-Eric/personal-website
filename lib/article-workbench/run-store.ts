@@ -35,6 +35,7 @@ const artifactFiles = {
   articleEdits: "article-edits.json",
   publicationRecord: "publication-record.json",
   publicationAttempt: "publication-attempt.json",
+  publicationConflictEvidence: "publication-conflict-evidence.json",
   verificationAttempt: "verification-attempt.json",
   renderedMdx: "rendered.mdx",
   publicationReceipt: "publication-receipt.json",

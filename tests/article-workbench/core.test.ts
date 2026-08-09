@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { createArticleWorkflow } from "@/lib/article-workbench/core";
+import { createPersonalWebsitePublisher } from "@/lib/article-workbench/publisher";
 import { defaultArticleBusinessProfile } from "@/config/article-business-profile";
 import type {
   ArticleWorkbenchArtifact,
@@ -12,6 +13,7 @@ import type {
   RunStorePort,
   SearchPort,
   SourcePacketResult,
+  ArticlePublicationRecord,
 } from "@/lib/article-workbench/contracts";
 
 const sources = [
@@ -72,6 +74,7 @@ function createWorkflow(options: {
   article?: unknown;
   submitted?: (record: { slug?: string; contentHash?: string }) => unknown;
   recovered?: (record: { slug?: string; contentHash?: string }) => unknown;
+  publisher?: PublisherPort;
   verified?: (receipt: { id?: string; slug?: string; contentHash?: string; status?: "submitted" | "published" }) => unknown;
 } = {}) {
   const profile = options.profile ?? defaultArticleBusinessProfile;
@@ -111,7 +114,7 @@ function createWorkflow(options: {
   let submittedRecord: unknown;
   let verifications = 0;
   let recoveries = 0;
-  const publisher: PublisherPort = {
+  const fakePublisher: PublisherPort = {
     async submit(record) {
       submissions += 1;
       submittedRecord = record;
@@ -120,6 +123,7 @@ function createWorkflow(options: {
     async recover(record) { recoveries += 1; return (options.recovered?.(record) ?? null) as never; },
     async verify(receipt) { verifications += 1; return (options.verified?.(receipt) ?? { ...receipt, status: "published" }) as never; },
   };
+  const publisher = options.publisher ?? fakePublisher;
   return { store, publisher, submissions: () => submissions, recoveries: () => recoveries, submittedRecord: () => submittedRecord, verifications: () => verifications, workflow: createArticleWorkflow({ profile: { getProfile: async () => profile }, model, search, store, publisher, publicationDefaults: { date: "2026-08-09", author: "fengc" } }) };
 }
 
@@ -226,18 +230,32 @@ describe("article workbench workflow", () => {
     expect(recoveries()).toBe(1);
   });
 
-  it("records a conflict when an already-claimed record recovers different content", async () => {
-    const { store, workflow, submissions } = createWorkflow({
-      recovered: (record) => ({ id: "remote-commit", slug: record.slug, contentHash: "sha256:different", status: "submitted" }),
-    });
+  it("persists safe real-publisher conflict evidence without a create or overwrite", async () => {
+    let remoteFile: { sha: string; path: string; encoding: string; content: string } | null = null;
+    const getRepoFile = vi.fn(async () => remoteFile);
+    const createRepoFile = vi.fn();
+    const publisher = createPersonalWebsitePublisher({ siteUrl: "https://example.com", getRepoFile, createRepoFile });
+    const { store, workflow } = createWorkflow({ publisher });
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
     await confirmAndSeedPublication(store, workflow, run.id);
-    const record = store.artifacts.get(`${run.id}:publicationRecord`) as { slug: string; contentHash: string };
+    const record = store.artifacts.get(`${run.id}:publicationRecord`) as ArticlePublicationRecord;
     store.claims.add(`${run.id}:${record.slug}:${record.contentHash}`);
+    remoteFile = {
+      sha: "remote-content-sha",
+      path: record.path,
+      encoding: "base64",
+      content: Buffer.from(`---\ntitle: \"Evidence-led article\"\ndate: \"2026-08-09\"\ncontentHash: \"sha256:different\"\n---\n\nBody`).toString("base64"),
+    };
 
     await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLISHER_CONFLICT");
-    expect(submissions()).toBe(0);
-    expect(store.artifacts.get(`${run.id}:publicationAttempt`)).toMatchObject({ contentHash: "sha256:different" });
+    expect(createRepoFile).not.toHaveBeenCalled();
+    expect(store.artifacts.get(`${run.id}:publicationConflictEvidence`)).toEqual({
+      expectedContentHash: record.contentHash,
+      observedContentHash: "sha256:different",
+      slug: record.slug,
+      path: record.path,
+      remoteId: "remote-content-sha",
+    });
     expect(store.runs.get(run.id)?.status).toBe("failed");
   });
 

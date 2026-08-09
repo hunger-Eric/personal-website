@@ -178,7 +178,7 @@ export const ArticleWorkbenchRunSchema = z.object({
 export type ArticleWorkbenchRun = z.infer<typeof ArticleWorkbenchRunSchema>;
 
 export const ArticleWorkbenchArtifactSchema = z.enum([
-  "input", "researchPlan", "sourcePacket", "modelResponse", "validatedArticle", "articleEdits", "publicationRecord", "publicationAttempt", "verificationAttempt", "renderedMdx", "publicationReceipt",
+  "input", "researchPlan", "sourcePacket", "modelResponse", "validatedArticle", "articleEdits", "publicationRecord", "publicationAttempt", "publicationConflictEvidence", "verificationAttempt", "renderedMdx", "publicationReceipt",
 ]);
 export type ArticleWorkbenchArtifact = z.infer<typeof ArticleWorkbenchArtifactSchema>;
 
@@ -335,6 +335,25 @@ export const ArticlePublicationRecordSchema = articlePublicationRecordBaseSchema
   if (!match || Number.isNaN(new Date(`${match[1]}T00:00:00.000Z`).valueOf()) || new Date(`${match[1]}T00:00:00.000Z`).toISOString().slice(0, 10) !== match[1] || match[2] !== record.slug) context.addIssue({ code: z.ZodIssueCode.custom, path: ["path"], message: "Publication path must match its canonical date and slug" });
 });
 export type ArticlePublicationRecord = z.infer<typeof ArticlePublicationRecordSchema>;
+
+export const PublicationConflictEvidenceSchema = z.object({
+  expectedContentHash: articlePublicationRecordBaseSchema.shape.contentHash,
+  observedContentHash: articlePublicationRecordBaseSchema.shape.contentHash,
+  slug: articlePublicationRecordBaseSchema.shape.slug,
+  path: publicationPathSchema,
+  remoteId: nonEmptyText.max(500).optional(),
+}).strict();
+export type PublicationConflictEvidence = z.infer<typeof PublicationConflictEvidenceSchema>;
+
+export class PublisherConflictError extends Error {
+  readonly evidence: PublicationConflictEvidence;
+
+  constructor(evidence: PublicationConflictEvidence) {
+    super("PUBLISHER_CONFLICT");
+    this.name = "PublisherConflictError";
+    this.evidence = PublicationConflictEvidenceSchema.parse(evidence);
+  }
+}
 
 export const PublicationReceiptSchema = z.object({
   id: nonEmptyText.max(500),

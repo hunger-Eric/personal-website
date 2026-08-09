@@ -3,7 +3,7 @@ import matter from "gray-matter";
 import { createRepoFile, getRepoFile, type RepoFileWriteReceipt } from "@/lib/github-photo";
 import { SITE_URL } from "@/lib/site-url";
 
-import type { ArticlePublicationRecord, PublicationReceipt, PublisherPort } from "./contracts";
+import { PublisherConflictError, type ArticlePublicationRecord, type PublicationReceipt, type PublisherPort } from "./contracts";
 
 type RepoFile = Awaited<ReturnType<typeof getRepoFile>>;
 
@@ -88,7 +88,17 @@ function receiptFromWrite(write: RepoFileWriteReceipt, article: ArticlePublicati
 
 function existingReceipt(existing: NonNullable<RepoFile>, article: ArticlePublicationRecord): PublicationReceipt {
   if (existing.path !== article.path) throw providerFailure();
-  if (existingHash(existing) !== article.contentHash) throw new Error("PUBLISHER_CONFLICT");
+  const observedContentHash = existingHash(existing);
+  if (!observedContentHash) throw providerFailure();
+  if (observedContentHash !== article.contentHash) {
+    throw new PublisherConflictError({
+      expectedContentHash: article.contentHash,
+      observedContentHash,
+      slug: article.slug,
+      path: article.path,
+      ...(existing.sha ? { remoteId: existing.sha } : {}),
+    });
+  }
   if (!existing.sha) throw providerFailure();
   return { id: existing.sha, slug: article.slug, contentHash: article.contentHash, status: "submitted" };
 }
@@ -114,7 +124,7 @@ function canonicalSiteUrl(value: string): URL {
 }
 
 function publicContentHash(html: string): string | undefined {
-  const match = /<meta\b[^>]*>/gi;
+  const match = /<meta(?=\s|\/?>)[^>]*>/gi;
   for (const tag of html.match(match) ?? []) {
     const attributes = new Map<string, string>();
     for (const attribute of tag.matchAll(/([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g)) {
@@ -132,5 +142,5 @@ function providerFailure(): Error {
 }
 
 function isKnownPublisherError(error: unknown): error is Error {
-  return error instanceof Error && /^(PUBLISHER_CONFLICT|PUBLISHER_PROVIDER_FAILED|PUBLISHER_CONFIGURATION_INVALID)$/.test(error.message);
+  return error instanceof PublisherConflictError || (error instanceof Error && /^(PUBLISHER_PROVIDER_FAILED|PUBLISHER_CONFIGURATION_INVALID)$/.test(error.message));
 }
