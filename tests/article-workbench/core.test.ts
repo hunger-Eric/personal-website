@@ -24,6 +24,7 @@ class MemoryStore implements RunStorePort {
   readonly artifacts = new Map<string, unknown>();
   readonly claims = new Set<string>();
   readonly events: string[] = [];
+  failNextPublicationReceiptSave = false;
 
   async createRun(): Promise<ArticleWorkbenchRun> {
     const run = { id: "awr_aaaaaaaaaaaaaaaaaaaaaaaa", status: "created" as const };
@@ -40,6 +41,10 @@ class MemoryStore implements RunStorePort {
     this.events.push(`store:status:${status}`);
   }
   async saveArtifact(id: string, artifact: ArticleWorkbenchArtifact, value: unknown) {
+    if (artifact === "publicationReceipt" && this.failNextPublicationReceiptSave) {
+      this.failNextPublicationReceiptSave = false;
+      throw new Error("receipt persistence interrupted");
+    }
     this.artifacts.set(`${id}:${artifact}`, value);
     this.events.push(`store:artifact:${artifact}`);
   }
@@ -66,6 +71,7 @@ function createWorkflow(options: {
   plan?: unknown;
   article?: unknown;
   submitted?: (record: { slug?: string; contentHash?: string }) => unknown;
+  recovered?: (record: { slug?: string; contentHash?: string }) => unknown;
   verified?: (receipt: { id?: string; slug?: string; contentHash?: string; status?: "submitted" | "published" }) => unknown;
 } = {}) {
   const profile = options.profile ?? defaultArticleBusinessProfile;
@@ -104,15 +110,17 @@ function createWorkflow(options: {
   let submissions = 0;
   let submittedRecord: unknown;
   let verifications = 0;
+  let recoveries = 0;
   const publisher: PublisherPort = {
     async submit(record) {
       submissions += 1;
       submittedRecord = record;
       return (options.submitted?.(record) ?? { id: "publication-1", slug: record.slug, contentHash: record.contentHash, status: "submitted" }) as never;
     },
+    async recover(record) { recoveries += 1; return (options.recovered?.(record) ?? null) as never; },
     async verify(receipt) { verifications += 1; return (options.verified?.(receipt) ?? { ...receipt, status: "published" }) as never; },
   };
-  return { store, publisher, submissions: () => submissions, submittedRecord: () => submittedRecord, verifications: () => verifications, workflow: createArticleWorkflow({ profile: { getProfile: async () => profile }, model, search, store, publisher, publicationDefaults: { date: "2026-08-09", author: "fengc" } }) };
+  return { store, publisher, submissions: () => submissions, recoveries: () => recoveries, submittedRecord: () => submittedRecord, verifications: () => verifications, workflow: createArticleWorkflow({ profile: { getProfile: async () => profile }, model, search, store, publisher, publicationDefaults: { date: "2026-08-09", author: "fengc" } }) };
 }
 
 describe("article workbench workflow", () => {
@@ -176,6 +184,61 @@ describe("article workbench workflow", () => {
     expect(first).toEqual(repeated);
     expect(submissions()).toBe(1);
     expect(store.runs.get(run.id)?.status).toBe("publish_submitted");
+  });
+
+  it("recovers a GitHub-successful receipt after local persistence interruption without a second submit", async () => {
+    const { store, workflow, submissions, recoveries } = createWorkflow({
+      recovered: (record) => ({ id: "remote-commit", slug: record.slug, contentHash: record.contentHash, status: "submitted" }),
+    });
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await confirmAndSeedPublication(store, workflow, run.id);
+    store.failNextPublicationReceiptSave = true;
+
+    await expect(workflow.submitPublication(run.id)).rejects.toThrow("receipt persistence interrupted");
+    await expect(workflow.submitPublication(run.id)).resolves.toMatchObject({ id: "remote-commit", status: "submitted" });
+    expect(submissions()).toBe(1);
+    expect(recoveries()).toBe(1);
+    expect(store.runs.get(run.id)?.status).toBe("publish_submitted");
+  });
+
+  it("keeps a recovered remote receipt submitted until public verification", async () => {
+    const { store, workflow } = createWorkflow({
+      recovered: (record) => ({ id: "remote-commit", slug: record.slug, contentHash: record.contentHash, status: "published" }),
+    });
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await confirmAndSeedPublication(store, workflow, run.id);
+    const record = store.artifacts.get(`${run.id}:publicationRecord`) as { slug: string; contentHash: string };
+    store.claims.add(`${run.id}:${record.slug}:${record.contentHash}`);
+
+    await expect(workflow.submitPublication(run.id)).resolves.toMatchObject({ status: "submitted" });
+    expect(store.runs.get(run.id)?.status).toBe("publish_submitted");
+  });
+
+  it("does not submit again when an already-claimed record cannot be recovered", async () => {
+    const { store, workflow, submissions, recoveries } = createWorkflow();
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await confirmAndSeedPublication(store, workflow, run.id);
+    const record = store.artifacts.get(`${run.id}:publicationRecord`) as { slug: string; contentHash: string };
+    store.claims.add(`${run.id}:${record.slug}:${record.contentHash}`);
+
+    await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLICATION_ALREADY_CLAIMED");
+    expect(submissions()).toBe(0);
+    expect(recoveries()).toBe(1);
+  });
+
+  it("records a conflict when an already-claimed record recovers different content", async () => {
+    const { store, workflow, submissions } = createWorkflow({
+      recovered: (record) => ({ id: "remote-commit", slug: record.slug, contentHash: "sha256:different", status: "submitted" }),
+    });
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await confirmAndSeedPublication(store, workflow, run.id);
+    const record = store.artifacts.get(`${run.id}:publicationRecord`) as { slug: string; contentHash: string };
+    store.claims.add(`${run.id}:${record.slug}:${record.contentHash}`);
+
+    await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLISHER_CONFLICT");
+    expect(submissions()).toBe(0);
+    expect(store.artifacts.get(`${run.id}:publicationAttempt`)).toMatchObject({ contentHash: "sha256:different" });
+    expect(store.runs.get(run.id)?.status).toBe("failed");
   });
 
   it("rejects confirmations that are not in the validated model assessments", async () => {

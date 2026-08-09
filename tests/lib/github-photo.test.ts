@@ -73,7 +73,7 @@ describe("getRepoFile", () => {
 describe("upsertRepoFile", () => {
   it("creates a file with utf-8 encoding (default)", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ content: { sha: "content-sha" }, commit: { sha: "commit-sha" } }), { status: 201 })
+      new Response(JSON.stringify({ content: { sha: "content-sha", path: "config/test.json" }, commit: { sha: "commit-sha" } }), { status: 201 })
     );
 
     const { upsertRepoFile } = await import("@/lib/github-photo");
@@ -100,7 +100,7 @@ describe("upsertRepoFile", () => {
 
   it("creates a file with base64 encoding", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ content: {} }), { status: 201 })
+      new Response(JSON.stringify({ content: { sha: "content-sha", path: "images/photo.jpg" }, commit: { sha: "commit-sha" } }), { status: 201 })
     );
 
     const { upsertRepoFile } = await import("@/lib/github-photo");
@@ -113,7 +113,7 @@ describe("upsertRepoFile", () => {
 
   it("updates a file with existing SHA", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ content: {} }), { status: 200 })
+      new Response(JSON.stringify({ content: { sha: "content-sha", path: "config/test.json" }, commit: { sha: "commit-sha" } }), { status: 200 })
     );
 
     const { upsertRepoFile } = await import("@/lib/github-photo");
@@ -143,7 +143,7 @@ describe("upsertRepoFile", () => {
 
   it("handles Buffer content with base64 encoding (branch: encoding==='base64' && content is Buffer)", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ content: {} }), { status: 201 })
+      new Response(JSON.stringify({ content: { sha: "content-sha", path: "images/binary.bin" }, commit: { sha: "commit-sha" } }), { status: 201 })
     );
 
     const { upsertRepoFile } = await import("@/lib/github-photo");
@@ -158,7 +158,7 @@ describe("upsertRepoFile", () => {
 
   it("handles Buffer content with utf-8 encoding", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ content: {} }), { status: 201 })
+      new Response(JSON.stringify({ content: { sha: "content-sha", path: "test.txt" }, commit: { sha: "commit-sha" } }), { status: 201 })
     );
 
     const { upsertRepoFile } = await import("@/lib/github-photo");
@@ -168,6 +168,26 @@ describe("upsertRepoFile", () => {
     const callArgs = vi.mocked(fetch).mock.calls[0];
     const body = JSON.parse(callArgs[1]!.body as string);
     expect(body.content).toBe(buf.toString("base64"));
+  });
+});
+
+describe("createRepoFile", () => {
+  it("returns only a complete response receipt for the exact requested path", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ content: { sha: "content-sha", path: "content/articles/example.mdx" }, commit: { sha: "commit-sha" } }), { status: 201 })
+    );
+    const { createRepoFile } = await import("@/lib/github-photo");
+
+    await expect(createRepoFile("content/articles/example.mdx", "Body", "create")).resolves.toEqual({ contentSha: "content-sha", commitSha: "commit-sha", path: "content/articles/example.mdx" });
+  });
+
+  it("rejects a malformed successful write response", async () => {
+    vi.spyOn(global, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ content: { sha: "content-sha", path: "other.mdx" }, commit: {} }), { status: 201 })
+    );
+    const { createRepoFile } = await import("@/lib/github-photo");
+
+    await expect(createRepoFile("content/articles/example.mdx", "Body", "create")).rejects.toThrow("GitHub API invalid write response");
   });
 });
 
@@ -213,7 +233,7 @@ describe("deleteRepoFile", () => {
 describe("uploadPhoto", () => {
   it("uploads a public photo and returns path + URL", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ content: {} }), { status: 201 })
+      new Response(JSON.stringify({ content: { sha: "content-sha", path: "public/images/photography/summer.jpg" }, commit: { sha: "commit-sha" } }), { status: 201 })
     );
 
     const { uploadPhoto } = await import("@/lib/github-photo");
@@ -226,7 +246,7 @@ describe("uploadPhoto", () => {
 
   it("uploads a private photo and returns path + URL", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ content: {} }), { status: 201 })
+      new Response(JSON.stringify({ content: { sha: "content-sha", path: "private-photos/private.jpg" }, commit: { sha: "commit-sha" } }), { status: 201 })
     );
 
     const { uploadPhoto } = await import("@/lib/github-photo");
@@ -238,7 +258,7 @@ describe("uploadPhoto", () => {
 
   it("handles file names with directory prefixes", async () => {
     vi.spyOn(global, "fetch").mockResolvedValueOnce(
-      new Response(JSON.stringify({ content: {} }), { status: 201 })
+      new Response(JSON.stringify({ content: { sha: "content-sha", path: "public/images/photography/subdir/nested.jpg" }, commit: { sha: "commit-sha" } }), { status: 201 })
     );
 
     const { uploadPhoto } = await import("@/lib/github-photo");
@@ -270,7 +290,7 @@ describe("saveConfig", () => {
       )
       // Second call: upsertRepoFile succeeds
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ content: {} }), { status: 200 })
+        new Response(JSON.stringify({ content: { sha: "content-sha", path: "config/photography.json" }, commit: { sha: "commit-sha" } }), { status: 200 })
       );
 
     const { saveConfig } = await import("@/lib/github-photo");
@@ -288,7 +308,7 @@ describe("saveConfig", () => {
       .mockResolvedValueOnce(new Response("Not Found", { status: 404 }))
       // Second call: upsertRepoFile succeeds
       .mockResolvedValueOnce(
-        new Response(JSON.stringify({ content: {} }), { status: 201 })
+        new Response(JSON.stringify({ content: { sha: "content-sha", path: "config/photography.json" }, commit: { sha: "commit-sha" } }), { status: 201 })
       );
 
     const { saveConfig } = await import("@/lib/github-photo");

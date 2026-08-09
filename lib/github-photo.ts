@@ -22,6 +22,11 @@ export interface RepoFileWriteReceipt {
   path: string;
 }
 
+type GitHubWriteResponse = {
+  content?: { sha?: unknown; path?: unknown };
+  commit?: { sha?: unknown };
+};
+
 /**
  * Get the GitHub API token from env.
  */
@@ -64,6 +69,29 @@ export async function upsertRepoFile(
   encoding: "base64" | "utf-8" = "utf-8",
   existingSha?: string
 ): Promise<RepoFileWriteReceipt> {
+  return writeRepoFile(path, content, message, encoding, existingSha);
+}
+
+/**
+ * Create a repository file without supplying a SHA. Callers that need
+ * create-only semantics must use this rather than the compatible upsert helper.
+ */
+export async function createRepoFile(
+  path: string,
+  content: string | Buffer,
+  message: string,
+  encoding: "base64" | "utf-8" = "utf-8",
+): Promise<RepoFileWriteReceipt> {
+  return writeRepoFile(path, content, message, encoding);
+}
+
+async function writeRepoFile(
+  path: string,
+  content: string | Buffer,
+  message: string,
+  encoding: "base64" | "utf-8",
+  existingSha?: string,
+): Promise<RepoFileWriteReceipt> {
   const body: {
     message: string;
     branch: string;
@@ -98,11 +126,21 @@ export async function upsertRepoFile(
     const err = await res.text();
     throw new Error(`GitHub API error on PUT (${res.status}): ${err}`);
   }
-  const result = await res.json() as { content?: { sha?: string }; commit?: { sha?: string } };
+  const result = await res.json() as GitHubWriteResponse;
+  const contentSha = result.content?.sha;
+  const commitSha = result.commit?.sha;
+  const responsePath = result.content?.path;
+  if (
+    typeof contentSha !== "string" || !contentSha.trim() ||
+    typeof commitSha !== "string" || !commitSha.trim() ||
+    typeof responsePath !== "string" || responsePath !== path
+  ) {
+    throw new Error("GitHub API invalid write response");
+  }
   return {
-    contentSha: result.content?.sha ?? "",
-    commitSha: result.commit?.sha ?? "",
-    path,
+    contentSha,
+    commitSha,
+    path: responsePath,
   };
 }
 

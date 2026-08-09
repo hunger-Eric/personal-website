@@ -139,7 +139,19 @@ class ArticleWorkflow {
     if (!recordValue) throw new Error("PUBLICATION_RECORD_REQUIRED");
     const record = ArticlePublicationRecordSchema.parse(recordValue);
     const claim = await store.claimPublication(runId, record);
-    if (claim.status === "already_claimed") throw new Error("PUBLICATION_ALREADY_CLAIMED");
+    if (claim.status === "already_claimed") {
+      const recoveredValue = await this.atStage(runId, "publication", "PUBLISHER_CONFLICT", true, () => publisher.recover(record));
+      const recovered = recoveredValue === null ? null : PublicationReceiptSchema.parse(recoveredValue);
+      if (recovered === null) throw new Error("PUBLICATION_ALREADY_CLAIMED");
+      if (recovered.slug !== record.slug || recovered.contentHash !== record.contentHash) {
+        await store.saveArtifact(runId, "publicationAttempt", recovered);
+        return this.fail(runId, "publication", "PUBLISHER_CONFLICT", true);
+      }
+      const submittedRecovery = { ...recovered, status: "submitted" as const };
+      await store.saveArtifact(runId, "publicationReceipt", submittedRecovery);
+      await store.updateRunStatus(runId, "publish_submitted");
+      return submittedRecovery;
+    }
     const submitted = await this.atStage(runId, "publication", "PUBLISHER_CONFLICT", true, async () =>
       PublicationReceiptSchema.parse(await publisher.submit(record))
     );

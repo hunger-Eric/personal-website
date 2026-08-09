@@ -351,5 +351,6 @@ export type PublicationClaimResult = z.infer<typeof PublicationClaimResultSchema
 
 export interface PublisherPort {
   submit(article: ArticlePublicationRecord): Promise<PublicationReceipt>;
+  recover(article: ArticlePublicationRecord): Promise<PublicationReceipt | null>;
   verify(receipt: PublicationReceipt): Promise<PublicationReceipt>;
 }

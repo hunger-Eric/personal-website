@@ -1,6 +1,6 @@
 import matter from "gray-matter";
 
-import { getRepoFile, upsertRepoFile, type RepoFileWriteReceipt } from "@/lib/github-photo";
+import { createRepoFile, getRepoFile, type RepoFileWriteReceipt } from "@/lib/github-photo";
 import { SITE_URL } from "@/lib/site-url";
 
 import type { ArticlePublicationRecord, PublicationReceipt, PublisherPort } from "./contracts";
@@ -10,7 +10,7 @@ type RepoFile = Awaited<ReturnType<typeof getRepoFile>>;
 export interface PersonalWebsitePublisherOptions {
   siteUrl?: string;
   getRepoFile?: (path: string) => Promise<RepoFile>;
-  upsertRepoFile?: (
+  createRepoFile?: (
     path: string,
     content: string | Buffer,
     message: string,
@@ -24,7 +24,7 @@ export function createPersonalWebsitePublisher(options: PersonalWebsitePublisher
   return new PersonalWebsitePublisher({
     siteUrl: options.siteUrl ?? SITE_URL,
     getRepoFile: options.getRepoFile ?? getRepoFile,
-    upsertRepoFile: options.upsertRepoFile ?? upsertRepoFile,
+    createRepoFile: options.createRepoFile ?? createRepoFile,
     fetch: options.fetch ?? globalThis.fetch,
   });
 }
@@ -38,11 +38,26 @@ class PersonalWebsitePublisher implements PublisherPort {
 
   async submit(article: ArticlePublicationRecord): Promise<PublicationReceipt> {
     try {
+      const recovered = await this.recover(article);
+      if (recovered) return recovered;
+      try {
+        const write = await this.options.createRepoFile(article.path, article.body, `feat(article): publish ${article.slug}`, "utf-8");
+        return receiptFromWrite(write, article);
+      } catch {
+        const afterCreateFailure = await this.recover(article);
+        if (afterCreateFailure) return afterCreateFailure;
+        throw providerFailure();
+      }
+    } catch (error) {
+      if (isKnownPublisherError(error)) throw error;
+      throw providerFailure();
+    }
+  }
+
+  async recover(article: ArticlePublicationRecord): Promise<PublicationReceipt | null> {
+    try {
       const existing = await this.options.getRepoFile(article.path);
-      if (existing) return existingReceipt(existing, article);
-      const write = await this.options.upsertRepoFile(article.path, article.body, `feat(article): publish ${article.slug}`, "utf-8");
-      if (write.path !== article.path || !write.commitSha) throw providerFailure();
-      return { id: write.commitSha, slug: article.slug, contentHash: article.contentHash, status: "submitted" };
+      return existing ? existingReceipt(existing, article) : null;
     } catch (error) {
       if (isKnownPublisherError(error)) throw error;
       throw providerFailure();
@@ -64,6 +79,11 @@ class PersonalWebsitePublisher implements PublisherPort {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) throw new Error("PUBLISHER_CONFIGURATION_INVALID");
     return new URL(`/articles/${slug}`, this.siteUrl).toString();
   }
+}
+
+function receiptFromWrite(write: RepoFileWriteReceipt, article: ArticlePublicationRecord): PublicationReceipt {
+  if (write.path !== article.path || !write.commitSha || !write.contentSha) throw providerFailure();
+  return { id: write.commitSha, slug: article.slug, contentHash: article.contentHash, status: "submitted" };
 }
 
 function existingReceipt(existing: NonNullable<RepoFile>, article: ArticlePublicationRecord): PublicationReceipt {
@@ -96,9 +116,13 @@ function canonicalSiteUrl(value: string): URL {
 function publicContentHash(html: string): string | undefined {
   const match = /<meta\b[^>]*>/gi;
   for (const tag of html.match(match) ?? []) {
-    const name = /\bname\s*=\s*(["'])article-content-hash\1/i.test(tag);
-    const content = /\bcontent\s*=\s*(["'])([^"']*)\1/i.exec(tag)?.[2];
-    if (name && content) return content;
+    const attributes = new Map<string, string>();
+    for (const attribute of tag.matchAll(/([^\s=/>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g)) {
+      attributes.set(attribute[1].toLowerCase(), attribute[2] ?? attribute[3] ?? attribute[4]);
+    }
+    if (attributes.get("name") === "article-content-hash" && attributes.get("content")) {
+      return attributes.get("content");
+    }
   }
   return undefined;
 }
