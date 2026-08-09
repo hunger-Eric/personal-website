@@ -44,25 +44,30 @@ describe("article business profile", () => {
 
   it("contains only facts exposed by the reviewed Chinese public-content projection", () => {
     const publicContent = getLocalizedPublicContent("zh");
-    const reviewedFacts = JSON.stringify(publicContent);
-    const profileFacts = [
-      defaultArticleBusinessProfile.identity.name,
-      defaultArticleBusinessProfile.identity.category,
-      defaultArticleBusinessProfile.identity.positioning,
-      defaultArticleBusinessProfile.identity.description,
-      defaultArticleBusinessProfile.audience,
-      ...defaultArticleBusinessProfile.services,
-      ...defaultArticleBusinessProfile.differentiators,
-      ...defaultArticleBusinessProfile.approvedEvidence.map((evidence) => evidence.claim),
-      ...defaultArticleBusinessProfile.disallowedClaims,
-      defaultArticleBusinessProfile.callToAction?.label ?? "",
-      defaultArticleBusinessProfile.callToAction?.href ?? "",
-    ];
-
-    for (const fact of profileFacts) {
-      expect(reviewedFacts).toContain(fact);
-    }
-    expect(defaultArticleBusinessProfile.geographicScope).toEqual([]);
+    expect(defaultArticleBusinessProfile).toEqual({
+      identity: {
+        name: publicContent.identity.name,
+        category: publicContent.identity.category,
+        positioning: publicContent.identity.positioning,
+        description: publicContent.identity.description,
+      },
+      services: publicContent.service.suitableWork,
+      audience: publicContent.identity.audience,
+      geographicScope: [],
+      differentiators: publicContent.service.method.map((step) => step.description),
+      approvedEvidence: publicContent.projects.flatMap((project) =>
+        project.evidenceArtifacts.map((artifact) => ({
+          id: `${project.id}-${artifact.id}`,
+          claim: artifact.description ?? artifact.label,
+          reviewed: true,
+        }))
+      ),
+      disallowedClaims: publicContent.service.boundaries,
+      callToAction: {
+        label: publicContent.cta.primary.label,
+        href: publicContent.cta.primary.href,
+      },
+    });
   });
 
   it("rejects an invalid saved profile before it reaches the domain", () => {

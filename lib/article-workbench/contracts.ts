@@ -90,6 +90,14 @@ export const ResearchPlanSchema = z
   .superRefine((plan, context) => {
     const seenIds = new Set<string>();
     plan.queries.forEach((query, index) => {
+      const expectedId = `Q${String(index + 1).padStart(3, "0")}`;
+      if (query.id !== expectedId) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Research query ids must match their code-owned order",
+          path: ["queries", index, "id"],
+        });
+      }
       if (seenIds.has(query.id)) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
@@ -130,14 +138,16 @@ export type SourceAssessmentProposal = z.infer<
   typeof SourceAssessmentProposalSchema
 >;
 
+const sourceIdSchema = z.string().regex(/^S\d{3}$/);
+
 export const SourceAssessmentSchema = SourceAssessmentProposalSchema.extend({
-  sourceId: z.string().trim().min(1).max(120),
+  sourceId: sourceIdSchema,
 }).strict();
 export type SourceAssessment = z.infer<typeof SourceAssessmentSchema>;
 
 export const SourceConfirmationSchema = z
   .object({
-    sourceId: z.string().trim().min(1).max(120),
+    sourceId: sourceIdSchema,
     confirmed: z.literal(true),
   })
   .strict();
@@ -148,11 +158,32 @@ export interface SearchRequest {
   type: ResearchQueryType;
 }
 
-export interface SourceCandidate {
-  id: string;
-  title: string;
-  url: string;
-  excerpt: string;
+export const SourceCandidateSchema = z
+  .object({
+    id: sourceIdSchema,
+    title: nonEmptyText,
+    url: z.string().url().max(2_000),
+    excerpt: nonEmptyText,
+  })
+  .strict();
+export type SourceCandidate = z.infer<typeof SourceCandidateSchema>;
+
+export function bindSourceAssessment(
+  source: SourceCandidate,
+  proposal: SourceAssessmentProposal
+): SourceAssessment {
+  return SourceAssessmentSchema.parse({
+    sourceId: source.id,
+    ...proposal,
+  });
+}
+
+/**
+ * Parses a completed assessment record at the trusted code-owned boundary.
+ * Candidate-store membership validation is intentionally outside Task 1.
+ */
+export function parseTrustedSourceAssessmentRecord(input: unknown): SourceAssessment {
+  return SourceAssessmentSchema.parse(input);
 }
 
 export interface BusinessProfilePort {

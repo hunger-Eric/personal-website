@@ -5,7 +5,10 @@ import {
   ResearchPlanProposalSchema,
   ResearchPlanSchema,
   SourceAssessmentSchema,
+  SourceAssessmentProposalSchema,
+  SourceCandidateSchema,
   assignResearchPlanIds,
+  bindSourceAssessment,
 } from "@/lib/article-workbench/contracts";
 
 describe("article-workbench contracts", () => {
@@ -31,6 +34,17 @@ describe("article-workbench contracts", () => {
         queries: [
           { id: "Q001", query: "AI workflow audit", type: "general" },
           { id: "Q001", query: "AI adoption research", type: "academic" },
+        ],
+      }).success
+    ).toBe(false);
+  });
+
+  it("rejects forged or non-sequential code-owned query identifiers", () => {
+    expect(
+      ResearchPlanSchema.safeParse({
+        queries: [
+          { id: "Q001", query: "AI workflow audit", type: "general" },
+          { id: "Q999", query: "AI adoption research", type: "academic" },
         ],
       }).success
     ).toBe(false);
@@ -70,6 +84,45 @@ describe("article-workbench contracts", () => {
         category: "official",
         rationale: "Published by the responsible public body.",
         confirmed: true,
+      }).success
+    ).toBe(false);
+  });
+
+  it("rejects model-supplied source identifiers", () => {
+    expect(
+      SourceAssessmentProposalSchema.safeParse({
+        sourceId: "S001",
+        category: "official",
+        rationale: "Published by the responsible public body.",
+      }).success
+    ).toBe(false);
+  });
+
+  it("binds an assessment to the validated code-owned source identifier", () => {
+    const source = SourceCandidateSchema.parse({
+      id: "S007",
+      title: "Official guidance",
+      url: "https://example.com/guidance",
+      excerpt: "A public body published this guidance.",
+    });
+    const proposal = SourceAssessmentProposalSchema.parse({
+      category: "official",
+      rationale: "Published by the responsible public body.",
+    });
+
+    expect(bindSourceAssessment(source, proposal)).toEqual({
+      sourceId: "S007",
+      category: "official",
+      rationale: "Published by the responsible public body.",
+    });
+  });
+
+  it("rejects source assessment records with non-canonical source identifiers", () => {
+    expect(
+      SourceAssessmentSchema.safeParse({
+        sourceId: "source-1",
+        category: "official",
+        rationale: "Published by the responsible public body.",
       }).success
     ).toBe(false);
   });
