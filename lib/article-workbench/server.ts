@@ -7,6 +7,7 @@ import { ArticleEditsInputSchema, createArticleWorkflow, type ArticleEditsInput 
 import { createArticleModelConfig, OpenAICompatibleModelProvider } from "./model";
 import { createPersonalWebsitePublisher } from "./publisher";
 import { createArticleWorkbenchRunStore } from "./run-store";
+import { createOfflineArticleWorkbenchFixtures } from "./offline-fixtures";
 import { BusinessProfileSchema, PublicationReceiptSchema, SourceBoundArticleProposalSchema, SourcePacketResultSchema, type ArticleWorkbenchRun, type BusinessProfile } from "./contracts";
 
 const MAX_BODY_BYTES = 64 * 1024;
@@ -50,16 +51,16 @@ export interface SafeRun {
 export interface ArticleWorkbenchServerOptions { rootDir?: string; }
 
 export function createArticleWorkbenchServer(environment: Record<string, string | undefined> = process.env, options: ArticleWorkbenchServerOptions = {}): ArticleWorkbenchServer {
-  const modelConfig = createArticleModelConfig(environment);
   const store = createArticleWorkbenchRunStore({ rootDir: options.rootDir });
   const profilePort = {
     async getProfile() {
       return BusinessProfileSchema.parse((await store.loadProfile()) ?? defaultArticleBusinessProfile);
     },
   };
-  const model = new OpenAICompatibleModelProvider({ config: modelConfig });
-  const search = createAnySearchResearchAdapter({ apiKey: environment.ANYSEARCH_API_KEY });
-  const publisher = createPersonalWebsitePublisher({ siteUrl: environment.NEXT_PUBLIC_BASE_URL });
+  const fixtures = offlineFixturesFor(environment);
+  const model = fixtures?.model ?? new OpenAICompatibleModelProvider({ config: createArticleModelConfig(environment) });
+  const search = fixtures?.search ?? createAnySearchResearchAdapter({ apiKey: environment.ANYSEARCH_API_KEY });
+  const publisher = fixtures?.publisher ?? createPersonalWebsitePublisher({ siteUrl: environment.NEXT_PUBLIC_BASE_URL });
   const workflow = createArticleWorkflow({
     profile: profilePort,
     model,
@@ -97,6 +98,14 @@ export function createArticleWorkbenchServer(environment: Record<string, string 
     async submit(runId) { runIdSchema.parse(runId); return PublicationReceiptSchema.parse(await workflow.submitPublication(runId)) as { id: string; slug: string; contentHash: string; status: "submitted" | "published" }; },
     async refresh(runId) { runIdSchema.parse(runId); return PublicationReceiptSchema.parse(await workflow.refreshPublication(runId)) as { id: string; slug: string; contentHash: string; status: "submitted" | "published" }; },
   };
+}
+
+function offlineFixturesFor(environment: Record<string, string | undefined>) {
+  if (environment.ARTICLE_WORKBENCH_OFFLINE_FIXTURES !== "true") return undefined;
+  if (environment.NODE_ENV === "production" || environment.ENABLE_ADMIN !== "true") {
+    throw new Error("ARTICLE_OFFLINE_FIXTURES_DISABLED");
+  }
+  return createOfflineArticleWorkbenchFixtures();
 }
 
 let server: ArticleWorkbenchServer | undefined;
