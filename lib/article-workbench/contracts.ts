@@ -323,6 +323,7 @@ export interface RunStorePort {
 }
 
 const publicationPathSchema = z.string().regex(/^content\/articles\/\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*\.mdx$/);
+const canonicalContentHashSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
 const articlePublicationRecordBaseSchema = z.object({
   title: nonEmptyText.max(200),
   body: nonEmptyText.max(40_000),
@@ -337,8 +338,8 @@ export const ArticlePublicationRecordSchema = articlePublicationRecordBaseSchema
 export type ArticlePublicationRecord = z.infer<typeof ArticlePublicationRecordSchema>;
 
 export const PublicationConflictEvidenceSchema = z.object({
-  expectedContentHash: articlePublicationRecordBaseSchema.shape.contentHash,
-  observedContentHash: articlePublicationRecordBaseSchema.shape.contentHash,
+  expectedContentHash: canonicalContentHashSchema,
+  observedContentHash: z.union([canonicalContentHashSchema, z.literal("untrusted_invalid")]),
   slug: articlePublicationRecordBaseSchema.shape.slug,
   path: publicationPathSchema,
   remoteId: nonEmptyText.max(500).optional(),

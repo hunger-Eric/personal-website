@@ -4,11 +4,14 @@ import { describe, expect, it, vi } from "vitest";
 import type { ArticlePublicationRecord } from "@/lib/article-workbench/contracts";
 import { createPersonalWebsitePublisher } from "@/lib/article-workbench/publisher";
 
+const expectedHash = `sha256:${"e".repeat(64)}`;
+const differentHash = `sha256:${"d".repeat(64)}`;
+
 const article: ArticlePublicationRecord = {
   title: "Evidence-led article",
   body: "Body",
   slug: "evidence-led-article",
-  contentHash: "sha256:expected",
+  contentHash: expectedHash,
   path: "content/articles/2026-08-09-evidence-led-article.mdx",
 };
 
@@ -51,7 +54,7 @@ describe("PersonalWebsitePublisher", () => {
   });
 
   it("rejects a different-hash existing file without overwriting it", async () => {
-    const { publisher: subject, createRepoFile } = publisher({ getRepoFile: vi.fn().mockResolvedValue(existing("sha256:different")) });
+    const { publisher: subject, createRepoFile } = publisher({ getRepoFile: vi.fn().mockResolvedValue(existing(differentHash)) });
 
     await expect(subject.submit(article)).rejects.toThrow("PUBLISHER_CONFLICT");
     expect(createRepoFile).not.toHaveBeenCalled();
@@ -74,7 +77,7 @@ describe("PersonalWebsitePublisher", () => {
   });
 
   it.each([
-    ["different content", existing("sha256:different"), "PUBLISHER_CONFLICT"],
+    ["different content", existing(differentHash), "PUBLISHER_CONFLICT"],
     ["no remotely-created file", null, "PUBLISHER_PROVIDER_FAILED"],
   ])("fails safely when a create conflict recovery finds %s", async (_label, recovered, error) => {
     const { publisher: subject } = publisher({
@@ -104,15 +107,15 @@ describe("PersonalWebsitePublisher", () => {
   });
 
   it("marks an exact public metadata hash as published", async () => {
-    const { publisher: subject } = publisher({ fetch: vi.fn().mockResolvedValue(new Response('<meta content="sha256:expected" name="article-content-hash">', { status: 200 })) });
+    const { publisher: subject } = publisher({ fetch: vi.fn().mockResolvedValue(new Response(`<meta content="${expectedHash}" name="article-content-hash">`, { status: 200 })) });
 
     await expect(subject.verify({ id: "commit-sha", slug: article.slug, contentHash: article.contentHash, status: "submitted" })).resolves.toEqual({ id: "commit-sha", slug: article.slug, contentHash: article.contentHash, status: "published" });
   });
 
   it("ignores data-name and data-content false positives but accepts exact attributes in either order", async () => {
     const { publisher: subject, fetch } = publisher({ fetch: vi.fn()
-      .mockResolvedValueOnce(new Response('<meta data-name="article-content-hash" data-content="sha256:expected">', { status: 200 }))
-      .mockResolvedValueOnce(new Response("<meta content='sha256:expected' name='article-content-hash'>", { status: 200 })) });
+      .mockResolvedValueOnce(new Response(`<meta data-name="article-content-hash" data-content="${expectedHash}">`, { status: 200 }))
+      .mockResolvedValueOnce(new Response(`<meta content='${expectedHash}' name='article-content-hash'>`, { status: 200 })) });
     const receipt = { id: "commit-sha", slug: article.slug, contentHash: article.contentHash, status: "submitted" as const };
 
     await expect(subject.verify(receipt)).resolves.toMatchObject({ status: "submitted" });
@@ -122,7 +125,7 @@ describe("PersonalWebsitePublisher", () => {
 
   it("ignores similar element names such as meta-data", async () => {
     const { publisher: subject } = publisher({
-      fetch: vi.fn().mockResolvedValue(new Response('<meta-data name="article-content-hash" content="sha256:expected">', { status: 200 })),
+      fetch: vi.fn().mockResolvedValue(new Response(`<meta-data name="article-content-hash" content="${expectedHash}">`, { status: 200 })),
     });
 
     await expect(subject.verify({ id: "commit-sha", slug: article.slug, contentHash: article.contentHash, status: "submitted" })).resolves.toMatchObject({ status: "submitted" });

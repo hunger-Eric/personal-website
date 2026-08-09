@@ -11,6 +11,7 @@ import {
   bindSourceAssessment,
   ArticleSourceBoundWriteInputSchema,
   ArticlePublicationRecordSchema,
+  PublicationConflictEvidenceSchema,
 } from "@/lib/article-workbench/contracts";
 
 describe("article-workbench contracts", () => {
@@ -160,5 +161,16 @@ describe("article-workbench contracts", () => {
     const record = { title: "Title", body: "Body", slug: "title", contentHash: "sha256:abc", path: "content/articles/2026-08-09-title.mdx" };
     expect(ArticlePublicationRecordSchema.safeParse(record).success).toBe(true);
     expect(ArticlePublicationRecordSchema.safeParse({ ...record, path: "content/articles/2026-02-30-other.mdx" }).success).toBe(false);
+  });
+
+  it("accepts only canonical or fixed-placeholder observed conflict hashes", () => {
+    const evidence = {
+      expectedContentHash: `sha256:${"a".repeat(64)}`,
+      observedContentHash: `sha256:${"b".repeat(64)}`,
+      slug: "title",
+      path: "content/articles/2026-08-09-title.mdx",
+    };
+    expect(PublicationConflictEvidenceSchema.safeParse(evidence).success).toBe(true);
+    expect(PublicationConflictEvidenceSchema.safeParse({ ...evidence, observedContentHash: "token=super-secret" }).success).toBe(false);
   });
 });

@@ -27,6 +27,7 @@ class MemoryStore implements RunStorePort {
   readonly claims = new Set<string>();
   readonly events: string[] = [];
   failNextPublicationReceiptSave = false;
+  failNextPublicationConflictEvidenceSave = false;
 
   async createRun(): Promise<ArticleWorkbenchRun> {
     const run = { id: "awr_aaaaaaaaaaaaaaaaaaaaaaaa", status: "created" as const };
@@ -46,6 +47,10 @@ class MemoryStore implements RunStorePort {
     if (artifact === "publicationReceipt" && this.failNextPublicationReceiptSave) {
       this.failNextPublicationReceiptSave = false;
       throw new Error("receipt persistence interrupted");
+    }
+    if (artifact === "publicationConflictEvidence" && this.failNextPublicationConflictEvidenceSave) {
+      this.failNextPublicationConflictEvidenceSave = false;
+      throw new Error("ARTICLE_WORKBENCH_PERSISTENCE_FAILED");
     }
     this.artifacts.set(`${id}:${artifact}`, value);
     this.events.push(`store:artifact:${artifact}`);
@@ -244,18 +249,66 @@ describe("article workbench workflow", () => {
       sha: "remote-content-sha",
       path: record.path,
       encoding: "base64",
-      content: Buffer.from(`---\ntitle: \"Evidence-led article\"\ndate: \"2026-08-09\"\ncontentHash: \"sha256:different\"\n---\n\nBody`).toString("base64"),
+      content: Buffer.from(`---\ntitle: \"Evidence-led article\"\ndate: \"2026-08-09\"\ncontentHash: \"sha256:${"d".repeat(64)}\"\n---\n\nBody`).toString("base64"),
     };
 
-    await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLISHER_CONFLICT");
+    const error = await workflow.submitPublication(run.id).catch((caught) => caught);
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toBe("PUBLISHER_CONFLICT");
+    expect(String(error)).not.toContain("token=super-secret");
     expect(createRepoFile).not.toHaveBeenCalled();
     expect(store.artifacts.get(`${run.id}:publicationConflictEvidence`)).toEqual({
       expectedContentHash: record.contentHash,
-      observedContentHash: "sha256:different",
+      observedContentHash: `sha256:${"d".repeat(64)}`,
       slug: record.slug,
       path: record.path,
       remoteId: "remote-content-sha",
     });
+    expect(store.runs.get(run.id)?.status).toBe("failed");
+  });
+
+  it("does not persist malformed remote hashes in conflict artifacts or errors", async () => {
+    let remoteFile: { sha: string; path: string; encoding: string; content: string } | null = null;
+    const getRepoFile = vi.fn(async () => remoteFile);
+    const createRepoFile = vi.fn();
+    const publisher = createPersonalWebsitePublisher({ siteUrl: "https://example.com", getRepoFile, createRepoFile });
+    const { store, workflow } = createWorkflow({ publisher });
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await confirmAndSeedPublication(store, workflow, run.id);
+    const record = store.artifacts.get(`${run.id}:publicationRecord`) as ArticlePublicationRecord;
+    store.claims.add(`${run.id}:${record.slug}:${record.contentHash}`);
+    remoteFile = {
+      sha: "remote-content-sha",
+      path: record.path,
+      encoding: "base64",
+      content: Buffer.from('---\ntitle: "Evidence-led article"\ndate: "2026-08-09"\ncontentHash: "token=super-secret"\n---\n\nBody').toString("base64"),
+    };
+
+    const error = await workflow.submitPublication(run.id).catch((caught) => caught);
+    expect(error).toBeInstanceOf(Error);
+    expect((error as Error).message).toBe("PUBLISHER_CONFLICT");
+    expect(String(error)).not.toContain("token=super-secret");
+    expect(createRepoFile).not.toHaveBeenCalled();
+    expect(store.artifacts.get(`${run.id}:publicationConflictEvidence`)).toMatchObject({ observedContentHash: "untrusted_invalid" });
+    expect(JSON.stringify([...store.artifacts.values()])).not.toContain("token=super-secret");
+    expect(store.runs.get(run.id)?.status).toBe("failed");
+  });
+
+  it("returns a fixed persistence error before terminal status when conflict evidence cannot be saved", async () => {
+    let remoteFile: { sha: string; path: string; encoding: string; content: string } | null = null;
+    const publisher = createPersonalWebsitePublisher({ siteUrl: "https://example.com", getRepoFile: vi.fn(async () => remoteFile), createRepoFile: vi.fn() });
+    const { store, workflow } = createWorkflow({ publisher });
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await confirmAndSeedPublication(store, workflow, run.id);
+    const record = store.artifacts.get(`${run.id}:publicationRecord`) as ArticlePublicationRecord;
+    store.claims.add(`${run.id}:${record.slug}:${record.contentHash}`);
+    remoteFile = { sha: "remote-content-sha", path: record.path, encoding: "base64", content: Buffer.from(`---\ncontentHash: \"sha256:${"d".repeat(64)}\"\n---`).toString("base64") };
+    store.failNextPublicationConflictEvidenceSave = true;
+
+    await expect(workflow.submitPublication(run.id)).rejects.toThrow("ARTICLE_WORKBENCH_PERSISTENCE_FAILED");
+    expect(store.runs.get(run.id)?.status).toBe("validated");
+    expect(store.events).not.toContain("store:status:failed");
+    await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLISHER_CONFLICT");
     expect(store.runs.get(run.id)?.status).toBe("failed");
   });
 

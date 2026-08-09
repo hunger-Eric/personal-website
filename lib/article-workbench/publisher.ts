@@ -93,7 +93,7 @@ function existingReceipt(existing: NonNullable<RepoFile>, article: ArticlePublic
   if (observedContentHash !== article.contentHash) {
     throw new PublisherConflictError({
       expectedContentHash: article.contentHash,
-      observedContentHash,
+      observedContentHash: canonicalObservedContentHash(observedContentHash),
       slug: article.slug,
       path: article.path,
       ...(existing.sha ? { remoteId: existing.sha } : {}),
@@ -101,6 +101,10 @@ function existingReceipt(existing: NonNullable<RepoFile>, article: ArticlePublic
   }
   if (!existing.sha) throw providerFailure();
   return { id: existing.sha, slug: article.slug, contentHash: article.contentHash, status: "submitted" };
+}
+
+function canonicalObservedContentHash(value: string): string {
+  return /^sha256:[a-f0-9]{64}$/.test(value) ? value : "untrusted_invalid";
 }
 
 function existingHash(file: NonNullable<RepoFile>): string | undefined {
