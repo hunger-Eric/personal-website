@@ -35,6 +35,7 @@ class MemoryStore implements RunStorePort {
   async updateRunStatus(id: string, status: ArticleWorkbenchRun["status"], failure?: ArticleWorkbenchRun["failure"]) {
     const current = this.runs.get(id);
     if (!current) throw new Error("missing run");
+    if (current.status === status) throw new Error("ARTICLE_WORKBENCH_TRANSITION_INVALID");
     this.runs.set(id, { ...current, status, ...(failure ? { failure } : {}) });
     this.events.push(`store:status:${status}`);
   }
@@ -240,5 +241,25 @@ describe("article workbench workflow", () => {
 
     expect(repeated).toEqual(first);
     expect(verifications()).toBe(1);
+  });
+
+  it("keeps a submitted verification pending until a later refresh publishes it", async () => {
+    let responseCount = 0;
+    const { store, workflow, verifications } = createWorkflow({ verified: (receipt) => {
+      responseCount += 1;
+      return { ...receipt, status: responseCount === 1 ? "submitted" : "published" };
+    } });
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await confirmAndSeedPublication(store, workflow, run.id);
+    await workflow.submitPublication(run.id);
+
+    const pending = await workflow.refreshPublication(run.id);
+    expect(pending.status).toBe("submitted");
+    expect(store.runs.get(run.id)?.status).toBe("publish_submitted");
+    const published = await workflow.refreshPublication(run.id);
+
+    expect(published.status).toBe("published");
+    expect(store.runs.get(run.id)?.status).toBe("published");
+    expect(verifications()).toBe(2);
   });
 });

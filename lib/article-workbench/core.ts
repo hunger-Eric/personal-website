@@ -151,7 +151,7 @@ class ArticleWorkflow {
       return this.fail(runId, "verification", "VERIFICATION_MISMATCH", true);
     }
     await store.saveArtifact(runId, "publicationReceipt", verified);
-    await store.updateRunStatus(runId, verified.status === "published" ? "published" : "publish_submitted");
+    if (verified.status === "published") await store.updateRunStatus(runId, "published");
     return verified;
   }
 
