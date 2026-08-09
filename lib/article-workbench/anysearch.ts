@@ -7,7 +7,7 @@ const EXTRACTION_CONCURRENCY = 3;
 const MAX_SOURCE_CHARACTERS = 20_000;
 const MAX_PACKET_CHARACTERS = 80_000;
 const MIN_EXTRACTED_SOURCES = 4;
-const secretKeyPattern = /api[-_]?key|authorization|token|secret|cookie/i;
+const secretKeyPattern = /api[-_]?key|authorization|token|secret|cookie|password|passphrase|credential|private[-_]?key|access[-_]?key|session[-_]?key/i;
 
 type FetchLike = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
 
@@ -108,7 +108,7 @@ export class AnySearchResearchAdapter {
     return contract;
   }
 
-  private async rpc(method: string, params: Record<string, unknown>): Promise<unknown> {
+  private async rpc(toolName: string, toolArgs: Record<string, unknown>): Promise<unknown> {
     const headers: Record<string, string> = { "content-type": "application/json" };
     if (this.apiKey) headers.authorization = `Bearer ${this.apiKey}`;
     let response: Response;
@@ -116,7 +116,12 @@ export class AnySearchResearchAdapter {
       response = await this.fetcher(ENDPOINT, {
         method: "POST",
         headers,
-        body: JSON.stringify({ jsonrpc: "2.0", id: this.nextRequestId++, method, params }),
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: this.nextRequestId++,
+          method: "tools/call",
+          params: { name: toolName, arguments: toolArgs },
+        }),
       });
     } catch {
       throw new Error("ANYSEARCH_REQUEST_FAILED");

@@ -52,7 +52,7 @@ describe("AnySearch research adapter", () => {
     const fetch = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
       calls.push({ url: String(url), init: init ?? {} });
       const request = JSON.parse(String(init?.body));
-      if (request.method === "get_sub_domains") {
+      if (request.method === "tools/call" && request.params.name === "get_sub_domains") {
         return rpcText(JSON.stringify([
           {
             sub_domain: "academic.current",
@@ -63,8 +63,8 @@ describe("AnySearch research adapter", () => {
           },
         ]));
       }
-      if (request.method === "batch_search") return rpcText(searchMarkdown);
-      return rpcText(`Full extracted content for ${request.params.url}`);
+      if (request.method === "tools/call" && request.params.name === "batch_search") return rpcText(searchMarkdown);
+      return rpcText(`Full extracted content for ${request.params.arguments.url}`);
     });
 
     const adapter = createAnySearchResearchAdapter({ fetch, apiKey: "test-key" });
@@ -89,15 +89,16 @@ describe("AnySearch research adapter", () => {
     expect(JSON.parse(String(calls[0].init.body))).toEqual({
       jsonrpc: "2.0",
       id: 1,
-      method: "get_sub_domains",
-      params: { domain: "academic" },
+      method: "tools/call",
+      params: { name: "get_sub_domains", arguments: { domain: "academic" } },
     });
     expect(JSON.parse(String(calls[1].init.body))).toEqual({
       jsonrpc: "2.0",
       id: 2,
-      method: "batch_search",
+      method: "tools/call",
       params: {
-        queries: [
+        name: "batch_search",
+        arguments: { queries: [
           { id: "Q001", query: "public evidence" },
           {
             id: "Q002",
@@ -106,10 +107,16 @@ describe("AnySearch research adapter", () => {
             sub_domain: "academic.current",
             sub_domain_params: { topic: "", open_access: true },
           },
-        ],
+        ] },
       },
     });
-    expect(calls.slice(2).map((call) => JSON.parse(String(call.init.body)).params.url)).toEqual([
+    expect(calls.slice(2).map((call) => JSON.parse(String(call.init.body)).params)).toEqual([
+      { name: "extract", arguments: { url: "https://example.com/first" } },
+      { name: "extract", arguments: { url: "https://example.org/second" } },
+      { name: "extract", arguments: { url: "https://example.net/third" } },
+      { name: "extract", arguments: { url: "https://iana.org/fourth" } },
+    ]);
+    expect(calls.slice(2).map((call) => JSON.parse(String(call.init.body)).params.arguments.url)).toEqual([
       "https://example.com/first",
       "https://example.org/second",
       "https://example.net/third",
@@ -126,7 +133,7 @@ describe("AnySearch research adapter", () => {
     ).join("\n");
     const fetch = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
       const request = JSON.parse(String(init?.body));
-      if (request.method === "batch_search") return rpcText(markdown);
+      if (request.method === "tools/call" && request.params.name === "batch_search") return rpcText(markdown);
       inFlight += 1;
       maximumInFlight = Math.max(maximumInFlight, inFlight);
       await new Promise((resolve) => setTimeout(resolve, 5));
@@ -145,17 +152,17 @@ describe("AnySearch research adapter", () => {
     expect(result.sources.reduce((total, source) => total + source.content.length, 0)).toBeLessThanOrEqual(
       80_000
     );
-    expect(fetch.mock.calls.filter(([, init]) => JSON.parse(String(init?.body)).method === "extract")).toHaveLength(8);
+    expect(fetch.mock.calls.filter(([, init]) => JSON.parse(String(init?.body)).params.name === "extract")).toHaveLength(8);
   });
 
   it("returns insufficient_sources when fewer than four full-page extractions succeed and does not retry", async () => {
     let extractionCalls = 0;
     const fetch = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
       const request = JSON.parse(String(init?.body));
-      if (request.method === "get_sub_domains") {
+      if (request.method === "tools/call" && request.params.name === "get_sub_domains") {
         return rpcText(JSON.stringify([{ sub_domain: "academic.current", params: [] }]));
       }
-      if (request.method === "batch_search") return rpcText(searchMarkdown);
+      if (request.method === "tools/call" && request.params.name === "batch_search") return rpcText(searchMarkdown);
       extractionCalls += 1;
       return extractionCalls <= 3 ? rpcText("complete source") : jsonResponse({ error: { message: "nope" } }, 502);
     });
@@ -171,10 +178,23 @@ describe("AnySearch research adapter", () => {
     const persisted: unknown[] = [];
     const fetch = vi.fn(async (_url: string | URL | Request, init?: RequestInit) => {
       const request = JSON.parse(String(init?.body));
-      if (request.method === "batch_search") {
+      if (request.method === "tools/call" && request.params.name === "batch_search") {
         return jsonResponse({
           result: { content: [{ type: "text", text: searchMarkdown }] },
-          metadata: { apiKey: "must-not-persist", nested: { authorization: "must-not-persist" } },
+          metadata: {
+            apiKey: "must-not-persist",
+            nested: {
+              authorization: "must-not-persist",
+              password: "must-not-persist",
+              passphrase: "must-not-persist",
+              credentials: "must-not-persist",
+              privateKey: "must-not-persist",
+              clientSecret: "must-not-persist",
+              accessKey: "must-not-persist",
+              refreshToken: "must-not-persist",
+              session_key: "must-not-persist",
+            },
+          },
         });
       }
       return rpcText("full extracted content");
