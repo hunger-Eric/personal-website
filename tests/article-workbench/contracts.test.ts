@@ -117,6 +117,23 @@ describe("article-workbench contracts", () => {
     });
   });
 
+  it("rejects an untrusted assessment proposal that tries to supply a source identifier", () => {
+    const source = SourceCandidateSchema.parse({
+      id: "S007",
+      title: "Official guidance",
+      url: "https://example.com/guidance",
+      excerpt: "A public body published this guidance.",
+    });
+
+    expect(() =>
+      bindSourceAssessment(source, {
+        sourceId: "S999",
+        category: "official",
+        rationale: "Published by the responsible public body.",
+      })
+    ).toThrow();
+  });
+
   it("rejects source assessment records with non-canonical source identifiers", () => {
     expect(
       SourceAssessmentSchema.safeParse({

@@ -169,12 +169,15 @@ export const SourceCandidateSchema = z
 export type SourceCandidate = z.infer<typeof SourceCandidateSchema>;
 
 export function bindSourceAssessment(
-  source: SourceCandidate,
-  proposal: SourceAssessmentProposal
+  source: unknown,
+  proposal: unknown
 ): SourceAssessment {
+  const validatedSource = SourceCandidateSchema.parse(source);
+  const validatedProposal = SourceAssessmentProposalSchema.parse(proposal);
+
   return SourceAssessmentSchema.parse({
-    sourceId: source.id,
-    ...proposal,
+    ...validatedProposal,
+    sourceId: validatedSource.id,
   });
 }
 
