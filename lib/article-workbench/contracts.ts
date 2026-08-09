@@ -197,9 +197,69 @@ export interface SearchPort {
   search(request: SearchRequest): Promise<SourceCandidate[]>;
 }
 
+export const ArticleResearchPlanInputSchema = z
+  .object({
+    profile: BusinessProfileSchema,
+    topic: nonEmptyText,
+  })
+  .strict();
+export type ArticleResearchPlanInput = z.infer<typeof ArticleResearchPlanInputSchema>;
+
+export const ExtractedSourceSchema = SourceCandidateSchema.extend({
+  content: nonEmptyText.max(20_000),
+}).strict();
+export type ExtractedSource = z.infer<typeof ExtractedSourceSchema>;
+
+export const ArticleSourceBoundWriteInputSchema = z
+  .object({
+    profile: BusinessProfileSchema,
+    topic: nonEmptyText,
+    sources: z.array(ExtractedSourceSchema).min(1).max(8),
+    articleRules: z.array(nonEmptyText).min(1).max(30),
+  })
+  .strict();
+export type ArticleSourceBoundWriteInput = z.infer<typeof ArticleSourceBoundWriteInputSchema>;
+
+const articleSourceAssessmentSchema = SourceAssessmentSchema.extend({
+  claimsSupported: z.array(nonEmptyText).min(1).max(20),
+}).strict();
+
+export const SourceBoundArticleProposalSchema = z
+  .object({
+    title: nonEmptyText.max(200),
+    slugProposal: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(160),
+    summary: nonEmptyText.max(2_000),
+    tags: z.array(nonEmptyText.max(100)).min(1).max(10),
+    body: nonEmptyText.max(40_000),
+    sourceAssessments: z.array(articleSourceAssessmentSchema).min(1).max(8),
+  })
+  .strict();
+export type SourceBoundArticleProposal = z.infer<typeof SourceBoundArticleProposalSchema>;
+
+export function validateSourceBoundArticleProposal(
+  input: unknown,
+  sources: readonly ExtractedSource[]
+): SourceBoundArticleProposal {
+  const article = SourceBoundArticleProposalSchema.parse(input);
+  const sourceIds = new Set(sources.map((source) => source.id));
+  if (sourceIds.size !== sources.length) throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
+  const assessments = new Set(article.sourceAssessments.map((assessment) => assessment.sourceId));
+  if (assessments.size !== sourceIds.size || [...assessments].some((id) => !sourceIds.has(id))) {
+    throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
+  }
+  const tokens = [...article.body.matchAll(/\[\[(S\d{3})\]\]/g)].map((match) => match[1]);
+  if (!tokens.length || tokens.some((sourceId) => !sourceIds.has(sourceId))) {
+    throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
+  }
+  if (/https?:\/\//i.test(article.body) || /^\s{0,3}#{1,6}\s*(sources|参考来源)\s*$/im.test(article.body)) {
+    throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
+  }
+  return article;
+}
+
 export interface ModelPort {
-  proposeResearchPlan(profile: BusinessProfile): Promise<ResearchPlanProposal>;
-  assessSource(source: SourceCandidate): Promise<SourceAssessmentProposal>;
+  proposeResearchPlan(input: ArticleResearchPlanInput): Promise<ResearchPlanProposal>;
+  writeSourceBoundArticle(input: ArticleSourceBoundWriteInput): Promise<SourceBoundArticleProposal>;
 }
 
 export interface RunStorePort {

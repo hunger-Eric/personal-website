@@ -9,6 +9,7 @@ import {
   SourceCandidateSchema,
   assignResearchPlanIds,
   bindSourceAssessment,
+  ArticleSourceBoundWriteInputSchema,
 } from "@/lib/article-workbench/contracts";
 
 describe("article-workbench contracts", () => {
@@ -142,5 +143,15 @@ describe("article-workbench contracts", () => {
         rationale: "Published by the responsible public body.",
       }).success
     ).toBe(false);
+  });
+
+  it("keeps provider transport fields out of source-bound writing input contracts", () => {
+    expect(ArticleSourceBoundWriteInputSchema.safeParse({
+      profile: {
+        identity: { name: "Example", category: "Consulting", positioning: "Practical", description: "Help." },
+        services: ["Strategy"], audience: "Leaders", geographicScope: [], differentiators: ["Hands-on"], approvedEvidence: [], disallowedClaims: ["best"],
+      }, topic: "AI controls", articleRules: ["Be useful"], sources: [{ id: "S001", title: "Guide", url: "https://example.com/guide", excerpt: "Excerpt", content: "Evidence" }],
+      provider: "opencode_zen",
+    }).success).toBe(false);
   });
 });
