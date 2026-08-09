@@ -152,7 +152,7 @@ describe("article workbench run store", () => {
     const root = await createTemporaryRoot();
     const store = createArticleWorkbenchRunStore({ rootDir: root });
     const run = await store.createRun();
-    const record = { title: "Title", body: "Body", slug: "title", contentHash: "sha256:abc", path: "content/articles/2026-08-09-title.mdx" };
+    const record = { title: "Title", body: "Body", slug: "title", contentHash: `sha256:${"a".repeat(64)}`, path: "content/articles/2026-08-09-title.mdx" };
 
     const claims = await Promise.all([store.claimPublication(run.id, record), store.claimPublication(run.id, record)]);
 

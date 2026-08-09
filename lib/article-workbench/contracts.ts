@@ -323,12 +323,13 @@ export interface RunStorePort {
 }
 
 const publicationPathSchema = z.string().regex(/^content\/articles\/\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*\.mdx$/);
-const canonicalContentHashSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
+export const CanonicalContentHashSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
+export const CanonicalRemoteIdSchema = z.string().regex(/^[a-f0-9]{40}$/);
 const articlePublicationRecordBaseSchema = z.object({
   title: nonEmptyText.max(200),
   body: nonEmptyText.max(40_000),
   slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(160),
-  contentHash: nonEmptyText.max(500),
+  contentHash: CanonicalContentHashSchema,
   path: publicationPathSchema,
 }).strict();
 export const ArticlePublicationRecordSchema = articlePublicationRecordBaseSchema.superRefine((record, context) => {
@@ -338,11 +339,11 @@ export const ArticlePublicationRecordSchema = articlePublicationRecordBaseSchema
 export type ArticlePublicationRecord = z.infer<typeof ArticlePublicationRecordSchema>;
 
 export const PublicationConflictEvidenceSchema = z.object({
-  expectedContentHash: canonicalContentHashSchema,
-  observedContentHash: z.union([canonicalContentHashSchema, z.literal("untrusted_invalid")]),
+  expectedContentHash: CanonicalContentHashSchema,
+  observedContentHash: z.union([CanonicalContentHashSchema, z.literal("untrusted_invalid")]),
   slug: articlePublicationRecordBaseSchema.shape.slug,
   path: publicationPathSchema,
-  remoteId: nonEmptyText.max(500).optional(),
+  remoteId: z.union([CanonicalRemoteIdSchema, z.literal("untrusted_invalid")]).optional(),
 }).strict();
 export type PublicationConflictEvidence = z.infer<typeof PublicationConflictEvidenceSchema>;
 

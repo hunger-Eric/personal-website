@@ -66,7 +66,7 @@ class MemoryStore implements RunStorePort {
   }
 }
 
-const publicationRecord = { title: "Evidence-led article", body: "Rendered article", slug: "evidence-led-article", contentHash: "sha256:abc", path: "content/articles/2026-08-09-evidence-led-article.mdx" };
+const publicationRecord = { title: "Evidence-led article", body: "Rendered article", slug: "evidence-led-article", contentHash: `sha256:${"a".repeat(64)}`, path: "content/articles/2026-08-09-evidence-led-article.mdx" };
 
 async function confirmAndSeedPublication(store: MemoryStore, workflow: ReturnType<typeof createArticleWorkflow>, runId: string) {
   await workflow.saveArticleEdits(runId, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }] });
@@ -246,7 +246,7 @@ describe("article workbench workflow", () => {
     const record = store.artifacts.get(`${run.id}:publicationRecord`) as ArticlePublicationRecord;
     store.claims.add(`${run.id}:${record.slug}:${record.contentHash}`);
     remoteFile = {
-      sha: "remote-content-sha",
+      sha: "a".repeat(40),
       path: record.path,
       encoding: "base64",
       content: Buffer.from(`---\ntitle: \"Evidence-led article\"\ndate: \"2026-08-09\"\ncontentHash: \"sha256:${"d".repeat(64)}\"\n---\n\nBody`).toString("base64"),
@@ -262,7 +262,7 @@ describe("article workbench workflow", () => {
       observedContentHash: `sha256:${"d".repeat(64)}`,
       slug: record.slug,
       path: record.path,
-      remoteId: "remote-content-sha",
+      remoteId: "a".repeat(40),
     });
     expect(store.runs.get(run.id)?.status).toBe("failed");
   });
@@ -278,7 +278,7 @@ describe("article workbench workflow", () => {
     const record = store.artifacts.get(`${run.id}:publicationRecord`) as ArticlePublicationRecord;
     store.claims.add(`${run.id}:${record.slug}:${record.contentHash}`);
     remoteFile = {
-      sha: "remote-content-sha",
+      sha: "token=super-secret",
       path: record.path,
       encoding: "base64",
       content: Buffer.from('---\ntitle: "Evidence-led article"\ndate: "2026-08-09"\ncontentHash: "token=super-secret"\n---\n\nBody').toString("base64"),
@@ -289,7 +289,7 @@ describe("article workbench workflow", () => {
     expect((error as Error).message).toBe("PUBLISHER_CONFLICT");
     expect(String(error)).not.toContain("token=super-secret");
     expect(createRepoFile).not.toHaveBeenCalled();
-    expect(store.artifacts.get(`${run.id}:publicationConflictEvidence`)).toMatchObject({ observedContentHash: "untrusted_invalid" });
+    expect(store.artifacts.get(`${run.id}:publicationConflictEvidence`)).toMatchObject({ observedContentHash: "untrusted_invalid", remoteId: "untrusted_invalid" });
     expect(JSON.stringify([...store.artifacts.values()])).not.toContain("token=super-secret");
     expect(store.runs.get(run.id)?.status).toBe("failed");
   });
@@ -397,13 +397,13 @@ describe("article workbench workflow", () => {
   });
 
   it("rejects a verification mismatch once and does not reverify published receipts", async () => {
-    const { store, workflow } = createWorkflow({ verified: (receipt) => ({ ...receipt, contentHash: "sha256:other", status: "published" }) });
+    const { store, workflow } = createWorkflow({ verified: (receipt) => ({ ...receipt, contentHash: `sha256:${"d".repeat(64)}`, status: "published" }) });
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
     await confirmAndSeedPublication(store, workflow, run.id);
     await workflow.submitPublication(run.id);
     await expect(workflow.refreshPublication(run.id)).rejects.toThrow("VERIFICATION_MISMATCH");
     expect(store.events.filter((event) => event === "store:status:failed")).toHaveLength(1);
-    expect(store.artifacts.get(`${run.id}:verificationAttempt`)).toMatchObject({ contentHash: "sha256:other" });
+    expect(store.artifacts.get(`${run.id}:verificationAttempt`)).toMatchObject({ contentHash: `sha256:${"d".repeat(64)}` });
   });
 
   it("returns a published receipt without another verification", async () => {

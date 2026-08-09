@@ -96,7 +96,7 @@ function existingReceipt(existing: NonNullable<RepoFile>, article: ArticlePublic
       observedContentHash: canonicalObservedContentHash(observedContentHash),
       slug: article.slug,
       path: article.path,
-      ...(existing.sha ? { remoteId: existing.sha } : {}),
+      ...(existing.sha === undefined ? {} : { remoteId: canonicalRemoteId(existing.sha) }),
     });
   }
   if (!existing.sha) throw providerFailure();
@@ -105,6 +105,10 @@ function existingReceipt(existing: NonNullable<RepoFile>, article: ArticlePublic
 
 function canonicalObservedContentHash(value: string): string {
   return /^sha256:[a-f0-9]{64}$/.test(value) ? value : "untrusted_invalid";
+}
+
+function canonicalRemoteId(value: string): string {
+  return /^[a-f0-9]{40}$/.test(value) ? value : "untrusted_invalid";
 }
 
 function existingHash(file: NonNullable<RepoFile>): string | undefined {

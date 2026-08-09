@@ -158,9 +158,10 @@ describe("article-workbench contracts", () => {
   });
 
   it("requires a code-owned publication path to match the record slug and real date", () => {
-    const record = { title: "Title", body: "Body", slug: "title", contentHash: "sha256:abc", path: "content/articles/2026-08-09-title.mdx" };
+    const record = { title: "Title", body: "Body", slug: "title", contentHash: `sha256:${"a".repeat(64)}`, path: "content/articles/2026-08-09-title.mdx" };
     expect(ArticlePublicationRecordSchema.safeParse(record).success).toBe(true);
     expect(ArticlePublicationRecordSchema.safeParse({ ...record, path: "content/articles/2026-02-30-other.mdx" }).success).toBe(false);
+    expect(ArticlePublicationRecordSchema.safeParse({ ...record, contentHash: "sha256:abc" }).success).toBe(false);
   });
 
   it("accepts only canonical or fixed-placeholder observed conflict hashes", () => {
@@ -172,5 +173,7 @@ describe("article-workbench contracts", () => {
     };
     expect(PublicationConflictEvidenceSchema.safeParse(evidence).success).toBe(true);
     expect(PublicationConflictEvidenceSchema.safeParse({ ...evidence, observedContentHash: "token=super-secret" }).success).toBe(false);
+    expect(PublicationConflictEvidenceSchema.safeParse({ ...evidence, remoteId: "a".repeat(40) }).success).toBe(true);
+    expect(PublicationConflictEvidenceSchema.safeParse({ ...evidence, remoteId: "token=super-secret" }).success).toBe(false);
   });
 });
