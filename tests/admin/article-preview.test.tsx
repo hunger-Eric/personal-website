@@ -8,8 +8,9 @@ import { ArticlePreview } from "@/components/admin/ArticlePreview";
 
 describe("ArticlePreview", () => {
   it("uses the shared server MDX renderer and marks the page as unpublished", () => {
-    render(<ArticlePreview source="# 本地文章" />);
+    render(<ArticlePreview source={"---\ntitle: 文章\nslug: article\ndate: 2026-08-10\n---\n\n# 本地文章"} />);
     expect(screen.getByText("本地预览，尚未发布")).toBeInTheDocument();
     expect(screen.getByTestId("mdx-renderer")).toHaveTextContent("# 本地文章");
+    expect(screen.getByTestId("mdx-renderer")).not.toHaveTextContent("title: 文章");
   });
 });
