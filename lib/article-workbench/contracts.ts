@@ -160,7 +160,7 @@ export type SourceConfirmation = z.infer<typeof SourceConfirmationSchema>;
 
 export const ArticleRunFailureSchema = z.object({
   stage: z.enum(["profile", "research_plan", "sources", "article", "publication", "verification"]),
-  code: z.string().regex(/^[A-Z0-9_]+$/),
+  code: ArticleWorkbenchFailureCodeSchema,
   message: nonEmptyText.max(500),
   occurredAt: z.string().datetime(),
   userActionRequired: z.boolean(),
@@ -171,11 +171,14 @@ export const ArticleWorkbenchRunSchema = z.object({
   id: z.string().regex(/^awr_[a-f0-9]{24}$/),
   status: ArticleRunStatusSchema,
   failure: ArticleRunFailureSchema.optional(),
-}).strict();
+}).strict().superRefine((run, context) => {
+  if (run.status === "failed" && !run.failure) context.addIssue({ code: z.ZodIssueCode.custom, path: ["failure"], message: "Failed runs require a failure record" });
+  if (run.status !== "failed" && run.failure) context.addIssue({ code: z.ZodIssueCode.custom, path: ["failure"], message: "Only failed runs may have a failure record" });
+});
 export type ArticleWorkbenchRun = z.infer<typeof ArticleWorkbenchRunSchema>;
 
 export const ArticleWorkbenchArtifactSchema = z.enum([
-  "input", "researchPlan", "sourcePacket", "modelResponse", "validatedArticle", "articleEdits", "renderedMdx", "publicationReceipt",
+  "input", "researchPlan", "sourcePacket", "modelResponse", "validatedArticle", "articleEdits", "publicationRecord", "publicationAttempt", "renderedMdx", "publicationReceipt",
 ]);
 export type ArticleWorkbenchArtifact = z.infer<typeof ArticleWorkbenchArtifactSchema>;
 
@@ -315,6 +318,7 @@ export interface RunStorePort {
   updateRunStatus(id: string, status: ArticleRunStatus, failure?: ArticleRunFailure): Promise<void>;
   saveArtifact(id: string, artifact: ArticleWorkbenchArtifact, value: unknown): Promise<void>;
   loadArtifact(id: string, artifact: ArticleWorkbenchArtifact): Promise<unknown | null>;
+  claimPublication(id: string, record: ArticlePublicationRecord): Promise<PublicationClaimResult>;
 }
 
 export const ArticlePublicationRecordSchema = z.object({
@@ -332,6 +336,11 @@ export const PublicationReceiptSchema = z.object({
   status: z.enum(["submitted", "published"]),
 }).strict();
 export type PublicationReceipt = z.infer<typeof PublicationReceiptSchema>;
+
+export const PublicationClaimResultSchema = z.object({
+  status: z.enum(["claimed", "already_claimed"]),
+}).strict();
+export type PublicationClaimResult = z.infer<typeof PublicationClaimResultSchema>;
 
 export interface PublisherPort {
   submit(article: ArticlePublicationRecord): Promise<PublicationReceipt>;

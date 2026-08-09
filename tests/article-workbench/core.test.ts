@@ -22,6 +22,7 @@ const sources = [
 class MemoryStore implements RunStorePort {
   readonly runs = new Map<string, ArticleWorkbenchRun>();
   readonly artifacts = new Map<string, unknown>();
+  readonly claims = new Set<string>();
   readonly events: string[] = [];
 
   async createRun(): Promise<ArticleWorkbenchRun> {
@@ -44,6 +45,19 @@ class MemoryStore implements RunStorePort {
   async loadArtifact(id: string, artifact: ArticleWorkbenchArtifact) {
     return this.artifacts.get(`${id}:${artifact}`) ?? null;
   }
+  async claimPublication(id: string, record: { slug?: string; contentHash?: string }) {
+    const key = `${id}:${record.slug}:${record.contentHash}`;
+    if (this.claims.has(key)) return { status: "already_claimed" as const };
+    this.claims.add(key);
+    return { status: "claimed" as const };
+  }
+}
+
+const publicationRecord = { title: "Evidence-led article", body: "Rendered article", slug: "evidence-led-article", contentHash: "sha256:abc" };
+
+async function confirmAndSeedPublication(store: MemoryStore, workflow: ReturnType<typeof createArticleWorkflow>, runId: string) {
+  await workflow.saveArticleEdits(runId, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }] });
+  await store.saveArtifact(runId, "publicationRecord", publicationRecord);
 }
 
 function createWorkflow(options: {
@@ -129,6 +143,7 @@ describe("article workbench workflow", () => {
 
     expect([...store.runs.values()][0]).toMatchObject({ status: "failed", failure: { stage: "sources", code: "SOURCES_INSUFFICIENT" } });
     expect(store.events).not.toContain("model:write");
+    expect(store.artifacts.get(`${[...store.runs.keys()][0]}:sourcePacket`)).toEqual({ status: "insufficient_sources", sources: [...sources] });
   });
 
   it("persists an invalid research plan failure exactly once and never calls search", async () => {
@@ -153,16 +168,38 @@ describe("article workbench workflow", () => {
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
     await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLICATION_CONFIRMATION_REQUIRED");
 
-    await workflow.saveArticleEdits(run.id, {
-      confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }],
-      publication: { title: "Evidence-led article", body: "Rendered article", slug: "evidence-led-article", contentHash: "sha256:abc" },
-    });
+    await confirmAndSeedPublication(store, workflow, run.id);
     const first = await workflow.submitPublication(run.id);
     const repeated = await workflow.submitPublication(run.id);
 
     expect(first).toEqual(repeated);
     expect(submissions()).toBe(1);
     expect(store.runs.get(run.id)?.status).toBe("publish_submitted");
+  });
+
+  it("rejects confirmations that are not in the validated model assessments", async () => {
+    const { store, workflow } = createWorkflow();
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await expect(workflow.saveArticleEdits(run.id, { confirmations: [{ sourceId: "S999", confirmed: true }] })).rejects.toThrow("SOURCE_CONFIRMATION_INVALID");
+    expect(store.artifacts.get(`${run.id}:articleEdits`)).toBeUndefined();
+  });
+
+  it("requires the Task 6 publication artifact even when edit input carries a forged record", async () => {
+    const { workflow } = createWorkflow();
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await workflow.saveArticleEdits(run.id, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }], publication: publicationRecord } as never);
+    await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLICATION_RECORD_REQUIRED");
+  });
+
+  it("allows only one concurrent publisher submission for a claimed run", async () => {
+    const { store, workflow, submissions } = createWorkflow();
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await confirmAndSeedPublication(store, workflow, run.id);
+    const outcomes = await Promise.allSettled([workflow.submitPublication(run.id), workflow.submitPublication(run.id)]);
+
+    expect(outcomes.filter((outcome) => outcome.status === "fulfilled")).toHaveLength(1);
+    expect(outcomes.filter((outcome) => outcome.status === "rejected")).toHaveLength(1);
+    expect(submissions()).toBe(1);
   });
 
   it("rejects publication before validated and does not call the publisher", async () => {
@@ -175,26 +212,28 @@ describe("article workbench workflow", () => {
   it("persists a mismatched publisher receipt once and does not permit refresh", async () => {
     const { store, workflow, submissions } = createWorkflow({ submitted: (record) => ({ id: "publication-1", slug: "wrong-slug", contentHash: record.contentHash, status: "submitted" }) });
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
-    await workflow.saveArticleEdits(run.id, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }], publication: { title: "Evidence-led article", body: "Rendered article", slug: "evidence-led-article", contentHash: "sha256:abc" } });
+    await confirmAndSeedPublication(store, workflow, run.id);
     await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLISHER_CONFLICT");
     await expect(workflow.refreshPublication(run.id)).rejects.toThrow("PUBLICATION_REFRESH_STATE_INVALID");
     expect(submissions()).toBe(1);
     expect(store.events.filter((event) => event === "store:status:failed")).toHaveLength(1);
+    expect(store.artifacts.get(`${run.id}:publicationAttempt`)).toMatchObject({ slug: "wrong-slug" });
+    expect(store.artifacts.get(`${run.id}:publicationReceipt`)).toBeUndefined();
   });
 
   it("rejects a verification mismatch once and does not reverify published receipts", async () => {
     const { store, workflow } = createWorkflow({ verified: (receipt) => ({ ...receipt, contentHash: "sha256:other", status: "published" }) });
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
-    await workflow.saveArticleEdits(run.id, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }], publication: { title: "Evidence-led article", body: "Rendered article", slug: "evidence-led-article", contentHash: "sha256:abc" } });
+    await confirmAndSeedPublication(store, workflow, run.id);
     await workflow.submitPublication(run.id);
     await expect(workflow.refreshPublication(run.id)).rejects.toThrow("VERIFICATION_MISMATCH");
     expect(store.events.filter((event) => event === "store:status:failed")).toHaveLength(1);
   });
 
   it("returns a published receipt without another verification", async () => {
-    const { workflow, verifications } = createWorkflow();
+    const { store, workflow, verifications } = createWorkflow();
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
-    await workflow.saveArticleEdits(run.id, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }], publication: { title: "Evidence-led article", body: "Rendered article", slug: "evidence-led-article", contentHash: "sha256:abc" } });
+    await confirmAndSeedPublication(store, workflow, run.id);
     await workflow.submitPublication(run.id);
     const first = await workflow.refreshPublication(run.id);
     const repeated = await workflow.refreshPublication(run.id);

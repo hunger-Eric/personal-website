@@ -17,6 +17,8 @@ import {
   type ArticleWorkbenchRun,
   type ArticleRunFailure,
   type ArticleRunStatus,
+  type ArticlePublicationRecord,
+  type PublicationClaimResult,
   type BusinessProfile,
   type RunStorePort,
 } from "./contracts";
@@ -31,6 +33,8 @@ const artifactFiles = {
   modelResponse: "model-response.json",
   validatedArticle: "validated-article.json",
   articleEdits: "article-edits.json",
+  publicationRecord: "publication-record.json",
+  publicationAttempt: "publication-attempt.json",
   renderedMdx: "rendered.mdx",
   publicationReceipt: "publication-receipt.json",
 } as const;
@@ -95,7 +99,9 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
     if (!current) {
       throw new Error(`Article workbench run not found: ${runId}`);
     }
-    await this.writeJsonAtomically(this.runManifestPath(runId), { ...current, status: nextStatus, ...(failure ? { failure } : {}) });
+    if (!isLegalTransition(current.status, nextStatus)) throw new Error("ARTICLE_WORKBENCH_TRANSITION_INVALID");
+    if ((nextStatus === "failed") !== Boolean(failure)) throw new Error("ARTICLE_WORKBENCH_FAILURE_STATE_INVALID");
+    await this.writeJsonAtomically(this.runManifestPath(runId), { id: current.id, status: nextStatus, ...(failure ? { failure } : {}) });
   }
 
   async saveArtifact(id: string, artifact: ArticleWorkbenchArtifact, value: unknown): Promise<void> {
@@ -119,6 +125,22 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
     } catch (error) {
       if (isMissingFileError(error)) return null;
       throw readError();
+    }
+  }
+
+  async claimPublication(id: string, record: ArticlePublicationRecord): Promise<PublicationClaimResult> {
+    const runId = this.validateRunId(id);
+    const claimPath = path.join(this.rootDir, "runs", runId, "publication-claim.json");
+    const serialized = JSON.stringify({ slug: record.slug, contentHash: record.contentHash }, null, 2) + "\n";
+    try {
+      await this.filesystem.mkdir(path.dirname(claimPath), { recursive: true });
+      await this.filesystem.writeFile(claimPath, serialized, { encoding: "utf8", flag: "wx" });
+      return { status: "claimed" };
+    } catch (error) {
+      if (!isExistsFileError(error)) throw persistenceError();
+      const existing = await this.readJsonIfPresent(claimPath, z.object({ slug: z.string(), contentHash: z.string() }).strict());
+      if (!existing || existing.slug !== record.slug || existing.contentHash !== record.contentHash) throw new Error("PUBLICATION_CLAIM_CONFLICT");
+      return { status: "already_claimed" };
     }
   }
 
@@ -180,6 +202,20 @@ function redactSecretLikeValues(value: unknown): unknown {
 
 function isMissingFileError(error: unknown): error is NodeJS.ErrnoException {
   return Boolean(error && typeof error === "object" && "code" in error && error.code === "ENOENT");
+}
+
+function isExistsFileError(error: unknown): error is NodeJS.ErrnoException {
+  return Boolean(error && typeof error === "object" && "code" in error && error.code === "EEXIST");
+}
+
+function isLegalTransition(current: ArticleRunStatus, next: ArticleRunStatus): boolean {
+  if (current === next) return true;
+  return ({
+    created: ["research_planned", "failed"], research_planned: ["sources_ready", "failed"],
+    sources_ready: ["article_generated", "failed"], article_generated: ["validated", "failed"],
+    validated: ["publish_submitted", "failed"], publish_submitted: ["published", "failed"],
+    published: [], failed: [],
+  } satisfies Record<ArticleRunStatus, ArticleRunStatus[]>)[current].includes(next);
 }
 
 function persistenceError(): Error {

@@ -102,6 +102,40 @@ describe("article workbench run store", () => {
     ).resolves.toContain('"status": "research_planned"');
   });
 
+  it("rejects illegal status jumps and failed states without a typed failure", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    const run = await store.createRun();
+
+    await expect(store.updateRunStatus(run.id, "published")).rejects.toThrow("ARTICLE_WORKBENCH_TRANSITION_INVALID");
+    await expect(store.updateRunStatus(run.id, "failed")).rejects.toThrow("ARTICLE_WORKBENCH_FAILURE_STATE_INVALID");
+    await store.updateRunStatus(run.id, "failed", {
+      stage: "profile", code: "BUSINESS_PROFILE_INVALID", message: "business profile invalid.", occurredAt: "2026-08-09T00:00:00.000Z", userActionRequired: true,
+    });
+    await expect(store.updateRunStatus(run.id, "created")).rejects.toThrow("ARTICLE_WORKBENCH_TRANSITION_INVALID");
+  });
+
+  it("rejects manifests whose failure does not match their status", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    const runId = "awr_aaaaaaaaaaaaaaaaaaaaaaaa";
+    await mkdir(path.join(root, "runs", runId), { recursive: true });
+    await writeFile(path.join(root, "runs", runId, "run.json"), JSON.stringify({ id: runId, status: "validated", failure: { stage: "profile", code: "BUSINESS_PROFILE_INVALID", message: "business profile invalid.", occurredAt: "2026-08-09T00:00:00.000Z", userActionRequired: true } }), "utf8");
+
+    await expect(store.getRun(runId)).rejects.toThrow("ARTICLE_WORKBENCH_READ_FAILED");
+  });
+
+  it("atomically gives one claimant ownership of a publication record", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    const run = await store.createRun();
+    const record = { title: "Title", body: "Body", slug: "title", contentHash: "sha256:abc" };
+
+    const claims = await Promise.all([store.claimPublication(run.id, record), store.claimPublication(run.id, record)]);
+
+    expect(claims.map((claim) => claim.status).sort()).toEqual(["already_claimed", "claimed"]);
+  });
+
   it("rejects malformed on-disk profile JSON", async () => {
     const root = await createTemporaryRoot();
     const store = createArticleWorkbenchRunStore({ rootDir: root });

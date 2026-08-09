@@ -9,7 +9,7 @@ import {
   SourcePacketResultSchema,
   assignResearchPlanIds,
   validateSourceBoundArticleProposal,
-  type ArticlePublicationRecord,
+  type ArticleWorkbenchFailureCode,
   type ArticleRunFailure,
   type ArticleWorkbenchRun,
   type BusinessProfilePort,
@@ -29,7 +29,6 @@ export interface GenerateArticleInput {
 
 export interface ArticleEditsInput {
   confirmations: SourceConfirmation[];
-  publication?: ArticlePublicationRecord;
 }
 
 export interface ArticleWorkflowDependencies {
@@ -66,8 +65,8 @@ class ArticleWorkflow {
     const packet = await this.atStage(run.id, "sources", "SOURCES_INVALID", false, async () =>
       SourcePacketResultSchema.parse(await search.collect(plan))
     );
-    if (packet.status !== "ok") return this.fail(run.id, "sources", "SOURCES_INSUFFICIENT", true);
     await store.saveArtifact(run.id, "sourcePacket", packet);
+    if (packet.status !== "ok") return this.fail(run.id, "sources", "SOURCES_INSUFFICIENT", true);
     await store.updateRunStatus(run.id, "sources_ready");
 
     const article = await this.atStage(run.id, "article", "ARTICLE_MODEL_OUTPUT_INVALID", false, async () => {
@@ -92,8 +91,10 @@ class ArticleWorkflow {
     const confirmations: SourceConfirmation[] = edits.confirmations.map((value) => SourceConfirmationSchema.parse(value) as SourceConfirmation);
     const distinct = new Set(confirmations.map((value) => value.sourceId));
     if (distinct.size !== confirmations.length) throw new Error("SOURCE_CONFIRMATION_INVALID");
-    const publication = edits.publication ? ArticlePublicationRecordSchema.parse(edits.publication) : undefined;
-    await this.dependencies.store.saveArtifact(runId, "articleEdits", { confirmations, ...(publication ? { publication } : {}) });
+    const article = await this.validatedArticle(runId);
+    const assessedIds = new Set(article.sourceAssessments.map((assessment) => assessment.sourceId));
+    if (confirmations.some((confirmation) => !assessedIds.has(confirmation.sourceId))) throw new Error("SOURCE_CONFIRMATION_INVALID");
+    await this.dependencies.store.saveArtifact(runId, "articleEdits", { confirmations });
     return this.requireRun(runId);
   }
 
@@ -113,11 +114,16 @@ class ArticleWorkflow {
       .filter((assessment) => authoritativeCategories.has(assessment.category) && confirmed.has(assessment.sourceId))
       .map((assessment) => assessment.sourceId);
     if (new Set(authoritative).size < 2) throw new Error("PUBLICATION_CONFIRMATION_REQUIRED");
-    if (!edits.publication) throw new Error("PUBLICATION_RECORD_REQUIRED");
+    const recordValue = await store.loadArtifact(runId, "publicationRecord");
+    if (!recordValue) throw new Error("PUBLICATION_RECORD_REQUIRED");
+    const record = ArticlePublicationRecordSchema.parse(recordValue);
+    const claim = await store.claimPublication(runId, record);
+    if (claim.status === "already_claimed") throw new Error("PUBLICATION_ALREADY_CLAIMED");
     const submitted = await this.atStage(runId, "publication", "PUBLISHER_CONFLICT", true, async () =>
-      PublicationReceiptSchema.parse(await publisher.submit(edits.publication!))
+      PublicationReceiptSchema.parse(await publisher.submit(record))
     );
-    if (submitted.slug !== edits.publication.slug || submitted.contentHash !== edits.publication.contentHash) {
+    if (submitted.slug !== record.slug || submitted.contentHash !== record.contentHash) {
+      await store.saveArtifact(runId, "publicationAttempt", submitted);
       return this.fail(runId, "publication", "PUBLISHER_CONFLICT", true);
     }
     await store.saveArtifact(runId, "publicationReceipt", submitted);
@@ -158,10 +164,9 @@ class ArticleWorkflow {
     if (!value || typeof value !== "object" || !Array.isArray((value as { confirmations?: unknown }).confirmations)) {
       return { confirmations: [] };
     }
-    const candidate = value as { confirmations: unknown[]; publication?: unknown };
+    const candidate = value as { confirmations: unknown[] };
     return {
       confirmations: candidate.confirmations.map((item) => SourceConfirmationSchema.parse(item) as SourceConfirmation),
-      ...(candidate.publication ? { publication: ArticlePublicationRecordSchema.parse(candidate.publication) } : {}),
     };
   }
 
@@ -171,7 +176,7 @@ class ArticleWorkflow {
     return run;
   }
 
-  private async fail(runId: string, stage: ArticleRunFailure["stage"], code: string, userActionRequired: boolean): Promise<never> {
+  private async fail(runId: string, stage: ArticleRunFailure["stage"], code: ArticleWorkbenchFailureCode, userActionRequired: boolean): Promise<never> {
     const failure: ArticleRunFailure = {
       stage,
       code,
@@ -183,7 +188,7 @@ class ArticleWorkflow {
     throw new Error(code);
   }
 
-  private async atStage<T>(runId: string, stage: ArticleRunFailure["stage"], code: string, userActionRequired: boolean, operation: () => Promise<T>): Promise<T> {
+  private async atStage<T>(runId: string, stage: ArticleRunFailure["stage"], code: ArticleWorkbenchFailureCode, userActionRequired: boolean, operation: () => Promise<T>): Promise<T> {
     try {
       return await operation();
     } catch {
