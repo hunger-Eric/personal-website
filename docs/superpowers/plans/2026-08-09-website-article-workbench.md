@@ -261,7 +261,11 @@ Task 4 expands the provider-neutral `ModelPort` contract from Task 1 with struct
 **Files:**
 
 - Create: `lib/article-workbench/core.ts`
+- Modify: `lib/article-workbench/contracts.ts`
+- Modify: `lib/article-workbench/run-store.ts`
+- Modify: `lib/article-workbench/anysearch.ts`
 - Test: `tests/article-workbench/core.test.ts`
+- Modify: the focused contract, run-store, and AnySearch tests when port alignment requires it
 
 **Public methods:**
 
@@ -281,6 +285,7 @@ Task 4 expands the provider-neutral `ModelPort` contract from Task 1 with struct
 - [ ] Write tests proving publication remains disabled until the user has confirmed at least two distinct authoritative source candidates.
 - [ ] Write tests proving `submitPublication` cannot run before `validated`; repeated submission with the same slug and content hash returns the existing receipt/status without another write; and the publisher is never invoked again after a receipt exists.
 - [ ] Implement orchestration only against the five ports. Keep HTTP, React, filesystem paths, and provider-specific payloads outside the core.
+- [ ] Replace Task 1 placeholder port methods with the actual provider-neutral contracts already implemented by the run store, AnySearch adapter, and model adapter; do not add concrete-provider branches to `core.ts`.
 - [ ] Add a structural/behavioral test proving `core.ts` works with an in-memory `ModelPort` and contains no provider/model-specific branch.
 - [ ] Store typed failure fields: stage, code, safe message, occurred-at timestamp, and whether user action is required.
 - [ ] Run:
