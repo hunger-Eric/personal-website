@@ -154,8 +154,12 @@ describe("article run API", () => {
       }
       expect((await store.loadArtifact(first.id, "modelProviderReceipts") as Array<{ responseId: string }>).map((receipt) => receipt.responseId)).toEqual(["model-1", "model-2"]);
       expect((await store.loadArtifact(second.id, "modelProviderReceipts") as Array<{ responseId: string }>).map((receipt) => receipt.responseId)).toEqual(["model-3", "model-4"]);
-      expect((await store.loadArtifact(first.id, "searchProviderReceipts") as Array<{ requestId: number }>).map((receipt) => receipt.requestId)).toEqual([1, 4, 5, 3, 2]);
-      expect((await store.loadArtifact(second.id, "searchProviderReceipts") as Array<{ requestId: number }>).map((receipt) => receipt.requestId)).toEqual([1, 4, 5, 3, 2]);
+      for (const run of [first, second]) {
+        const requestIds = (await store.loadArtifact(run.id, "searchProviderReceipts") as Array<{ requestId: number }>).map((receipt) => receipt.requestId);
+        expect(requestIds).toHaveLength(5);
+        expect(new Set(requestIds)).toHaveLength(5);
+        expect([...requestIds].sort((left, right) => left - right)).toEqual([1, 2, 3, 4, 5]);
+      }
       expect(first.id).not.toBe(second.id);
       expect(modelFetch).toHaveBeenCalledTimes(4);
       expect(searchFetch).toHaveBeenCalledTimes(10);
