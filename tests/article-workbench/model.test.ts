@@ -123,6 +123,9 @@ describe("OpenAI-compatible article model provider", () => {
 
     const request = JSON.parse(String(fetch.mock.calls[0][1].body));
     expect(request.messages[1].content).toContain('{"sourceId":"S001","category":"official|standard|original_research|peer_reviewed","rationale":"string","claimsSupported":["string"]}');
+    expect(request.messages[1].content).toContain("1200-1800 Chinese characters");
+    expect(request.messages[1].content).toContain("Cite every supplied source ID in the body at least once");
+    expect(request.messages[1].content).toContain("Every prose paragraph of 60 or more characters must contain a supplied source citation");
   });
 
   it.each([

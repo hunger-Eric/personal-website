@@ -13,6 +13,7 @@ import {
   ArticlePublicationRecordSchema,
   PublicationConflictEvidenceSchema,
   ExtractedSourceSchema,
+  SourceBoundArticleProposalSchema,
   SourcePacketResultSchema,
 } from "@/lib/article-workbench/contracts";
 
@@ -196,6 +197,19 @@ describe("article-workbench contracts", () => {
     const record = { title: "Title", body: "x".repeat(2_500), slug: "title", contentHash: `sha256:${"a".repeat(64)}`, path: "content/articles/2026-08-09-title.mdx" };
     expect(ArticlePublicationRecordSchema.safeParse(record).success).toBe(true);
     expect(ArticlePublicationRecordSchema.safeParse({ ...record, body: "x".repeat(40_001) }).success).toBe(false);
+  });
+
+  it("accepts model article bodies up to the documented 40000-character boundary", () => {
+    const article = {
+      title: "Title",
+      slugProposal: "title",
+      summary: "Summary",
+      tags: ["AI"],
+      body: "x".repeat(2_500),
+      sourceAssessments: [{ sourceId: "S001", category: "official", rationale: "Official source", claimsSupported: ["Supported claim"] }],
+    };
+    expect(SourceBoundArticleProposalSchema.safeParse(article).success).toBe(true);
+    expect(SourceBoundArticleProposalSchema.safeParse({ ...article, body: "x".repeat(40_001) }).success).toBe(false);
   });
 
   it("accepts only canonical or fixed-placeholder observed conflict hashes", () => {

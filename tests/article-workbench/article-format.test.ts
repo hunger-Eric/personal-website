@@ -159,6 +159,11 @@ contentHash: "${result.publicationRecord.contentHash}"
     expect(formatArticle({ article: proposal, sources: [{ ...sources[0], publisher: "国务院" }, sources[1]], defaults: { date: "2026-08-09", author: "fengc" } }).renderedMdx).toContain("（国务院）");
   });
 
+  it("normalizes harmless Markdown punctuation in admitted source labels", () => {
+    const result = formatArticle({ article: proposal, sources: [{ ...sources[0], title: "[Official guide] (`2026`)" }, sources[1]], defaults: { date: "2026-08-09", author: "fengc" } });
+    expect(result.renderedMdx).toContain("[Official guide 2026](https://www.gov.cn/zhengce/2023-07/13/content_6891600.htm)");
+  });
+
   it("escapes frontmatter values and has a stable LF-only hash", () => {
     const edited = { ...proposal, title: 'A "quoted" title', summary: "First line\nSecond line", tags: ['x"y', "z"] };
     const first = formatArticle({ article: edited, sources, defaults: { date: "2026-08-09", author: 'fen"gc' } });

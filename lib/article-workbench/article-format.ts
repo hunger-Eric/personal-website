@@ -172,8 +172,10 @@ function yamlString(value: string): string {
 
 function safeSourceLabel(value: string): string {
   const normalized = value.replace(/\s+/g, " ").trim();
-  if (!normalized || /[\r\n\x00-\x1f{}<>\[\]()`]/.test(normalized)) throw formatError();
-  return normalized.replace(/\\/g, "\\\\");
+  if (!normalized || /[\r\n\x00-\x1f{}<>]/.test(normalized)) throw formatError();
+  const markdownNeutral = normalized.replace(/[\[\]()`]/g, " ").replace(/\s+/g, " ").trim();
+  if (!markdownNeutral) throw formatError();
+  return markdownNeutral.replace(/\\/g, "\\\\");
 }
 
 function markdownDestination(url: string): string {

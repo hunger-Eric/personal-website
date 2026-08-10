@@ -298,7 +298,7 @@ export const SourceBoundArticleProposalSchema = z
     slugProposal: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(160),
     summary: nonEmptyText.max(2_000),
     tags: z.array(nonEmptyText.max(100)).min(1).max(10),
-    body: nonEmptyText.max(40_000),
+    body: z.string().trim().min(1).max(40_000),
     sourceAssessments: z.array(articleSourceAssessmentSchema).min(1).max(8),
   })
   .strict();
