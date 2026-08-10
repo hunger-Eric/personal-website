@@ -18,8 +18,14 @@ describe("AI-readable route inventory", () => {
     ]);
     expect(groups.article.length).toBeGreaterThan(0);
     expect(groups.article.map((route) => route.path)).toEqual([
+      "/articles/employee-reimbursement-ai-audit-approval-boundary",
+      "/articles/feedback-classification-closed-loop-priority-ownership-verification",
+      "/articles/gongyingshang-xunjia-bijia-ai-gaizao",
+      "/articles/invoice-ai-decision-cost-exception-human-review",
+      "/articles/knowledge-base-ai-governance-preparation",
       "/articles/lead-process-ai-automation-four-dimensions-real-sample-validation",
     ]);
+    expect(groups.article.some((route) => route.path.includes("hello-agents"))).toBe(false);
     expect(groups.machine.map((route) => route.path)).toEqual(
       expect.arrayContaining([
         "/llms.txt",
