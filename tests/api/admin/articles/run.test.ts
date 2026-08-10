@@ -111,10 +111,16 @@ describe("article run API", () => {
       const modelFetch = vi.fn(async () => {
         modelCall += 1;
         const content = modelCall % 2 === 1
-          ? { queries: [{ query: "official evidence", type: "general" }, { query: "standard evidence", type: "general" }] }
+          ? { editorialBrief: { readerQuestion: "How should an operations team use evidence?", centralThesis: "Evidence keeps operating decisions reviewable.", evidenceNeeds: ["official evidence", "standards evidence", "review practice"] }, queries: [{ query: "official evidence", type: "general" }, { query: "standard evidence", type: "general" }] }
           : {
               title: "Receipt-safe article", slugProposal: "receipt-safe-article", summary: "A verified summary.", tags: ["evidence"],
-              body: "One [[S001]], two [[S002]], three [[S003]], and four [[S004]].",
+              body: [
+                "The operations team needs evidence that makes a customer-facing decision reviewable before an automated suggestion becomes a commitment. That means recording the source, the responsible reviewer, and the exception path for each high-impact handoff. [[S001]]",
+                "## Check the recommendation before it changes a customer outcome\n\nA practical check asks whether the recommendation changes price, timing, qualification, or the next owner of a customer conversation. Staff should be able to stop the flow, explain the reason, and preserve the record for the next review. [[S002]]",
+                "## Keep the evidence with the operating decision\n\nSeparating evidence from the daily workflow makes later review slow and unreliable. A shared record of input, reviewer adjustment, and final action lets the team distinguish a source problem from an operational process problem without exposing provider data. [[S003]]",
+                "## Review exceptions on a fixed cadence\n\nWeekly review of repeated exceptions gives the responsible lead a concrete basis for changing a control, improving source material, or pausing an unsafe use case. The point is not to create a report card but to make the next decision more accountable. [[S004]]",
+                "## Expand only after the path remains usable\n\nWhen a small workflow can be reviewed by the people who actually use it, the team can extend the same responsibility and evidence path to another channel. This prevents a temporary speed gain from becoming an untraceable customer risk. [[S001]]",
+              ].join("\n\n"),
               sourceAssessments: ["S001", "S002", "S003", "S004"].map((sourceId, index) => ({ sourceId, category: index % 2 === 0 ? "official" : "standard", rationale: `Assessment ${index + 1}`, claimsSupported: [`Claim ${index + 1}`] })),
             };
         return new Response(JSON.stringify({ id: `model-${modelCall}`, choices: [{ message: { content: JSON.stringify(content) } }] }), { status: 200 });
