@@ -351,7 +351,10 @@ export function validateArticleEditorialQuality(article: SourceBoundArticlePropo
     citedSourceIds.size !== sourceIds.size ||
     [...citedSourceIds].some((id) => !sourceIds.has(id))
   ) throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
-  const bodyBlocks = article.body.split(/\n\s*\n/).filter((block) => !/^#{1,6}\s+/.test(block));
+  const bodyBlocks = article.body
+    .split(/\n\s*\n/)
+    .map((block) => block.replace(/^#{1,6}\s+.*(?:\n|$)/, "").trim())
+    .filter(Boolean);
   if (bodyBlocks.some((block) => block.replace(/\[\[S\d{3}\]\]/g, "").replace(/\s+/g, " ").trim().length >= ARTICLE_SUBSTANTIVE_PARAGRAPH_LENGTH && !/\[\[S\d{3}\]\]/.test(block))) {
     throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
   }

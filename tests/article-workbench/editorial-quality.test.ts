@@ -108,6 +108,15 @@ describe("editorial quality contract", () => {
     await expect(provider.writeSourceBoundArticle(writingInput)).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");
   });
 
+  it("rejects an uncited substantive claim that follows a heading", async () => {
+    const uncitedHeadingBlock = {
+      ...coherentArticle,
+      body: coherentArticle.body.replace("## 用复盘把一次性试用变成管理能力", "## 用复盘把一次性试用变成管理能力\n这段未引用的外部主张足够长，描述管理体系会在负责人变动时自动减少所有客户风险，并且任何团队都能据此获得相同结果，因此不能因为标题行而绕过引用要求。"),
+    };
+    const provider = new OpenAICompatibleModelProvider({ fetch: async () => completion(uncitedHeadingBlock), config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "provider", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://models.example.test/v1", ARTICLE_MODEL_NAME: "model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only" }) });
+    await expect(provider.writeSourceBoundArticle(writingInput)).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");
+  });
+
   it("accepts coherent source-backed prose that clears the deterministic material floor", async () => {
     const provider = new OpenAICompatibleModelProvider({
       fetch: async () => completion(coherentArticle),
