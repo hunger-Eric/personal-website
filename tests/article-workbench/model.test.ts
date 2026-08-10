@@ -22,7 +22,7 @@ const profile = {
 };
 const planInput: ArticleResearchPlanInput = { profile, topic: "AI workflow controls" };
 const writeInput: ArticleSourceBoundWriteInput = {
-  profile, topic: "AI workflow controls", articleRules: ["Use a practical tone."],
+  profile, topic: "AI workflow controls", editorialBrief: { readerQuestion: "How can teams control AI work?", centralThesis: "Daily controls make AI work accountable.", evidenceNeeds: ["guidance", "review", "operations"] }, articleRules: ["Use a practical tone."],
   sources: [
     { id: "S001", title: "Official guide", url: "https://example.com/guide", excerpt: "Guide", content: "Official evidence with a complete public explanation." },
     { id: "S002", title: "Research", url: "https://example.org/study", excerpt: "Study", content: "Research evidence with a complete public explanation." },
@@ -33,10 +33,17 @@ function completion(content: unknown, status = 200): Response {
   return new Response(JSON.stringify({ id: "chatcmpl-safe", choices: [{ message: { content: typeof content === "string" ? content : JSON.stringify(content) } }] }), { status, headers: { "content-type": "application/json" } });
 }
 
-const validPlan: ResearchPlanProposal = { queries: [{ query: "AI workflow controls official guidance", type: "general" }, { query: "AI workflow controls peer reviewed research", type: "academic" }] };
+const validPlan: ResearchPlanProposal = { editorialBrief: { readerQuestion: "How can an operations lead control AI work?", centralThesis: "Controls become useful when they are part of daily work.", evidenceNeeds: ["governance guidance", "operational evidence", "review practice"] }, queries: [{ query: "AI workflow controls official guidance", type: "general" }, { query: "AI workflow controls peer reviewed research", type: "academic" }] };
+const completeArticleBody = [
+  "Teams need to record which customer-facing decisions an AI output can influence, who checks the output, and where an exception is stored. That record lets an operations lead distinguish a model mistake from a missing business control before it becomes a customer promise. Official guidance supports treating governance as a repeated operational activity. [[S001]]",
+  "## Put review on the delivery path\n\nA useful pre-release check asks whether the output changes price, timing, or a customer entitlement, who can stop it, and what evidence remains after review. These questions turn a broad risk discussion into actions an operator can take during a busy handoff, rather than a policy document that appears only after an incident. [[S002]]",
+  "## Keep the control useful after the pilot\n\nWhen staffing or volume changes, teams need to revisit the exceptions and decisions that defined the original boundary. A short weekly review of one high-frequency use case gives the business a repeatable way to improve the workflow without inventing personal experience or padding the article with generic claims. [[S001]]",
+  "## Measure the operational consequence\n\nLeaders should compare reviewed recommendations with the resulting handoff, customer response, and exception record. This gives the team evidence for deciding whether a process needs a new review step, better source material, or a pause while an issue is investigated. [[S002]]",
+  "## Repeat the decision with evidence\n\nA weekly review of exceptions, ownership changes, and customer-impacting outputs keeps the process usable after the initial pilot. Teams can expand only the checks that remain practical in daily work and retain the evidence needed for the next responsible operator. [[S001]]",
+].join("\n\n");
 const validArticle: SourceBoundArticleProposal = {
   title: "AI workflow controls that teams can use", slugProposal: "ai-workflow-controls", summary: "A practical guide.", tags: ["AI", "operations"],
-  body: "Teams should document controls [[S001]] and evaluate outcomes [[S002]].",
+  body: completeArticleBody,
   sourceAssessments: [
     { sourceId: "S001", category: "official", rationale: "Published by the responsible body.", claimsSupported: ["Teams should document controls."] },
     { sourceId: "S002", category: "peer_reviewed", rationale: "Peer-reviewed research.", claimsSupported: ["Teams should evaluate outcomes."] },
@@ -67,7 +74,7 @@ describe("OpenAI-compatible article model provider", () => {
     const jsonSchema = new OpenAICompatibleModelProvider({ fetch: schemaFetch, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "json_schema" }) });
     await jsonSchema.proposeResearchPlan(planInput);
     const schemaRequest = JSON.parse(String(schemaFetch.mock.calls[0][1].body));
-    expect(schemaRequest.response_format).toMatchObject({ type: "json_schema", json_schema: { strict: true, schema: { additionalProperties: false, required: ["queries"] } } });
+    expect(schemaRequest.response_format).toMatchObject({ type: "json_schema", json_schema: { strict: true, schema: { additionalProperties: false, required: ["editorialBrief", "queries"] } } });
     expect(schemaRequest.response_format.json_schema.schema.properties.queries.items).toMatchObject({ additionalProperties: false, required: ["query", "type"], properties: { type: { enum: ["general", "academic"] } } });
 
     const writerFetch = vi.fn<FetchLike>(async () => completion(validArticle));

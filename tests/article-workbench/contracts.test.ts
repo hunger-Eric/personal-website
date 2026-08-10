@@ -13,6 +13,7 @@ import {
   ArticlePublicationRecordSchema,
   PublicationConflictEvidenceSchema,
   ExtractedSourceSchema,
+  SourcePacketResultSchema,
 } from "@/lib/article-workbench/contracts";
 
 describe("article-workbench contracts", () => {
@@ -68,12 +69,14 @@ describe("article-workbench contracts", () => {
   it("assigns stable query identifiers in proposal order", () => {
     expect(
       assignResearchPlanIds({
+        editorialBrief: { readerQuestion: "Who owns AI workflow controls?", centralThesis: "Controls need clear ownership.", evidenceNeeds: ["guidance", "evidence", "review"] },
         queries: [
           { query: "AI workflow audit", type: "general" },
           { query: "human review AI research", type: "academic" },
         ],
       })
     ).toEqual({
+      editorialBrief: { readerQuestion: "Who owns AI workflow controls?", centralThesis: "Controls need clear ownership.", evidenceNeeds: ["guidance", "evidence", "review"] },
       queries: [
         { id: "Q001", query: "AI workflow audit", type: "general" },
         { id: "Q002", query: "human review AI research", type: "academic" },
@@ -163,6 +166,10 @@ describe("article-workbench contracts", () => {
     expect(ExtractedSourceSchema.safeParse({ ...base, content: "AI" }).success).toBe(false);
     expect(ExtractedSourceSchema.safeParse({ ...base, content: "2024" }).success).toBe(false);
     expect(ExtractedSourceSchema.safeParse({ ...base, content: "A normal extracted public evidence passage." }).success).toBe(true);
+  });
+
+  it("rejects an ok source packet with only one source before the writer boundary", () => {
+    expect(SourcePacketResultSchema.safeParse({ status: "ok", sources: [{ id: "S001", title: "Guide", url: "https://example.com/guide", excerpt: "Excerpt", content: "A sufficiently detailed public evidence passage for a narrow article." }] }).success).toBe(false);
   });
 
   it("requires a code-owned publication path to match the record slug and real date", () => {

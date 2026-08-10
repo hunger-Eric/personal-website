@@ -37,6 +37,13 @@ describe("offline article workbench fixtures", () => {
     const beforeEdits = await server.getRun(generated.id);
     expect(beforeEdits?.sources).toHaveLength(4);
     expect(beforeEdits?.previewMdx).toContain("本地验收");
+    const body = beforeEdits?.article?.body ?? "";
+    const visible = body.replace(/\[\[S\d{3}\]\]/g, "").replace(/^#{1,6}\s+.*$/gm, "").replace(/\s+/g, "").trim();
+    const paragraphs = body.split(/\n\s*\n/).filter((block) => !/^#{1,6}\s+/.test(block) && block.replace(/\[\[S\d{3}\]\]/g, "").trim().length >= 60);
+    expect(visible.length).toBeGreaterThanOrEqual(500);
+    expect(paragraphs.length).toBeGreaterThanOrEqual(4);
+    expect(beforeEdits?.article?.summary).not.toContain("本地浏览器验收");
+    expect(body).not.toBe("## 先明确可检查的责任\n\n将 AI 使用场景、负责人和风险记录在同一份流程中，能让团队从试用阶段开始保留核验依据。[[S001]]\n\n## 用公开原则校准决策\n\n把透明度、稳健性和问责要求转化为上线前检查项，有助于让业务目标与可信使用保持一致。[[S002]]\n\n## 让管理动作持续发生\n\n管理体系需要周期性复盘，而不是一次性的合规文件；团队可以把复盘结果纳入日常运营节奏。[[S003]]\n\n## 为变化保留更新入口\n\n外部规则与业务实践会变化，保留负责人与修订记录能让治理流程持续更新。[[S004]]");
 
     await server.saveEdits(generated.id, { confirmations: [{ sourceId: "S001", confirmed: true }, { sourceId: "S002", confirmed: true }], title: "本地验收编辑后的标题" });
     const afterEdits = await server.getRun(generated.id);

@@ -8,6 +8,7 @@ import {
   SourceConfirmationSchema,
   SourcePacketResultSchema,
   assignResearchPlanIds,
+  validateArticleEditorialQuality,
   validateSourceBoundArticleProposal,
   type ArticleWorkbenchFailureCode,
   type ArticleRunFailure,
@@ -81,6 +82,7 @@ class ArticleWorkflow {
       const writeInput = ArticleSourceBoundWriteInputSchema.parse({
         profile,
         topic: input.topic,
+        editorialBrief: plan.editorialBrief,
         sources: packet.sources,
         articleRules: input.articleRules,
       });
@@ -114,6 +116,7 @@ class ArticleWorkflow {
     const editable = { title: article.title, slugProposal: article.slugProposal, summary: article.summary, tags: article.tags, body: article.body };
     const merged = { ...article, ...editable, ...pickEditable(previous), ...pickEditable(parsedEdits), sourceAssessments: article.sourceAssessments };
     const defaults = await this.publicationDefaults(runId);
+    validateArticleEditorialQuality(merged, packet.sources);
     const formatted = formatArticle({ article: merged, sources: packet.sources, defaults });
     const validatedArticle = { ...merged, slugProposal: formatted.publicationRecord.slug };
     await this.dependencies.store.saveArtifact(runId, "articleEdits", { ...pickEditable(previous), ...pickEditable(parsedEdits), confirmations });
@@ -260,7 +263,8 @@ function isProviderReceiptPersistenceFailure(error: unknown): boolean {
 }
 
 function pickEditable(value: ArticleEditsInput): Omit<ArticleEditsInput, "confirmations"> {
-  const { confirmations: _confirmations, ...editable } = value;
+  const editable = { ...value };
+  delete editable.confirmations;
   return editable;
 }
 

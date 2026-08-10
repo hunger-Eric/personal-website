@@ -14,12 +14,22 @@ import type {
   SearchPort,
   SourcePacketResult,
   ArticlePublicationRecord,
+  ArticleSourceBoundWriteInput,
 } from "@/lib/article-workbench/contracts";
 
 const sources = [
   { id: "S001", title: "Primary source", url: "https://example.com/one", excerpt: "Evidence one", content: "Evidence one is a complete extracted public source passage." },
   { id: "S002", title: "Standard", url: "https://example.com/two", excerpt: "Evidence two", content: "Evidence two is a complete extracted public standard passage." },
 ] as const;
+
+const completeArticleBody = [
+  "运营负责人需要先把 AI 输出会影响的客户承诺、内部决定和复核动作列成清单。这样做不是增加文书，而是让团队在异常发生时知道该由谁停止流程、检查证据并向客户解释。公开风险管理指引支持把治理活动嵌入日常业务。[[S001]]",
+  "## 把复核变成上线路径的一部分\n\n上线前的复核应回答具体问题：这项输出会不会改变价格、交付时间或客户权益，错误后由谁拦截，复核记录保存在哪里。每个问题都对应可执行动作，避免团队只在会议中讨论风险却无法在现场判断。标准化的控制要求能够为这类检查提供一致依据。[[S002]]",
+  "## 用持续复盘保留管理能力\n\n当负责人调整或业务量增加时，流程是否仍能被接手，取决于异常记录、修订决定和责任边界是否持续更新。团队可以每周挑选一个高频场景复盘四周，再将有效检查项推广到其他场景，让试用结果成为可重复的运营能力。[[S001]]",
+  "## 记录实际业务后果\n\n团队应把被人工修正的建议、重新分配的工作和客户反馈放在同一份复盘中，才能区分数据问题、流程问题与输出问题。这样每次调整都有可复核的业务原因，而不是凭印象改变规则。[[S002]]",
+  "## 从一个高频场景开始\n\n先在一个高频流程连续执行数周，确认负责人能够接手异常记录和复核步骤，再推广到其他环节。这个节奏让自动化带来的效率提升不会以无法追溯的客户风险为代价。[[S001]]",
+  "## 让负责人看见同一份证据\n\n销售、客服与运营应在同一份记录中查看建议、人工修正和最终处理结果，避免每个岗位各自保存无法对照的信息。统一的证据让负责人可以在客户问题出现前发现重复异常，并决定是否继续扩大使用范围。[[S002]]",
+].join("\n\n");
 
 class MemoryStore implements RunStorePort {
   readonly runs = new Map<string, ArticleWorkbenchRun>();
@@ -86,6 +96,7 @@ function createWorkflow(options: {
   publicationDefaultsForRun?: () => { date: string; author: string };
   modelPlanError?: Error;
   searchError?: Error;
+  onWrite?: (input: ArticleSourceBoundWriteInput) => void;
 } = {}) {
   const profile = options.profile ?? defaultArticleBusinessProfile;
   const packet = options.packet ?? { status: "ok" as const, sources: [...sources] };
@@ -95,17 +106,18 @@ function createWorkflow(options: {
       expect(store.events).toContain("store:artifact:input");
       store.events.push("model:plan");
       if (options.modelPlanError) throw options.modelPlanError;
-      return (options.plan ?? { queries: [{ query: "official guidance", type: "general" }, { query: "primary research", type: "academic" }] }) as never;
+      return (options.plan ?? { editorialBrief: { readerQuestion: "How should teams control AI work?", centralThesis: "Daily controls make AI work accountable.", evidenceNeeds: ["governance guidance", "review evidence", "operational practice"] }, queries: [{ query: "official guidance", type: "general" }, { query: "primary research", type: "academic" }] }) as never;
     },
-    async writeSourceBoundArticle() {
+    async writeSourceBoundArticle(input) {
       expect(store.events).toContain("store:status:sources_ready");
       store.events.push("model:write");
+      options.onWrite?.(input);
       return (options.article ?? {
         title: "Evidence-led article",
         slugProposal: "evidence-led-article",
         summary: "A source-bound summary.",
         tags: ["research"],
-        body: "Supported claim [[S001]] and corroboration [[S002]].",
+        body: completeArticleBody,
         sourceAssessments: [
           { sourceId: "S001", category: "official", rationale: "Primary authority", claimsSupported: ["Supported claim"] },
           { sourceId: "S002", category: "standard", rationale: "Published standard", claimsSupported: ["Corroboration"] },
@@ -151,6 +163,24 @@ describe("article workbench workflow", () => {
       "store:artifact:sourcePacket", "store:status:sources_ready", "model:write",
       "store:artifact:modelResponse", "store:status:article_generated", "store:artifact:validatedArticle", "store:artifact:renderedMdx", "store:artifact:publicationRecord", "store:status:validated",
     ]);
+  });
+
+  it("passes the exact model-owned research brief with code-owned query ids into source-bound writing", async () => {
+    const editorialBrief = { readerQuestion: "Who owns AI delivery controls?", centralThesis: "Ownership turns a pilot into a repeatable process.", evidenceNeeds: ["governance guidance", "delivery evidence", "review cadence"] };
+    let observed: ArticleSourceBoundWriteInput | undefined;
+    const { workflow } = createWorkflow({
+      plan: { editorialBrief, queries: [{ query: "official governance", type: "general" }, { query: "review research", type: "academic" }] },
+      onWrite: (input) => { observed = input; },
+    });
+
+    await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    expect(observed?.editorialBrief).toEqual(editorialBrief);
+  });
+
+  it("rejects a human report-card edit with the same typed article-output failure", async () => {
+    const { workflow } = createWorkflow();
+    const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
+    await expect(workflow.saveArticleEdits(run.id, { confirmations: [], body: "## 责任\n\n指定负责人。[[S001]]\n\n## 检查\n\n上线前复核。[[S002]]\n\n## 记录\n\n保存证据。[[S001]]\n\n## 复盘\n\n每周检查。[[S002]]" })).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");
   });
 
   it("stops at the first typed failure without calling downstream ports", async () => {
@@ -343,7 +373,7 @@ describe("article workbench workflow", () => {
     const { store, workflow } = createWorkflow();
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
     const previous = store.artifacts.get(`${run.id}:validatedArticle`);
-    await expect(workflow.saveArticleEdits(run.id, { confirmations: [], body: "Evidence one is a complete extracted public source passage. [[S001]] and corroboration [[S002]]." })).rejects.toThrow("ARTICLE_FORMAT_INVALID");
+    await expect(workflow.saveArticleEdits(run.id, { confirmations: [], body: "Evidence one is a complete extracted public source passage. [[S001]] and corroboration [[S002]]." })).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");
     expect(store.runs.get(run.id)?.status).toBe("validated");
     expect(store.artifacts.get(`${run.id}:validatedArticle`)).toBe(previous);
     expect(store.artifacts.get(`${run.id}:articleEdits`)).toBeUndefined();
@@ -373,8 +403,9 @@ describe("article workbench workflow", () => {
     const { workflow, store } = createWorkflow();
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
     await workflow.saveArticleEdits(run.id, { confirmations: [], title: "First edit" });
-    await workflow.saveArticleEdits(run.id, { confirmations: [], body: "Edited claim [[S001]] and corroboration [[S002]]." });
-    expect(store.artifacts.get(`${run.id}:validatedArticle`)).toMatchObject({ title: "First edit", body: "Edited claim [[S001]] and corroboration [[S002]]." });
+    const editedBody = completeArticleBody;
+    await workflow.saveArticleEdits(run.id, { confirmations: [], body: editedBody });
+    expect(store.artifacts.get(`${run.id}:validatedArticle`)).toMatchObject({ title: "First edit", body: editedBody });
   });
 
   it("persists the formatter-normalized slug across later edits and publication", async () => {

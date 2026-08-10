@@ -77,8 +77,23 @@ const researchProposalQuerySchema = z
   })
   .strict();
 
+export const EditorialBriefSchema = z
+  .object({
+    readerQuestion: nonEmptyText.max(500),
+    centralThesis: nonEmptyText.max(1_000),
+    evidenceNeeds: z.array(nonEmptyText.max(500)).min(3).max(8),
+  })
+  .strict();
+export type EditorialBrief = z.infer<typeof EditorialBriefSchema>;
+
+export const ARTICLE_VISIBLE_PROSE_MINIMUM = 500;
+export const ARTICLE_PROSE_PARAGRAPH_MINIMUM = 5;
+export const ARTICLE_SUBSTANTIVE_PARAGRAPH_MINIMUM = 4;
+export const ARTICLE_SUBSTANTIVE_PARAGRAPH_LENGTH = 60;
+
 export const ResearchPlanProposalSchema = z
   .object({
+    editorialBrief: EditorialBriefSchema,
     queries: z.array(researchProposalQuerySchema).min(2).max(5),
   })
   .strict();
@@ -90,6 +105,7 @@ const researchQuerySchema = researchProposalQuerySchema.extend({
 
 export const ResearchPlanSchema = z
   .object({
+    editorialBrief: EditorialBriefSchema,
     queries: z.array(researchQuerySchema).min(2).max(5),
   })
   .strict()
@@ -119,6 +135,7 @@ export type ResearchPlan = z.infer<typeof ResearchPlanSchema>;
 export function assignResearchPlanIds(input: unknown): ResearchPlan {
   const proposal = ResearchPlanProposalSchema.parse(input);
   return ResearchPlanSchema.parse({
+    editorialBrief: proposal.editorialBrief,
     queries: proposal.queries.map((query, index) => ({
       ...query,
       id: `Q${String(index + 1).padStart(3, "0")}`,
@@ -250,7 +267,7 @@ export function normalizeEvidenceText(value: string): string {
 }
 
 export const SourcePacketResultSchema = z.discriminatedUnion("status", [
-  z.object({ status: z.literal("ok"), sources: z.array(ExtractedSourceSchema).min(1).max(8) }).strict(),
+  z.object({ status: z.literal("ok"), sources: z.array(ExtractedSourceSchema).min(2).max(8) }).strict(),
   z.object({ status: z.literal("insufficient_sources"), sources: z.array(ExtractedSourceSchema).max(8) }).strict(),
 ]);
 export type SourcePacketResult = z.infer<typeof SourcePacketResultSchema>;
@@ -259,7 +276,8 @@ export const ArticleSourceBoundWriteInputSchema = z
   .object({
     profile: BusinessProfileSchema,
     topic: nonEmptyText,
-    sources: z.array(ExtractedSourceSchema).min(1).max(8),
+    editorialBrief: EditorialBriefSchema,
+    sources: z.array(ExtractedSourceSchema).min(2).max(8),
     articleRules: z.array(nonEmptyText).min(1).max(30),
   })
   .strict();
@@ -310,7 +328,33 @@ export function validateSourceBoundArticleProposal(
   if (outputText.some(isForbiddenModelOutputText)) {
     throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
   }
+  validateArticleEditorialQuality(article, sources);
   return article;
+}
+
+/** Deterministic material floor, deliberately limited to visible prose and source binding. */
+export function validateArticleEditorialQuality(article: SourceBoundArticleProposal, sources: readonly ExtractedSource[]): void {
+  const proseParagraphs = article.body
+    .replace(/\[\[S\d{3}\]\]/g, "")
+    .split(/\n\s*\n/)
+    .map((block) => block.replace(/^#{1,6}\s+.*$/gm, "").replace(/^\|.*$/gm, "").replace(/[-|:]/g, "").replace(/\s+/g, " ").trim())
+    .filter((block) => block.length > 0);
+  const substantiveParagraphs = proseParagraphs.filter((paragraph) => paragraph.length >= ARTICLE_SUBSTANTIVE_PARAGRAPH_LENGTH);
+  const citedSourceIds = new Set([...article.body.matchAll(/\[\[(S\d{3})\]\]/g)].map((match) => match[1]));
+  const sourceIds = new Set(sources.map((source) => source.id));
+  const concreteEvidenceItems = sources.filter((source) => normalizeEvidenceText(source.content).length >= 48).length;
+  if (
+    proseParagraphs.join("").length < ARTICLE_VISIBLE_PROSE_MINIMUM ||
+    proseParagraphs.length < ARTICLE_PROSE_PARAGRAPH_MINIMUM ||
+    substantiveParagraphs.length < ARTICLE_SUBSTANTIVE_PARAGRAPH_MINIMUM ||
+    concreteEvidenceItems < 1 ||
+    citedSourceIds.size !== sourceIds.size ||
+    [...citedSourceIds].some((id) => !sourceIds.has(id))
+  ) throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
+  const bodyBlocks = article.body.split(/\n\s*\n/).filter((block) => !/^#{1,6}\s+/.test(block));
+  if (bodyBlocks.some((block) => block.replace(/\[\[S\d{3}\]\]/g, "").replace(/\s+/g, " ").trim().length >= ARTICLE_SUBSTANTIVE_PARAGRAPH_LENGTH && !/\[\[S\d{3}\]\]/.test(block))) {
+    throw new Error("ARTICLE_MODEL_OUTPUT_INVALID");
+  }
 }
 
 function isForbiddenModelOutputText(value: string): boolean {

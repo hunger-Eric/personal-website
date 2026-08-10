@@ -29,6 +29,8 @@ export interface SafeModelReceipt {
   model: string;
   protocol: string;
   task: "article_research_plan" | "article_source_bound_write";
+  promptContractVersion: "editorial.v1";
+  promptContractHash: string;
   requestHash: string;
   responseId?: string;
   outcome: "success" | "failure";
@@ -89,7 +91,7 @@ export class OpenAICompatibleModelProvider implements ModelPort {
     const payload = {
       model: this.options.config.model,
       temperature,
-      messages: [{ role: "user", content: promptFor(task, input) }],
+      messages: editorialMessages(task, input),
       ...responseFormat(this.options.config.structuredOutputMode, task),
     };
     const startedAt = Date.now();
@@ -113,13 +115,13 @@ export class OpenAICompatibleModelProvider implements ModelPort {
     try { output = JSON.parse(content); } catch { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_RESPONSE_INVALID", response.status, responseText, responseId); }
     let result: T;
     try { result = validate(output); } catch { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_OUTPUT_INVALID", response.status, responseText, responseId); }
-    await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, requestHash: hash(JSON.stringify(payload)), responseId, outcome: "success", status: response.status, responseHash: hash(responseText), durationMs: Date.now() - startedAt });
+    await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, promptContractVersion: "editorial.v1", promptContractHash: promptContractHash(task), requestHash: hash(JSON.stringify(payload)), responseId, outcome: "success", status: response.status, responseHash: hash(responseText), durationMs: Date.now() - startedAt });
     return result;
   }
 
   private async fail<T>(task: SafeModelReceipt["task"], payload: unknown, startedAt: number, errorCode: NonNullable<SafeModelReceipt["errorCode"]>, status?: number, responseText?: string, responseId?: string): Promise<T> {
     try {
-      await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, requestHash: hash(JSON.stringify(payload)), responseId, outcome: "failure", errorCode, status, responseHash: responseText === undefined ? undefined : hash(responseText), durationMs: Date.now() - startedAt });
+      await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, promptContractVersion: "editorial.v1", promptContractHash: promptContractHash(task), requestHash: hash(JSON.stringify(payload)), responseId, outcome: "failure", errorCode, status, responseHash: responseText === undefined ? undefined : hash(responseText), durationMs: Date.now() - startedAt });
     } catch {
       // The provider error is the primary failure. Receipt storage must never mask it.
     }
@@ -135,23 +137,31 @@ export function runResearchPlanning(port: ModelPort, input: ArticleResearchPlanI
   return port.proposeResearchPlan(input);
 }
 
+export const EDITORIAL_SYSTEM_PROMPT = "editorial.v1 You are an editorial model. Return one JSON object only. The article serves SME owners and operations leaders. Use approved business evidence as business facts and supplied public sources as external facts. Never invent first-person experience, discuss GEO or prompting, use marketing/template language, emit URLs, or format a source list. Material insufficiency is a failure: do not pad prose.";
+export const EDITORIAL_TASK_PROMPTS = {
+  article_research_plan: "Create an editorial brief with readerQuestion, centralThesis, and 3-8 evidenceNeeds. Let those evidenceNeeds drive 2-5 research queries with query and type (general or academic). Do not assign query IDs.",
+  article_source_bound_write: "Write one coherent Chinese business article from the exact editorialBrief and supplied evidence. Open with a concrete problem, fact, or judgment. Every paragraph must advance a new fact, action, distinction, or consequence; use natural headings only; every substantive external claim needs an adjacent [[S001]] citation. If the thesis cannot be supported, fail rather than revise it in code. Return title, slugProposal, summary, tags, body, sourceAssessments.",
+} as const;
+
+function editorialMessages(task: SafeModelReceipt["task"], input: unknown): Array<{ role: "system" | "user"; content: string }> {
+  return [{ role: "system", content: EDITORIAL_SYSTEM_PROMPT }, { role: "user", content: EDITORIAL_TASK_PROMPTS[task] + " Input: " + JSON.stringify(input) }];
+}
+
+function promptContractHash(task: SafeModelReceipt["task"]): string {
+  return hash(JSON.stringify([{ role: "system", content: EDITORIAL_SYSTEM_PROMPT }, { role: "user", content: EDITORIAL_TASK_PROMPTS[task] }]));
+}
+
 function responseFormat(mode: StructuredOutputMode, task: SafeModelReceipt["task"]): Record<string, unknown> {
   if (mode === "prompt_only") return {};
   if (mode === "json_object") return { response_format: { type: "json_object" } };
   return { response_format: { type: "json_schema", json_schema: { name: task, strict: true, schema: task === "article_research_plan" ? researchPlanJsonSchema : sourceBoundArticleJsonSchema } } };
 }
 
-function promptFor(task: SafeModelReceipt["task"], input: unknown): string {
-  return task === "article_research_plan"
-    ? `Task: ${task}. Return only one JSON object with 2-5 research queries, each query and type (general or academic). Do not assign IDs. Input: ${JSON.stringify(input)}`
-    : `Task: ${task}. Return only one JSON object with title, slugProposal, summary, tags, body, sourceAssessments. Cite only supplied source IDs as [[S001]]. Do not emit URLs or a Sources/参考来源 heading. Each source assessment must include sourceId, category, rationale, claimsSupported. Input: ${JSON.stringify(input)}`;
-}
-
 function hash(value: string): string { return createHash("sha256").update(value).digest("hex"); }
 
 const researchPlanJsonSchema = {
-  type: "object", additionalProperties: false, required: ["queries"],
-  properties: { queries: { type: "array", minItems: 2, maxItems: 5, items: { type: "object", additionalProperties: false, required: ["query", "type"], properties: { query: { type: "string", minLength: 1, maxLength: 2000 }, type: { type: "string", enum: ["general", "academic"] } } } } },
+  type: "object", additionalProperties: false, required: ["editorialBrief", "queries"],
+  properties: { editorialBrief: { type: "object", additionalProperties: false, required: ["readerQuestion", "centralThesis", "evidenceNeeds"], properties: { readerQuestion: { type: "string", minLength: 1, maxLength: 500 }, centralThesis: { type: "string", minLength: 1, maxLength: 1000 }, evidenceNeeds: { type: "array", minItems: 3, maxItems: 8, items: { type: "string", minLength: 1, maxLength: 500 } } } }, queries: { type: "array", minItems: 2, maxItems: 5, items: { type: "object", additionalProperties: false, required: ["query", "type"], properties: { query: { type: "string", minLength: 1, maxLength: 2000 }, type: { type: "string", enum: ["general", "academic"] } } } } },
 };
 const sourceBoundArticleJsonSchema = {
   type: "object", additionalProperties: false, required: ["title", "slugProposal", "summary", "tags", "body", "sourceAssessments"],
