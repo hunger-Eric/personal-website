@@ -23,7 +23,8 @@ describe("SEO routes", () => {
     expect(urls.some((url) => url.startsWith(`${SITE_URL}/projects/`))).toBe(true);
     expect(urls).not.toContain(`${SITE_URL}/projects/hermes-notebook`);
     expect(urls).not.toContain(`${SITE_URL}/projects/enterprise-content-growth`);
-    expect(urls.some((url) => url.endsWith("/articles/hello-agents-ch01.html"))).toBe(true);
+    expect(urls).toContain(`${SITE_URL}/articles/lead-process-ai-automation-four-dimensions-real-sample-validation`);
+    expect(urls.some((url) => url.includes("hello-agents"))).toBe(false);
     expect(urls).not.toContain(`${SITE_URL}/content`);
     expect(urls).not.toContain(`${SITE_URL}/photography`);
     expect(urls).not.toContain(`${SITE_URL}/links`);

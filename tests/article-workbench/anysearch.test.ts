@@ -48,6 +48,14 @@ describe("AnySearch research adapter", () => {
     ]);
   });
 
+  it("parses the provider's labeled URL line without admitting result snippets", () => {
+    expect(
+      parseNumberedMarkdownResults(
+        "### 1. Official workflow guide\n- **URL**: https://example.com/guide\n- Full result content that must not become extracted evidence"
+      )
+    ).toEqual([{ title: "Official workflow guide", url: "https://example.com/guide" }]);
+  });
+
   it("uses only the fixed provider endpoint, discovers academic constraints first, and sends exact RPC envelopes", async () => {
     const calls: Array<{ url: string; init: RequestInit }> = [];
     const fetch = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
@@ -123,6 +131,39 @@ describe("AnySearch research adapter", () => {
       "https://example.net/third",
       "https://iana.org/fourth",
     ]);
+  });
+
+  it("accepts the provider's Markdown academic capability contract", async () => {
+    const calls: Array<Record<string, unknown>> = [];
+    const academicMarkdown = [
+      "## academic Domain Capabilities (2 available)",
+      "",
+      "### academic.search",
+      "Cross-discipline paper search",
+      "",
+      "**Parameters:**",
+      "- `open_access`: Whether to return only open access publications.",
+      "- `year_from` (required): Publication year start.",
+      "",
+      "### academic.preprint",
+      "Preprint search",
+    ].join("\n");
+    const adapter = createAnySearchResearchAdapter({
+      fetch: async (_url, init) => {
+        const request = JSON.parse(String(init?.body));
+        calls.push(request);
+        if (request.params.name === "get_sub_domains") return rpcText(academicMarkdown);
+        if (request.params.name === "batch_search") return rpcText(searchMarkdown);
+        return rpcText("full extracted content with enough public evidence detail");
+      },
+    });
+
+    await expect(adapter.collect(plan)).resolves.toMatchObject({ status: "ok" });
+    expect((calls[1] as { params: { arguments: { queries: Array<Record<string, unknown>> } } }).params.arguments.queries[1]).toMatchObject({
+      domain: "academic",
+      sub_domain: "academic.search",
+      sub_domain_params: { open_access: true, year_from: "" },
+    });
   });
 
   it("caps accepted sources and extraction concurrency while truncating page and packet content", async () => {

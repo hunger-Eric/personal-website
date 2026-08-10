@@ -105,7 +105,7 @@ export class AnySearchResearchAdapter implements SearchPort {
 
   private async getAcademicContract(): Promise<AcademicContract> {
     const response = await this.rpc("get_sub_domains", { domain: "academic" });
-    const contract = findAcademicContract(parseJsonContent(responseText(response)));
+    const contract = parseAcademicContract(responseText(response));
     if (!contract) throw new Error("ANYSEARCH_ACADEMIC_CONTRACT_INVALID");
     return contract;
   }
@@ -175,8 +175,9 @@ export function parseNumberedMarkdownResults(markdown: string): SearchHeading[] 
       continue;
     }
     const plain = lines[index].match(/^#{2,6}\s+\d+[.)]\s+(.+?)\s*$/);
-    const url = lines[index + 1]?.trim();
-    if (plain && url && /^https?:\/\/\S+$/i.test(url)) {
+    const nextLine = lines[index + 1]?.trim();
+    const url = nextLine?.match(/^(?:-\s+\*\*URL\*\*:\s*)?(https?:\/\/\S+)$/i)?.[1];
+    if (plain && url) {
       results.push({ title: plain[1].trim(), url });
       index += 1;
     }
@@ -213,12 +214,28 @@ function responseText(result: unknown): string {
   return text.text;
 }
 
-function parseJsonContent(text: string): unknown {
+function parseAcademicContract(text: string): AcademicContract | null {
   try {
-    return JSON.parse(text);
+    return findAcademicContract(JSON.parse(text));
   } catch {
-    throw new Error("ANYSEARCH_ACADEMIC_CONTRACT_INVALID");
+    return findMarkdownAcademicContract(text);
   }
+}
+
+function findMarkdownAcademicContract(markdown: string): AcademicContract | null {
+  const lines = markdown.split(/\r?\n/);
+  for (let index = 0; index < lines.length; index += 1) {
+    const heading = lines[index].match(/^###\s+([A-Za-z0-9._-]+)\s*$/);
+    if (!heading) continue;
+    const params: AcademicContract["params"] = [];
+    for (let cursor = index + 1; cursor < lines.length && !/^###\s+/.test(lines[cursor]); cursor += 1) {
+      const parameter = lines[cursor].match(/^-\s+`([^`]+)`(\s+\(required\))?\s*:/i);
+      if (!parameter) continue;
+      params.push({ name: parameter[1], required: Boolean(parameter[2]) });
+    }
+    return { subDomain: heading[1], params };
+  }
+  return null;
 }
 
 function findAcademicContract(value: unknown): AcademicContract | null {

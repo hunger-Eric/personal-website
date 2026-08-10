@@ -253,7 +253,7 @@ export const ArticleResearchPlanInputSchema = z
 export type ArticleResearchPlanInput = z.infer<typeof ArticleResearchPlanInputSchema>;
 
 export const ExtractedSourceSchema = SourceCandidateSchema.extend({
-  content: nonEmptyText.max(20_000),
+  content: z.string().trim().min(1).max(20_000),
   publisher: nonEmptyText.max(200).optional(),
 }).strict().superRefine((source, context) => {
   if (normalizeEvidenceText(source.content).length < 24) {
@@ -263,7 +263,12 @@ export const ExtractedSourceSchema = SourceCandidateSchema.extend({
 export type ExtractedSource = z.infer<typeof ExtractedSourceSchema>;
 
 export function normalizeEvidenceText(value: string): string {
-  return value.replace(/\r\n?/g, "\n").replace(/\s+/g, " ").trim();
+  const normalized = value.replace(/\r\n?/g, "\n").trim();
+  if (/^extract_[a-z0-9_]+(?:\s|$)/i.test(normalized)) return "";
+  return normalized
+    .replace(/^\*\*Source\*\*:\s*https?:\/\/\S+\s*(?:---\s*)?/i, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 export const SourcePacketResultSchema = z.discriminatedUnion("status", [
@@ -383,7 +388,7 @@ export const CanonicalContentHashSchema = z.string().regex(/^sha256:[a-f0-9]{64}
 export const CanonicalRemoteIdSchema = z.string().regex(/^[a-f0-9]{40}$/);
 const articlePublicationRecordBaseSchema = z.object({
   title: nonEmptyText.max(200),
-  body: nonEmptyText.max(40_000),
+  body: z.string().trim().min(1).max(40_000),
   slug: z.string().trim().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(160),
   contentHash: CanonicalContentHashSchema,
   path: publicationPathSchema,

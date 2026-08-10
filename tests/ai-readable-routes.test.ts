@@ -17,7 +17,9 @@ describe("AI-readable route inventory", () => {
       "/projects/freight-lead-agent",
     ]);
     expect(groups.article.length).toBeGreaterThan(0);
-    expect(groups.article.every((route) => route.path.endsWith(".html"))).toBe(true);
+    expect(groups.article.map((route) => route.path)).toEqual([
+      "/articles/lead-process-ai-automation-four-dimensions-real-sample-validation",
+    ]);
     expect(groups.machine.map((route) => route.path)).toEqual(
       expect.arrayContaining([
         "/llms.txt",

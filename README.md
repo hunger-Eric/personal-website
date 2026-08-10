@@ -128,7 +128,7 @@ Its server-only model adapter is replaceable. The initial configured route is Op
 - `ARTICLE_MODEL_BASE_URL=https://opencode.ai/zen/go/v1`
 - `ARTICLE_MODEL_NAME=deepseek-v4-flash`
 - `ARTICLE_MODEL_API_KEY=`
-- `ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE=prompt_only`
+- `ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE=json_object`
 
 Set `ANYSEARCH_API_KEY` to enable public-source research. The publisher uses `GITHUB_TOKEN` (or the existing `PHOTO_GITHUB_TOKEN` fallback) with GitHub Contents access to `hunger-Eric/personal-website` on `main`; `NEXT_PUBLIC_BASE_URL` must be the canonical HTTPS site URL used to verify the published article. Local run records, research packets, rendered MDX, and publication receipts are stored under `output/article-workbench/`, which is ignored by Git.
 

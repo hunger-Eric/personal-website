@@ -64,6 +64,16 @@ describe("OpenAI-compatible article model provider", () => {
     expect(JSON.parse(String(init.body))).not.toHaveProperty("response_format");
   });
 
+  it("sends the exact research-plan object shape to prompt-driven providers", async () => {
+    const fetch = vi.fn<FetchLike>(async () => completion(validPlan));
+    const provider = new OpenAICompatibleModelProvider({ fetch, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "deepseek-v4-flash", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "json_object" }) });
+
+    await provider.proposeResearchPlan(planInput);
+
+    const request = JSON.parse(String(fetch.mock.calls[0][1].body));
+    expect(request.messages[1].content).toContain('{"editorialBrief":{"readerQuestion":"string","centralThesis":"string","evidenceNeeds":["string"]},"queries":[{"query":"string","type":"general|academic"}]}');
+  });
+
   it("uses configured native JSON output modes only when supported", async () => {
     const jsonObjectFetch = vi.fn<FetchLike>(async () => completion(validPlan));
     const jsonObject = new OpenAICompatibleModelProvider({ fetch: jsonObjectFetch, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "json_object" }) });
@@ -103,6 +113,16 @@ describe("OpenAI-compatible article model provider", () => {
     expect(JSON.stringify(persisted)).not.toContain("test-key");
     expect(JSON.stringify(persisted)).not.toContain("Supported claim");
     expect(persisted[0]).toMatchObject({ provider: "opencode_zen", model: "deepseek-v4-flash", protocol: "openai_compatible", responseId: "chatcmpl-safe" });
+  });
+
+  it("sends the exact source-assessment object shape to prompt-driven writers", async () => {
+    const fetch = vi.fn<FetchLike>(async () => completion(validArticle));
+    const provider = new OpenAICompatibleModelProvider({ fetch, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "deepseek-v4-flash", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "json_object" }) });
+
+    await provider.writeSourceBoundArticle(writeInput);
+
+    const request = JSON.parse(String(fetch.mock.calls[0][1].body));
+    expect(request.messages[1].content).toContain('{"sourceId":"S001","category":"official|standard|original_research|peer_reviewed","rationale":"string","claimsSupported":["string"]}');
   });
 
   it.each([
@@ -170,6 +190,25 @@ describe("OpenAI-compatible article model provider", () => {
     await expect(provider.proposeResearchPlan(planInput)).rejects.toThrow(code);
     expect(receipts).toHaveLength(1);
     expect(receipts[0]).toMatchObject({ outcome: "failure", errorCode: code });
+  });
+
+  it("persists only field paths and issue codes when model JSON fails the output contract", async () => {
+    const receipts: unknown[] = [];
+    const invalidPlan = {
+      ...validPlan,
+      editorialBrief: { ...validPlan.editorialBrief, evidenceNeeds: ["only one"] },
+    };
+    const provider = new OpenAICompatibleModelProvider({ fetch: async () => completion(invalidPlan), persistReceipt: (receipt) => { receipts.push(receipt); }, config: createArticleModelConfig({ ARTICLE_MODEL_PROVIDER: "opencode_zen", ARTICLE_MODEL_PROTOCOL: "openai_compatible", ARTICLE_MODEL_BASE_URL: "https://opencode.ai/zen/go/v1", ARTICLE_MODEL_NAME: "configured-model", ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "json_object" }) });
+
+    await expect(provider.proposeResearchPlan(planInput)).rejects.toThrow("ARTICLE_MODEL_OUTPUT_INVALID");
+    expect(receipts).toEqual([
+      expect.objectContaining({
+        outcome: "failure",
+        errorCode: "ARTICLE_MODEL_OUTPUT_INVALID",
+        validationIssues: [{ path: "editorialBrief.evidenceNeeds", code: "too_small" }],
+      }),
+    ]);
+    expect(JSON.stringify(receipts)).not.toContain("only one");
   });
 
   it("preserves the provider error when failure receipt persistence also fails", async () => {

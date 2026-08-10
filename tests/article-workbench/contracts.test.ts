@@ -168,6 +168,19 @@ describe("article-workbench contracts", () => {
     expect(ExtractedSourceSchema.safeParse({ ...base, content: "A normal extracted public evidence passage." }).success).toBe(true);
   });
 
+  it("rejects AnySearch extraction status text and source-only wrappers as evidence", () => {
+    const base = { id: "S001", title: "Guide", url: "https://example.com/guide", excerpt: "Excerpt" };
+    expect(ExtractedSourceSchema.safeParse({ ...base, content: "extract_upstream_error\nupstream returned error: HTTP 202 Accepted" }).success).toBe(false);
+    expect(ExtractedSourceSchema.safeParse({ ...base, content: "extract_unsupported_content\nunsupported content type: application/pdf" }).success).toBe(false);
+    expect(ExtractedSourceSchema.safeParse({ ...base, content: "**Source**: https://example.com/guide\n\n---" }).success).toBe(false);
+  });
+
+  it("accepts extracted source bodies up to the documented 20000-character boundary", () => {
+    const base = { id: "S001", title: "Guide", url: "https://example.com/guide", excerpt: "Excerpt" };
+    expect(ExtractedSourceSchema.safeParse({ ...base, content: "x".repeat(2_500) }).success).toBe(true);
+    expect(ExtractedSourceSchema.safeParse({ ...base, content: "x".repeat(20_001) }).success).toBe(false);
+  });
+
   it("rejects an ok source packet with only one source before the writer boundary", () => {
     expect(SourcePacketResultSchema.safeParse({ status: "ok", sources: [{ id: "S001", title: "Guide", url: "https://example.com/guide", excerpt: "Excerpt", content: "A sufficiently detailed public evidence passage for a narrow article." }] }).success).toBe(false);
   });
@@ -177,6 +190,12 @@ describe("article-workbench contracts", () => {
     expect(ArticlePublicationRecordSchema.safeParse(record).success).toBe(true);
     expect(ArticlePublicationRecordSchema.safeParse({ ...record, path: "content/articles/2026-02-30-other.mdx" }).success).toBe(false);
     expect(ArticlePublicationRecordSchema.safeParse({ ...record, contentHash: "sha256:abc" }).success).toBe(false);
+  });
+
+  it("accepts publication bodies up to the documented 40000-character boundary", () => {
+    const record = { title: "Title", body: "x".repeat(2_500), slug: "title", contentHash: `sha256:${"a".repeat(64)}`, path: "content/articles/2026-08-09-title.mdx" };
+    expect(ArticlePublicationRecordSchema.safeParse(record).success).toBe(true);
+    expect(ArticlePublicationRecordSchema.safeParse({ ...record, body: "x".repeat(40_001) }).success).toBe(false);
   });
 
   it("accepts only canonical or fixed-placeholder observed conflict hashes", () => {

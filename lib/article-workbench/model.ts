@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { z } from "zod";
 
 import {
   ArticleResearchPlanInputSchema,
@@ -38,6 +39,7 @@ export interface SafeModelReceipt {
   status?: number;
   responseHash?: string;
   durationMs: number;
+  validationIssues?: Array<{ path: string; code: string }>;
 }
 
 export interface OpenAICompatibleModelProviderOptions {
@@ -114,14 +116,14 @@ export class OpenAICompatibleModelProvider implements ModelPort {
     let output: unknown;
     try { output = JSON.parse(content); } catch { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_RESPONSE_INVALID", response.status, responseText, responseId); }
     let result: T;
-    try { result = validate(output); } catch { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_OUTPUT_INVALID", response.status, responseText, responseId); }
+    try { result = validate(output); } catch (error) { return this.fail(task, payload, startedAt, "ARTICLE_MODEL_OUTPUT_INVALID", response.status, responseText, responseId, safeValidationIssues(error)); }
     await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, promptContractVersion: "editorial.v1", promptContractHash: promptContractHash(task), requestHash: hash(JSON.stringify(payload)), responseId, outcome: "success", status: response.status, responseHash: hash(responseText), durationMs: Date.now() - startedAt });
     return result;
   }
 
-  private async fail<T>(task: SafeModelReceipt["task"], payload: unknown, startedAt: number, errorCode: NonNullable<SafeModelReceipt["errorCode"]>, status?: number, responseText?: string, responseId?: string): Promise<T> {
+  private async fail<T>(task: SafeModelReceipt["task"], payload: unknown, startedAt: number, errorCode: NonNullable<SafeModelReceipt["errorCode"]>, status?: number, responseText?: string, responseId?: string, validationIssues?: SafeModelReceipt["validationIssues"]): Promise<T> {
     try {
-      await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, promptContractVersion: "editorial.v1", promptContractHash: promptContractHash(task), requestHash: hash(JSON.stringify(payload)), responseId, outcome: "failure", errorCode, status, responseHash: responseText === undefined ? undefined : hash(responseText), durationMs: Date.now() - startedAt });
+      await this.persist({ provider: this.options.config.provider, model: this.options.config.model, protocol: this.options.config.protocol, task, promptContractVersion: "editorial.v1", promptContractHash: promptContractHash(task), requestHash: hash(JSON.stringify(payload)), responseId, outcome: "failure", errorCode, status, responseHash: responseText === undefined ? undefined : hash(responseText), durationMs: Date.now() - startedAt, ...(validationIssues?.length ? { validationIssues } : {}) });
     } catch {
       // The provider error is the primary failure. Receipt storage must never mask it.
     }
@@ -133,14 +135,22 @@ export class OpenAICompatibleModelProvider implements ModelPort {
   }
 }
 
+function safeValidationIssues(error: unknown): SafeModelReceipt["validationIssues"] {
+  if (!(error instanceof z.ZodError)) return undefined;
+  return error.issues.slice(0, 12).map((issue) => ({
+    path: issue.path.map(String).join(".") || "$",
+    code: issue.code,
+  }));
+}
+
 export function runResearchPlanning(port: ModelPort, input: ArticleResearchPlanInput): Promise<ResearchPlanProposal> {
   return port.proposeResearchPlan(input);
 }
 
 export const EDITORIAL_SYSTEM_PROMPT = "editorial.v1 You are an editorial model. Return one JSON object only. The article serves SME owners and operations leaders. Use approved business evidence as business facts and supplied public sources as external facts. Never invent first-person experience, discuss GEO or prompting, use marketing/template language, emit URLs, or format a source list. Material insufficiency is a failure: do not pad prose.";
 export const EDITORIAL_TASK_PROMPTS = {
-  article_research_plan: "Create an editorial brief with readerQuestion, centralThesis, and 3-8 evidenceNeeds. Let those evidenceNeeds drive 2-5 research queries with query and type (general or academic). Do not assign query IDs.",
-  article_source_bound_write: "Write one coherent Chinese business article from the exact editorialBrief and supplied evidence. Open with a concrete problem, fact, or judgment. Every paragraph must advance a new fact, action, distinction, or consequence; use natural headings only; every substantive external claim needs an adjacent [[S001]] citation. If the thesis cannot be supported, fail rather than revise it in code. Return title, slugProposal, summary, tags, body, sourceAssessments.",
+  article_research_plan: 'Return exactly this top-level JSON shape and no other keys: {"editorialBrief":{"readerQuestion":"string","centralThesis":"string","evidenceNeeds":["string"]},"queries":[{"query":"string","type":"general|academic"}]}. Provide 3-8 evidenceNeeds and 2-5 queries. Let those evidenceNeeds drive the queries. Every query type must be exactly general or academic. Do not assign query IDs.',
+  article_source_bound_write: 'Return exactly this top-level JSON shape and no other keys: {"title":"string","slugProposal":"kebab-case","summary":"string","tags":["string"],"body":"Chinese Markdown with adjacent [[S001]] citations","sourceAssessments":[{"sourceId":"S001","category":"official|standard|original_research|peer_reviewed","rationale":"string","claimsSupported":["string"]}]}. Write one coherent Chinese business article from the exact editorialBrief and supplied evidence. Open with a concrete problem, fact, or judgment. Every paragraph must advance a new fact, action, distinction, or consequence; use natural headings only; every substantive external claim needs an adjacent supplied source citation. Return exactly one source assessment for every supplied source ID, using each exact ID once. If the thesis cannot be supported, fail rather than revise it in code.',
 } as const;
 
 function editorialMessages(task: SafeModelReceipt["task"], input: unknown): Array<{ role: "system" | "user"; content: string }> {
