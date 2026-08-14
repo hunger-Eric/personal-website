@@ -8,87 +8,87 @@
     "publicStatus": "published",
     "sourceVisibility": "private-curated",
     "purpose": {
-      "zh": "为需要持续开发海外货主的货代团队，把分散在 Excel、Google Maps、企业官网和邮箱里的找客工作接成可追踪的线索运营流程。",
-      "en": "Give freight teams developing overseas shippers a traceable lead operations workflow across spreadsheets, Google Maps, company websites, and inboxes."
+      "zh": "把从 Google 地图发现目标企业、官网研究、公开联系方式获取、定制邮件准备到发送与回复跟进，接成一套可部署的销售开发系统。",
+      "en": "Connect Google Maps company discovery, official-site research, public-contact discovery, personalized message preparation, sending, and reply follow-up in one deployable sales-development system."
     },
     "originalWorkflow": [
       {
-        "zh": "运营人员分别整理企业名单、检查网站、寻找公开联系方式，再手工判断线索质量。",
-        "en": "Operators separately cleaned company lists, checked websites, found public contacts, and judged lead quality by hand."
+        "zh": "销售人员按关键词和地区在 Google 地图寻找目标企业，逐个确认官网并整理名单。",
+        "en": "Sales teams searched Google Maps by keyword and region, verified each official website, and assembled prospect lists."
       },
       {
-        "zh": "无效行、缺失网站和处理进度分散在不同文件与人工记录中。",
-        "en": "Invalid rows, missing websites, and processing progress were scattered across files and manual notes."
+        "zh": "找到企业后，还要逐家阅读官网、寻找公开联系方式，再根据对方业务单独准备开发邮件。",
+        "en": "After finding a company, the team still had to read its website, locate public contacts, and prepare an outreach message for that specific business."
       }
     ],
     "workflowBreakpoints": [
       {
-        "zh": "Excel 输入质量不一致，错误行容易被静默遗漏。",
-        "en": "Inconsistent spreadsheet quality made invalid rows easy to lose silently."
+        "zh": "从地图搜索到官网研究包含大量重复操作，名单扩大后很难保持同样的研究深度。",
+        "en": "Moving from map search to website research required repetitive work, making it difficult to keep the same research depth as the list grew."
       },
       {
-        "zh": "公开企业信息、判断依据和外联草稿缺少统一的审核界面。",
-        "en": "Public company evidence, scoring rationale, and outreach drafts lacked one review surface."
+        "zh": "统一群发模板无法利用每家企业官网里的具体业务信息，逐封人工写信又很难持续。",
+        "en": "A generic template ignored the specific business context on each website, while writing every message by hand was difficult to sustain."
       },
       {
-        "zh": "批次失败后难以判断从哪里继续，导出结果也难以复查。",
-        "en": "After failures it was difficult to know where to resume or how to audit exported results."
+        "zh": "企业来源、官网内容、联系方式、邮件草稿和发送状态分散，销售难以统一审核和继续跟进。",
+        "en": "Company sources, website context, contacts, message drafts, and send status were scattered, making review and follow-up difficult."
       }
     ],
     "systemBoundary": {
-      "zh": "系统在客户控制的 Docker 环境中处理业务 Excel 与公开企业信息；它只生成外联草稿，不自动批量发送，最终使用由人工审核决定。",
-      "en": "The system processes business spreadsheets and public company information in a customer-controlled Docker environment. It generates outreach drafts only; it does not auto-send campaigns, and a human decides final use."
+      "zh": "系统在客户控制的 Docker 环境中处理 Google 地图企业数据与公开官网信息。真实发送前必须经过人工审核和发送计划确认。",
+      "en": "The system processes Google Maps company data and public website information in a customer-controlled Docker environment. Real delivery requires human review and send-plan confirmation."
     },
     "inputs": [
       {
-        "zh": "按行业或客户名单导出的 Excel 文件",
-        "en": "Excel exports grouped by industry or customer list"
+        "zh": "Google 地图搜索关键词、目标地区和采集任务",
+        "en": "Google Maps search keywords, target regions, and collection tasks"
       },
       {
-        "zh": "企业名称、地址、网站等业务字段",
-        "en": "Business fields such as company name, address, and website"
+        "zh": "Google 地图返回的企业名称、地址、官网等公开字段",
+        "en": "Public Google Maps fields such as company name, address, and official website"
       },
       {
-        "zh": "无需登录即可访问的企业公开网页",
-        "en": "Public company pages that do not require login"
+        "zh": "企业官网公开内容，以及发件方的业务资料和营销要求",
+        "en": "Public official-site content plus the sender's business profile and outreach requirements"
       }
     ],
     "processing": [
       {
-        "zh": "按文件哈希去重并建立可暂停、恢复和重试的处理批次",
-        "en": "Deduplicate files by hash and create pausable, resumable, retryable batches"
+        "zh": "按关键词和地区从 Google 地图采集目标企业，并保留企业来源与官网",
+        "en": "Collect target companies from Google Maps by keyword and region while preserving source and official-site information"
       },
       {
-        "zh": "清洗行数据，保留无效原因，提取公开企业联系方式",
-        "en": "Clean rows, preserve invalid reasons, and extract public business contacts"
+        "zh": "逐家访问官网，提取业务介绍、服务信息与公开联系方式",
+        "en": "Visit each official website to extract business descriptions, service information, and public contacts"
       },
       {
-        "zh": "生成线索判断依据与英文外联草稿，写入可审计状态",
-        "en": "Generate lead rationale and English outreach drafts with auditable states"
+        "zh": "结合对方官网内容和发件方资料生成定制开发邮件，进入人工审核与发送计划",
+        "en": "Use the prospect's website context and sender profile to generate a personalized message for human review and send planning"
       }
     ],
     "humanReview": [
       {
-        "zh": "逐条查看原始字段、公开证据、评分原因与草稿内容",
-        "en": "Review raw fields, public evidence, scoring rationale, and draft content per company"
+        "zh": "逐条确认目标企业、官网内容、公开联系方式和定制邮件是否准确",
+        "en": "Review the target company, website context, public contacts, and personalized message for accuracy"
       },
       {
-        "zh": "人工决定是否修改、使用或停止联系；系统不替代合规判断",
-        "en": "A human decides whether to edit, use, or stop contact; the system does not replace compliance judgment"
+        "zh": "人工决定是否修改、发送、安排节奏或停止联系，并处理后续回复",
+        "en": "A human decides whether to edit, send, schedule, or stop contact and handles subsequent replies"
       }
     ],
     "outputs": [
       {
-        "zh": "包含批次进度、异常原因和企业证据的运营工作台",
-        "en": "An operations workbench with batch progress, exception reasons, and company evidence"
+        "zh": "包含企业来源、官网、公开联系方式和处理状态的目标客户库",
+        "en": "A prospect library containing source, official website, public contacts, and processing status"
       },
       {
-        "zh": "企业结果表与多条公开联系方式补充表",
-        "en": "A company result sheet plus a supplemental table of public contacts"
+        "zh": "依据每家企业官网内容生成、可逐条审核的定制开发邮件",
+        "en": "A reviewable personalized outreach message generated from each company's website context"
       },
       {
-        "zh": "可复制、待人工审核的外联邮件主题与正文草稿",
-        "en": "Copyable outreach subject and body drafts pending human review"
+        "zh": "带发送节奏、发件账号、投递状态和回复跟进的发送计划",
+        "en": "Send plans with pacing, sender account, delivery status, and reply follow-up"
       }
     ],
     "failureRecovery": [
@@ -102,21 +102,21 @@
       }
     ],
     "currentStatus": {
-      "zh": "项目已形成可独立部署的 Docker 系统，覆盖名单导入、公开企业信息处理、人工复核、发送计划和回复监控。本地测试与验收数据不作为客户结果，也不用于证明商业成效。",
-      "en": "The project is a self-contained Docker system covering list import, public-company research, human review, send plans, and reply monitoring. Local test and acceptance data are not customer outcomes and do not prove commercial impact."
+      "zh": "项目已形成可独立部署的 Docker 系统，覆盖 Google 地图企业发现、逐家官网分析、公开联系方式提取、定制邮件生成、人工审核、发送计划和回复监控。",
+      "en": "The project is a self-contained Docker system covering Google Maps company discovery, official-site analysis, public-contact extraction, personalized message generation, human review, send plans, and reply monitoring."
     },
     "transferableCapabilities": [
       {
-        "zh": "把不稳定的业务表格转成可恢复的处理队列",
-        "en": "Turn inconsistent business spreadsheets into a recoverable processing queue"
+        "zh": "把 Google 地图搜索结果持续转成可研究、可联系的目标企业库",
+        "en": "Continuously turn Google Maps results into a prospect library ready for research and contact"
       },
       {
-        "zh": "把自动判断与关键人工审核放在同一条流程中",
-        "en": "Combine automated judgment and critical human review in one workflow"
+        "zh": "利用每家企业官网的真实业务内容准备定制营销信息",
+        "en": "Use real business context from each official website to prepare personalized outreach"
       },
       {
-        "zh": "用状态、事件和结构化导出保留完整追踪链",
-        "en": "Preserve traceability through states, events, and structured exports"
+        "zh": "把企业研究、内容审核、发送节奏和回复跟进放在同一条流程里",
+        "en": "Keep company research, content review, sending pace, and reply follow-up in one workflow"
       },
       {
         "zh": "以镜像化部署交付客户可独立运行的系统",
@@ -131,8 +131,8 @@
           "en": "Workflow handoff demo"
         },
         "description": {
-          "zh": "展示从批次输入、公开信息处理、人工审核到结构化导出的系统边界。",
-          "en": "Shows the system boundary from batch input and public-information processing to human review and structured export."
+          "zh": "展示从 Google 地图企业发现、官网研究、定制内容生成到人工审核和发送计划的完整流程。",
+          "en": "Shows the full workflow from Google Maps company discovery and website research to personalized content, human review, and send planning."
         },
         "kind": "demo",
         "href": "/animations/projects/freight/index.html"
@@ -144,8 +144,8 @@
           "en": "Docker delivery and acceptance workflow"
         },
         "description": {
-          "zh": "服务、API、前端、导出和移动端可以沿同一条流程验收。测试数据只证明系统行为，不代表客户收益。",
-          "en": "Services, API, frontend, exports, and mobile behavior can be accepted through one workflow. Test data proves system behavior only and does not represent customer gains."
+          "zh": "服务、API、前端、企业数据处理、发送安全与移动端可以沿同一条流程验收。",
+          "en": "Services, API, frontend, company-data processing, send safety, and mobile behavior can be accepted through one workflow."
         },
         "kind": "validation"
       }
@@ -158,10 +158,6 @@
       {
         "zh": "外联内容必须人工审核，系统不提供无差别批量自动发送。",
         "en": "Outreach content requires human review; the system does not provide indiscriminate automated bulk sending."
-      },
-      {
-        "zh": "本地测试与验收数据只验证流程，不代表客户收益、转化率或行业效果。",
-        "en": "Local test and acceptance data verify the workflow only and do not represent customer gains, conversion rates, or industry outcomes."
       }
     ],
     "reviewedAt": "2026-08-14",

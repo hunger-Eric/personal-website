@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, ExternalLink } from "lucide-react";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 import { getLocalizedPublicContent } from "@/config/public-content";
 
 export const metadata: Metadata = {
   title: "关于",
-  description: "实解智能：企业 AI 系统设计与交付，以及公开身份与证据边界。",
+  description: "了解实解智能适合处理的问题、项目负责人和具体合作方式。",
   alternates: { canonical: "/about" },
 };
 
@@ -51,27 +51,27 @@ export default function AboutPage() {
           </section>
         </div>
 
-        <section className="mt-14" aria-labelledby="identity-title">
-          <p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">Public identity & evidence</p>
+        <section className="mt-14" aria-labelledby="project-owner-title">
+          <p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">How we work</p>
           <div className="mt-3 grid gap-px border border-hairline bg-hairline lg:grid-cols-[0.9fr_1.1fr]">
             <div className="bg-surface-paper-elevated p-7 sm:p-8">
-              <h2 id="identity-title" className="text-2xl font-semibold text-foreground">公开身份说明</h2>
+              <h2 id="project-owner-title" className="text-2xl font-semibold text-foreground">谁来负责项目</h2>
               <p className="mt-4 text-sm leading-7 text-muted-foreground">
-                实解智能是本网站使用的服务品牌，当前公开作者身份为 fengc。网站不把未公开的团队规模、法律实体或客户身份作为可推断事实。
+                实解智能目前由 fengc 负责。前期沟通、流程梳理、系统设计和交付协调由同一负责人推进。你不需要先准备一份完整需求书，只要把正在消耗人力的流程、现有工具和遇到的问题讲清楚。
               </p>
-              <a href="https://github.com/hunger-Eric" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
-                查看公开 GitHub 身份 <ExternalLink className="h-4 w-4" aria-hidden />
-              </a>
+              <Link href="/projects" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+                查看项目案例 <ArrowRight className="h-4 w-4" aria-hidden />
+              </Link>
             </div>
             <div className="bg-surface-paper p-7 sm:p-8">
-              <h2 className="text-2xl font-semibold text-foreground">公开证据原则</h2>
-              <ul className="mt-4 space-y-3 text-sm leading-7 text-muted-foreground">
-                <li>项目案例只展示已审核的公开事实；模拟体验会明确标注为模拟。</li>
-                <li>未完成公开材料审核的项目不会进入项目库、站点地图或机器可读索引。</li>
-                <li>不披露或虚构客户身份、未批准指标和无法由当前公开材料支持的结果。</li>
-              </ul>
-              <Link href="/services" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
-                查看完整服务事实 <ArrowRight className="h-4 w-4" aria-hidden />
+              <h2 className="text-2xl font-semibold text-foreground">合作从哪里开始</h2>
+              <ol className="mt-4 space-y-3 text-sm leading-7 text-muted-foreground">
+                <li>先确认问题是否值得做。我们会看流程发生频率、人工投入和出错后的影响。</li>
+                <li>再划分系统与人工的职责。AI 接管稳定步骤，关键判断保留人工确认。</li>
+                <li>最后用真实数据验证。通过后再部署，并根据实际使用继续调整。</li>
+              </ol>
+              <Link href="/contact" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+                提交一个业务问题 <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>
           </div>
