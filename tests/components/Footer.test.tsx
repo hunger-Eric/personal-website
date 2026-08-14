@@ -18,6 +18,7 @@ describe("Footer", () => {
     expect(screen.getByRole("link", { name: "文章" })).toHaveAttribute("href", "/articles");
     expect(screen.getByRole("link", { name: "公众号" })).toHaveAttribute("href", "/articles#wechat");
     expect(screen.getByRole("link", { name: "联系" })).toHaveAttribute("href", "/contact");
+    expect(screen.queryByRole("link", { name: "itheheda@gmail.com" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText(/instagram/i)).not.toBeInTheDocument();
   });
 

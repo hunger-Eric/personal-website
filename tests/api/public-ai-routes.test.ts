@@ -39,8 +39,24 @@ describe("public AI routes", () => {
       "reviewed",
     ]);
     expect(body.projects[0].simulationScope).toMatchObject({ usesSimulatedData: true, performsLiveCrawling: false, performsModelCalls: false, isFormalDiagnosis: false });
+    expect(body.projects[0].facts.map((fact: { kind: string }) => fact.kind)).toEqual([
+      "problem",
+      "solution",
+      "buyerValue",
+      "boundary",
+    ]);
+    expect(body.projects[1].facts.map((fact: { kind: string }) => fact.kind)).toEqual([
+      "problem",
+      "solution",
+      "buyerValue",
+      "boundary",
+    ]);
+    expect(body.projects.every((project: { facts: Array<{ text: { zh: string; en: string } }> }) =>
+      project.facts.every((fact) => fact.text.zh.length > 0 && fact.text.en.length > 0)
+    )).toBe(true);
     expect(JSON.stringify(body)).not.toContain("repository");
     expect(JSON.stringify(body)).not.toContain("materials-pending");
+    expect(JSON.stringify(body)).not.toMatch(/601|521|469 条|126 家/);
   });
 
   it("publishes a complete reviewed project and returns 404 for unknown ids", async () => {
@@ -52,7 +68,7 @@ describe("public AI routes", () => {
     });
 
     expect(found.status).toBe(200);
-    expect((await found.json()).project.currentStatus.zh).toContain("601");
+    expect((await found.json()).project.currentStatus.zh).toContain("本地测试与验收数据不作为客户结果");
     expect(missing.status).toBe(404);
   });
 });

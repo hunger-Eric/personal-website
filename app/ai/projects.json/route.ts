@@ -14,6 +14,13 @@ export function GET() {
         name: project.name,
         category: project.category,
         summary: project.summary,
+        facts: project.factKinds.map((kind, index) => ({
+          kind,
+          text: {
+            zh: project.facts.zh[index],
+            en: project.facts.en[index],
+          },
+        })),
         publicStatus: project.status,
         reviewStatus: project.statusKind,
         isSimulation: project.statusKind === "simulation",

@@ -8,8 +8,8 @@
     "publicStatus": "published",
     "sourceVisibility": "private-curated",
     "purpose": {
-      "zh": "把分行业导出的企业 Excel 名单，转成可追踪、可人工复核、可导出的货运线索处理批次。",
-      "en": "Turn industry-specific company spreadsheets into traceable, human-reviewed freight lead batches with exportable results."
+      "zh": "为需要持续开发海外货主的货代团队，把分散在 Excel、Google Maps、企业官网和邮箱里的找客工作接成可追踪的线索运营流程。",
+      "en": "Give freight teams developing overseas shippers a traceable lead operations workflow across spreadsheets, Google Maps, company websites, and inboxes."
     },
     "originalWorkflow": [
       {
@@ -102,8 +102,8 @@
       }
     ],
     "currentStatus": {
-      "zh": "已用于真实付费客户交付。公开验收批次处理 601 行：521 行有效、80 行无效、0 行处理失败；公开信息回填后形成 469 条联系方式记录，覆盖 126 家企业。",
-      "en": "Delivered for a real paying client. The disclosed acceptance batch processed 601 rows: 521 valid, 80 invalid, and 0 processing failures. Public-information backfill produced 469 contact records across 126 companies."
+      "zh": "项目已形成可独立部署的 Docker 系统，覆盖名单导入、公开企业信息处理、人工复核、发送计划和回复监控。本地测试与验收数据不作为客户结果，也不用于证明商业成效。",
+      "en": "The project is a self-contained Docker system covering list import, public-company research, human review, send plans, and reply monitoring. Local test and acceptance data are not customer outcomes and do not prove commercial impact."
     },
     "transferableCapabilities": [
       {
@@ -140,12 +140,12 @@
       {
         "id": "docker-acceptance",
         "label": {
-          "zh": "真实 Docker 验收记录",
-          "en": "Real Docker acceptance record"
+          "zh": "Docker 交付与验收流程",
+          "en": "Docker delivery and acceptance workflow"
         },
         "description": {
-          "zh": "服务、API、前端、导出和移动端均使用真实批次完成验收；公开站仅披露经批准的汇总数字。",
-          "en": "Services, API, frontend, exports, and mobile behavior were accepted with a real batch; the public site discloses approved aggregate figures only."
+          "zh": "服务、API、前端、导出和移动端可以沿同一条流程验收。测试数据只证明系统行为，不代表客户收益。",
+          "en": "Services, API, frontend, exports, and mobile behavior can be accepted through one workflow. Test data proves system behavior only and does not represent customer gains."
         },
         "kind": "validation"
       }
@@ -160,11 +160,11 @@
         "en": "Outreach content requires human review; the system does not provide indiscriminate automated bulk sending."
       },
       {
-        "zh": "公开数字来自一个已验收批次，不代表所有客户或行业都会得到相同结果。",
-        "en": "Published figures come from one accepted batch and do not imply identical results for every client or industry."
+        "zh": "本地测试与验收数据只验证流程，不代表客户收益、转化率或行业效果。",
+        "en": "Local test and acceptance data verify the workflow only and do not represent customer gains, conversion rates, or industry outcomes."
       }
     ],
-    "reviewedAt": "2026-07-12",
+    "reviewedAt": "2026-08-14",
     "review": {
       "approvedForPublic": true,
       "approvedBy": "site-owner"

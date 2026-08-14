@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Maximize2, X } from "lucide-react";
+import { ArrowRight, MessageCircle, X } from "lucide-react";
 
 type ContactQrCardProps = {
   label: string;
   description?: string;
+  actionLabel?: string;
   qrImage: string;
   qrAlt: string;
 };
@@ -13,6 +14,7 @@ type ContactQrCardProps = {
 export function ContactQrCard({
   label,
   description,
+  actionLabel = "查看二维码",
   qrImage,
   qrAlt,
 }: ContactQrCardProps) {
@@ -32,28 +34,31 @@ export function ContactQrCard({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group grid w-full grid-cols-[128px_minmax(0,1fr)_20px] items-center gap-4 rounded-card border border-hairline bg-surface-paper-elevated p-3 text-left transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:grid-cols-[92px_minmax(0,1fr)_24px]"
+        className="group grid w-full grid-cols-[48px_minmax(0,1fr)] items-center gap-4 border-b border-hairline py-5 text-left transition-colors hover:bg-surface-paper-elevated focus:outline-none focus-visible:ring-2 focus-visible:ring-accent sm:grid-cols-[48px_minmax(0,1fr)_auto_80px]"
       >
+        <span className="flex h-12 w-12 items-center justify-center bg-surface-paper-elevated text-accent" aria-hidden>
+          <MessageCircle className="h-5 w-5" />
+        </span>
+        <span className="min-w-0">
+          <span className="block text-xs font-medium text-muted-foreground">
+            {label}
+          </span>
+          {description ? (
+            <span className="mt-1 block text-base font-medium text-foreground">
+              {description}
+            </span>
+          ) : null}
+        </span>
+        <span className="col-start-2 inline-flex items-center gap-2 text-sm font-semibold text-accent transition-colors group-hover:text-accent-hover sm:col-start-auto">
+          {actionLabel}
+          <ArrowRight className="h-4 w-4" aria-hidden />
+        </span>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={qrImage}
           alt={qrAlt}
-          className="h-32 w-32 rounded-control border border-hairline bg-white object-cover sm:h-[92px] sm:w-[92px]"
+          className="hidden h-20 w-20 border border-hairline bg-white object-cover sm:block"
         />
-        <span className="min-w-0">
-          <span className="block text-sm font-semibold text-foreground">
-            {label}
-          </span>
-          {description ? (
-            <span className="mt-1 block text-xs leading-5 text-muted-foreground">
-              {description}
-            </span>
-          ) : null}
-          <span className="mt-2 block text-xs font-semibold text-foreground">
-            Tap to enlarge
-          </span>
-        </span>
-        <Maximize2 className="h-4 w-4 text-muted-foreground transition-colors group-hover:text-foreground" />
       </button>
 
       {open ? (
@@ -74,7 +79,7 @@ export function ContactQrCard({
                   {label}
                 </h3>
                 <p className="text-xs text-muted-foreground">
-                  Scan with WeChat
+                  使用微信扫描二维码添加好友
                 </p>
               </div>
               <button
