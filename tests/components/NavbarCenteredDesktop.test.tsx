@@ -146,6 +146,7 @@ describe("NavbarCentered", () => {
     );
     render(React.createElement(NavbarCentered));
     expect(screen.getByText("实解智能")).toBeInTheDocument();
+    expect(screen.getByText("Enterprise AI system design and delivery")).toBeInTheDocument();
   });
 
   it("renders the contact CTA", async () => {

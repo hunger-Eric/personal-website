@@ -13,6 +13,8 @@ import { Footer } from "@/components/Footer";
 describe("Footer English copy", () => {
   it("renders the enterprise routes in English", () => {
     render(<Footer />);
+    expect(screen.getByText("Enterprise AI system design and delivery")).toBeInTheDocument();
+    expect(screen.getByText(/© .*实解智能 · Enterprise AI system design and delivery/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Projects" })).toHaveAttribute("href", "/projects");
     expect(screen.getByRole("link", { name: "Articles" })).toHaveAttribute("href", "/articles");
     expect(screen.getByRole("link", { name: "WeChat" })).toHaveAttribute("href", "/articles#wechat");

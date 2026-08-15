@@ -29,18 +29,22 @@ describe("EnterpriseHomepage", () => {
     expect(screen.queryByText("企业内容增长系统")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "四个系统方向，对应四类企业能力" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /提交你的业务问题/ })[0]).toHaveAttribute("href", "/contact");
-    expect(screen.getByRole("note")).toHaveTextContent("全部为模拟数据");
+    expect(
+      screen.getByRole("heading", { name: "不是看功能列表，而是看任务怎样被完成。" })
+    ).toBeInTheDocument();
   });
 
-  it("does not start the Open GEO prototype until the visitor chooses a project and scenario", () => {
+  it("offers the live Open GEO product and keeps its simulation on the project detail page", () => {
     renderHomepage();
 
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /Open GEO Console/ }));
-    expect(screen.getByRole("group", { name: "示例场景" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "点击开始" })).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: /企业服务表达是否容易被 AI 理解/ }));
-    expect(screen.getByRole("button", { name: "点击开始" })).toBeEnabled();
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /进入正式产品/ })).toHaveAttribute(
+      "href",
+      "https://geo.itheheda.online"
+    );
+    expect(screen.getByRole("link", { name: "模拟演示" })).toHaveAttribute(
+      "href",
+      "/projects/open-geo-console#open-geo-demo"
+    );
+    expect(screen.queryByTestId("open-geo-demo")).not.toBeInTheDocument();
   });
 });

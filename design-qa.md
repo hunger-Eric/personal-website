@@ -1,60 +1,54 @@
-# Design QA — contact option 2
+# Design QA — four project journey demos
 
 ## Scope and state
 
-- Route: `http://127.0.0.1:3108/contact`
-- State: default contact page, plus the WeChat QR dialog open and closed.
-- Visual target: `C:\Users\fengc\.codex\generated_images\01a00036-7813-7aa3-88a8-8d91100a3aa6\exec-029c6725-a2fc-444b-a0e2-89e9b6b24726.png`.
-- Implementation captures:
-  - `output/playwright/contact-option2-desktop.png`
-  - `output/playwright/contact-option2-mobile.png`
-  - `output/playwright/contact-option2-qr-modal.png`
-- Direct comparison artifact: `output/playwright/contact-option2-comparison.png`.
-
-## Capture and density normalization
-
-- Source pixels: 1586 x 992. It represents a desktop layout at approximately the same CSS width as the requested implementation viewport.
-- Desktop browser viewport: 1440 x 1000 CSS px, device scale factor 1.5. The in-app full-page capture is 1424 x 1214 px.
-- Mobile browser viewport: 390 x 844 CSS px, device scale factor 1.0. The captured document area is 375 x 812 px after browser chrome and scrollbar allocation.
-- QR-dialog capture: 1425 x 990 px.
-- For the side-by-side artifact, both full-page images were aspect-fit into equal 760 px wide panels on a 1592 x 720 canvas. This normalizes display density without cropping or stretching either source.
-- The in-app desktop full-page capture has a known DPR rasterization defect: content is drawn at the OS scale while the PNG width remains near the CSS width, so the right edge appears clipped. DOM geometry independently measured `scrollWidth === clientWidth` and the form right edge remained within the CSS viewport. The separate QR-dialog capture also shows both desktop columns within the viewport. This is a capture limitation, not implementation overflow.
+- Route: `http://127.0.0.1:3109/#project-journeys`
+- Implementation: `components/home/ProjectJourneys.tsx` and `components/home/ProjectJourneys.module.css`
+- Reference: `C:\Users\fengc\.codex\generated_images\01a00036-7813-7aa3-88a8-8d91100a3aa6\exec-e4f0a29b-0ceb-4e21-9bd6-7735ba479382.png`
+- Final implementation capture: `G:\UserCaches\Temp\personal-website-remotion-preview\project-journeys-qa-desktop-v2.png`
+- Direct comparison: `G:\UserCaches\Temp\personal-website-remotion-preview\project-journeys-design-comparison-v2.png`
+- Desktop viewport: 1938 × 814 CSS px; Chinese locale; Codex Feishu Bridge selected; step 4 of 4.
+- Mobile viewport: 390 × 844 CSS px; document client width and scroll width both 375 px.
 
 ## Full-view comparison
 
-The direct comparison covers the selected reference and the local browser render in one artifact. The implementation matches the target's central design decision: contact details are removed from the footer and promoted into a dedicated `直接联系` block beside the real inquiry form. It also matches the warm paper surface, graphite type, amber actions, two-column desktop composition, icon-led email/WeChat rows, visible QR affordance, and stacked mobile flow.
+The combined comparison places the provided design reference and the final browser render in one image. The implementation preserves the reference hierarchy: graphite section, amber eyebrow, large editorial headline, four-project rail, orange active state, four workflow cards, directional arrows, progress controls, and a final project-detail action. It also retains the website's existing navigation and typography so the new section belongs to the current homepage rather than looking like a separate microsite.
 
-The implementation intentionally preserves two production contracts that the concept image simplified:
+The final layout uses the same information density and one-screen desktop composition as the reference. Card borders, icon scale, active-step contrast, and spacing are legible without introducing decorative assets or visual clutter.
 
-- The existing global navigation taxonomy and brand subtitle remain unchanged. The request concerned contact placement, not a site-wide information-architecture rewrite.
-- The existing workflow form retains its required work-email, frequency, and manual-time fields. Those fields make the real page taller than the concept image, but removing them would change inquiry semantics outside this task.
+## Focused interaction comparison
 
-## Focused comparison and interaction evidence
+- Open GEO Console exposes both the live product URL and its interactive simulation route.
+- Hermes Notebook renders its own Remotion workflow beginning with “导入分散资料”.
+- Freight Lead Agent renders its own Remotion workflow beginning with “Google 地图发现企业”.
+- Codex Feishu Bridge renders its own Remotion workflow beginning with “手机飞书提交任务”.
+- Every workflow has four independently seekable steps and play/pause control.
+- The three Remotion workflows use real project-specific copy rather than one reused generic animation.
 
-No additional static crop was needed because the full-view artifact resolves the contact-block typography, alignment, spacing, borders, color tokens, and QR thumbnail at readable scale. The focused interactive state is captured separately in `output/playwright/contact-option2-qr-modal.png`; it verifies that the existing personal WeChat image is used at full resolution in the dialog rather than a generated placeholder.
+## Responsive and runtime evidence
 
-## Browser receipt
+- All four project tabs were opened in the Codex in-app browser and each displayed its expected first-step heading.
+- Open GEO links resolve to `https://geo.itheheda.online` and `/projects/open-geo-console#open-geo-demo`.
+- Mobile width check: `scrollWidth === clientWidth === 375`; no horizontal overflow.
+- All four project tabs remain visible and selectable at 390 × 844.
+- Browser console warnings and errors: none.
+- Reduced-motion preference pauses the Remotion player.
 
-- Desktop 1440 x 1000 and mobile 390 x 844 loaded successfully in the Codex in-app browser.
-- Email link resolves to `mailto:itheheda@gmail.com`.
-- WeChat label `404` and `查看二维码` are visible.
-- QR dialog opens; both Escape and the close button dismiss it.
-- Footer contains no raw email address.
-- Desktop and mobile DOM measurements show no horizontal overflow.
-- Console warnings and errors: none.
-- The inquiry form was not filled or submitted.
+## Iteration history
 
-## Findings and comparison history
+1. Added the four-project rail and project-specific journey data.
+2. Reduced vertical density so the heading, selector, workflow, and controls fit together on desktop.
+3. Added a compact 2 × 2 mobile composition to avoid compressed horizontal cards.
+4. Kept Open GEO as a real product/simulation gateway while giving the other three projects independent Remotion workflows.
+5. Added directional arrows between desktop workflow cards and reran the visual comparison.
 
-### Iteration 1
+## Findings
 
-- Potential P1: desktop PNG appeared to truncate the form. Resolution: browser DOM measurements showed no overflow, and the independent desktop dialog capture showed both columns. Root cause is the in-app DPR capture mismatch; no product fix was warranted.
-- Potential P2: page height exceeds the concept and footer falls below the first desktop viewport. Resolution: the delta is caused by preserving three required production form fields omitted from the concept. This is an intentional functional constraint, not actionable visual drift for the contact-placement scope.
-- Potential P2: header navigation differs from the concept. Resolution: the implementation correctly preserves the site's existing global navigation; changing it would expand the task into site-wide information architecture.
-- P3: the existing desktop brand subtitle makes the header slightly denser than the concept. Left unchanged because it is a global brand element outside this contact-placement task.
-
-Post-review evidence: desktop/mobile browser captures, QR-dialog capture, DOM width measurements, and the normalized direct comparison above. No actionable P0, P1, or P2 findings remain.
+- P0: none.
+- P1: none.
+- P2: none.
+- Expected integration difference: the production website navigation remains above the section; the reference was a section-only concept.
 
 ## Final result
 
-final result: passed
+passed
