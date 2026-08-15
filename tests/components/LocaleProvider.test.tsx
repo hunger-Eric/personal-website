@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, renderHook, act } from "@testing-library/react";
+import { render, screen, renderHook, act, waitFor } from "@testing-library/react";
 import React from "react";
 
 // Store for our fake localStorage
@@ -125,7 +125,10 @@ describe("LocaleProvider", () => {
       )
     );
 
-    expect(localeValue).toBe("en");
+    // The hydration-safe first render matches the server default. The saved
+    // preference is restored immediately after mount.
+    expect(localeValue).toBe("zh");
+    await waitFor(() => expect(localeValue).toBe("en"));
     expect(screen.getByText("en")).toBeInTheDocument();
   });
 
@@ -143,7 +146,7 @@ describe("LocaleProvider", () => {
     };
 
     render(React.createElement(LocaleProvider, null, React.createElement(Consumer)));
-    expect(localeValue).toBe("en");
+    await waitFor(() => expect(localeValue).toBe("en"));
   });
 });
 

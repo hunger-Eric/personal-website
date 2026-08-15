@@ -37,6 +37,10 @@ describe("EnterpriseHomepage", () => {
   it("offers the live Open GEO product and keeps its simulation on the project detail page", () => {
     renderHomepage();
 
+    expect(screen.getByRole("link", { name: "先体验 Open GEO" })).toHaveAttribute(
+      "href",
+      "/projects/open-geo-console"
+    );
     expect(screen.getByRole("link", { name: /进入正式产品/ })).toHaveAttribute(
       "href",
       "https://geo.itheheda.online"

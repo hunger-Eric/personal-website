@@ -30,7 +30,7 @@ export function EnterpriseHomepage() {
           <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground">{content.identity.positioning}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href="/contact" className="inline-flex min-h-11 items-center justify-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent-hover">{zh ? "提交你的业务问题" : "Submit your business problem"}<ArrowRight className="h-4 w-4" aria-hidden /></Link>
-            <a href="#project-journeys" className="inline-flex min-h-11 items-center justify-center border border-foreground px-5 py-3 text-sm font-semibold text-foreground hover:border-accent hover:text-accent">{zh ? "先体验 Open GEO" : "Try Open GEO first"}</a>
+            <Link href="/projects/open-geo-console" className="inline-flex min-h-11 items-center justify-center border border-foreground px-5 py-3 text-sm font-semibold text-foreground hover:border-accent hover:text-accent">{zh ? "先体验 Open GEO" : "Try Open GEO first"}</Link>
           </div>
         </div>
         <div className="border border-hairline bg-surface-paper-elevated p-5 sm:p-7" aria-label={zh ? "企业 AI 系统交付结构" : "Enterprise AI delivery structure"}>

@@ -32,6 +32,15 @@ function getStoredLocale(): Locale | null {
   return null;
 }
 
+function persistLocale(locale: Locale) {
+  try {
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  } catch {
+    // ignore
+  }
+  document.documentElement.lang = locale;
+}
+
 export function LocaleProvider({
   children,
   initialLocale,
@@ -39,27 +48,34 @@ export function LocaleProvider({
   children: ReactNode;
   initialLocale?: Locale;
 }) {
-  const [locale, setLocaleState] = useState<Locale>(() => {
-    return initialLocale || getStoredLocale() || "zh";
-  });
-
-  const [t, setT] = useState<TranslationDict>(() => getTranslations(locale));
+  // The server always renders the same initial locale as the first client
+  // render. Restoring localStorage during the state initializer would make
+  // persisted English sessions hydrate over Chinese server HTML.
+  const [locale, setLocaleState] = useState<Locale>(initialLocale || "zh");
+  const t: TranslationDict = getTranslations(locale);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(LOCALE_STORAGE_KEY, locale);
-    } catch {
-      // ignore
-    }
-    setT(getTranslations(locale));
-  }, [locale]);
+    if (initialLocale) return;
+    const storedLocale = getStoredLocale();
+    if (!storedLocale || storedLocale === locale) return;
+
+    queueMicrotask(() => {
+      document.documentElement.lang = storedLocale;
+      setLocaleState(storedLocale);
+    });
+  }, [initialLocale, locale]);
 
   const setLocale = useCallback((newLocale: Locale) => {
+    persistLocale(newLocale);
     setLocaleState(newLocale);
   }, []);
 
   const toggleLocale = useCallback(() => {
-    setLocaleState((prev) => (prev === "zh" ? "en" : "zh"));
+    setLocaleState((prev) => {
+      const nextLocale = prev === "zh" ? "en" : "zh";
+      persistLocale(nextLocale);
+      return nextLocale;
+    });
   }, []);
 
   return (
