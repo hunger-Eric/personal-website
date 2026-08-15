@@ -174,5 +174,355 @@
         "en": "Freight Lead Agent batch processing and human-review interface"
       }
     }
+  },
+  {
+    "id": "hermes-notebook",
+    "name": {
+      "zh": "Hermes Notebook",
+      "en": "Hermes Notebook"
+    },
+    "publicStatus": "published",
+    "sourceVisibility": "private-curated",
+    "purpose": {
+      "zh": "把散落在企业各处的文档和业务资料整理成可检索、可引用的知识，让客服机器人、内部问答和其他 AI 应用可以使用同一份企业数据。",
+      "en": "Turn documents and business information scattered across an enterprise into retrievable, citable knowledge that customer-service bots, internal Q&A, and other AI applications can share."
+    },
+    "originalWorkflow": [
+      {
+        "zh": "企业资料分散在本地文件夹、PDF、Word、Excel、PPT、图片和业务网页中，由不同部门和员工分别保管。",
+        "en": "Enterprise information was spread across local folders, PDFs, Word, Excel, PowerPoint, images, and business web pages maintained by different teams and employees."
+      },
+      {
+        "zh": "员工遇到问题时依靠文件名、目录和个人经验查找资料，再手工确认答案来自哪一份文档。",
+        "en": "Employees relied on filenames, folders, and personal memory to find information, then manually checked which document supported an answer."
+      },
+      {
+        "zh": "每开发一个客服机器人或内部助手，都要重新收集、清洗和导入相似资料，应用之间难以共用整理成果。",
+        "en": "Each new customer-service bot or internal assistant required similar information to be collected, cleaned, and imported again, with little reuse between applications."
+      }
+    ],
+    "workflowBreakpoints": [
+      {
+        "zh": "不同文件格式保留结构的方式不同，表格、标题、图片文字和跨页内容直接交给 AI 后容易失去原来的语义关系。",
+        "en": "Different formats preserve structure differently, so tables, headings, text in images, and cross-page content can lose their original relationships when sent directly to AI."
+      },
+      {
+        "zh": "普通搜索能找到文件，却很难同时返回可以核对的原文位置、资料完整度和来源状态。",
+        "en": "Basic search may find a file but often cannot return a verifiable passage, its exact source location, completeness, and source status together."
+      },
+      {
+        "zh": "每个 AI 应用单独维护一套资料，会重复清洗数据，也会让不同应用引用到不一致的版本。",
+        "en": "Maintaining a separate corpus for every AI application repeats data preparation and allows different applications to use inconsistent versions."
+      }
+    ],
+    "systemBoundary": {
+      "zh": "Hermes 运行在客户控制的本地环境中，负责资料导入、结构整理、索引、检索和带引用问答。上层客服机器人、企业聊天工具和其他业务应用通过 API 使用这些能力；渠道身份和部门权限映射由企业接入层负责，Hermes 在检索前执行已配置的知识库访问范围。",
+      "en": "Hermes runs in a customer-controlled local environment and handles ingestion, structural preparation, indexing, retrieval, and citation-backed Q&A. Customer-service bots, enterprise chat tools, and other business applications use these capabilities through APIs; channel identity and department mapping belong to the enterprise integration layer, while Hermes enforces configured knowledge-base access before retrieval."
+    },
+    "inputs": [
+      {
+        "zh": "PDF、Word、Excel、PPT、图片和 OCR 文档等企业资料",
+        "en": "Enterprise information in PDF, Word, Excel, PowerPoint, image, and OCR document formats"
+      },
+      {
+        "zh": "管理员指定的本地文件夹、单个文件、压缩包和业务网页 URL",
+        "en": "Administrator-selected local folders, individual files, archives, and business web page URLs"
+      },
+      {
+        "zh": "知识库范围、资料完整度和外部应用需要查询的问题",
+        "en": "Knowledge-base scope, source completeness, and questions submitted by downstream applications"
+      }
+    ],
+    "processing": [
+      {
+        "zh": "按文件格式提取正文、标题、表格和图片文字，并保留每段内容与原始资料位置的关系。",
+        "en": "Extract text, headings, tables, and image text by format while preserving the relationship between each passage and its original location."
+      },
+      {
+        "zh": "把整理后的内容写入对应知识库，建立可检索的知识节点、来源记录和完整度状态。",
+        "en": "Write prepared content into the relevant knowledge base and build retrievable knowledge nodes, source records, and completeness states."
+      },
+      {
+        "zh": "外部应用查询时，系统先校验 Token、接口权限和知识库范围，再返回证据片段或基于这些证据生成带引用答案。",
+        "en": "When an application queries the system, Hermes first checks its token, API scope, and allowed knowledge bases, then returns evidence passages or generates a cited answer from that evidence."
+      }
+    ],
+    "humanReview": [
+      {
+        "zh": "管理员决定哪些文件夹和资料可以进入哪个知识库，并检查导入失败、重复文件和资料完整度。",
+        "en": "Administrators decide which folders and sources enter each knowledge base and review failed imports, duplicates, and source completeness."
+      },
+      {
+        "zh": "业务负责人确认检索结果和引用是否足以支持回答，再决定哪些知识库可以提供给具体应用。",
+        "en": "Business owners confirm whether retrieved evidence and citations support the answer and decide which knowledge bases each application may use."
+      },
+      {
+        "zh": "客服话术、对外回复和需要执行的业务动作继续由对应应用和人员审核。",
+        "en": "Customer-service wording, external responses, and business actions remain subject to review in the relevant application and by responsible staff."
+      }
+    ],
+    "outputs": [
+      {
+        "zh": "按业务主题整理的企业知识库，包含来源、原文位置、完整度和处理记录",
+        "en": "Enterprise knowledge bases organized by business topic with sources, original locations, completeness, and processing records"
+      },
+      {
+        "zh": "供应用直接调用的证据检索结果，以及带来源引用的知识问答",
+        "en": "Evidence retrieval results ready for application use and knowledge answers with source citations"
+      },
+      {
+        "zh": "面向客服机器人、内部知识问答和其他业务助手的检索与问答 API",
+        "en": "Retrieval and Q&A APIs for customer-service bots, internal knowledge Q&A, and other business assistants"
+      }
+    ],
+    "failureRecovery": [
+      {
+        "zh": "文件导入保留成功、失败和跳过记录；重复内容通过来源与文件指纹识别，避免无提示地重复写入。",
+        "en": "Ingestion preserves success, failure, and skip records, while source and file fingerprints identify duplicates instead of silently importing them again."
+      },
+      {
+        "zh": "无法完整提取的资料会保留 partial 等完整度状态，检索和回答可以据此降低承诺，不把缺失内容当成完整事实。",
+        "en": "Sources that cannot be fully extracted retain completeness states such as partial, allowing retrieval and answers to reduce confidence instead of treating missing content as complete fact."
+      }
+    ],
+    "currentStatus": {
+      "zh": "项目目前支持 Docker Compose 本地部署，已具备文件、文件夹和 URL 导入，多格式资料整理，可追溯检索，带引用问答，以及受 Token 和知识库范围限制的检索与问答 API。",
+      "en": "The project currently supports local Docker Compose deployment, file, folder, and URL ingestion, multi-format preparation, traceable retrieval, citation-backed Q&A, and retrieval and query APIs restricted by tokens and knowledge-base scope."
+    },
+    "transferableCapabilities": [
+      {
+        "zh": "把多个部门和多种格式的企业资料整理成一套可共用的知识来源",
+        "en": "Prepare multi-department, multi-format enterprise information as one reusable knowledge source"
+      },
+      {
+        "zh": "让每条检索证据和回答可以回到原始文档位置核对",
+        "en": "Make every retrieved passage and answer traceable to its original document location"
+      },
+      {
+        "zh": "让客服机器人、内部问答和后续业务助手复用同一份企业知识，减少重复导入和清洗",
+        "en": "Let customer-service bots, internal Q&A, and future business assistants reuse the same enterprise knowledge and reduce repeated ingestion and preparation"
+      },
+      {
+        "zh": "通过知识库范围和接口权限控制不同应用能够检索的资料",
+        "en": "Control which information each application may retrieve through knowledge-base scope and API permissions"
+      }
+    ],
+    "evidenceArtifacts": [
+      {
+        "id": "knowledge-flow-film",
+        "label": {
+          "zh": "企业资料整理与问答流程演示",
+          "en": "Enterprise knowledge ingestion and Q&A demo"
+        },
+        "description": {
+          "zh": "展示企业资料从导入、整理和检索，到向上层应用返回证据与引用答案的过程。",
+          "en": "Shows enterprise information moving from ingestion and preparation through retrieval to evidence and cited answers for downstream applications."
+        },
+        "kind": "demo",
+        "href": "/animations/projects/hermes/index.html"
+      }
+    ],
+    "limitations": [
+      {
+        "zh": "Hermes 提供企业知识整理和检索内核；客服机器人、企业微信或飞书接入、界面和业务动作需要由上层应用完成。",
+        "en": "Hermes provides the enterprise knowledge preparation and retrieval engine; customer-service bots, WeCom or Feishu integration, interfaces, and business actions belong to downstream applications."
+      },
+      {
+        "zh": "原始资料缺失、过期或扫描质量过低时，系统无法凭空补齐事实，需要企业先修正资料来源。",
+        "en": "When source information is missing, outdated, or poorly scanned, the system cannot reconstruct facts and the enterprise must correct the source material."
+      },
+      {
+        "zh": "企业群聊和部门身份不能只依赖模型判断，必须由接入层明确映射到允许访问的知识库。",
+        "en": "Enterprise group and department identity cannot rely on model judgment and must be explicitly mapped to allowed knowledge bases by the integration layer."
+      }
+    ],
+    "reviewedAt": "2026-08-15",
+    "review": {
+      "approvedForPublic": true,
+      "approvedBy": "site-owner"
+    },
+    "featured": true,
+    "sortOrder": 15,
+    "visual": {
+      "animationSrc": "/animations/projects/hermes/index.html",
+      "alt": {
+        "zh": "Hermes Notebook 企业资料导入、检索和引用问答流程",
+        "en": "Hermes Notebook enterprise ingestion, retrieval, and cited Q&A flow"
+      }
+    }
+  },
+  {
+    "id": "codex-feishu-bridge",
+    "name": {
+      "zh": "Codex Feishu Bridge",
+      "en": "Codex Feishu Bridge"
+    },
+    "publicStatus": "published",
+    "sourceVisibility": "private-curated",
+    "purpose": {
+      "zh": "把 Codex 接入企业飞书，让授权成员用电脑或手机共同提交、补充和验收 AI 任务，公司里保持在线的工作电脑负责继续执行。",
+      "en": "Connect Codex to an enterprise Feishu workspace so authorized members can submit, clarify, and review AI tasks together from a computer or phone while an online company workstation continues the execution."
+    },
+    "originalWorkflow": [
+      {
+        "zh": "员工在飞书里讨论工作，再把需求和文件转交给会使用 Codex 的同事，由少数人代为操作。",
+        "en": "Employees discussed work in Feishu, then handed requests and files to a few colleagues who knew how to operate Codex."
+      },
+      {
+        "zh": "执行人需要在聊天、工作目录和 AI 工具之间搬运上下文，完成后再把正文与文件发回群里。",
+        "en": "The operator moved context between chat, the working directory, and the AI tool, then returned responses and files to the group."
+      },
+      {
+        "zh": "成员离开公司电脑后，很难继续发起或跟进 Codex 任务；任务等待补充时，回答和后续修改也容易与原任务分离。",
+        "en": "After leaving the company workstation, members found it difficult to start or follow up on Codex tasks, while answers and revisions could become separated from tasks waiting for clarification."
+      }
+    ],
+    "workflowBreakpoints": [
+      {
+        "zh": "企业已经在飞书里沟通，但 AI 执行发生在另一个工具中，需求、素材和结果需要人工转运。",
+        "en": "The company already collaborated in Feishu, but AI execution happened elsewhere, leaving people to transfer requests, materials, and results manually."
+      },
+      {
+        "zh": "只有少数人掌握 Codex 的工作区、工具和任务操作方式，其他成员无法直接参与复杂任务。",
+        "en": "Only a few people understood Codex workspaces, tools, and task handling, so other members could not participate directly in complex work."
+      },
+      {
+        "zh": "长任务、附件任务和需要确认的任务缺少统一编号、状态查询和同一话题内的继续处理。",
+        "en": "Long-running, attachment-based, and clarification-dependent work lacked a shared task identifier, status query, and same-topic continuation."
+      }
+    ],
+    "systemBoundary": {
+      "zh": "系统运行在客户控制的工作站上，只接受已授权飞书群和成员的输入。员工可以从电脑或手机飞书发送消息与文件，公司里保持在线的工作电脑负责调用 Codex，在指定工作目录执行；任务状态和交付结果回到原飞书话题。",
+      "en": "The system runs on a customer-controlled workstation and accepts input only from authorized Feishu groups and members. Employees can send messages and files from Feishu on a computer or phone, while an online company workstation runs Codex in the designated directory and returns status and deliverables to the original Feishu topic."
+    },
+    "inputs": [
+      {
+        "zh": "授权成员通过电脑或手机飞书提交的问题、文案需求、分析任务或执行要求",
+        "en": "Questions, writing requests, analysis tasks, and execution requests submitted by authorized group members from Feishu on a computer or phone"
+      },
+      {
+        "zh": "图片、Word、Excel、PowerPoint、PDF、视频和压缩包等任务素材",
+        "en": "Task materials such as images, Word, Excel, PowerPoint, PDF, video, and archive files"
+      },
+      {
+        "zh": "同一飞书话题里的补充信息、方案确认和后续修改要求",
+        "en": "Clarifications, plan confirmations, and revision requests supplied in the same Feishu topic"
+      }
+    ],
+    "processing": [
+      {
+        "zh": "先校验群聊与成员权限，再判断请求可以直接回答，还是需要建立可查询的正式任务。",
+        "en": "Validate group and member authorization, then decide whether the request can be answered directly or needs a trackable formal task."
+      },
+      {
+        "zh": "正式任务会固定本次消息、附件和话题关系，再交给公司工作电脑上的 Codex，在客户指定的工作目录中执行。",
+        "en": "A formal task freezes the message, attachments, and topic relationship before Codex runs it in the customer-designated workspace on the company workstation."
+      },
+      {
+        "zh": "系统持续记录受理、排队、执行、等待补充和交付状态，并把正文、附件或飞书云空间链接送回原话题。",
+        "en": "The system tracks acceptance, queueing, execution, clarification, and delivery states, then returns text, attachments, or Feishu cloud links to the original topic."
+      },
+      {
+        "zh": "团队可以复盘反复验证有效的任务过程，把稳定的步骤、工具选择和验收要求整理成可复用 Skill，供后续成员直接调用。",
+        "en": "The team can review task processes that repeatedly work and package stable steps, tool choices, and acceptance requirements into reusable Skills for other members to invoke."
+      }
+    ],
+    "humanReview": [
+      {
+        "zh": "Codex 缺少关键输入时会在原话题提问，授权成员给出的明确答案才能继续原任务。",
+        "en": "When key input is missing, Codex asks in the original topic and continues only after an authorized member provides an unambiguous answer."
+      },
+      {
+        "zh": "成员检查最终正文和附件是否完整可用，并决定是否继续修改、取消任务或开始新的话题。",
+        "en": "Members check whether the final response and attachments are complete and usable, then decide whether to revise, cancel, or start a new topic."
+      },
+      {
+        "zh": "部署、真实外发和付费生成等外部动作继续遵循单独授权，不由普通聊天自动触发。",
+        "en": "Deployment, real external sending, and paid generation remain separately authorized actions and are not triggered automatically by ordinary chat."
+      },
+      {
+        "zh": "新的 Skill 需要由团队确认适用条件、执行步骤和验收标准，再投入后续任务使用。",
+        "en": "A new Skill requires team confirmation of its conditions, execution steps, and acceptance criteria before it is used for later tasks."
+      }
+    ],
+    "outputs": [
+      {
+        "zh": "在原飞书话题中返回的直接答案，或带任务编号的异步任务状态",
+        "en": "A direct answer in the original Feishu topic or a trackable asynchronous task with its own identifier"
+      },
+      {
+        "zh": "由 Codex 生成或修改的正文、图片、Office 文件、视频及其他任务产物",
+        "en": "Text, images, Office files, videos, and other task artifacts generated or revised by Codex"
+      },
+      {
+        "zh": "可查询的受理、执行、等待补充、完成、失败或状态不确定记录",
+        "en": "Queryable records for accepted, running, waiting-for-input, completed, failed, or uncertain task states"
+      },
+      {
+        "zh": "从重复有效的工作过程中整理出的可复用 Skill，让其他成员可以按同一方法完成同类任务",
+        "en": "Reusable Skills derived from repeatedly effective work processes so other members can complete similar tasks with the same method"
+      }
+    ],
+    "failureRecovery": [
+      {
+        "zh": "成员可以用任务编号查询或取消任务；失败、超时和结果不确定会明确返回，不把未确认结果写成成功。",
+        "en": "Members can query or cancel by task identifier; failures, timeouts, and uncertain outcomes are reported explicitly instead of being presented as success."
+      },
+      {
+        "zh": "飞书网络中断时保留待交付结果，恢复后按原任务继续；已经开始且结果不明的 Codex 任务不会自动重跑。",
+        "en": "Pending delivery is retained during Feishu network interruptions and resumes against the original task, while a started Codex task with an uncertain outcome is never rerun automatically."
+      }
+    ],
+    "currentStatus": {
+      "zh": "项目已形成 Windows 10/11 x64 可部署版本。客户工作站需要安装并登录 Codex；工作电脑和桥接服务保持在线时，成员可以通过电脑或手机飞书提交任务、继续同话题协作、查询状态并接收结果。",
+      "en": "The project has a deployable Windows 10/11 x64 release. The customer workstation must have Codex installed and signed in; while the workstation and bridge service remain online, members can submit tasks, continue same-topic collaboration, check status, and receive results from Feishu on a computer or phone."
+    },
+    "transferableCapabilities": [
+      {
+        "zh": "把企业已有的飞书群聊变成 Codex 的统一任务入口，员工离开工位后也能用手机继续工作",
+        "en": "Turn an existing enterprise Feishu group into a unified task entry point for Codex so employees can keep working from their phones after leaving their desks"
+      },
+      {
+        "zh": "让授权成员在同一话题里共同补充信息，同时阻止跨群和跨话题取用任务上下文",
+        "en": "Let authorized members add context in one topic while preventing task context from crossing groups or topics"
+      },
+      {
+        "zh": "把聊天消息、附件、工作目录、执行状态和最终产物接成一条可追踪流程",
+        "en": "Connect chat messages, attachments, workspaces, execution states, and final artifacts in one trackable workflow"
+      },
+      {
+        "zh": "把团队反复验证有效的工作方式整理成可复用 Skill，让经验留在系统中，减少同类任务对个别员工的依赖",
+        "en": "Turn repeatedly proven team workflows into reusable Skills so that experience remains in the system and similar tasks depend less on individual employees"
+      },
+      {
+        "zh": "用客户控制的 Windows 工作站交付可安装、可回滚和可检查运行状态的企业 AI 接入系统",
+        "en": "Deliver an installable, rollback-capable enterprise AI access system on a customer-controlled Windows workstation with inspectable runtime status"
+      }
+    ],
+    "limitations": [
+      {
+        "zh": "系统依赖客户自己的飞书应用权限和已登录的 Codex 环境，不向未授权群聊或成员开放。",
+        "en": "The system depends on the customer's own Feishu application permissions and signed-in Codex environment and is not open to unauthorized groups or members."
+      },
+      {
+        "zh": "手机飞书是远程任务入口，实际处理仍在公司的工作电脑上完成；工作电脑关机或桥接服务离线时，任务无法继续执行。",
+        "en": "Mobile Feishu is the remote task entry point, while processing still happens on the company workstation; tasks cannot continue when the workstation is powered off or the bridge service is offline."
+      },
+      {
+        "zh": "系统不会未经确认自动学习员工行为。只有经过团队复盘和确认的有效流程，才会整理成新的 Skill。",
+        "en": "The system does not learn from employee behavior without confirmation. Only effective workflows reviewed and approved by the team are packaged as new Skills."
+      },
+      {
+        "zh": "系统负责接入、任务编排和结果交付，不替代企业对最终内容、文件和外部动作的人工确认。",
+        "en": "The system handles access, task orchestration, and result delivery; it does not replace human confirmation of final content, files, or external actions."
+      }
+    ],
+    "reviewedAt": "2026-08-15",
+    "review": {
+      "approvedForPublic": true,
+      "approvedBy": "site-owner"
+    },
+    "featured": true,
+    "sortOrder": 20
   }
 ]

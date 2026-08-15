@@ -6,7 +6,7 @@ type LocalizedText = { zh: string; en: string };
 export type WebsiteProjectFactKind = "problem" | "solution" | "buyerValue" | "boundary";
 
 export type WebsiteProject = {
-  id: "open-geo-console" | "hermes-notebook" | "freight-lead-agent" | "enterprise-content-growth";
+  id: "open-geo-console" | "hermes-notebook" | "freight-lead-agent" | "codex-feishu-bridge" | "enterprise-content-growth";
   name: LocalizedText;
   category: LocalizedText;
   status: LocalizedText;
@@ -48,17 +48,25 @@ export const websiteProjects: WebsiteProject[] = [
   {
     id: "hermes-notebook",
     name: { zh: "Hermes Notebook", en: "Hermes Notebook" },
-    category: { zh: "知识工作流系统", en: "Knowledge workflow system" },
-    status: { zh: "公开材料整理中", en: "Public materials in review" },
-    statusKind: "materials-pending",
+    category: { zh: "企业数据整理与 AI 应用引擎", en: "Enterprise data engine for AI applications" },
+    status: { zh: "可部署系统｜让企业资料可被 AI 检索和引用", en: "Deployable system | makes enterprise data retrievable and citable by AI" },
+    statusKind: "reviewed",
     summary: {
-      zh: "面向资料整理、引用与知识沉淀的系统方向；本轮不扩展互动演示。",
-      en: "A system direction for source organization, citation, and knowledge capture; no interactive demo in this round.",
+      zh: "把散落在 PDF、Word、Excel、PPT、图片、本地文件夹和业务网页中的企业资料，整理成带来源、可检索的知识。企业可以通过 API 在这些数据上开发客服机器人、内部知识问答和业务助手。",
+      en: "Turns enterprise information scattered across PDFs, Word, Excel, PowerPoint, images, local folders, and business web pages into citable, retrievable knowledge that can support customer-service bots, internal Q&A, and other business assistants through APIs.",
     },
-    factKinds: ["solution", "boundary"],
+    factKinds: ["problem", "solution", "buyerValue"],
     facts: {
-      zh: ["当前只公开项目名称与系统方向", "交付状态与结果待公开材料审核后再补充"],
-      en: ["Only the project name and system direction are public", "Delivery status and outcomes await public-material review"],
+      zh: [
+        "企业真正有价值的数据散落在文件夹、Office 文档、PDF、图片和业务网页里。员工查找困难，不同 AI 应用又要重复整理同一批资料",
+        "Hermes 导入多种格式的资料，恢复文档结构，建立可追溯的知识节点和检索索引，再通过受权限限制的问答与检索接口向上层应用提供证据",
+        "客户得到一套由自己控制的企业知识引擎。客服机器人、内部问答和后续业务助手可以复用同一份整理好的企业数据，不必为每个 AI 应用重新清洗和导入资料",
+      ],
+      en: [
+        "A company's most valuable information is scattered across folders, Office documents, PDFs, images, and business web pages. Employees struggle to find it, while separate AI applications repeatedly prepare the same material",
+        "Hermes imports multiple formats, restores document structure, builds traceable knowledge nodes and retrieval indexes, and supplies evidence to downstream applications through permission-scoped query and retrieval APIs",
+        "Customers receive an enterprise knowledge engine they control. Customer-service bots, internal Q&A, and future business assistants can reuse the same prepared data instead of cleaning and importing it again for every AI application",
+      ],
     },
     interactive: false,
   },
@@ -83,6 +91,31 @@ export const websiteProjects: WebsiteProject[] = [
         "Sales teams must find target companies on Google Maps, verify each official website, understand the business, locate public contacts, and prepare a different message for every company, which is difficult to scale manually",
         "The system collects Google Maps companies by keyword and region, extracts business context and public contacts from each website, generates a personalized message, and sends it to sales for review, delivery, and follow-up",
         "Customers can use a small team to sustain company discovery, website research, and personalized writing while spending less time starting from zero for every prospect and avoiding one generic message for everyone",
+      ],
+    },
+    interactive: false,
+  },
+  {
+    id: "codex-feishu-bridge",
+    name: { zh: "Codex Feishu Bridge", en: "Codex Feishu Bridge" },
+    category: { zh: "企业 AI 办公协作系统", en: "Enterprise AI collaboration system" },
+    status: { zh: "可部署系统｜在飞书内协同使用 Codex", en: "Deployable system | collaborative Codex access in Feishu" },
+    statusKind: "reviewed",
+    summary: {
+      zh: "把 Codex 接入企业飞书。成员用电脑或手机即可提交问题、文件和长期任务；即使离开工位，也能在原话题补充信息、查询状态和接收交付，任务由公司里保持在线的工作电脑继续执行。",
+      en: "Connects Codex to an enterprise Feishu workspace. Members can submit questions, files, and long-running tasks from a computer or phone, then add context, check status, and receive deliverables after leaving their desks while an online company workstation continues the execution.",
+    },
+    factKinds: ["problem", "solution", "buyerValue"],
+    facts: {
+      zh: [
+        "员工要在飞书、文件和 AI 工具之间反复搬运需求与结果，复杂任务往往只能交给少数会使用 Codex 的人代办；离开公司电脑后，任务也很难继续推进",
+        "成员通过电脑或手机飞书提交需求和附件，系统把任务交给公司里保持在线的工作电脑，由 Codex 在指定工作目录中执行；同一话题的授权成员可以继续补充，结果与文件再送回原话题",
+        "客户得到一套部署在自有工作站上的企业 AI 办公入口。成员回家或离开工位后，仍能用手机继续任务；团队还可以把反复验证有效的工作流程整理成可复用 Skill，让后续任务按同一方法执行，减少对个别熟练员工的依赖",
+      ],
+      en: [
+        "Employees repeatedly move requests, files, and results between Feishu and separate AI tools. Complex work is often delegated to a few Codex users, and tasks become difficult to continue once people leave the company workstation",
+        "Members submit requests and attachments from Feishu on a computer or phone. The system hands the work to Codex on an online company workstation, accepts follow-up input from authorized members in the same topic, and returns results and files there",
+        "Customers receive an enterprise AI work entry point deployed on their own workstation. After going home or leaving their desks, members can continue tasks from their phones, while the team can turn repeatedly proven workflows into reusable Skills so later work follows the same method without depending on a few experienced employees",
       ],
     },
     interactive: false,

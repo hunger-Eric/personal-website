@@ -23,8 +23,9 @@ describe("EnterpriseHomepage", () => {
     expect(screen.getByText("企业 AI 系统设计与交付")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "公开案例" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Open GEO Console" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Hermes Notebook" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Freight Lead Agent" })).toBeInTheDocument();
-    expect(screen.queryByText("Hermes Notebook")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Codex Feishu Bridge" })).toBeInTheDocument();
     expect(screen.queryByText("企业内容增长系统")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "四个系统方向，对应四类企业能力" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /提交你的业务问题/ })[0]).toHaveAttribute("href", "/contact");

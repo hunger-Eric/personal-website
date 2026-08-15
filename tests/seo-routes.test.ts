@@ -21,7 +21,7 @@ describe("SEO routes", () => {
     expect(urls).toContain(`${SITE_URL}/ai/services.json`);
     expect(urls).toContain(`${SITE_URL}/ai/projects.json`);
     expect(urls.some((url) => url.startsWith(`${SITE_URL}/projects/`))).toBe(true);
-    expect(urls).not.toContain(`${SITE_URL}/projects/hermes-notebook`);
+    expect(urls).toContain(`${SITE_URL}/projects/hermes-notebook`);
     expect(urls).not.toContain(`${SITE_URL}/projects/enterprise-content-growth`);
     expect(urls).toContain(`${SITE_URL}/articles/lead-process-ai-automation-four-dimensions-real-sample-validation`);
     expect(urls.some((url) => url.includes("hello-agents"))).toBe(false);

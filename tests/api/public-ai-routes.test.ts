@@ -32,10 +32,14 @@ describe("public AI routes", () => {
 
     expect(body.projects.map((project: { id: string }) => project.id)).toEqual([
       "open-geo-console",
+      "hermes-notebook",
       "freight-lead-agent",
+      "codex-feishu-bridge",
     ]);
     expect(body.projects.map((project: { reviewStatus: string }) => project.reviewStatus)).toEqual([
       "simulation",
+      "reviewed",
+      "reviewed",
       "reviewed",
     ]);
     expect(body.projects[0].simulationScope).toMatchObject({ usesSimulatedData: true, performsLiveCrawling: false, performsModelCalls: false, isFormalDiagnosis: false });
@@ -45,6 +49,16 @@ describe("public AI routes", () => {
       "buyerValue",
     ]);
     expect(body.projects[1].facts.map((fact: { kind: string }) => fact.kind)).toEqual([
+      "problem",
+      "solution",
+      "buyerValue",
+    ]);
+    expect(body.projects[2].facts.map((fact: { kind: string }) => fact.kind)).toEqual([
+      "problem",
+      "solution",
+      "buyerValue",
+    ]);
+    expect(body.projects[3].facts.map((fact: { kind: string }) => fact.kind)).toEqual([
       "problem",
       "solution",
       "buyerValue",
@@ -59,14 +73,19 @@ describe("public AI routes", () => {
 
   it("publishes a complete reviewed project and returns 404 for unknown ids", async () => {
     const found = await getProject(new Request("http://localhost"), {
-      params: Promise.resolve({ id: ["freight-lead-agent.json"] }),
+      params: Promise.resolve({ id: ["codex-feishu-bridge.json"] }),
     });
     const missing = await getProject(new Request("http://localhost"), {
       params: Promise.resolve({ id: ["missing-case.json"] }),
     });
 
     expect(found.status).toBe(200);
-    expect((await found.json()).project.currentStatus.zh).toContain("Google 地图企业发现");
+    expect((await found.json()).project.currentStatus.zh).toContain("Windows 10/11 x64");
+    const hermes = await getProject(new Request("http://localhost"), {
+      params: Promise.resolve({ id: ["hermes-notebook.json"] }),
+    });
+    expect(hermes.status).toBe(200);
+    expect((await hermes.json()).project.currentStatus.zh).toContain("检索与问答 API");
     expect(missing.status).toBe(404);
   });
 });

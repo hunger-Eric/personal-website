@@ -9,6 +9,8 @@ describe("public content contract", () => {
   it("uses one reviewed project collection for human and AI surfaces", () => {
     expect(publicContent.projects.map((project) => project.id)).toEqual([
       "freight-lead-agent",
+      "hermes-notebook",
+      "codex-feishu-bridge",
     ]);
     expect(publicContent.projects.every((project) => project.review.approvedForPublic)).toBe(
       true

@@ -16,7 +16,7 @@ describe("llms.txt", () => {
     expect(body).toContain("## Project cases");
     expect(body).toContain("Open GEO Console");
     expect(body).toContain("Freight Lead Agent");
-    expect(body).not.toContain("Hermes Notebook");
+    expect(body).toContain("Hermes Notebook");
     expect(body).not.toContain("Enterprise Content Growth System");
     expect(body).toContain("https://me.itheheda.online/services");
     expect(body).toContain("## Machine-readable files");

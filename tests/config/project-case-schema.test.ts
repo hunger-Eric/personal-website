@@ -105,6 +105,8 @@ describe("publicProjectCasesSchema", () => {
 
     expect(published.map((project) => project.id)).toEqual([
       "freight-lead-agent",
+      "hermes-notebook",
+      "codex-feishu-bridge",
     ]);
     expect(published[0].review.approvedForPublic).toBe(true);
   });

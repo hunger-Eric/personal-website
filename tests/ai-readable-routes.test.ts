@@ -14,7 +14,9 @@ describe("AI-readable route inventory", () => {
     );
     expect(groups.project.map((route) => route.path)).toEqual([
       "/projects/open-geo-console",
+      "/projects/hermes-notebook",
       "/projects/freight-lead-agent",
+      "/projects/codex-feishu-bridge",
     ]);
     expect(groups.article.length).toBeGreaterThan(0);
     expect(groups.article.map((route) => route.path)).toEqual([
@@ -36,6 +38,8 @@ describe("AI-readable route inventory", () => {
         "/ai/services.json",
         "/ai/projects.json",
         "/ai/projects/freight-lead-agent.json",
+        "/ai/projects/hermes-notebook.json",
+        "/ai/projects/codex-feishu-bridge.json",
       ])
     );
     expect(routes.map((route) => route.path)).not.toEqual(
