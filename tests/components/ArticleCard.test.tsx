@@ -19,7 +19,7 @@ const mockSiteCopy = {
   articles: {
     heading: "文章", description: "test", viewAll: "test",
     emptyTitle: "test", emptyDescription: "test",
-    categoryFallback: "未分类", articlesCountSuffix: "篇", readTimeSuffix: "阅读",
+    categoryFallback: "未分类", articlesCountSuffix: "篇", readTimeSuffix: "分钟阅读",
   },
   photography: { heading: "test", description: "test", ongoing: "test", completed: "test", private: "test", photosSuffix: "test", emptyTitle: "test", emptyDescription: "test" },
 };
@@ -89,6 +89,6 @@ describe("ArticleCard", () => {
     const { ArticleCard } = await import("@/components/articles/ArticleCard");
     const article = { slug: "a1", title: "T", summary: "S", date: "2025-01-15", readingTime: 8, tags: [] };
     render(React.createElement(ArticleCard, { article }));
-    expect(screen.getByText("8 阅读")).toBeInTheDocument();
+    expect(screen.getByText("8 分钟阅读")).toBeInTheDocument();
   });
 });
