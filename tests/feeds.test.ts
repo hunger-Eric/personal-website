@@ -30,6 +30,14 @@ describe("RSS feed", () => {
     expect(itemCount).toBe(articles.length);
   });
 
+  it("includes complete article bodies instead of summary-only items", async () => {
+    const res = await getRss();
+    const body = await res.text();
+    expect(body).toContain("xmlns:content=\"http://purl.org/rss/1.0/modules/content/\"");
+    expect(body).toContain("<content:encoded><![CDATA[");
+    expect(body).toContain("## 参考来源");
+  });
+
   it("escapes XML entities in titles", async () => {
     // We can't inject content easily in this test, but we can sanity-check
     // that no unescaped raw '&' (other than &amp;/&lt;/&gt;/&quot;/&apos;)
@@ -70,6 +78,18 @@ describe("JSON feed", () => {
       expect(item.id).toMatch(/^https?:\/\//);
       expect(item.url).toMatch(/^https?:\/\//);
       expect(item.title.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("publishes complete Markdown bodies in content_text", async () => {
+    const res = await getJson();
+    const body = (await res.json()) as {
+      items: Array<{ summary?: string; content_text: string }>;
+    };
+    expect(body.items.length).toBeGreaterThan(0);
+    for (const item of body.items) {
+      expect(item.content_text).toContain("## 参考来源");
+      expect(item.content_text.length).toBeGreaterThan((item.summary || "").length);
     }
   });
 });

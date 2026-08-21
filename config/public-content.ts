@@ -16,7 +16,7 @@ const projects = getPublishedProjectCases(
 
 export const publicContent = {
   schemaVersion: "1.0",
-  updatedAt: "2026-08-15",
+  updatedAt: "2026-08-21",
   identity: publicIdentity,
   service: serviceMethod,
   projects,

@@ -121,6 +121,12 @@ export function generateArticleSchema(article: {
   readingTime?: number;
 }) {
   const url = `${SITE_URL}${article.publicPath ?? `/articles/${article.slug}`}`;
+  const publisher = {
+    "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
+    name: publicIdentity.canonicalName,
+    url: SITE_URL,
+  };
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -135,20 +141,53 @@ export function generateArticleSchema(article: {
         ? article.imageSrc
         : `${SITE_URL}${article.imageSrc}`,
     }),
-    author: {
-      "@type": "Person",
-      name: siteConfig.name,
-      url: SITE_URL,
-    },
-    publisher: {
-      "@type": "Person",
-      name: siteConfig.name,
-      url: SITE_URL,
-    },
+    author: publisher,
+    publisher,
     ...(article.tags && article.tags.length > 0 && { keywords: article.tags.join(", ") }),
     ...(article.readingTime && {
       timeRequired: `PT${article.readingTime}M`,
     }),
+  };
+}
+
+export function generateArticleCollectionSchema(
+  articles: Array<{
+    title: string;
+    slug: string;
+    publicPath?: string;
+    summary?: string;
+    date: string;
+    updated?: string;
+  }>
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${SITE_URL}/articles#collection`,
+    name: `${publicIdentity.canonicalName}文章与系统实践`,
+    description: "企业 AI 系统、自动化、知识工作流与交付边界的实践文章。",
+    url: `${SITE_URL}/articles`,
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    publisher: { "@id": `${SITE_URL}/#organization` },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: articles.length,
+      itemListElement: articles.map((article, index) => {
+        const url = `${SITE_URL}${article.publicPath ?? `/articles/${article.slug}`}`;
+        return {
+          "@type": "ListItem",
+          position: index + 1,
+          url,
+          item: {
+            "@type": "BlogPosting",
+            headline: article.title,
+            description: article.summary,
+            datePublished: article.date,
+            dateModified: article.updated || article.date,
+          },
+        };
+      }),
+    },
   };
 }
 
@@ -225,6 +264,7 @@ export function generatePublicPersonSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
     name: publicIdentity.canonicalName,
     url: SITE_URL,
     description: publicIdentity.positioning.zh,
@@ -241,7 +281,7 @@ export function generatePublicWebSiteSchema() {
     url: SITE_URL,
     description: publicIdentity.positioning.zh,
     inLanguage: publicIdentity.languages,
-    author: generatePublicPersonSchema(),
+    author: { "@id": `${SITE_URL}/#organization` },
     dateModified: publicContent.updatedAt,
   };
 }
@@ -254,7 +294,7 @@ export function generateProfessionalServiceSchema() {
     url: SITE_URL,
     description: publicIdentity.description.zh,
     serviceType: serviceMethod.suitableWork.map((item) => item.zh),
-    provider: generatePublicPersonSchema(),
+    provider: { "@id": `${SITE_URL}/#organization` },
     potentialAction: {
       "@type": "CommunicateAction",
       target: `${SITE_URL}${publicIdentity.contact.page}`,

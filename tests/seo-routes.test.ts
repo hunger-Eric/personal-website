@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
+import { publicContent } from "@/config/public-content";
 
 const SITE_URL = "https://me.itheheda.online";
 
@@ -32,6 +33,11 @@ describe("SEO routes", () => {
     for (const entry of entries) {
       expect(entry.url).toMatch(/^https:\/\/me\.itheheda\.online(?:\/|$)/);
     }
+
+    const home = entries.find((entry) => entry.url === `${SITE_URL}/`);
+    expect(new Date(home?.lastModified || 0).toISOString()).toBe(
+      new Date(publicContent.updatedAt).toISOString()
+    );
   });
 
   it("allows public crawling and points to the canonical sitemap", () => {
@@ -42,6 +48,7 @@ describe("SEO routes", () => {
     expect(result.sitemap).toBe(`${SITE_URL}/sitemap.xml`);
     expect(rules).toContain("/admin/");
     expect(rules).toContain("/api/");
+    expect(rules).not.toContain("/_next/");
     expect(rules).not.toMatch(/GPTBot|ChatGPT-User|CCBot|anthropic-ai/);
   });
 });

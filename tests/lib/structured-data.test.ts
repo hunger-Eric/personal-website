@@ -464,9 +464,68 @@ describe("public enterprise structured data", () => {
     expect(person["@type"]).toBe("Organization");
     expect(person.name).toBe("实解智能");
     expect(person.description).toContain("人工衔接");
-    expect(website.dateModified).toBe("2026-08-15");
+    expect(website.dateModified).toBe("2026-08-21");
+    expect(website.author).toEqual({ "@id": `${BASE_URL}/#organization` });
     expect(service["@type"]).toBe("ProfessionalService");
+    expect(service.provider).toEqual({ "@id": `${BASE_URL}/#organization` });
     expect(service.potentialAction.target).toBe(`${BASE_URL}/contact`);
     expect(service.serviceType.length).toBeGreaterThan(1);
+  });
+
+  it("uses the public organization consistently for article author and publisher", async () => {
+    vi.resetModules();
+    const { generateArticleSchema } = await import("@/lib/structured-data");
+    const article = generateArticleSchema({
+      title: "企业 AI 工作流",
+      slug: "enterprise-ai-workflow",
+      date: "2026-08-10",
+    });
+
+    expect(article.author).toEqual({
+      "@type": "Organization",
+      "@id": `${BASE_URL}/#organization`,
+      name: "实解智能",
+      url: BASE_URL,
+    });
+    expect(article.publisher).toEqual(article.author);
+  });
+
+  it("describes the article archive as a canonical CollectionPage and ItemList", async () => {
+    vi.resetModules();
+    const { generateArticleCollectionSchema } = await import("@/lib/structured-data");
+    const schema = generateArticleCollectionSchema([
+      {
+        title: "第一篇",
+        slug: "first",
+        summary: "第一篇摘要",
+        date: "2026-08-10",
+        updated: "2026-08-21",
+        publicPath: "/articles/first",
+      },
+    ]);
+
+    expect(schema).toMatchObject({
+      "@type": "CollectionPage",
+      "@id": `${BASE_URL}/articles#collection`,
+      url: `${BASE_URL}/articles`,
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: 1,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            url: `${BASE_URL}/articles/first`,
+            item: {
+              "@type": "BlogPosting",
+              headline: "第一篇",
+              description: "第一篇摘要",
+              datePublished: "2026-08-10",
+              dateModified: "2026-08-21",
+            },
+          },
+        ],
+      },
+    });
   });
 });

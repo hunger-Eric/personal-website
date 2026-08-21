@@ -70,6 +70,7 @@ describe("workbench article public discovery", () => {
 
     const index = await ArticlesPage();
     expect(index.props.articles.filter((article: { slug: string }) => article.slug === fixtureSlug)).toHaveLength(1);
+    expect(findStructuredDataRecords(index, "CollectionPage")).toHaveLength(1);
 
     const [rss, json, sitemapEntries, llms] = await Promise.all([getRss(), getJson(), sitemap(), getLlms()]);
     const rssText = await rss.text();
@@ -104,4 +105,15 @@ function findBlogPostingRecords(node: unknown): Array<Record<string, unknown>> {
     : [];
   const children = record.props?.children;
   return [...current, ...(Array.isArray(children) ? children : [children]).flatMap(findBlogPostingRecords)];
+}
+
+function findStructuredDataRecords(node: unknown, type: string): Array<Record<string, unknown>> {
+  if (!node || typeof node !== "object") return [];
+  const record = node as { props?: { data?: unknown; children?: unknown } };
+  const data = record.props?.data ?? (record.props as { structuredData?: unknown } | undefined)?.structuredData;
+  const current = data && typeof data === "object" && (data as { "@type"?: unknown })["@type"] === type
+    ? [data as Record<string, unknown>]
+    : [];
+  const children = record.props?.children;
+  return [...current, ...(Array.isArray(children) ? children : [children]).flatMap((child) => findStructuredDataRecords(child, type))];
 }

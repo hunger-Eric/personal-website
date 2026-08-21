@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useCallback } from "react";
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useMemo, useCallback, useState } from "react";
+import { useRouter, usePathname } from "next/navigation";
 import { BookOpen, ChevronLeft, FileText } from "lucide-react";
 
 import { useLocale } from "@/components/LocaleProvider";
@@ -27,6 +27,7 @@ export type ArticleListItem = {
 
 type Props = {
   articles: ArticleListItem[];
+  initialCategory?: string | null;
 };
 
 function getCategory(article: ArticleListItem, fallback: string) {
@@ -184,24 +185,25 @@ function CategoryDetail({
   );
 }
 
-export function ArticlesBrowser({ articles }: Props) {
+export function ArticlesBrowser({ articles, initialCategory = null }: Props) {
   const { locale } = useLocale();
   const copy = getSiteCopy(locale);
-  const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
-  const activeCategory = searchParams.get("category");
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
 
   const selectCategory = useCallback(
     (category: string) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams();
       params.set("category", category);
+      setActiveCategory(category);
       router.push(`${pathname}?${params.toString()}`);
     },
-    [searchParams, router, pathname]
+    [router, pathname]
   );
 
   const clearCategory = useCallback(() => {
+    setActiveCategory(null);
     router.push(pathname);
   }, [router, pathname]);
 

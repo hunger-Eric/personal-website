@@ -77,6 +77,11 @@ describe("calculateReadingTime", () => {
   it("returns the word count", () => {
     expect(calculateReadingTime("a b c d e").words).toBe(5);
   });
+
+  it("counts Chinese characters instead of treating a whole article as one word", () => {
+    const text = "企".repeat(800);
+    expect(calculateReadingTime(text)).toEqual({ time: 2, words: 800 });
+  });
 });
 
 describe("article loader (real content)", () => {

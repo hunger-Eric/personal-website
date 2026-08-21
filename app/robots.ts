@@ -11,7 +11,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           "/api/", // Protect API routes
           "/admin/", // Private editorial workspace
-          "/_next/", // Next.js internals
           "/private/", // Any private pages
         ],
       },

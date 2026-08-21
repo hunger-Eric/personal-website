@@ -105,10 +105,15 @@ export function extractChapterFromSlug(slug: string): number | undefined {
 export function calculateReadingTime(
   content: string
 ): { time: number; words: number } {
-  const wordsPerMinute = 200;
-  const words = content.trim().split(/\s+/).length;
-  const time = Math.ceil(words / wordsPerMinute);
-  return { time: Math.max(1, time), words };
+  const trimmed = content.trim();
+  if (!trimmed) return { time: 1, words: 1 };
+
+  const cjkCharacters = trimmed.match(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu)?.length ?? 0;
+  const nonCjkText = trimmed.replace(/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}]/gu, " ");
+  const latinWords = nonCjkText.match(/[\p{L}\p{N}]+(?:['’-][\p{L}\p{N}]+)*/gu)?.length ?? 0;
+  const words = cjkCharacters + latinWords;
+  const minutes = cjkCharacters / 400 + latinWords / 200;
+  return { time: Math.max(1, Math.ceil(minutes)), words: Math.max(1, words) };
 }
 
 /**

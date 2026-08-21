@@ -1,7 +1,6 @@
 // app/feed.xml/route.ts — RSS 2.0 feed of MDX articles
 import { NextResponse } from "next/server";
-import { getArticles } from "@/lib/mdx/mdx";
-import { siteConfig } from "@/config/siteConfig";
+import { getArticleBySlug, getArticles } from "@/lib/mdx/mdx";
 import { publicIdentity } from "@/config/public-identity";
 import { SITE_URL } from "@/lib/site-url";
 
@@ -25,7 +24,10 @@ function toRfc822(dateStr: string): string {
 }
 
 export async function GET() {
-  const articles = await getArticles();
+  const previews = await getArticles();
+  const articles = (
+    await Promise.all(previews.map((article) => getArticleBySlug(article.slug)))
+  ).filter((article) => article !== null);
 
   const lastBuild = articles.length
     ? toRfc822(articles[0].date)
@@ -49,6 +51,7 @@ export async function GET() {
         a.summary
           ? `    <description>${escapeXml(a.summary)}</description>`
           : "",
+        `    <content:encoded><![CDATA[${a.content.replaceAll("]]>", "]]]]><![CDATA[>")}]]></content:encoded>`,
         a.author
           ? `    <author>noreply@itheheda.online (${escapeXml(a.author)})</author>`
           : "",
@@ -61,7 +64,7 @@ export async function GET() {
     .join("\n");
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
 <channel>
   <title>${escapeXml(publicIdentity.canonicalName)} — Articles</title>
   <link>${SITE_URL}/articles</link>

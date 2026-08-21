@@ -115,6 +115,25 @@ describe("ArticlesBrowser", () => {
     expect(navigationState.push).toHaveBeenCalledWith("/articles?category=Dev");
   });
 
+  it("renders an explicitly selected category without reading client search params", () => {
+    navigationState.search = "";
+
+    render(
+      React.createElement(ArticlesBrowser, {
+        articles: [
+          makeArticle("a1", { category: "Dev" }),
+          makeArticle("a2", { category: "Life" }),
+        ],
+        initialCategory: "Dev",
+      })
+    );
+
+    expect(
+      screen.getByRole("button", { name: getSiteCopy("zh").articles.allCategories })
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Life/ })).not.toBeInTheDocument();
+  });
+
   it("renders empty state copy when there are no articles", () => {
     render(React.createElement(ArticlesBrowser, { articles: [] }));
 
@@ -142,10 +161,9 @@ describe("ArticlesBrowser", () => {
   });
 
   it("renders selected category details with chapter rows first and other article cards after", () => {
-    navigationState.search = "category=Dev";
-
     render(
       React.createElement(ArticlesBrowser, {
+        initialCategory: "Dev",
         articles: [
           makeArticle("chapter-2", {
             category: "Dev",
@@ -176,10 +194,9 @@ describe("ArticlesBrowser", () => {
   });
 
   it("clears selected category from the URL through the category detail back action", () => {
-    navigationState.search = "category=Dev";
-
     render(
       React.createElement(ArticlesBrowser, {
+        initialCategory: "Dev",
         articles: [makeArticle("a1", { category: "Dev" })],
       })
     );
@@ -190,10 +207,9 @@ describe("ArticlesBrowser", () => {
   });
 
   it("renders an actionable empty state when the URL category is unknown", () => {
-    navigationState.search = "category=Missing";
-
     render(
       React.createElement(ArticlesBrowser, {
+        initialCategory: "Missing",
         articles: [makeArticle("a1", { category: "Dev" })],
       })
     );

@@ -1,6 +1,6 @@
 // app/feed.json/route.ts — JSON Feed 1.1 (https://jsonfeed.org/)
 import { NextResponse } from "next/server";
-import { getArticles } from "@/lib/mdx/mdx";
+import { getArticleBySlug, getArticles } from "@/lib/mdx/mdx";
 import { siteConfig } from "@/config/siteConfig";
 import { publicIdentity } from "@/config/public-identity";
 import { SITE_URL } from "@/lib/site-url";
@@ -10,14 +10,17 @@ export const dynamic = "force-static";
 export const revalidate = 21600; // 6h
 
 export async function GET() {
-  const articles = await getArticles();
+  const previews = await getArticles();
+  const articles = (
+    await Promise.all(previews.map((article) => getArticleBySlug(article.slug)))
+  ).filter((article) => article !== null);
 
   const items = articles.map((a) => ({
     id: `${SITE_URL}/articles/${a.slug}`,
     url: `${SITE_URL}/articles/${a.slug}`,
     title: a.title,
     summary: a.summary || undefined,
-    content_text: a.summary || a.title,
+    content_text: a.content,
     date_published: new Date(a.date).toISOString(),
     date_modified: a.updated
       ? new Date(a.updated).toISOString()

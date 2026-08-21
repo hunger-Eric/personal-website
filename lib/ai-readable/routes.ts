@@ -35,6 +35,7 @@ function dateOrUndefined(value?: string) {
 }
 
 function primaryRoutes(): ReadableRoute[] {
+  const lastModified = dateOrUndefined(publicContent.updatedAt);
   return [
     {
       kind: "primary",
@@ -42,6 +43,7 @@ function primaryRoutes(): ReadableRoute[] {
       url: absoluteUrl("/"),
       title: "Home",
       description: publicIdentity.positioning.en,
+      lastModified,
       changeFrequency: "weekly",
       priority: 1,
     },
@@ -51,6 +53,7 @@ function primaryRoutes(): ReadableRoute[] {
       url: absoluteUrl("/services"),
       title: "Enterprise AI workflow systems",
       description: "Service fit, required inputs, human review, delivery outputs, and operating boundaries.",
+      lastModified,
       changeFrequency: "monthly",
       priority: 0.95,
     },
@@ -60,6 +63,7 @@ function primaryRoutes(): ReadableRoute[] {
       url: absoluteUrl("/projects"),
       title: "Cases",
       description: "Reviewed evidence of transferable AI automation delivery.",
+      lastModified,
       changeFrequency: "weekly",
       priority: 0.9,
     },
@@ -69,6 +73,7 @@ function primaryRoutes(): ReadableRoute[] {
       url: absoluteUrl("/contact"),
       title: "Submit a workflow problem",
       description: publicIdentity.contact.promise.en,
+      lastModified,
       changeFrequency: "monthly",
       priority: 0.95,
     },
@@ -78,6 +83,7 @@ function primaryRoutes(): ReadableRoute[] {
       url: absoluteUrl("/about"),
       title: "About",
       description: publicIdentity.description.en,
+      lastModified,
       changeFrequency: "monthly",
       priority: 0.7,
     },
@@ -87,6 +93,7 @@ function primaryRoutes(): ReadableRoute[] {
       url: absoluteUrl("/articles"),
       title: "Articles",
       description: "Original writing about AI, agents, automation, and workflows.",
+      lastModified,
       changeFrequency: "weekly",
       priority: 0.65,
     },
@@ -113,6 +120,7 @@ function machineRoutes(): ReadableRoute[] {
     kind: "machine" as const,
     changeFrequency: "weekly" as const,
     priority: 0.7,
+    lastModified: dateOrUndefined(publicContent.updatedAt),
   };
   return [
     {
