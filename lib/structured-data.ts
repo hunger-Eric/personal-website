@@ -73,13 +73,21 @@ export function generateProjectSchema(project: {
   stars?: number;
   dateCreated?: string;
 }) {
+  const canonicalUrl = `${SITE_URL}/projects/${project.id}`;
+  const sameAs = [project.liveUrl, project.repoUrl].filter(
+    (url): url is string => Boolean(url)
+  );
+
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
+    "@id": `${canonicalUrl}#software`,
     name: project.name,
     description: project.summary || project.description,
-    url: project.liveUrl || project.repoUrl || `${SITE_URL}/projects/${project.id}`,
-    applicationCategory: "DeveloperApplication",
+    url: canonicalUrl,
+    applicationCategory: "BusinessApplication",
+    provider: { "@id": `${SITE_URL}/#organization` },
+    ...(sameAs.length > 0 && { sameAs }),
     ...(project.imageSrc && {
       image: project.imageSrc.startsWith("http")
         ? project.imageSrc
@@ -90,16 +98,38 @@ export function generateProjectSchema(project: {
       project.technologies.length > 0 && {
         programmingLanguage: project.technologies,
       }),
-    author: {
-      "@type": "Person",
-      name: siteConfig.name,
-      url: SITE_URL,
-    },
     ...(project.dateCreated && { dateCreated: project.dateCreated }),
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
+  };
+}
+
+export function generateProjectCollectionSchema(
+  projects: Array<Parameters<typeof generateProjectSchema>[0]>
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    "@id": `${SITE_URL}/projects#collection`,
+    name: `${publicIdentity.canonicalName}项目库`,
+    description: "实解智能公开的企业 AI 系统项目、产品状态与使用边界。",
+    url: `${SITE_URL}/projects`,
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    publisher: { "@id": `${SITE_URL}/#organization` },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: projects.length,
+      itemListElement: projects.map((project, index) => {
+        const item = Object.fromEntries(
+          Object.entries(generateProjectSchema(project)).filter(
+            ([key]) => key !== "@context"
+          )
+        );
+        return {
+          "@type": "ListItem",
+          position: index + 1,
+          url: `${SITE_URL}/projects#${project.id}`,
+          item,
+        };
+      }),
     },
   };
 }
@@ -276,6 +306,7 @@ export function generatePublicWebSiteSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${SITE_URL}/#website`,
     name: `${publicIdentity.canonicalName} — ${publicIdentity.category.zh}`,
     alternateName: publicIdentity.slogan.zh,
     url: SITE_URL,
@@ -290,6 +321,7 @@ export function generateProfessionalServiceSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
+    "@id": `${SITE_URL}/#professional-service`,
     name: `${publicIdentity.canonicalName} — ${publicIdentity.category.zh}`,
     url: SITE_URL,
     description: publicIdentity.description.zh,

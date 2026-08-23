@@ -1,16 +1,16 @@
-import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ArrowRight, Mail } from "lucide-react";
 
 import { ContactQrCard } from "@/components/contact/ContactQrCard";
 import { WorkflowInquiryForm } from "@/components/contact/WorkflowInquiryForm";
 import { siteConfig } from "@/config/siteConfig";
+import { buildPublicPageMetadata } from "@/lib/public-page-metadata";
 
-export const metadata: Metadata = {
+export const metadata = buildPublicPageMetadata({
   title: "提交业务问题",
   description: "描述真实流程，或携带 Open GEO Console 模拟体验上下文联系实解智能。",
-  alternates: { canonical: "/contact" },
-};
+  path: "/contact",
+});
 
 const emailContact = siteConfig.socialsList.find((contact) => contact.key === "email");
 const publicEmail = emailContact?.copyValue || emailContact?.href.replace(/^mailto:/, "");

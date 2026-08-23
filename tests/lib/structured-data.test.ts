@@ -113,15 +113,17 @@ describe("generateProjectSchema", () => {
       summary: "A cool project",
     });
     expect(r["@type"]).toBe("SoftwareApplication");
+    expect(r["@id"]).toBe(`${BASE_URL}/projects/my-project#software`);
     expect(r.name).toBe("My Project");
     expect(r.description).toBe("A cool project");
     expect(r.url).toBe(`${BASE_URL}/projects/my-project`);
-    expect(r.applicationCategory).toBe("DeveloperApplication");
+    expect(r.applicationCategory).toBe("BusinessApplication");
     expect(r.image).toBeUndefined();
     expect(r.codeRepository).toBeUndefined();
     expect(r.programmingLanguage).toBeUndefined();
     expect(r.dateCreated).toBeUndefined();
-    expect(r.offers).toEqual({ "@type": "Offer", price: "0", priceCurrency: "USD" });
+    expect("offers" in r).toBe(false);
+    expect(r.provider).toEqual({ "@id": `${BASE_URL}/#organization` });
   });
 
   it("uses description when summary is not provided", async () => {
@@ -174,7 +176,8 @@ describe("generateProjectSchema", () => {
       repoUrl: "https://github.com/kevin/repo",
     });
     expect(r.codeRepository).toBe("https://github.com/kevin/repo");
-    expect(r.url).toBe("https://github.com/kevin/repo"); // liveUrl absent, falls back to repoUrl
+    expect(r.url).toBe(`${BASE_URL}/projects/proj-repo`);
+    expect(r.sameAs).toEqual(["https://github.com/kevin/repo"]);
   });
 
   it("uses liveUrl when both liveUrl and repoUrl are provided", async () => {
@@ -188,7 +191,8 @@ describe("generateProjectSchema", () => {
       liveUrl: "https://myapp.com",
       repoUrl: "https://github.com/kevin/repo",
     });
-    expect(r.url).toBe("https://myapp.com");
+    expect(r.url).toBe(`${BASE_URL}/projects/proj-live`);
+    expect(r.sameAs).toEqual(["https://myapp.com", "https://github.com/kevin/repo"]);
     expect(r.codeRepository).toBe("https://github.com/kevin/repo");
   });
 
@@ -465,8 +469,10 @@ describe("public enterprise structured data", () => {
     expect(person.name).toBe("实解智能");
     expect(person.description).toContain("人工衔接");
     expect(website.dateModified).toBe("2026-08-21");
+    expect(website["@id"]).toBe(`${BASE_URL}/#website`);
     expect(website.author).toEqual({ "@id": `${BASE_URL}/#organization` });
     expect(service["@type"]).toBe("ProfessionalService");
+    expect(service["@id"]).toBe(`${BASE_URL}/#professional-service`);
     expect(service.provider).toEqual({ "@id": `${BASE_URL}/#organization` });
     expect(service.potentialAction.target).toBe(`${BASE_URL}/contact`);
     expect(service.serviceType.length).toBeGreaterThan(1);
@@ -527,5 +533,41 @@ describe("public enterprise structured data", () => {
         ],
       },
     });
+  });
+
+  it("describes the public project library without inventing prices", async () => {
+    vi.resetModules();
+    const { generateProjectCollectionSchema } = await import("@/lib/structured-data");
+    const schema = generateProjectCollectionSchema([
+      {
+        id: "open-geo-console",
+        name: "Open GEO Console",
+        summary: "AI 搜索可见性诊断与整改",
+        liveUrl: "https://geo.itheheda.online",
+      },
+    ]);
+
+    expect(schema).toMatchObject({
+      "@type": "CollectionPage",
+      "@id": `${BASE_URL}/projects#collection`,
+      url: `${BASE_URL}/projects`,
+      isPartOf: { "@id": `${BASE_URL}/#website` },
+      mainEntity: {
+        "@type": "ItemList",
+        numberOfItems: 1,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            url: `${BASE_URL}/projects#open-geo-console`,
+            item: {
+              "@id": `${BASE_URL}/projects/open-geo-console#software`,
+              "@type": "SoftwareApplication",
+            },
+          },
+        ],
+      },
+    });
+    expect(JSON.stringify(schema)).not.toContain('"price"');
   });
 });

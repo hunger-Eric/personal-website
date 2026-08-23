@@ -18,6 +18,13 @@ const factLabels = {
   },
 } as const;
 
+const factAnchors = {
+  problem: "customer-problem",
+  solution: "system-workflow",
+  buyerValue: "buyer-value",
+  boundary: "usage-boundary",
+} as const;
+
 export function PublicProjectsPage() {
   const { locale } = useLocale();
   const zh = locale === "zh";
@@ -48,6 +55,7 @@ export function PublicProjectsPage() {
         {projects.map((project, index) => (
           <article
             key={project.id}
+            id={project.id}
             className="flex flex-col bg-surface-paper-elevated p-6 sm:p-8"
           >
             <div className="flex items-start justify-between gap-4">
@@ -69,6 +77,7 @@ export function PublicProjectsPage() {
               {project.facts.map((fact) => (
                 <li
                   key={`${fact.kind}-${fact.text}`}
+                  id={`${project.id}-${factAnchors[fact.kind]}`}
                   className="grid grid-cols-[6.75rem_minmax(0,1fr)] gap-3 border-t border-hairline py-3 text-sm leading-6"
                 >
                   <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.08em] text-accent">

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { EnterpriseHomepage } from "@/components/home/EnterpriseHomepage";
@@ -50,5 +50,22 @@ describe("EnterpriseHomepage", () => {
       "/projects/open-geo-console#open-geo-demo"
     );
     expect(screen.queryByTestId("open-geo-demo")).not.toBeInTheDocument();
+  });
+
+  it("answers who 实解智能 is with reviewed public identity facts", () => {
+    renderHomepage();
+
+    const identity = screen.getByRole("region", { name: "实解智能是谁？" });
+    expect(identity).toHaveAttribute("id", "about-shijie-intelligence");
+    expect(
+      screen.getByRole("heading", { level: 2, name: "实解智能是谁？" })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/实解智能目前由 fengc 负责/)).toBeInTheDocument();
+    expect(screen.getByText(/中小企业老板与业务负责人/)).toBeInTheDocument();
+    expect(screen.getByText(/关键决策和高风险动作保留人工审核/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "了解实解智能" })).toHaveAttribute(
+      "href",
+      "/about"
+    );
   });
 });

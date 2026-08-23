@@ -7,7 +7,7 @@ import { PublicProjectsPage } from "@/components/projects/PublicProjectsPage";
 
 describe("PublicProjectsPage", () => {
   it("explains the customer workflow, system response, and concrete reason to buy", () => {
-    render(
+    const { container } = render(
       <LocaleProvider initialLocale="zh">
         <PublicProjectsPage />
       </LocaleProvider>
@@ -46,5 +46,16 @@ describe("PublicProjectsPage", () => {
 
     expect(screen.queryByText(/601/)).not.toBeInTheDocument();
     expect(screen.queryByText(/521/)).not.toBeInTheDocument();
+
+    expect(container.querySelector("#open-geo-console")).toBeInTheDocument();
+    expect(
+      container.querySelector("#open-geo-console-customer-problem")
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector("#open-geo-console-system-workflow")
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector("#open-geo-console-buyer-value")
+    ).toBeInTheDocument();
   });
 });

@@ -44,6 +44,51 @@ export function EnterpriseHomepage() {
         </div>
       </section>
 
+      <section
+        id="about-shijie-intelligence"
+        className="mx-auto max-w-6xl border-y border-hairline px-4 py-14 lg:py-16"
+        aria-labelledby="about-shijie-intelligence-title"
+      >
+        <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+          <div>
+            <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+              {zh ? "Brand facts · 品牌直接答案" : "Brand facts · Direct answer"}
+            </p>
+            <h2
+              id="about-shijie-intelligence-title"
+              className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-foreground"
+            >
+              {zh ? "实解智能是谁？" : "What is 实解智能?"}
+            </h2>
+            <p className="mt-5 text-base leading-8 text-muted-foreground">
+              {zh
+                ? "实解智能目前由 fengc 负责，提供企业 AI 系统设计与交付服务。我们不从固定行业模板或通用功能清单开始，而是从企业正在消耗人力、容易出错、难以持续运行的真实流程开始。"
+                : "实解智能 is led by fengc and provides enterprise AI system design and delivery. Work starts from a real workflow that consumes staff time, fails easily, or is difficult to sustain—not from a fixed industry template or a generic feature list."}
+            </p>
+            <Link href="/about" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+              {zh ? "了解实解智能" : "About 实解智能"} <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </div>
+          <dl className="grid gap-px border border-hairline bg-hairline sm:grid-cols-3">
+            {[
+              [zh ? "服务谁" : "Who it serves", content.identity.audience],
+              [zh ? "怎么开始" : "How work starts", content.identity.description],
+              [
+                zh ? "交付原则" : "Delivery principle",
+                zh
+                  ? "稳定步骤交给系统，关键决策和高风险动作保留人工审核，并保存状态、异常、恢复与交付证据。"
+                  : "The system handles stable steps; people retain key decisions and high-risk actions, with state, exceptions, recovery, and delivery evidence preserved.",
+              ],
+            ].map(([term, description]) => (
+              <div key={term} className="bg-surface-paper-elevated p-6">
+                <dt className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-accent">{term}</dt>
+                <dd className="mt-4 text-sm leading-7 text-muted-foreground">{description}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      </section>
+
       <section id="capabilities" className="mx-auto max-w-6xl px-4 py-16 lg:py-20">
         <div className="flex items-end justify-between gap-4 border-b border-hairline pb-5"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">01 / Capabilities</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "\u56db\u4e2a\u7cfb\u7edf\u65b9\u5411\uff0c\u5bf9\u5e94\u56db\u7c7b\u4f01\u4e1a\u80fd\u529b" : "Four system directions, four enterprise capabilities"}</h2></div><Link href="/services" className="hidden text-sm font-semibold text-accent sm:inline-flex">{zh ? "查看完整服务事实" : "See complete service facts"} →</Link></div>
         <div className="grid gap-px border-x border-b border-hairline bg-hairline sm:grid-cols-2">
