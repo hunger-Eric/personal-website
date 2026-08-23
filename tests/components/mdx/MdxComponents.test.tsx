@@ -21,6 +21,7 @@ describe("mdxComponents", () => {
     expect(mdxComponents).toHaveProperty("Tweet");
     expect(mdxComponents).toHaveProperty("Figure");
     expect(mdxComponents).toHaveProperty("Kbd");
+    expect(mdxComponents).toHaveProperty("table");
   });
 });
 
@@ -212,5 +213,21 @@ describe("Kbd", () => {
       React.createElement("span", null, "K")
     ));
     expect(screen.getByText("Ctrl")).toBeInTheDocument();
+  });
+});
+
+describe("ResponsiveTable", () => {
+  it("keeps multi-column article tables readable in a horizontal scroll region", async () => {
+    const { ResponsiveTable } = await import("@/components/mdx/MdxComponents");
+    const { container } = render(
+      React.createElement(
+        ResponsiveTable,
+        null,
+        React.createElement("tbody", null, React.createElement("tr", null, React.createElement("td", null, "Example")))
+      )
+    );
+
+    expect(container.firstElementChild).toHaveClass("overflow-x-auto");
+    expect(screen.getByRole("table")).toHaveClass("min-w-[680px]");
   });
 });

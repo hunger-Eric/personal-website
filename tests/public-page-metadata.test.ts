@@ -38,11 +38,11 @@ describe("public page metadata", () => {
     expect(metadata.openGraph).toMatchObject({
       type: "website",
       url: "/projects/open-geo-console",
-      title: "Open GEO Console | 实解智能",
+      title: "Open GEO Console：AI 搜索可见性诊断与整改 | 实解智能",
     });
     expect(metadata.twitter).toMatchObject({
       card: "summary_large_image",
-      title: "Open GEO Console | 实解智能",
+      title: "Open GEO Console：AI 搜索可见性诊断与整改 | 实解智能",
     });
   });
 });

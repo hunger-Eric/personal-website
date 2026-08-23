@@ -16,6 +16,25 @@ function renderServicesPage() {
 }
 
 describe("ServicesPage", () => {
+  it("shows delivery, data-boundary, and buyer FAQ facts from the public service contract", () => {
+    const { container } = renderServicesPage();
+
+    expect(
+      screen.getByRole("heading", { name: "标准交付物与验收依据" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "数据、权限与运行边界" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "采购前常见问题" })).toBeInTheDocument();
+    expect(screen.getByText("异常与恢复路径")).toBeInTheDocument();
+    expect(screen.getByText(/外部发送、付款、发布或其他高风险动作/)).toBeInTheDocument();
+
+    const schemas = Array.from(
+      container.querySelectorAll<HTMLScriptElement>('script[type="application/ld+json"]')
+    ).map((node) => JSON.parse(node.textContent || "{}"));
+    expect(schemas.some((schema) => schema["@type"] === "FAQPage")).toBe(true);
+  });
+
   it("switches the full page copy from Chinese to English", () => {
     renderServicesPage();
 
@@ -30,6 +49,12 @@ describe("ServicesPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "What we need before starting" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Clear boundaries" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Standard deliverables and acceptance evidence" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Data, permission, and operating boundaries" })
+    ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Submit a business problem/ })).toHaveAttribute(
       "href",
       "/contact"

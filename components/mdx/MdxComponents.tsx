@@ -1,5 +1,5 @@
 // components/mdx/MdxComponents.tsx
-import type { ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { Info, AlertTriangle, CheckCircle, XCircle, Lightbulb } from "lucide-react";
 
 type CalloutKind = "info" | "warning" | "success" | "danger" | "tip";
@@ -195,10 +195,21 @@ export function Kbd({ children }: { children: ReactNode }) {
   );
 }
 
+export function ResponsiveTable({ children, className, ...props }: ComponentPropsWithoutRef<"table">) {
+  return (
+    <div className="my-8 overflow-x-auto">
+      <table {...props} className={["min-w-[680px]", className].filter(Boolean).join(" ")}>
+        {children}
+      </table>
+    </div>
+  );
+}
+
 export const mdxComponents = {
   Callout,
   YouTube,
   Tweet,
   Figure,
   Kbd,
+  table: ResponsiveTable,
 };

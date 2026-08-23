@@ -20,6 +20,7 @@ describe("AI-readable route inventory", () => {
     ]);
     expect(groups.article.length).toBeGreaterThan(0);
     expect(groups.article.map((route) => route.path)).toEqual([
+      "/articles/enterprise-ai-automation-provider-selection-acceptance-checklist",
       "/articles/ai-search-enterprise-website-geo-guide",
       "/articles/employee-reimbursement-ai-audit-approval-boundary",
       "/articles/feedback-classification-closed-loop-priority-ownership-verification",

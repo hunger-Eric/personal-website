@@ -468,7 +468,7 @@ describe("public enterprise structured data", () => {
     expect(person["@type"]).toBe("Organization");
     expect(person.name).toBe("实解智能");
     expect(person.description).toContain("人工衔接");
-    expect(website.dateModified).toBe("2026-08-21");
+    expect(website.dateModified).toBe("2026-08-23");
     expect(website["@id"]).toBe(`${BASE_URL}/#website`);
     expect(website.author).toEqual({ "@id": `${BASE_URL}/#organization` });
     expect(service["@type"]).toBe("ProfessionalService");

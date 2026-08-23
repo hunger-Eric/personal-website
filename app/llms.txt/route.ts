@@ -23,6 +23,15 @@ export async function GET() {
   const boundaries = serviceMethod.boundaries
     .map((boundary) => `- ${boundary.zh} / ${boundary.en}`)
     .join("\n");
+  const deliverables = serviceMethod.deliverables
+    .map((item) => `- ${item.title.zh} / ${item.title.en}: ${item.description.en}`)
+    .join("\n");
+  const dataBoundaries = serviceMethod.dataBoundaries
+    .map((item) => `- ${item.title.zh} / ${item.title.en}: ${item.description.en}`)
+    .join("\n");
+  const buyerQuestions = serviceMethod.faq
+    .map((item) => `- ${item.question.zh} / ${item.question.en}\n  ${item.answer.en}`)
+    .join("\n");
 
   const body = `# ${publicIdentity.canonicalName}
 
@@ -42,6 +51,18 @@ ${links(groups.primary)}
 ## Service method
 
 ${method}
+
+## Standard deliverables
+
+${deliverables}
+
+## Data and permission boundaries
+
+${dataBoundaries}
+
+## Buyer questions
+
+${buyerQuestions}
 
 ## Engagement boundaries
 

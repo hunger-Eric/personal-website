@@ -22,6 +22,9 @@ describe("public AI routes", () => {
 
     expect(body.service.problemSignals.zh.length).toBeGreaterThan(2);
     expect(body.service.method.zh).toHaveLength(4);
+    expect(body.service.deliverables.zh.map((item: { title: string }) => item.title)).toContain("异常与恢复路径");
+    expect(body.service.dataBoundaries.zh.map((item: { title: string }) => item.title)).toContain("人工授权与高风险动作");
+    expect(body.service.faq.zh.map((item: { question: string }) => item.question)).toContain("选择 AI 系统服务商时应该核实什么？");
     expect(body.service.boundaries.zh.join(" ")).toContain("不销售固定行业模板");
     expect(body.contact.channel).toContain("work email");
     expect(body.contact.responseExpectation.zh).toContain("不承诺固定响应时限");

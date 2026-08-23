@@ -16,7 +16,7 @@ const projects = getPublishedProjectCases(
 
 export const publicContent = {
   schemaVersion: "1.0",
-  updatedAt: "2026-08-21",
+  updatedAt: "2026-08-23",
   identity: publicIdentity,
   service: serviceMethod,
   projects,
@@ -113,6 +113,21 @@ export function getLocalizedPublicContent(locale: Locale) {
         id: step.id,
         title: text(step.title, locale),
         description: text(step.description, locale),
+      })),
+      deliverables: serviceMethod.deliverables.map((item) => ({
+        id: item.id,
+        title: text(item.title, locale),
+        description: text(item.description, locale),
+      })),
+      dataBoundaries: serviceMethod.dataBoundaries.map((item) => ({
+        id: item.id,
+        title: text(item.title, locale),
+        description: text(item.description, locale),
+      })),
+      faq: serviceMethod.faq.map((item) => ({
+        id: item.id,
+        question: text(item.question, locale),
+        answer: text(item.answer, locale),
       })),
       suitableWork: textList(serviceMethod.suitableWork, locale),
       boundaries: textList(serviceMethod.boundaries, locale),

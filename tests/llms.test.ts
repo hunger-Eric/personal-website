@@ -13,6 +13,11 @@ describe("llms.txt", () => {
     expect(body).toContain("https://me.itheheda.online/sitemap.xml");
     expect(body).toContain("把依赖人工衔接");
     expect(body).toContain("## Service method");
+    expect(body).toContain("## Standard deliverables");
+    expect(body).toContain("异常与恢复路径 / Exception and recovery path");
+    expect(body).toContain("## Data and permission boundaries");
+    expect(body).toContain("## Buyer questions");
+    expect(body).toContain("选择 AI 系统服务商时应该核实什么？");
     expect(body).toContain("## Project cases");
     expect(body).toContain("Open GEO Console");
     expect(body).toContain("Freight Lead Agent");

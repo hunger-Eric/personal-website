@@ -45,6 +45,42 @@ export function GET() {
             description: item.description.en,
           })),
         },
+        deliverables: {
+          zh: serviceMethod.deliverables.map((item) => ({
+            id: item.id,
+            title: item.title.zh,
+            description: item.description.zh,
+          })),
+          en: serviceMethod.deliverables.map((item) => ({
+            id: item.id,
+            title: item.title.en,
+            description: item.description.en,
+          })),
+        },
+        dataBoundaries: {
+          zh: serviceMethod.dataBoundaries.map((item) => ({
+            id: item.id,
+            title: item.title.zh,
+            description: item.description.zh,
+          })),
+          en: serviceMethod.dataBoundaries.map((item) => ({
+            id: item.id,
+            title: item.title.en,
+            description: item.description.en,
+          })),
+        },
+        faq: {
+          zh: serviceMethod.faq.map((item) => ({
+            id: item.id,
+            question: item.question.zh,
+            answer: item.answer.zh,
+          })),
+          en: serviceMethod.faq.map((item) => ({
+            id: item.id,
+            question: item.question.en,
+            answer: item.answer.en,
+          })),
+        },
         suitableWork: localizedLists(serviceMethod.suitableWork),
         boundaries: localizedLists(serviceMethod.boundaries),
       },
