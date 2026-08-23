@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Standalone output for Docker / containerized deployments
-  output: "standalone",
+  // Vercel injects a build adapter that is incompatible with standalone output
+  // in Next.js 16.3. Keep standalone artifacts for Docker/self-hosting only.
+  output: process.env.VERCEL ? undefined : "standalone",
 
   // Image optimization
   images: {
