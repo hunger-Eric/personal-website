@@ -4,7 +4,6 @@ import { render, screen } from "@testing-library/react";
 import React from "react";
 
 type MockLinkProps = React.PropsWithChildren<{ href: string }>;
-type MockImageProps = React.ImgHTMLAttributes<HTMLImageElement>;
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/",
@@ -20,10 +19,6 @@ vi.mock("next/navigation", () => ({
 vi.mock("next/link", () => ({
   default: ({ children, href }: MockLinkProps) =>
     React.createElement("a", { href }, children),
-}));
-
-vi.mock("next/image", () => ({
-  default: (props: MockImageProps) => React.createElement("img", props),
 }));
 
 vi.mock("lucide-react", () => {
@@ -47,66 +42,7 @@ vi.mock("@/components/LangSwitch", () => ({
 vi.mock("@/components/LocaleProvider", () => ({
   useLocale: () => ({
     locale: "en",
-    t: {
-      nav: {
-        home: "Home",
-        menu: "Menu",
-        openMenu: "Toggle navigation menu",
-        closeMenu: "Close navigation menu",
-        mainMenu: "Main navigation",
-        viewMore: "View more",
-        about: "About",
-        projects: "Projects",
-        articles: "Articles",
-        photography: "Photography",
-        more: "More",
-        connect: "Connect",
-      },
-    },
   }),
-}));
-
-// Mock navbar config
-const mockNavbarConfig = {
-  logo: { label: "FengC", href: "/", imageSrc: "", imageAlt: "Logo" },
-  centerItems: [
-    { id: "about", label: "About", href: "/#about", external: false },
-    { id: "projects", label: "Projects", href: "/projects", external: false },
-  ],
-  cta: {
-    contact: {
-      label: "Email me",
-      href: "mailto:test@example.com",
-      show: true,
-      external: true,
-    },
-    primary: {
-      label: "Hire me",
-      href: "/contact",
-      show: true,
-      external: false,
-    },
-  },
-};
-
-vi.mock("@/config/navbarConfig", () => ({
-  getNavbarConfig: () => mockNavbarConfig,
-  isExternalHref: (href: string) =>
-    href.startsWith("http://") ||
-    href.startsWith("https://") ||
-    href.startsWith("mailto:") ||
-    href.startsWith("tel:"),
-}));
-
-vi.mock("@/config/siteConfig", () => ({
-  siteConfig: {
-    socialsFor: {
-      footer: [
-        { href: "https://github.com/test", label: "GitHub" },
-        { href: "https://twitter.com/test", label: "Twitter" },
-      ],
-    },
-  },
 }));
 
 describe("NavbarCenteredMobile", () => {

@@ -27,15 +27,8 @@ vi.stubGlobal("localStorage", {
   key: vi.fn((i: number) => Object.keys(store)[i] ?? null),
 });
 
-// Mock the locale config
-const mockGetTranslations = vi.fn((locale: string) => {
-  if (locale === "en") return { hero: { greeting: "Hi, I am" } };
-  return { hero: { greeting: "你好，我是" } };
-});
-
 vi.mock("@/config/locale", () => ({
-  LOCALE_STORAGE_KEY: "devfoliox-locale",
-  getTranslations: (locale: string) => mockGetTranslations(locale),
+  LOCALE_STORAGE_KEY: "shijie-intelligence-locale",
 }));
 
 describe("LocaleProvider", () => {
@@ -44,7 +37,6 @@ describe("LocaleProvider", () => {
     mockGetItem.mockClear();
     mockSetItem.mockClear();
     mockRemoveItem.mockClear();
-    mockGetTranslations.mockClear();
   });
 
   it("renders children inside the provider", async () => {
@@ -100,12 +92,12 @@ describe("LocaleProvider", () => {
     expect(localeValue).toBe("en");
 
     // Ensure localStorage was updated
-    expect(mockSetItem).toHaveBeenCalledWith("devfoliox-locale", "en");
+    expect(mockSetItem).toHaveBeenCalledWith("shijie-intelligence-locale", "en");
   });
 
   it("reads initial locale from localStorage", async () => {
     // Set localStorage before importing
-    store["devfoliox-locale"] = "en";
+    store["shijie-intelligence-locale"] = "en";
 
     const { LocaleProvider, useLocale } = await import(
       "@/components/LocaleProvider"
@@ -134,7 +126,7 @@ describe("LocaleProvider", () => {
 
   it("handles localStorage.setItem throw gracefully", async () => {
     mockSetItem.mockImplementationOnce(() => { throw new Error("storage full"); });
-    store["devfoliox-locale"] = "en";
+    store["shijie-intelligence-locale"] = "en";
 
     const { LocaleProvider, useLocale } = await import("@/components/LocaleProvider");
 

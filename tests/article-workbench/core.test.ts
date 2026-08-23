@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { createArticleWorkflow } from "@/lib/article-workbench/core";
-import { createPersonalWebsitePublisher } from "@/lib/article-workbench/publisher";
+import { createWebsitePublisher } from "@/lib/article-workbench/publisher";
 import { defaultArticleBusinessProfile } from "@/config/article-business-profile";
 import type {
   ArticleWorkbenchArtifact,
@@ -289,7 +289,7 @@ describe("article workbench workflow", () => {
     let remoteFile: { sha: string; path: string; encoding: string; content: string } | null = null;
     const getRepoFile = vi.fn(async () => remoteFile);
     const createRepoFile = vi.fn();
-    const publisher = createPersonalWebsitePublisher({ siteUrl: "https://example.com", getRepoFile, createRepoFile });
+    const publisher = createWebsitePublisher({ siteUrl: "https://example.com", getRepoFile, createRepoFile });
     const { store, workflow } = createWorkflow({ publisher });
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
     await confirmAndSeedPublication(store, workflow, run.id);
@@ -321,7 +321,7 @@ describe("article workbench workflow", () => {
     let remoteFile: { sha: string; path: string; encoding: string; content: string } | null = null;
     const getRepoFile = vi.fn(async () => remoteFile);
     const createRepoFile = vi.fn();
-    const publisher = createPersonalWebsitePublisher({ siteUrl: "https://example.com", getRepoFile, createRepoFile });
+    const publisher = createWebsitePublisher({ siteUrl: "https://example.com", getRepoFile, createRepoFile });
     const { store, workflow } = createWorkflow({ publisher });
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
     await confirmAndSeedPublication(store, workflow, run.id);
@@ -346,7 +346,7 @@ describe("article workbench workflow", () => {
 
   it("returns a fixed persistence error before terminal status when conflict evidence cannot be saved", async () => {
     let remoteFile: { sha: string; path: string; encoding: string; content: string } | null = null;
-    const publisher = createPersonalWebsitePublisher({ siteUrl: "https://example.com", getRepoFile: vi.fn(async () => remoteFile), createRepoFile: vi.fn() });
+    const publisher = createWebsitePublisher({ siteUrl: "https://example.com", getRepoFile: vi.fn(async () => remoteFile), createRepoFile: vi.fn() });
     const { store, workflow } = createWorkflow({ publisher });
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
     await confirmAndSeedPublication(store, workflow, run.id);

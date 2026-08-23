@@ -31,7 +31,7 @@ describe("AdminLoginPage", () => {
   it("renders the admin login shell and disabled submit state", () => {
     render(<AdminLoginPage />);
 
-    expect(screen.getByRole("heading", { level: 1, name: "管理后台" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "实解智能管理后台" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: "访问验证" })).toBeInTheDocument();
     expect(screen.getByLabelText("密码")).toBeInTheDocument();
     expect(screen.getByText("也可以使用访问令牌直接登录。")).toBeInTheDocument();

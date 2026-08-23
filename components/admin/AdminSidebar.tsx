@@ -4,12 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Settings,
-  Menu,
-  User,
-  Palette,
-  FilePlus,
   FilePenLine,
+  Radar,
   ArrowLeft,
 } from "lucide-react";
 import { adminCopy } from "@/config/copy/admin";
@@ -19,17 +15,8 @@ const NAV_ITEMS = [
     section: adminCopy.sidebar.general,
     items: [
       { href: "/admin", label: adminCopy.sidebar.dashboard, icon: LayoutDashboard },
-      { href: "/admin/site", label: adminCopy.sidebar.site, icon: Settings },
-      { href: "/admin/navbar", label: adminCopy.sidebar.navbar, icon: Menu },
-      { href: "/admin/about", label: adminCopy.sidebar.about, icon: User },
-      { href: "/admin/theme", label: adminCopy.sidebar.theme, icon: Palette },
-    ],
-  },
-  {
-    section: adminCopy.sidebar.content,
-    items: [
-      { href: "/admin/pages", label: adminCopy.sidebar.pages, icon: FilePlus },
-      { href: "/admin/articles", label: "文章工作台", icon: FilePenLine },
+      { href: "/admin/articles", label: adminCopy.sidebar.articles, icon: FilePenLine },
+      { href: "/admin/crawlers", label: adminCopy.sidebar.crawlers, icon: Radar },
     ],
   },
 ];
@@ -91,7 +78,7 @@ export function AdminSidebar() {
       </nav>
 
       <div className="border-t border-border p-3 text-center text-[11px] text-muted-foreground">
-        {adminCopy.sidebar.autoSaveHint}
+        {adminCopy.sidebar.scopeHint}
       </div>
     </aside>
   );

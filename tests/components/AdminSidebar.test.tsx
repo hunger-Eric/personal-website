@@ -26,13 +26,8 @@ vi.mock("lucide-react", () => {
     React.createElement("svg", { className });
   return {
     LayoutDashboard: Icon,
-    Settings: Icon,
-    Menu: Icon,
-    User: Icon,
-    Image: Icon,
-    Palette: Icon,
-    FilePlus: Icon,
     FilePenLine: Icon,
+    Radar: Icon,
     ArrowLeft: Icon,
   };
 });
@@ -42,17 +37,8 @@ const navGroups = [
     section: adminCopy.sidebar.general,
     items: [
       { href: "/admin", label: adminCopy.sidebar.dashboard },
-      { href: "/admin/site", label: adminCopy.sidebar.site },
-      { href: "/admin/navbar", label: adminCopy.sidebar.navbar },
-      { href: "/admin/about", label: adminCopy.sidebar.about },
-      { href: "/admin/theme", label: adminCopy.sidebar.theme },
-    ],
-  },
-  {
-    section: adminCopy.sidebar.content,
-    items: [
-      { href: "/admin/pages", label: adminCopy.sidebar.pages },
-      { href: "/admin/articles", label: "文章工作台" },
+      { href: "/admin/articles", label: adminCopy.sidebar.articles },
+      { href: "/admin/crawlers", label: adminCopy.sidebar.crawlers },
     ],
   },
 ];
@@ -90,10 +76,10 @@ describe("AdminSidebar", () => {
   });
 
   it("supports prefix matching on non-dashboard sections", () => {
-    mockUsePathname.mockReturnValue("/admin/site/extra");
+    mockUsePathname.mockReturnValue("/admin/articles/preview/run");
     render(<AdminSidebar />);
 
-    expect(getNavLinkByLabel(adminCopy.sidebar.site).className).toContain("bg-accent/10");
+    expect(getNavLinkByLabel(adminCopy.sidebar.articles).className).toContain("bg-accent/10");
     expect(getNavLinkByLabel(adminCopy.sidebar.dashboard).className).not.toContain(
       "bg-accent/10"
     );
@@ -104,7 +90,7 @@ describe("AdminSidebar", () => {
 
     expect(screen.getByText(adminCopy.common.brand)).toBeInTheDocument();
     expect(screen.getByText(adminCopy.common.product)).toBeInTheDocument();
-    expect(screen.getByText(adminCopy.sidebar.autoSaveHint)).toBeInTheDocument();
+    expect(screen.getByText(adminCopy.sidebar.scopeHint)).toBeInTheDocument();
   });
 
   it("renders accessible back-to-site links", () => {

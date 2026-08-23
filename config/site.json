@@ -1,59 +1,38 @@
 {
-  "name": "fengc",
-  "title": "AI Native 构建者",
-  "tagline": "把 AI、自动化、知识系统和业务流程组织成可运行的系统。",
+  "name": "实解智能",
+  "title": "企业 AI 系统设计与交付",
+  "tagline": "让 AI 真正在企业里跑起来。",
   "location": "Shenzhen, China",
   "socials": [
     {
       "key": "github",
       "label": "GitHub",
-      "href": "https://github.com/hunger-Eric",
-      "icon": "Github",
-      "description": "Open source projects, system experiments, and build logs.",
-      "showIn": { "footer": true, "about": true, "contact": true, "links": true }
+      "href": "https://github.com/hunger-Eric"
     },
     {
       "key": "email",
       "label": "Email",
       "href": "mailto:itheheda@gmail.com",
-      "icon": "Mail",
-      "description": "For collaboration, project inquiries, and longer notes.",
-      "copyValue": "itheheda@gmail.com",
-      "showIn": { "footer": true, "about": true, "contact": true, "links": true }
+      "description": "项目咨询与合作联系。",
+      "copyValue": "itheheda@gmail.com"
     },
     {
       "key": "wechat-official",
       "label": "独立系统",
       "href": "copy:独立系统",
-      "icon": "MessageCircle",
-      "description": "微信公众号，记录 AI Native 系统、自动化和独立开发实践。",
+      "description": "微信公众号，记录企业 AI 系统、自动化和独立开发实践。",
       "qrImage": "/images/contact/wechat-official.jpg",
       "qrAlt": "微信公众号「独立系统」二维码",
-      "copyValue": "独立系统",
-      "showIn": { "footer": false, "about": true, "contact": true, "links": true }
+      "copyValue": "独立系统"
     },
     {
       "key": "wechat",
       "label": "WeChat",
       "href": "copy:404",
-      "icon": "MessageCircle",
-      "description": "个人微信，可公开添加。备注来意会更快对上频道。",
+      "description": "个人微信，添加时请备注来意。",
       "qrImage": "/images/contact/wechat-personal.jpg",
-      "qrAlt": "fengc 个人微信二维码",
-      "copyValue": "404",
-      "showIn": { "footer": false, "about": true, "contact": true, "links": true }
+      "qrAlt": "实解智能负责人个人微信二维码",
+      "copyValue": "404"
     }
-  ],
-  "sections": {
-    "hero": true,
-    "about": true,
-    "education": true,
-    "experience": true,
-    "projects": true,
-    "articles": true,
-    "youtube": false,
-    "certifications": true,
-    "contact": false,
-    "resume": true
-  }
+  ]
 }

@@ -1,5 +1,7 @@
 # 网站业务文章与本地文章工作台设计
 
+> 历史实施记录：仅用于追溯该子系统的设计与验收背景，不是当前品牌或视觉权威；当前实现以代码、`DESIGN.md`、`docs/architecture.md` 和 `docs/PROJECT-STATE.md` 为准。
+
 日期：2026-08-09
 状态：已确认的指导设计，尚未实施
 
@@ -306,7 +308,7 @@ Admin Article API 继续使用现有本地 Admin 认证边界，负责：
 - `AnySearchAdapter`；
 - 一个实现 `ModelPort` 的可替换模型适配器；首个配置使用 OpenCode Zen Go、`deepseek-v4-flash`、`https://opencode.ai/zen/go/v1` 和 `prompt_only` 结构化输出；
 - 本地忽略目录驱动的运行存储；
-- `PersonalWebsitePublisher`。
+- `WebsitePublisher`。
 
 模型 provider、model ID、base URL、鉴权和结构化输出能力必须来自服务端配置，不能进入工作流核心判断。不得为了未来产品化同时实现第二个模型、第二个搜索引擎或第二个 CMS。可替换性由 `ModelPort`、能力配置和替身测试证明，不由一期适配器数量证明。
 
@@ -435,7 +437,7 @@ Core 不得导入 React 组件或页面；UI 不得导入适配器实现；发�
 本地 Admin UI              → 独立产品前端
 本地业务事实档案           → 多租户业务档案
 用户本地模型配置           → 客户自带密钥或受控托管密钥
-PersonalWebsitePublisher   → WordPress、Webflow 或其他真实需求适配器
+WebsitePublisher           → WordPress、Webflow 或其他真实需求适配器
 本地 Run Store             → 租户隔离的持久存储与审计
 ```
 

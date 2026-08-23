@@ -3,12 +3,8 @@
 
 import Link from "next/link";
 import {
-  Settings,
-  Menu,
-  User,
-  Palette,
-  FilePlus,
   FilePenLine,
+  Radar,
   ExternalLink,
 } from "lucide-react";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
@@ -17,40 +13,16 @@ import { adminCopy } from "@/config/copy/admin";
 
 const CARDS = [
   {
-    href: "/admin/site",
-    label: adminCopy.dashboard.cards.site.label,
-    desc: adminCopy.dashboard.cards.site.description,
-    icon: Settings,
-  },
-  {
-    href: "/admin/navbar",
-    label: adminCopy.dashboard.cards.navbar.label,
-    desc: adminCopy.dashboard.cards.navbar.description,
-    icon: Menu,
-  },
-  {
-    href: "/admin/about",
-    label: adminCopy.dashboard.cards.about.label,
-    desc: adminCopy.dashboard.cards.about.description,
-    icon: User,
-  },
-  {
-    href: "/admin/theme",
-    label: adminCopy.dashboard.cards.theme.label,
-    desc: adminCopy.dashboard.cards.theme.description,
-    icon: Palette,
-  },
-  {
-    href: "/admin/pages",
-    label: adminCopy.dashboard.cards.pages.label,
-    desc: adminCopy.dashboard.cards.pages.description,
-    icon: FilePlus,
-  },
-  {
     href: "/admin/articles",
-    label: "文章工作台",
-    desc: "基于业务事实、公开来源和人工编辑生成网页文章。",
+    label: adminCopy.dashboard.cards.articles.label,
+    desc: adminCopy.dashboard.cards.articles.description,
     icon: FilePenLine,
+  },
+  {
+    href: "/admin/crawlers",
+    label: adminCopy.dashboard.cards.crawlers.label,
+    desc: adminCopy.dashboard.cards.crawlers.description,
+    icon: Radar,
   },
 ];
 

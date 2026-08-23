@@ -9,12 +9,11 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import type { Locale, TranslationDict } from "@/config/locale";
-import { LOCALE_STORAGE_KEY, getTranslations } from "@/config/locale";
+import type { Locale } from "@/config/locale";
+import { LOCALE_STORAGE_KEY } from "@/config/locale";
 
 interface LocaleContextValue {
   locale: Locale;
-  t: TranslationDict;
   setLocale: (locale: Locale) => void;
   toggleLocale: () => void;
 }
@@ -52,8 +51,6 @@ export function LocaleProvider({
   // render. Restoring localStorage during the state initializer would make
   // persisted English sessions hydrate over Chinese server HTML.
   const [locale, setLocaleState] = useState<Locale>(initialLocale || "zh");
-  const t: TranslationDict = getTranslations(locale);
-
   useEffect(() => {
     if (initialLocale) return;
     const storedLocale = getStoredLocale();
@@ -79,7 +76,7 @@ export function LocaleProvider({
   }, []);
 
   return (
-    <LocaleContext.Provider value={{ locale, t, setLocale, toggleLocale }}>
+    <LocaleContext.Provider value={{ locale, setLocale, toggleLocale }}>
       {children}
     </LocaleContext.Provider>
   );

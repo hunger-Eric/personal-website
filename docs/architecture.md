@@ -1,95 +1,44 @@
-# Personal Website Architecture
+# 实解智能官网架构
 
-This repository is organized around a small number of stable layers so the
-site can evolve without every feature turning into a one-off component.
+更新：2026-08-23
 
-## 1. App routes
+## 运行结构
 
-The `app/` directory is the public surface area.
+- `app/`：Next.js App Router。公开页面、API、Feed 与 AI-readable 路由保持轻薄。
+- `components/`：只保留当前公开体验、文章工作台、爬虫后台和共享设计组件。
+- `components/system/`：公共与后台共用的表面、按钮、状态和排版原语。
+- `config/`：品牌身份、服务方法、项目事实、站点联系信息和语言文案。
+- `lib/`：内容解析、结构化数据、联系表单、文章工作流、爬虫分析和 GitHub 发布适配器。
+- `content/articles/`：当前公开文章。
 
-- `app/page.tsx` renders the homepage.
-- `app/articles/` handles article index and article detail pages.
-- `app/projects/` handles project index and project detail pages.
-- `app/photography/` handles photography index, album pages, and photo viewing.
-- `app/links/` is a standalone link hub with its own layout.
-- `app/admin/` contains the private editorial/admin workspace.
-- `app/api/` contains server endpoints for auth, saves, deploy state, photos,
-  view counts, social data, and utility metadata.
+## 内容数据流
 
-Each route should stay thin: it should assemble data and choose layout, not
-rebuild domain logic inline.
+```text
+public-identity + service-method + reviewed project cases
+                         |
+                  public-content resolver
+                    /              \
+             human pages      AI-readable routes
+```
 
-## 2. Content model
+`config/public-project-cases.json` 是公开项目事实入口。组件不得建立另一份案例数据；机器可读输出不得从页面文案反向抓取。
 
-The site keeps most visible copy and navigation labels in config-driven
-modules under `config/`.
+## 公开与后台边界
 
-- `config/site.json` and `config/siteConfig.ts` define core site identity.
-- `config/locale.ts` defines shared navigation labels and locale flags.
-- `config/contentCopy.ts` defines locale-aware page copy for the hero, about,
-  projects, articles, and photography surfaces.
-- `config/articles.json`, `config/projects.json`, `config/photography.json`,
-  and related typed helpers provide structured data for those sections.
+公开路由：`/`、`/services`、`/projects*`、`/articles*`、`/about`、`/contact`、Feed、sitemap 与 AI-readable 路由。
 
-The goal is to keep visible text and page metadata flowing from a shared model
-instead of scattering hardcoded strings across components.
+后台只保留：
 
-## 3. UI composition
+- 文章工作台及其生成、运行记录、发布 API
+- AI 爬虫检测页面与只读 API
+- 登录 API
 
-Reusable UI lives in `components/`.
+旧站配置编辑、主题切换、摄影、贡献图、下载跳转与通用链接工具已经移除。后台生产关闭策略由 `lib/admin-guard.ts`、布局和代理共同执行。
 
-- `components/sections/` contains the homepage sections.
-- `components/articles/` contains article cards, browsers, and page clients.
-- `components/projects/` contains project cards, browsers, and page clients.
-- `components/photography/` contains the photography index client.
-- `components/admin/` contains the admin shell and editors.
+## 视觉与资产
 
-These components should stay presentational or lightly stateful. They should
-receive data and callbacks, then render the UI with the shared design tokens.
+`DESIGN.md` 是唯一视觉合同，`app/globals.css` 是运行时 token 来源。站点固定使用暖纸色、石墨与琥珀，不注入主题脚本。公开静态资产只保留当前 favicon、首页 OG 图、两个联系二维码和两个项目动画。
 
-## 4. Visual system
+## 文章发布边界
 
-The design is intentionally light, calm, and content-first.
-
-- Neutral background with restrained accent color usage.
-- Shared spacing, radius, border, and shadow tokens.
-- Dense, scannable cards rather than decorative marketing blocks.
-- Locale changes should keep the same layout language, only swapping copy.
-
-`DESIGN.md` is the primary contract for visual decisions. When we change the
-site shape, we should update that file before or alongside implementation.
-
-## 5. Photography workflow
-
-Photography is handled as a small editorial pipeline.
-
-- Admin uploads preserve original file quality.
-- Photo metadata is written into structured config.
-- Public albums show collage-style covers.
-- Album detail pages support larger viewing and sequential navigation.
-- Private photos are gated through the session/token flow in `app/api/auth/`
-  and `app/api/photo/`.
-
-## 6. Data and server responsibilities
-
-Server-side code under `app/api/` should handle:
-
-- authentication and authorization,
-- repository-backed config updates,
-- deployment and CI status reporting,
-- media upload and retrieval,
-- structured metadata endpoints.
-
-Client components should not duplicate those responsibilities.
-
-## 7. Practical rules
-
-- Prefer config-driven copy over hardcoded page text.
-- Prefer small, focused components over large page-local branches.
-- Keep public pages readable in both Chinese and English without mixing the
-  two arbitrarily.
-- Keep photography original quality intact; display can be optimized, but the
-  source asset should not be degraded.
-- Avoid introducing new visual patterns unless they are captured in
-  `DESIGN.md`.
-
+文章生成、研究、预览、GitHub 写入、部署和公网验证是不同阶段。GitHub 发布适配器只接受明确发布动作，并要求完整写入回执；本地测试不会触发真实外部写入。

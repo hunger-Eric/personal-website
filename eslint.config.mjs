@@ -9,10 +9,13 @@ const eslintConfig = defineConfig([
   globalIgnores([
     // Default ignores of eslint-config-next:
     ".next/**",
-    "docker-data/**",
+    ".open-next/**",
+    "coverage/**",
+    "output/**",
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "workers/**/worker-configuration.d.ts",
   ]),
   {
     files: ["scripts/**/*.js", "tailwind.config.js"],

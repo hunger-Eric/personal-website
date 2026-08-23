@@ -1,15 +1,12 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import React from "react";
 
 import { ContactQrCard } from "@/components/contact/ContactQrCard";
-import { CopyContactButton } from "@/components/contact/CopyContactButton";
 
 vi.mock("lucide-react", () => ({
   ArrowRight: () => React.createElement("svg"),
-  Check: () => React.createElement("svg"),
-  Copy: () => React.createElement("svg"),
   MessageCircle: () => React.createElement("svg"),
   X: () => React.createElement("svg"),
 }));
@@ -31,20 +28,5 @@ describe("contact interactions", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Close QR code" }));
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-  });
-
-  it("copies contact text", async () => {
-    const writeText = vi.fn().mockResolvedValue(undefined);
-    Object.assign(navigator, {
-      clipboard: { writeText },
-    });
-
-    render(React.createElement(CopyContactButton, { value: "itheheda@gmail.com" }));
-    fireEvent.click(screen.getByRole("button", { name: /copy/i }));
-
-    await waitFor(() => {
-      expect(writeText).toHaveBeenCalledWith("itheheda@gmail.com");
-    });
-    expect(screen.getByText("Copied")).toBeInTheDocument();
   });
 });

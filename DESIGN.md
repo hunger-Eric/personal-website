@@ -1,101 +1,76 @@
-# Enterprise AI Automation Website Design System
+# 实解智能品牌与网站设计合同
 
-Version: 3.0
-Owner: personal-website
-Goal: help a small-business owner or operations lead recognize a workflow problem, understand the delivery method, inspect real evidence, and submit the workflow for screening.
+版本：4.0
+更新：2026-08-23
 
-## Positioning
+这是仓库唯一的品牌与视觉设计权威。历史方案、阶段性截图和已完成实施计划不得作为第二套设计系统继续影响代码。
 
-The public site sells a transferable diagnosis-and-delivery method, not a fixed vertical template. Projects are evidence of system capabilities; they must never imply that another customer needs the same business logic.
+## 品牌核心
 
-Every public claim must come from the reviewed content model. Do not invent metrics, customer identities, logos, testimonials, or outcomes.
+- 品牌名称：实解智能
+- Slogan：让 AI 真正在企业里跑起来。
+- 品类：企业 AI 系统设计与交付
+- 定位：从真实流程诊断、人机边界设计到系统开发与交付，把 AI 做成可运行、可审核、可恢复的业务系统。
+- 主要受众：存在重复人工、跨系统流转或非结构化资料处理问题的中小企业负责人和业务负责人。
 
-## Visual direction
+“fengc”只用于说明责任主体或文章作者，“AI Native Lab”与 DevfolioX 不再是公开主品牌。中文是主要品牌语言，不设置独立英文品牌名。
 
-The public surface uses one restrained system:
+## 表达原则
 
-- warm ivory paper: `#F3EFE6`
-- graphite: `#171916`
-- caramel amber: `#C47A18`
-- warm hairlines, compact mono labels, strong editorial headings
-- square or lightly rounded geometry; no decorative gradient, neon, glass, or random project color
+1. 先讲业务问题，再讲 AI 能力。
+2. 先展示经审核的真实证据，再介绍技术实现。
+3. 不使用“赋能”“颠覆”“全自动”等无法验证的承诺。
+4. 不把演示、内部工具或开发中产品写成已完成客户交付。
+5. 明确人工审核、异常恢复、隐私和适用边界。
+6. 不发明指标、客户身份、Logo、评价或结果。
 
-Use asymmetric grids on desktop and one-column flow on mobile. Prefer process maps, evidence rails, tabs, metadata and grouped sections over long article-like stacks of identical cards.
+## 信息架构
 
-Real project interfaces and reviewed case films are the primary visual evidence. Do not replace them with generic AI imagery, fake dashboards, CSS drawings, or invented screenshots.
+- 企业服务：适合处理的问题、诊断与交付方法。
+- 实解案例：原流程、系统接管、人工作业、交付物、恢复与限制。
+- 实解产品：独立产品及其真实状态，与客户案例分开。
+- 实解洞察：企业 AI 落地、工作流、人机边界、可靠性与 AI 可见性内容。
+- 关于实解：方法、合作边界和责任主体。
 
-## Public journey
+公开路径为 `/`、`/services`、`/projects`、`/projects/[id]`、`/articles`、`/about`、`/contact`。摄影、简历、通用链接页、自定义页面和媒体聚合不是公开导航面。
 
-1. `/` — recognize a problem, understand system takeover, inspect evidence, see the method.
-2. `/projects` — compare reviewed public cases without exposing private sources.
-3. `/projects/[id]` — inspect workflow, human boundary, outputs, recovery and limitations.
-4. `/contact` — submit a concrete workflow for human screening and a possible 30-minute diagnosis.
-5. `/about` — understand suitable work, boundaries and delivery method.
+## 视觉系统
 
-Navigation must keep this decision path visible. Photography, resume, generic social links, custom pages and media aggregation are not public navigation surfaces.
+- 暖纸色：`#F3EFE6`
+- 石墨色：`#171916`
+- 焦糖琥珀：`#C47A18`
+- 暖色发丝线、紧凑等宽标签、编辑感标题
+- 方形或轻微圆角；禁止装饰性渐变、霓虹、玻璃效果与随机项目色
+- 桌面使用非对称网格，移动端按阅读顺序单列
 
-## Shared content contract
+官网固定使用这一套浅色视觉，不提供主题切换或旧色板。优先使用流程图、证据轨、状态、元数据和真实项目界面；禁止用通用 AI 图片、假仪表盘、CSS 绘图或虚构截图替代证据。
 
-Human pages, metadata, JSON-LD, sitemap, `llms.txt`, `brand-facts.json`, and `/ai/*.json` must derive from the same reviewed sources:
+## 内容合同
+
+人类页面、元数据、JSON-LD、sitemap、`llms.txt`、`brand-facts.json` 与 `/ai/*.json` 必须来自同一组已审核来源：
 
 - `config/public-identity.ts`
 - `config/service-method.ts`
 - `config/public-project-cases.json`
 - `config/public-content.ts`
 
-Locale-specific leaf components should be progressively moved into this resolver layer. Public project data may only enter `public-project-cases.json` after privacy review.
+项目事实只有在隐私与真实性审核后才能进入公开模型。
 
-## Interaction rules
+## 交互与运营工具
 
-- Problem-signal selectors must update the visible workflow model.
-- Case-theatre tabs must reveal meaningful states, not decorative panels.
-- Mobile navigation stays open until the visitor closes it, chooses a route, or presses Escape; scrolling alone must not dismiss it.
-- Contact submission must expose validation, sending, success and retry/error states.
-- Reduced-motion preferences must disable non-essential movement.
+- 导航、主要 CTA、分类、表单和项目体验必须有完整可用状态。
+- 联系表单必须呈现校验、发送、成功和失败/重试状态。
+- 非必要动效尊重 reduced-motion。
+- `/admin/articles` 与 `/admin/crawlers` 延续同一暖纸色/石墨/琥珀系统。
+- 后台只描述真实状态；发布必须由已认证用户明确触发，不能自动重试或自动二次提交。
 
-## Security and privacy boundaries
+## 安全边界
 
-- Admin routes are local-development only and fail closed in production.
-- Contact submissions are size-limited, same-origin checked, honeypot checked, rate-limited and validated before email delivery.
-- Private repository identifiers, raw evidence documents, customer identities and internal paths never enter public bundles.
-- Retired photography authentication and photo APIs must not remain in the production route table.
+- 后台在生产环境失败为 404。
+- 联系请求执行来源、体积、蜜罐、频率与字段校验。
+- 私有仓库标识、原始证据、客户身份与内部路径不得进入公开包。
+- 已退役的摄影鉴权、照片接口、配置编辑器与主题系统不得回到路由表。
 
-## Local article workbench
+## 验收
 
-`/admin/articles` is a local-only working surface for researching, editing and
-publishing one business article at a time. It uses the existing warm-paper,
-graphite and caramel-amber system; amber remains the only action accent. Do not
-use product-marketing gradients, glows or a second status palette.
-
-On desktop, the workbench is a left-aligned header followed by an asymmetric
-two-column grid: the wider editing rail holds the business profile, topic,
-editor fields and source confirmations; the narrow evidence rail holds run
-status, source category/rationale and publication state. On mobile this becomes
-one reading-order column: status, topic, evidence, editor, preview and final
-action. Inputs have labels above them, clear empty/loading/error states, and
-visible keyboard focus.
-
-The page must always state `仅限本地管理台使用；生产环境不会提供此入口。` near
-the header. Preview state is worded exactly `本地预览，尚未发布`; its companion
-action is exactly `上传并发布`. Amber is reserved for that deliberate final
-action. Neutral graphite/gray states describe loading and queued work; a muted
-green may only indicate a verified `已发布` result, and restrained red only
-indicates a failure or blocked validation. No status color alone may carry
-meaning.
-
-The source rail shows each source's category and rationale, then requires at
-least two explicit authoritative-source confirmations before the final action
-is enabled. The preview must use the same server MDX renderer as public
-articles; it is not a client-side approximation. After the one final action,
-the UI may poll publication status but must never submit again automatically.
-
-## Acceptance
-
-- `npm run projects:evidence:audit`
-- `npm run audit:architecture`
-- `npm run lint`
-- `npm run typecheck`
-- `npm test`
-- `npm run build`
-- desktop and 390px mobile browser QA against the approved target image
-- console/error-overlay check and primary CTA, tab, navigation and form-state interaction checks
+`npm run audit:architecture`、`npm run projects:evidence:audit`、`npm run lint`、`npm run typecheck`、`npm test`、`npm run build`，以及 1440px 桌面和 390px 移动端真实浏览器视觉/交互检查。

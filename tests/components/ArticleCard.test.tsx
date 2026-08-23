@@ -12,31 +12,25 @@ vi.mock("next/link", () => ({
 }));
 
 const mockSiteCopy = {
-  hero: { line: "test", description: "test" },
-  about: { heading: "test", socialsButton: "test", techIntro: "test", paragraphs: [], afterTechParagraph: "" },
-  cases: { heading: "test", viewAll: "test", featuredBadge: "test", viewDetails: "test", emptyTitle: "test", emptyDescription: "test" },
-  projects: { heading: "test", viewAll: "test", featuredBadge: "test", viewDetails: "test", emptyTitle: "test", emptyDescription: "test" },
   articles: {
-    heading: "文章", description: "test", viewAll: "test",
     emptyTitle: "test", emptyDescription: "test",
     categoryFallback: "未分类", articlesCountSuffix: "篇", readTimeSuffix: "分钟阅读",
   },
-  photography: { heading: "test", description: "test", ongoing: "test", completed: "test", private: "test", photosSuffix: "test", emptyTitle: "test", emptyDescription: "test" },
 };
 
 vi.mock("@/config/contentCopy", () => ({ getSiteCopy: () => mockSiteCopy }));
 vi.mock("@/config/siteConfig", () => ({ siteConfig: { name: "Test Author" } }));
 
 vi.mock("@/components/LocaleProvider", () => {
-  const LocaleContext = React.createContext({ locale: "zh" as const, t: {}, setLocale: vi.fn(), toggleLocale: vi.fn() });
+  const LocaleContext = React.createContext({ locale: "zh" as const, setLocale: vi.fn(), toggleLocale: vi.fn() });
   return {
     LocaleProvider: ({ children }: { children: React.ReactNode }) =>
-      React.createElement(LocaleContext.Provider, { value: { locale: "zh", t: {}, setLocale: vi.fn(), toggleLocale: vi.fn() } }, children),
+      React.createElement(LocaleContext.Provider, { value: { locale: "zh", setLocale: vi.fn(), toggleLocale: vi.fn() } }, children),
     useLocale: () => React.useContext(LocaleContext),
     LocaleScript: () => null,
   };
 });
-vi.mock("@/config/locale", () => ({ LOCALE_STORAGE_KEY: "devfoliox-locale", getTranslations: () => ({}) }));
+vi.mock("@/config/locale", () => ({ LOCALE_STORAGE_KEY: "shijie-intelligence-locale" }));
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 describe("ArticleCard", () => {

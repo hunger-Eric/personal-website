@@ -5,7 +5,7 @@ import { defaultArticleBusinessProfile } from "@/config/article-business-profile
 import { createAnySearchResearchAdapter } from "./anysearch";
 import { ArticleEditsInputSchema, createArticleWorkflow, type ArticleEditsInput } from "./core";
 import { createArticleModelConfig, OpenAICompatibleModelProvider } from "./model";
-import { createPersonalWebsitePublisher } from "./publisher";
+import { createWebsitePublisher } from "./publisher";
 import { createArticleWorkbenchRunStore } from "./run-store";
 import { createOfflineArticleWorkbenchFixtures } from "./offline-fixtures";
 import { BusinessProfileSchema, PublicationReceiptSchema, SourceBoundArticleProposalSchema, SourcePacketResultSchema, type ArticleWorkbenchRun, type BusinessProfile } from "./contracts";
@@ -64,7 +64,7 @@ export function createArticleWorkbenchServer(environment: Record<string, string 
   };
   const fixtures = offlineFixturesFor(environment);
   const modelConfig = fixtures ? undefined : createArticleModelConfig(environment);
-  const publisher = fixtures?.publisher ?? createPersonalWebsitePublisher({ siteUrl: environment.NEXT_PUBLIC_BASE_URL });
+  const publisher = fixtures?.publisher ?? createWebsitePublisher({ siteUrl: environment.NEXT_PUBLIC_BASE_URL });
   const workflow = createArticleWorkflow({
     profile: profilePort,
     generationPortsForRun(runId) {

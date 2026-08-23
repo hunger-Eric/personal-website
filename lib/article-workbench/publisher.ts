@@ -1,13 +1,13 @@
 import matter from "gray-matter";
 
-import { createRepoFile, DEFAULT_REPO_BRANCH, getRepoFile, isValidRepoBranch, type RepoFileWriteReceipt } from "@/lib/github-photo";
+import { createRepoFile, DEFAULT_REPO_BRANCH, getRepoFile, isValidRepoBranch, type RepoFileWriteReceipt } from "@/lib/github-repository";
 import { SITE_URL } from "@/lib/site-url";
 
 import { PublisherConflictError, type ArticlePublicationRecord, type PublicationReceipt, type PublisherPort } from "./contracts";
 
 type RepoFile = Awaited<ReturnType<typeof getRepoFile>>;
 
-export interface PersonalWebsitePublisherOptions {
+export interface WebsitePublisherOptions {
   siteUrl?: string;
   branch?: string;
   getRepoFile?: (path: string, branch?: string) => Promise<RepoFile>;
@@ -21,8 +21,8 @@ export interface PersonalWebsitePublisherOptions {
   fetch?: typeof globalThis.fetch;
 }
 
-export function createPersonalWebsitePublisher(options: PersonalWebsitePublisherOptions = {}): PublisherPort {
-  return new PersonalWebsitePublisher({
+export function createWebsitePublisher(options: WebsitePublisherOptions = {}): PublisherPort {
+  return new WebsitePublisher({
     siteUrl: options.siteUrl ?? SITE_URL,
     branch: options.branch ?? DEFAULT_REPO_BRANCH,
     getRepoFile: options.getRepoFile ?? getRepoFile,
@@ -31,10 +31,10 @@ export function createPersonalWebsitePublisher(options: PersonalWebsitePublisher
   });
 }
 
-class PersonalWebsitePublisher implements PublisherPort {
+class WebsitePublisher implements PublisherPort {
   private readonly siteUrl: URL;
 
-  constructor(private readonly options: Required<PersonalWebsitePublisherOptions>) {
+  constructor(private readonly options: Required<WebsitePublisherOptions>) {
     this.siteUrl = canonicalSiteUrl(options.siteUrl);
     if (!isValidRepoBranch(options.branch)) throw new Error("PUBLISHER_CONFIGURATION_INVALID");
   }

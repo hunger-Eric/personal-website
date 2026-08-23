@@ -24,7 +24,8 @@ export function JsonLd({ data }: JsonLdProps) {
         "@context": "https://schema.org",
         "@graph": data.map((item) => {
           // Remove @context from individual items since we have it at top level
-          const { "@context": _, ...rest } = item as Record<string, unknown>;
+          const rest = { ...item };
+          delete rest["@context"];
           return rest;
         }),
       }

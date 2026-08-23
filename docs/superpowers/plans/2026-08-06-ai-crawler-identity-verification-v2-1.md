@@ -1,5 +1,7 @@
 # AI Crawler Identity Verification V2.1 Implementation Plan
 
+> 历史实施记录：仅用于追溯该子系统的设计与验收背景，不是当前品牌或视觉权威；当前实现以代码、`DESIGN.md`、`docs/architecture.md` 和 `docs/PROJECT-STATE.md` 为准。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 在不改变 V1 正式统计和官网响应的前提下，为 OpenAI、Perplexity 和首批中国爬虫增加四级身份验证影子统计与最小后台预览。

@@ -7,7 +7,6 @@ import "./globals.css";
 
 import { publicIdentity } from "@/config/public-identity";
 import { siteConfig } from "@/config/siteConfig";
-import { viewportThemeColors } from "@/config/visualTokens";
 
 import { NavbarCentered } from "@/components/NavbarCenteredDesktop";
 import NavbarCenteredMobile from "@/components/NavbarCenteredMobile";
@@ -15,7 +14,6 @@ import { Footer } from "@/components/Footer";
 import { ConditionalChrome } from "@/components/ConditionalChrome";
 import { JsonLd } from "@/components/JsonLd";
 import { PageTransition } from "@/components/PageTransition";
-import { ThemeProvider, ThemeScript } from "@/components/ThemeProvider";
 import { LocaleProvider } from "@/components/LocaleProvider";
 import {
   generateProfessionalServiceSchema,
@@ -41,10 +39,7 @@ const CF_ANALYTICS_TOKEN = process.env.NEXT_PUBLIC_CF_ANALYTICS_TOKEN;
 
 // Viewport configuration
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: viewportThemeColors.light },
-    { media: "(prefers-color-scheme: dark)", color: viewportThemeColors.dark },
-  ],
+  themeColor: "#f3efe6",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -161,9 +156,6 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* Theme script - prevents flash of wrong theme */}
-        <ThemeScript />
-
         {/*
           Disable native browser scroll restoration BEFORE the browser tries to
           jump back to the previously-saved scroll position on refresh. Without
@@ -201,8 +193,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
-        <ThemeProvider>
-          <LocaleProvider>
+        <LocaleProvider>
           {/* Cloudflare Web Analytics — privacy-friendly, no cookies. Replaces
               @vercel/analytics, whose beacon doesn't reliably reach Vercel from
               Cloudflare Workers. */}
@@ -244,8 +235,7 @@ export default function RootLayout({
           <ConditionalChrome>
             <Footer />
           </ConditionalChrome>
-          </LocaleProvider>
-        </ThemeProvider>
+        </LocaleProvider>
       </body>
     </html>
   );

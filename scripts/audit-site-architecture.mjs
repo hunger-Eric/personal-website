@@ -7,10 +7,19 @@ const skipDirs = new Set([
   ".git",
   ".next",
   ".codegraph",
+  ".codex",
   ".artifacts",
+  ".agents",
+  ".mimocode",
+  ".open-next",
+  ".playwright-cli",
   ".private",
+  ".superpowers",
+  ".tmp",
+  ".vercel",
+  "coverage",
   "node_modules",
-  "docker-data",
+  "output",
 ]);
 
 const patterns = {
@@ -22,11 +31,6 @@ const patterns = {
 
 const tokenSourceFiles = new Set([
   "app/globals.css",
-  "config/caseTheme.ts",
-  "config/ogTheme.ts",
-  "config/theme.json",
-  "config/theme.ts",
-  "config/visualTokens.ts",
   "public/manifest.json",
   "tailwind.config.js",
 ]);
@@ -81,7 +85,7 @@ const requiredFiles = [
   "DESIGN.md",
   "docs/PROJECT-STATE.md",
   "components/system/index.ts",
-  "components/motion/index.ts",
+  "components/motion/usePrefersReducedMotion.ts",
   "lib/ai-readable/routes.ts",
   "app/.well-known/brand-facts.json/route.ts",
 ];

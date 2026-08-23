@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import type { ArticlePublicationRecord } from "@/lib/article-workbench/contracts";
-import { createPersonalWebsitePublisher } from "@/lib/article-workbench/publisher";
+import { createWebsitePublisher } from "@/lib/article-workbench/publisher";
 
 const expectedHash = `sha256:${"e".repeat(64)}`;
 const differentHash = `sha256:${"d".repeat(64)}`;
@@ -24,7 +24,7 @@ function existing(contentHash: string) {
   };
 }
 
-function publisher(options: Partial<Parameters<typeof createPersonalWebsitePublisher>[0]> = {}) {
+function publisher(options: Partial<Parameters<typeof createWebsitePublisher>[0]> = {}) {
   const getRepoFile = vi.fn().mockResolvedValue(null);
   const createRepoFile = vi.fn().mockResolvedValue({ contentSha: "content-sha", commitSha: "commit-sha", path: article.path });
   const fetch = vi.fn();
@@ -33,11 +33,11 @@ function publisher(options: Partial<Parameters<typeof createPersonalWebsitePubli
     getRepoFile: dependencies.getRepoFile,
     createRepoFile: dependencies.createRepoFile,
     fetch: dependencies.fetch,
-    publisher: createPersonalWebsitePublisher(dependencies),
+    publisher: createWebsitePublisher(dependencies),
   };
 }
 
-describe("PersonalWebsitePublisher", () => {
+describe("WebsitePublisher", () => {
   it("creates exactly the record-owned path and returns a submitted receipt", async () => {
     const { publisher: subject, getRepoFile, createRepoFile, fetch } = publisher();
 
@@ -156,7 +156,7 @@ describe("PersonalWebsitePublisher", () => {
 
   it.each(["http://example.com", "https://example.com/path", "https://user@example.com"])
   ("rejects an unsafe canonical site URL: %s", (siteUrl) => {
-    expect(() => createPersonalWebsitePublisher({ siteUrl })).toThrow("PUBLISHER_CONFIGURATION_INVALID");
+    expect(() => createWebsitePublisher({ siteUrl })).toThrow("PUBLISHER_CONFIGURATION_INVALID");
   });
 
   it("fails closed on malformed remote files and incomplete create receipts", async () => {
@@ -195,7 +195,7 @@ describe("PersonalWebsitePublisher", () => {
   });
 
   it("keeps the default site configuration local and rejects incomplete same-hash remote identities", async () => {
-    expect(() => createPersonalWebsitePublisher()).not.toThrow();
+    expect(() => createWebsitePublisher()).not.toThrow();
     const { publisher: subject } = publisher({
       getRepoFile: vi.fn().mockResolvedValue({ ...existing(article.contentHash), sha: "" }),
     });

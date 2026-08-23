@@ -5,16 +5,13 @@ services:
       dockerfile: Dockerfile
       args:
         ENABLE_ADMIN: "true"
-        ADMIN_TOKEN: "local-admin-token-2026"
-        ADMIN_PASSWORD: "local-admin-pass-2026"
+        ADMIN_TOKEN: "${ADMIN_TOKEN}"
+        ADMIN_PASSWORD: "${ADMIN_PASSWORD}"
     container_name: personal-website
     ports:
       - "3100:3100"
     environment:
       - ENABLE_ADMIN=true
-      - ADMIN_TOKEN=local-admin-token-2026
-      - ADMIN_PASSWORD=local-admin-pass-2026
-    volumes:
-      - /mnt/e/project/personal-website/docker-data/content:/app/content
-      - /mnt/e/project/personal-website/docker-data/config:/app/config
+      - ADMIN_TOKEN=${ADMIN_TOKEN}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
     restart: unless-stopped

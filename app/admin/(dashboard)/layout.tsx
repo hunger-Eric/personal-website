@@ -7,7 +7,7 @@ import { isAdminEnabled, verifyAdminToken } from "@/lib/admin-guard";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Admin | fengc",
+  title: "管理后台 | 实解智能",
   robots: { index: false, follow: false },
 };
 

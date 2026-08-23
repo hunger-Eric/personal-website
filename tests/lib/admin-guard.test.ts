@@ -114,7 +114,7 @@ describe("adminGuard", () => {
         nextUrl: new URL(url),
         headers: new Headers(),
         cookies: {
-          get: (name: string) =>
+          get: () =>
             tokenCookie ? { value: tokenCookie } : undefined,
         },
       } as any;

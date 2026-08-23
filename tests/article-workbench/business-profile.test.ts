@@ -3,10 +3,6 @@ import { describe, expect, it } from "vitest";
 import { getLocalizedPublicContent } from "@/config/public-content";
 import { defaultArticleBusinessProfile } from "@/config/article-business-profile";
 import { BusinessProfileSchema } from "@/lib/article-workbench/contracts";
-import {
-  createBusinessProfilePort,
-  resolveSavedBusinessProfile,
-} from "@/lib/article-workbench/business-profile";
 
 describe("article business profile", () => {
   it("rejects an empty service list", () => {
@@ -67,26 +63,6 @@ describe("article business profile", () => {
         label: publicContent.cta.primary.label,
         href: publicContent.cta.primary.href,
       },
-    });
-  });
-
-  it("rejects an invalid saved profile before it reaches the domain", () => {
-    expect(() =>
-      resolveSavedBusinessProfile({
-        ...defaultArticleBusinessProfile,
-        unsupported: true,
-      })
-    ).toThrow();
-  });
-
-  it("returns validated saved profile data through the business profile port", async () => {
-    const port = createBusinessProfilePort({
-      ...defaultArticleBusinessProfile,
-      audience: "Reviewed saved audience",
-    });
-
-    await expect(port.getProfile()).resolves.toMatchObject({
-      audience: "Reviewed saved audience",
     });
   });
 });

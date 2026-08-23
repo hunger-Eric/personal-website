@@ -9,7 +9,7 @@ import { serviceMethod } from "@/config/service-method";
 import { SITE_URL } from "@/lib/site-url";
 
 /**
- * Person schema - for the portfolio owner
+ * Person schema - for the service owner
  */
 export function generatePersonSchema() {
   const githubSocial = siteConfig.socialsList.find((s) => s.key === "github");
@@ -41,7 +41,7 @@ export function generatePersonSchema() {
 }
 
 /**
- * WebSite schema - for the portfolio site
+ * WebSite schema - for the public service site
  */
 export function generateWebSiteSchema() {
   return {
@@ -277,7 +277,7 @@ export function generateBreadcrumbSchema(
 }
 
 /**
- * ProfilePage schema - for the main portfolio page
+ * ProfilePage schema - for the service owner page
  */
 export function generateProfilePageSchema() {
   return {

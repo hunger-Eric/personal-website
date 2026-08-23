@@ -1,5 +1,7 @@
 # Website Article Workbench Implementation Plan
 
+> 历史实施记录：仅用于追溯该子系统的设计与验收背景，不是当前品牌或视觉权威；当前实现以代码、`DESIGN.md`、`docs/architecture.md` 和 `docs/PROJECT-STATE.md` 为准。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `subagent-driven-development` (only when the user explicitly authorizes subagents) or `executing-plans` to implement this plan task-by-task. Track progress with the checkboxes below.
 
 **Goal:** Add a local-only article workbench that turns reviewed business facts and public evidence into source-backed website articles, supports human editing and exact preview, and publishes once to the existing website after an explicit user action.

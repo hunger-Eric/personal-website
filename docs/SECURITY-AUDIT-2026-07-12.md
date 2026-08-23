@@ -1,5 +1,7 @@
 # Adversarial Implementation Audit — 2026-07-12
 
+> 历史实施记录：仅用于追溯该子系统的设计与验收背景，不是当前品牌或视觉权威；当前实现以代码、`DESIGN.md`、`docs/architecture.md` 和 `docs/PROJECT-STATE.md` 为准。
+
 Scope: public Next.js routes, contact intake, admin boundary, retired photography surface, public evidence data and production dependencies.
 
 This is a source/test/build adversarial pass, not a completed multi-worker Codex Security Deep Scan. Browser-runtime validation remains separate.

@@ -1,5 +1,7 @@
 # 私有 AI 爬虫检测后台实施计划
 
+> 历史实施记录：仅用于追溯该子系统的设计与验收背景，不是当前品牌或视觉权威；当前实现以代码、`DESIGN.md`、`docs/architecture.md` 和 `docs/PROJECT-STATE.md` 为准。
+
 > 当前计划只针对 `E:\project\personal-website`。生产部署和 QA 必须以实际平台证据为准；本计划本身不代表已部署。
 
 ## 目标

@@ -1,5 +1,7 @@
 # AI 爬虫身份验证 V2 设计
 
+> 历史实施记录：仅用于追溯该子系统的设计与验收背景，不是当前品牌或视觉权威；当前实现以代码、`DESIGN.md`、`docs/architecture.md` 和 `docs/PROJECT-STATE.md` 为准。
+
 日期：2026-08-06
 状态：用户已批准，实施计划已编写
 适用项目：`E:\project\personal-website`

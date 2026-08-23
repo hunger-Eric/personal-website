@@ -2,9 +2,6 @@
 // scripts/validate-env.js
 // Validates environment variables before build
 
-const fs = require("fs");
-const path = require("path");
-
 // ANSI colors
 const colors = {
   reset: "\x1b[0m",
@@ -18,32 +15,13 @@ function log(message, color = "") {
   console.log(`${color}${message}${colors.reset}`);
 }
 
-// Load site config to check which features are enabled
-const CONFIG_PATH = path.join(process.cwd(), "config", "site.json");
-let siteConfig = {};
-try {
-  if (fs.existsSync(CONFIG_PATH)) {
-    siteConfig = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
-  }
-} catch {
-  // Config not found, use defaults
-}
-
-const sections = siteConfig.sections || {};
-
 // Define environment variable requirements
 const ENV_VARS = [
   {
     name: "GITHUB_TOKEN",
     required: false,
-    description: "GitHub Personal Access Token for contributions graph",
-    usedBy: ["Contribution Graph", "GitHub Stats"],
-  },
-  {
-    name: "GITHUB_USERNAME",
-    required: false,
-    description: "Default GitHub username",
-    usedBy: ["Contribution Graph", "Projects"],
+    description: "GitHub token used when the article workbench publishes an approved article",
+    usedBy: ["Article Workbench"],
   },
   {
     name: "NEXT_PUBLIC_BASE_URL",
@@ -54,17 +32,15 @@ const ENV_VARS = [
   },
   {
     name: "RESEND_API_KEY",
-    required: sections.contact === true,
+    required: false,
     description: "Resend API key for email delivery",
     usedBy: ["Contact Form"],
-    requiredIf: "contact section is enabled",
   },
   {
     name: "CONTACT_TO_EMAIL",
-    required: sections.contact === true,
+    required: false,
     description: "Email address to receive contact form submissions",
     usedBy: ["Contact Form"],
-    requiredIf: "contact section is enabled",
   },
   {
     name: "DISCORD_CONTACT_WEBHOOK_URL",
@@ -83,13 +59,6 @@ const ENV_VARS = [
     required: false,
     description: "Telegram chat ID for contact notifications",
     usedBy: ["Contact Form"],
-  },
-  {
-    name: "YOUTUBE_API_KEY",
-    required: sections.youtube === true,
-    description: "YouTube Data API v3 key",
-    usedBy: ["YouTube Videos"],
-    requiredIf: "youtube section is enabled",
   },
   {
     name: "NEXT_PUBLIC_CF_ANALYTICS_TOKEN",
