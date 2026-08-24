@@ -1,8 +1,197 @@
 "use client";
+
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, CheckCircle2, Info } from "lucide-react";
+
 import { useLocale } from "@/components/LocaleProvider";
+import { localizePublicPath } from "@/config/locale";
 import { getLocalizedPublicContent } from "@/config/public-content";
 import { getWebsiteProject } from "@/config/website-projects";
 import OpenGeoParticipatoryDemo from "./OpenGeoParticipatoryDemo";
-export function PublicProjectDetail({id}:{id:string}){const{locale}=useLocale();const zh=locale==="zh";const project=getWebsiteProject(id,locale);const reviewed=getLocalizedPublicContent(locale).projects.find(item=>item.id===id);if(!project)return null;const sections=reviewed?[["customer-problem",zh?"原来的流程":"Previous workflow",reviewed.originalWorkflow],["system-workflow",zh?"系统接管什么":"What the system takes over",reviewed.processing],["human-review",zh?"人工保留什么":"What remains human",reviewed.humanReview],["delivered-output",zh?"最终交付什么":"Delivered outputs",reviewed.outputs],["usage-boundary",zh?"使用范围":"Usage scope",reviewed.limitations]] as const:[];return <div className="min-h-screen overflow-x-hidden bg-surface-paper pb-20 pt-28 text-surface-paper-foreground sm:pt-32"><div className="mx-auto max-w-6xl px-4"><Link href="/projects" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" aria-hidden/>{zh?"返回项目库":"Back to projects"}</Link><header id="project-overview" className="mt-6 grid gap-8 border-y border-hairline py-9 lg:grid-cols-[1fr_0.72fr] lg:items-end"><div><p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-accent">{project.category}</p><h1 className="mt-4 text-4xl font-semibold tracking-[-0.045em] text-foreground sm:text-6xl">{project.name}</h1><p className="mt-5 max-w-3xl text-base leading-8 text-muted-foreground">{project.summary}</p></div><div><span className="border border-hairline px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{project.status}</span><ul className="mt-5 space-y-2">{project.facts.map(fact=><li key={`${fact.kind}-${fact.text}`} className="flex gap-2 text-sm leading-6 text-foreground/80"><CheckCircle2 className="mt-1 h-4 w-4 flex-none text-accent" aria-hidden/><span>{fact.text}</span></li>)}</ul></div></header>{project.interactive?<div id="open-geo-demo" className="mt-10 border border-hairline bg-surface-graphite"><OpenGeoParticipatoryDemo/></div>:null}{reviewed?<><p className="mt-10 border-l-2 border-accent pl-5 text-sm font-medium leading-7 text-foreground">{reviewed.currentStatus}</p><div className="mt-10 grid gap-x-12 gap-y-10 lg:grid-cols-2">{sections.map(([anchor,title,items])=><section id={anchor} key={anchor} className="border-t border-hairline pt-5"><h2 className="text-xl font-semibold text-foreground">{title}</h2><ul className="mt-5 space-y-3">{items.map(item=><li key={item} className="flex gap-3 text-sm leading-7 text-muted-foreground"><CheckCircle2 className="mt-1 h-4 w-4 flex-none text-accent" aria-hidden/><span>{item}</span></li>)}</ul></section>)}</div></>:!project.interactive?<section className="mt-10 border border-hairline bg-surface-paper-elevated p-6"><div className="flex gap-3"><Info className="mt-1 h-5 w-5 flex-none text-accent" aria-hidden/><div><h2 className="text-xl font-semibold text-foreground">{zh?"公开材料整理中":"Public materials in review"}</h2><p className="mt-2 text-sm leading-7 text-muted-foreground">{zh?"目前不展示客户、指标、交付状态或互动演示；待材料完成公开审核后再补充。":"Customer details, metrics, delivery status, and an interactive demo are not shown until public review is complete."}</p></div></div></section>:null}<div className="mt-14 flex flex-col items-start justify-between gap-5 bg-surface-graphite p-7 text-surface-graphite-foreground sm:flex-row sm:items-center"><p className="max-w-2xl text-lg font-semibold">{project.liveUrl?(zh?"Open GEO Console 已开放使用，可直接进入网站开始体验。":"Open GEO Console is available now. Visit the live website to try it."):project.interactive?(zh?"完成模拟体验后，可以把项目与场景上下文一起带到联系页。":"After the simulation, carry project and scenario context to contact."):(zh?"你的业务不需要复制这个项目；我们会从实际流程重新诊断。":"Your business does not need to copy this project; diagnosis starts from the actual workflow.")}</p><Link href={project.liveUrl??(project.interactive?"#open-geo-demo":"/contact")} className="inline-flex min-h-11 items-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground">{project.liveUrl?(zh?"前往 Open GEO":"Open live site"):project.interactive?(zh?"开始模拟体验":"Start the simulation"):(zh?"讨论你的流程":"Discuss your workflow")}<ArrowRight className="h-4 w-4" aria-hidden/></Link></div></div></div>}
+
+export function PublicProjectDetail({ id }: { id: string }) {
+  const { locale } = useLocale();
+  const zh = locale === "zh";
+  const project = getWebsiteProject(id, locale);
+  const reviewed = getLocalizedPublicContent(locale).projects.find(
+    (item) => item.id === id
+  );
+  if (!project) return null;
+
+  const sections = reviewed
+    ? ([
+        [
+          "customer-problem",
+          zh ? "原来的流程" : "Previous workflow",
+          reviewed.originalWorkflow,
+        ],
+        [
+          "system-workflow",
+          zh ? "系统接管什么" : "What the system takes over",
+          reviewed.processing,
+        ],
+        [
+          "human-review",
+          zh ? "人工保留什么" : "What remains human",
+          reviewed.humanReview,
+        ],
+        [
+          "delivered-output",
+          zh ? "最终交付什么" : "Delivered outputs",
+          reviewed.outputs,
+        ],
+        [
+          "usage-boundary",
+          zh ? "使用范围" : "Usage scope",
+          reviewed.limitations,
+        ],
+      ] as const)
+    : [];
+
+  const contactHref = localizePublicPath("/contact", locale);
+  const actionHref =
+    project.liveUrl ?? (project.interactive ? "#open-geo-demo" : contactHref);
+
+  return (
+    <div className="min-h-screen overflow-x-hidden bg-surface-paper pb-20 pt-28 text-surface-paper-foreground sm:pt-32">
+      <div className="mx-auto max-w-6xl px-4">
+        <Link
+          href={localizePublicPath("/projects", locale)}
+          className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" aria-hidden />
+          {zh ? "返回项目库" : "Back to projects"}
+        </Link>
+
+        <header
+          id="project-overview"
+          className="mt-6 grid gap-8 border-y border-hairline py-9 lg:grid-cols-[1fr_0.72fr] lg:items-end"
+        >
+          <div>
+            <p className="font-mono text-xs font-semibold uppercase tracking-[0.18em] text-accent">
+              {project.category}
+            </p>
+            <h1 className="mt-4 text-4xl font-semibold tracking-[-0.045em] text-foreground sm:text-6xl">
+              {project.name}
+            </h1>
+            <p className="mt-5 max-w-3xl text-base leading-8 text-muted-foreground">
+              {project.summary}
+            </p>
+          </div>
+          <div>
+            <span className="border border-hairline px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">
+              {project.status}
+            </span>
+            <ul className="mt-5 space-y-2">
+              {project.facts.map((fact) => (
+                <li
+                  key={`${fact.kind}-${fact.text}`}
+                  className="flex gap-2 text-sm leading-6 text-foreground/80"
+                >
+                  <CheckCircle2
+                    className="mt-1 h-4 w-4 flex-none text-accent"
+                    aria-hidden
+                  />
+                  <span>{fact.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </header>
+
+        {project.interactive ? (
+          <div
+            id="open-geo-demo"
+            className="mt-10 border border-hairline bg-surface-graphite"
+          >
+            <OpenGeoParticipatoryDemo />
+          </div>
+        ) : null}
+
+        {reviewed ? (
+          <>
+            <p className="mt-10 border-l-2 border-accent pl-5 text-sm font-medium leading-7 text-foreground">
+              {reviewed.currentStatus}
+            </p>
+            <div className="mt-10 grid gap-x-12 gap-y-10 lg:grid-cols-2">
+              {sections.map(([anchor, title, items]) => (
+                <section
+                  id={anchor}
+                  key={anchor}
+                  className="border-t border-hairline pt-5"
+                >
+                  <h2 className="text-xl font-semibold text-foreground">
+                    {title}
+                  </h2>
+                  <ul className="mt-5 space-y-3">
+                    {items.map((item) => (
+                      <li
+                        key={item}
+                        className="flex gap-3 text-sm leading-7 text-muted-foreground"
+                      >
+                        <CheckCircle2
+                          className="mt-1 h-4 w-4 flex-none text-accent"
+                          aria-hidden
+                        />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          </>
+        ) : !project.interactive ? (
+          <section className="mt-10 border border-hairline bg-surface-paper-elevated p-6">
+            <div className="flex gap-3">
+              <Info className="mt-1 h-5 w-5 flex-none text-accent" aria-hidden />
+              <div>
+                <h2 className="text-xl font-semibold text-foreground">
+                  {zh ? "公开材料整理中" : "Public materials in review"}
+                </h2>
+                <p className="mt-2 text-sm leading-7 text-muted-foreground">
+                  {zh
+                    ? "目前不展示客户、指标、交付状态或互动演示；待材料完成公开审核后再补充。"
+                    : "Customer details, metrics, delivery status, and an interactive demo are not shown until public review is complete."}
+                </p>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        <div className="mt-14 flex flex-col items-start justify-between gap-5 bg-surface-graphite p-7 text-surface-graphite-foreground sm:flex-row sm:items-center">
+          <p className="max-w-2xl text-lg font-semibold">
+            {project.liveUrl
+              ? zh
+                ? "Open GEO Console 已开放使用，可直接进入网站开始体验。"
+                : "Open GEO Console is available now. Visit the live website to try it."
+              : project.interactive
+                ? zh
+                  ? "完成模拟体验后，可以把项目与场景上下文一起带到联系页。"
+                  : "After the simulation, carry project and scenario context to contact."
+                : zh
+                  ? "你的业务不需要复制这个项目；我们会从实际流程重新诊断。"
+                  : "Your business does not need to copy this project; diagnosis starts from the actual workflow."}
+          </p>
+          <Link
+            href={actionHref}
+            className="inline-flex min-h-11 items-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground"
+          >
+            {project.liveUrl
+              ? zh
+                ? "前往 Open GEO"
+                : "Open live site"
+              : project.interactive
+                ? zh
+                  ? "开始模拟体验"
+                  : "Start the simulation"
+                : zh
+                  ? "讨论你的流程"
+                  : "Discuss your workflow"}
+            <ArrowRight className="h-4 w-4" aria-hidden />
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}

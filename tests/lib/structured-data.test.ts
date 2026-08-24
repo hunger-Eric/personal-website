@@ -467,6 +467,7 @@ describe("public enterprise structured data", () => {
 
     expect(person["@type"]).toBe("Organization");
     expect(person.name).toBe("实解智能");
+    expect(person.alternateName).toBe("SolveReal Systems");
     expect(person.description).toContain("人工衔接");
     expect(website.dateModified).toBe("2026-08-23");
     expect(website["@id"]).toBe(`${BASE_URL}/#website`);
@@ -476,6 +477,16 @@ describe("public enterprise structured data", () => {
     expect(service.provider).toEqual({ "@id": `${BASE_URL}/#organization` });
     expect(service.potentialAction.target).toBe(`${BASE_URL}/contact`);
     expect(service.serviceType.length).toBeGreaterThan(1);
+
+    const englishPerson = generatePublicPersonSchema("en");
+    const englishWebsite = generatePublicWebSiteSchema("en");
+    const englishService = generateProfessionalServiceSchema("en");
+    expect(englishPerson.name).toBe("SolveReal Systems");
+    expect(englishPerson.alternateName).toBe("实解智能");
+    expect(englishWebsite.url).toBe(`${BASE_URL}/en`);
+    expect(englishWebsite.inLanguage).toBe("en");
+    expect(englishService.name).toContain("SolveReal Systems");
+    expect(englishService.potentialAction.target).toBe(`${BASE_URL}/en/contact`);
   });
 
   it("uses the public organization consistently for article author and publisher", async () => {

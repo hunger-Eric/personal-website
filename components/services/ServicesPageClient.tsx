@@ -14,6 +14,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { useLocale } from "@/components/LocaleProvider";
 import { getLocalizedPublicContent } from "@/config/public-content";
 import { publicIdentity } from "@/config/public-identity";
+import { localizePublicPath } from "@/config/locale";
 import { SITE_URL } from "@/lib/site-url";
 
 const pageCopy = {
@@ -123,6 +124,7 @@ const pageCopy = {
 
 export function ServicesPageClient() {
   const { locale } = useLocale();
+  const path = (value: string) => localizePublicPath(value, locale);
   const copy = pageCopy[locale];
   const content = getLocalizedPublicContent(locale);
 
@@ -137,14 +139,19 @@ export function ServicesPageClient() {
           description: publicIdentity.description[locale],
           provider: {
             "@type": "Organization",
-            name: publicIdentity.canonicalName,
+            "@id": `${SITE_URL}/#organization`,
+            name: publicIdentity.names[locale],
+            alternateName:
+              locale === "zh"
+                ? publicIdentity.names.en
+                : publicIdentity.names.zh,
             url: SITE_URL,
           },
           audience: {
             "@type": "Audience",
             audienceType: publicIdentity.audience[locale],
           },
-          url: `${SITE_URL}/services`,
+          url: `${SITE_URL}${path("/services")}`,
         }}
       />
       <JsonLd
@@ -296,7 +303,7 @@ export function ServicesPageClient() {
             <p className="mt-4 text-sm leading-7 text-surface-graphite-foreground/70">
               {copy.reviewedDescription}
             </p>
-            <Link href="/projects" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent-light">
+            <Link href={path("/projects")} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent-light">
               {copy.reviewedLink} <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           </div>
@@ -307,7 +314,7 @@ export function ServicesPageClient() {
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">05 / Buyer questions</p>
             <h2 id="faq-title" className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{copy.faqTitle}</h2>
             <p className="mt-4 text-sm leading-7 text-muted-foreground">{copy.faqDescription}</p>
-            <Link href="/articles/enterprise-ai-automation-provider-selection-acceptance-checklist" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent-hover">
+            <Link href={locale === "zh" ? "/articles/enterprise-ai-automation-provider-selection-acceptance-checklist" : "/en/articles"} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent-hover">
               {copy.guideLabel} <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           </div>
@@ -327,7 +334,7 @@ export function ServicesPageClient() {
               <h2 className="text-3xl font-semibold tracking-[-0.035em] text-foreground">{copy.ctaTitle}</h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">{copy.ctaDescription}</p>
             </div>
-            <Link href="/contact" className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent-hover">
+            <Link href={path("/contact")} className="inline-flex min-h-11 shrink-0 items-center justify-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent-hover">
               {copy.ctaLabel} <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           </div>

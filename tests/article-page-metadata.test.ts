@@ -10,7 +10,7 @@ vi.mock("@/lib/mdx/mdx", () => ({
   getRelatedArticles: vi.fn().mockResolvedValue([]),
 }));
 
-import { generateMetadata } from "@/app/articles/[slug]/page";
+import { generateMetadata } from "@/app/(site-zh)/articles/[slug]/page";
 
 describe("article metadata", () => {
   it("emits the workbench content hash only when the article has one", async () => {

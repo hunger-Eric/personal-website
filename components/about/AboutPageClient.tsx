@@ -5,6 +5,7 @@ import { ArrowRight, CheckCircle2 } from "lucide-react";
 
 import { useLocale } from "@/components/LocaleProvider";
 import { getLocalizedPublicContent } from "@/config/public-content";
+import { localizePublicPath } from "@/config/locale";
 
 const pageCopy = {
   zh: {
@@ -29,13 +30,13 @@ const pageCopy = {
     ctaLabel: "提交业务问题",
   },
   en: {
-    eyebrow: "实解智能 · Enterprise AI system design and delivery",
+    eyebrow: "SolveReal Systems · Enterprise AI Systems Design & Delivery",
     heroTitle: "Make AI truly run inside the enterprise.",
     suitableTitle: "Problems we are suited to solve",
     boundariesTitle: "Boundaries we keep clear",
     ownerTitle: "Who leads the project",
     ownerDescription:
-      "实解智能 is currently led by fengc. The same owner coordinates early discussions, workflow mapping, system design, and delivery. You do not need a complete requirements document first—just explain the workflow consuming staff time, the tools already in use, and the problems you are encountering.",
+      "SolveReal Systems is currently led by fengc. The same owner coordinates early discussions, workflow mapping, system design, and delivery. You do not need a complete requirements document first—just explain the workflow consuming staff time, the tools already in use, and the problems you are encountering.",
     projectsLink: "View project cases",
     collaborationTitle: "How collaboration starts",
     collaborationSteps: [
@@ -53,6 +54,7 @@ const pageCopy = {
 
 export function AboutPageClient() {
   const { locale } = useLocale();
+  const path = (value: string) => localizePublicPath(value, locale);
   const copy = pageCopy[locale];
   const content = getLocalizedPublicContent(locale);
 
@@ -100,7 +102,7 @@ export function AboutPageClient() {
             <div className="bg-surface-paper-elevated p-7 sm:p-8">
               <h2 id="project-owner-title" className="text-2xl font-semibold text-foreground">{copy.ownerTitle}</h2>
               <p className="mt-4 text-sm leading-7 text-muted-foreground">{copy.ownerDescription}</p>
-              <Link href="/projects" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+              <Link href={path("/projects")} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
                 {copy.projectsLink} <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>
@@ -109,7 +111,7 @@ export function AboutPageClient() {
               <ol className="mt-4 space-y-3 text-sm leading-7 text-muted-foreground">
                 {copy.collaborationSteps.map((step) => <li key={step}>{step}</li>)}
               </ol>
-              <Link href="/contact" className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
+              <Link href={path("/contact")} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
                 {copy.contactLink} <ArrowRight className="h-4 w-4" aria-hidden />
               </Link>
             </div>
@@ -131,7 +133,7 @@ export function AboutPageClient() {
           <p className="mt-3 max-w-2xl text-sm leading-7 text-surface-graphite-foreground/70">
             {copy.ctaDescription}
           </p>
-          <Link href="/contact" className="mt-6 inline-flex min-h-11 items-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground">
+          <Link href={path("/contact")} className="mt-6 inline-flex min-h-11 items-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground">
             {copy.ctaLabel} <ArrowRight className="h-4 w-4" aria-hidden />
           </Link>
         </div>

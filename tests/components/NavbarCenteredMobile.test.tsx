@@ -87,7 +87,7 @@ describe("NavbarCenteredMobile", () => {
     const defaultExport = await import("@/components/NavbarCenteredMobile");
     const NavbarCenteredMobile = defaultExport.default;
     render(React.createElement(NavbarCenteredMobile));
-    expect(screen.getByText("实解智能")).toBeInTheDocument();
+    expect(screen.getByText("SolveReal Systems")).toBeInTheDocument();
   });
 
   it("keeps the mobile header fixed and visible", async () => {

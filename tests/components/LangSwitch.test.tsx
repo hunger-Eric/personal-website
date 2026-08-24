@@ -7,28 +7,31 @@ vi.mock("lucide-react", () => ({
   Languages: (props: any) => React.createElement("svg", { ...props, "data-testid": "languages-icon" }),
 }));
 
-const mockToggleLocale = vi.fn();
+const mockSetLocale = vi.fn();
 const mockUseLocale = vi.fn(() => ({
-  locale: "zh",
-  toggleLocale: mockToggleLocale,
+  locale: "zh" as "zh" | "en",
+  setLocale: mockSetLocale,
 }));
 
 vi.mock("@/components/LocaleProvider", () => ({
   useLocale: () => mockUseLocale(),
 }));
 
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/services",
+}));
+
 describe("LangSwitch", () => {
   beforeEach(() => {
-    mockToggleLocale.mockReset();
+    mockSetLocale.mockReset();
     mockUseLocale.mockReset();
-    mockUseLocale.mockReturnValue({ locale: "zh", toggleLocale: mockToggleLocale });
+    mockUseLocale.mockReturnValue({ locale: "zh", setLocale: mockSetLocale });
   });
 
-  it("renders a button", async () => {
+  it("renders a real English URL link", async () => {
     const { LangSwitch } = await import("@/components/LangSwitch");
     render(React.createElement(LangSwitch));
-    const btn = screen.getByRole("button");
-    expect(btn).toBeInTheDocument();
+    expect(screen.getByRole("link")).toHaveAttribute("href", "/en/services");
   });
 
   it("displays 'EN' when locale is zh", async () => {
@@ -38,7 +41,7 @@ describe("LangSwitch", () => {
   });
 
   it("displays '中' when locale is en", async () => {
-    mockUseLocale.mockReturnValue({ locale: "en", toggleLocale: mockToggleLocale });
+    mockUseLocale.mockReturnValue({ locale: "en", setLocale: mockSetLocale });
     const { LangSwitch } = await import("@/components/LangSwitch");
     render(React.createElement(LangSwitch));
     expect(screen.getByText("中")).toBeInTheDocument();
@@ -47,21 +50,21 @@ describe("LangSwitch", () => {
   it("has correct aria-label for zh locale", async () => {
     const { LangSwitch } = await import("@/components/LangSwitch");
     render(React.createElement(LangSwitch));
-    expect(screen.getByRole("button")).toHaveAttribute("aria-label", "切换到 English");
+    expect(screen.getByRole("link")).toHaveAttribute("aria-label", "切换到 English");
   });
 
   it("has correct aria-label for en locale", async () => {
-    mockUseLocale.mockReturnValue({ locale: "en", toggleLocale: mockToggleLocale });
+    mockUseLocale.mockReturnValue({ locale: "en", setLocale: mockSetLocale });
     const { LangSwitch } = await import("@/components/LangSwitch");
     render(React.createElement(LangSwitch));
-    expect(screen.getByRole("button")).toHaveAttribute("aria-label", "Switch to 中文");
+    expect(screen.getByRole("link")).toHaveAttribute("aria-label", "Switch to 中文");
   });
 
-  it("calls toggleLocale on click", async () => {
+  it("persists the target locale on click", async () => {
     const { LangSwitch } = await import("@/components/LangSwitch");
     render(React.createElement(LangSwitch));
-    fireEvent.click(screen.getByRole("button"));
-    expect(mockToggleLocale).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("link"));
+    expect(mockSetLocale).toHaveBeenCalledWith("en");
   });
 
   it("renders Languages icon", async () => {

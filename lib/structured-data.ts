@@ -6,6 +6,7 @@ import { siteConfig } from "@/config/siteConfig";
 import { publicContent } from "@/config/public-content";
 import { publicIdentity } from "@/config/public-identity";
 import { serviceMethod } from "@/config/service-method";
+import { localizePublicPath, type Locale } from "@/config/locale";
 import { SITE_URL } from "@/lib/site-url";
 
 /**
@@ -72,8 +73,9 @@ export function generateProjectSchema(project: {
   technologies?: string[];
   stars?: number;
   dateCreated?: string;
-}) {
-  const canonicalUrl = `${SITE_URL}/projects/${project.id}`;
+}, locale: Locale = "zh") {
+  const canonicalPath = localizePublicPath(`/projects/${project.id}`, locale);
+  const canonicalUrl = `${SITE_URL}${canonicalPath}`;
   const sameAs = [project.liveUrl, project.repoUrl].filter(
     (url): url is string => Boolean(url)
   );
@@ -103,15 +105,21 @@ export function generateProjectSchema(project: {
 }
 
 export function generateProjectCollectionSchema(
-  projects: Array<Parameters<typeof generateProjectSchema>[0]>
+  projects: Array<Parameters<typeof generateProjectSchema>[0]>,
+  locale: Locale = "zh"
 ) {
+  const path = localizePublicPath("/projects", locale);
+  const brandName = publicIdentity.names[locale];
   return {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "@id": `${SITE_URL}/projects#collection`,
-    name: `${publicIdentity.canonicalName}项目库`,
-    description: "实解智能公开的企业 AI 系统项目、产品状态与使用边界。",
-    url: `${SITE_URL}/projects`,
+    "@id": `${SITE_URL}${path}#collection`,
+    name: locale === "zh" ? `${brandName}项目库` : `${brandName} projects`,
+    description:
+      locale === "zh"
+        ? "实解智能公开的企业 AI 系统项目、产品状态与使用边界。"
+        : "Enterprise AI systems, product status, and operating boundaries published by SolveReal Systems.",
+    url: `${SITE_URL}${path}`,
     isPartOf: { "@id": `${SITE_URL}/#website` },
     publisher: { "@id": `${SITE_URL}/#organization` },
     mainEntity: {
@@ -119,14 +127,14 @@ export function generateProjectCollectionSchema(
       numberOfItems: projects.length,
       itemListElement: projects.map((project, index) => {
         const item = Object.fromEntries(
-          Object.entries(generateProjectSchema(project)).filter(
+          Object.entries(generateProjectSchema(project, locale)).filter(
             ([key]) => key !== "@context"
           )
         );
         return {
           "@type": "ListItem",
           position: index + 1,
-          url: `${SITE_URL}/projects#${project.id}`,
+          url: `${SITE_URL}${path}#${project.id}`,
           item,
         };
       }),
@@ -149,12 +157,16 @@ export function generateArticleSchema(article: {
   imageSrc?: string;
   tags?: string[];
   readingTime?: number;
-}) {
-  const url = `${SITE_URL}${article.publicPath ?? `/articles/${article.slug}`}`;
+}, locale: Locale = "zh") {
+  const articlePath = localizePublicPath(
+    article.publicPath ?? `/articles/${article.slug}`,
+    locale
+  );
+  const url = `${SITE_URL}${articlePath}`;
   const publisher = {
     "@type": "Organization",
     "@id": `${SITE_URL}/#organization`,
-    name: publicIdentity.canonicalName,
+    name: publicIdentity.names[locale],
     url: SITE_URL,
   };
   return {
@@ -188,22 +200,33 @@ export function generateArticleCollectionSchema(
     summary?: string;
     date: string;
     updated?: string;
-  }>
+  }>,
+  locale: Locale = "zh"
 ) {
+  const path = localizePublicPath("/articles", locale);
   return {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    "@id": `${SITE_URL}/articles#collection`,
-    name: `${publicIdentity.canonicalName}文章与系统实践`,
-    description: "企业 AI 系统、自动化、知识工作流与交付边界的实践文章。",
-    url: `${SITE_URL}/articles`,
+    "@id": `${SITE_URL}${path}#collection`,
+    name:
+      locale === "zh"
+        ? `${publicIdentity.names.zh}文章与系统实践`
+        : `${publicIdentity.names.en} articles and system practice`,
+    description:
+      locale === "zh"
+        ? "企业 AI 系统、自动化、知识工作流与交付边界的实践文章。"
+        : "Reviewed writing about enterprise AI systems, automation, knowledge workflows, and delivery boundaries.",
+    url: `${SITE_URL}${path}`,
     isPartOf: { "@id": `${SITE_URL}/#website` },
     publisher: { "@id": `${SITE_URL}/#organization` },
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: articles.length,
       itemListElement: articles.map((article, index) => {
-        const url = `${SITE_URL}${article.publicPath ?? `/articles/${article.slug}`}`;
+        const url = `${SITE_URL}${localizePublicPath(
+          article.publicPath ?? `/articles/${article.slug}`,
+          locale
+        )}`;
         return {
           "@type": "ListItem",
           position: index + 1,
@@ -290,47 +313,52 @@ export function generateProfilePageSchema() {
   };
 }
 
-export function generatePublicPersonSchema() {
+export function generatePublicPersonSchema(locale: Locale = "zh") {
+  const otherLocale: Locale = locale === "zh" ? "en" : "zh";
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${SITE_URL}/#organization`,
-    name: publicIdentity.canonicalName,
+    name: publicIdentity.names[locale],
+    alternateName: publicIdentity.names[otherLocale],
     url: SITE_URL,
-    description: publicIdentity.positioning.zh,
+    description: publicIdentity.positioning[locale],
     knowsLanguage: publicIdentity.languages,
   };
 }
 
-export function generatePublicWebSiteSchema() {
+export function generatePublicWebSiteSchema(locale: Locale = "zh") {
+  const url = `${SITE_URL}${localizePublicPath("/", locale)}`;
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "@id": `${SITE_URL}/#website`,
-    name: `${publicIdentity.canonicalName} — ${publicIdentity.category.zh}`,
-    alternateName: publicIdentity.slogan.zh,
-    url: SITE_URL,
-    description: publicIdentity.positioning.zh,
-    inLanguage: publicIdentity.languages,
+    name: `${publicIdentity.names[locale]} — ${publicIdentity.category[locale]}`,
+    alternateName:
+      locale === "zh" ? publicIdentity.names.en : publicIdentity.names.zh,
+    url,
+    description: publicIdentity.positioning[locale],
+    inLanguage: locale === "zh" ? "zh-CN" : "en",
     author: { "@id": `${SITE_URL}/#organization` },
     dateModified: publicContent.updatedAt,
   };
 }
 
-export function generateProfessionalServiceSchema() {
+export function generateProfessionalServiceSchema(locale: Locale = "zh") {
+  const url = `${SITE_URL}${localizePublicPath("/", locale)}`;
   return {
     "@context": "https://schema.org",
     "@type": "ProfessionalService",
     "@id": `${SITE_URL}/#professional-service`,
-    name: `${publicIdentity.canonicalName} — ${publicIdentity.category.zh}`,
-    url: SITE_URL,
-    description: publicIdentity.description.zh,
-    serviceType: serviceMethod.suitableWork.map((item) => item.zh),
+    name: `${publicIdentity.names[locale]} — ${publicIdentity.category[locale]}`,
+    url,
+    description: publicIdentity.description[locale],
+    serviceType: serviceMethod.suitableWork.map((item) => item[locale]),
     provider: { "@id": `${SITE_URL}/#organization` },
     potentialAction: {
       "@type": "CommunicateAction",
-      target: `${SITE_URL}${publicIdentity.contact.page}`,
-      description: publicIdentity.contact.promise.zh,
+      target: `${SITE_URL}${localizePublicPath(publicIdentity.contact.page, locale)}`,
+      description: publicIdentity.contact.promise[locale],
     },
   };
 }

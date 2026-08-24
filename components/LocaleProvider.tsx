@@ -6,7 +6,6 @@ import {
   useContext,
   useState,
   useCallback,
-  useEffect,
   type ReactNode,
 } from "react";
 import type { Locale } from "@/config/locale";
@@ -20,47 +19,22 @@ interface LocaleContextValue {
 
 const LocaleContext = createContext<LocaleContextValue | undefined>(undefined);
 
-function getStoredLocale(): Locale | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (stored === "zh" || stored === "en") return stored;
-  } catch {
-    // ignore
-  }
-  return null;
-}
-
 function persistLocale(locale: Locale) {
   try {
     localStorage.setItem(LOCALE_STORAGE_KEY, locale);
   } catch {
     // ignore
   }
-  document.documentElement.lang = locale;
 }
 
 export function LocaleProvider({
   children,
   initialLocale,
 }: {
-  children: ReactNode;
-  initialLocale?: Locale;
+  children?: ReactNode;
+  initialLocale: Locale;
 }) {
-  // The server always renders the same initial locale as the first client
-  // render. Restoring localStorage during the state initializer would make
-  // persisted English sessions hydrate over Chinese server HTML.
-  const [locale, setLocaleState] = useState<Locale>(initialLocale || "zh");
-  useEffect(() => {
-    if (initialLocale) return;
-    const storedLocale = getStoredLocale();
-    if (!storedLocale || storedLocale === locale) return;
-
-    queueMicrotask(() => {
-      document.documentElement.lang = storedLocale;
-      setLocaleState(storedLocale);
-    });
-  }, [initialLocale, locale]);
+  const [locale, setLocaleState] = useState<Locale>(initialLocale);
 
   const setLocale = useCallback((newLocale: Locale) => {
     persistLocale(newLocale);
@@ -88,19 +62,4 @@ export function useLocale(): LocaleContextValue {
     throw new Error("useLocale must be used within a LocaleProvider");
   }
   return context;
-}
-
-/**
- * Inline script that restores saved locale BEFORE React hydration,
- * so <html lang> is correct on first paint (no lang FOUC).
- * Place inside <head> of root layout, like ThemeScript.
- */
-export function LocaleScript() {
-  return (
-    <script
-      dangerouslySetInnerHTML={{
-        __html: `(function(){try{var v=localStorage.getItem("${LOCALE_STORAGE_KEY}");if(v==="en"||v==="zh"){document.documentElement.lang=v;}}catch(e){}})()`,
-      }}
-    />
-  );
 }

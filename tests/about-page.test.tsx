@@ -1,15 +1,13 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import AboutPage from "@/app/about/page";
-import { LangSwitch } from "@/components/LangSwitch";
+import AboutPage from "@/app/(site-zh)/about/page";
 import { LocaleProvider } from "@/components/LocaleProvider";
 
-function renderAboutPage() {
+function renderAboutPage(locale: "zh" | "en" = "zh") {
   return render(
-    <LocaleProvider initialLocale="zh">
-      <LangSwitch />
+    <LocaleProvider initialLocale={locale}>
       <AboutPage />
     </LocaleProvider>
   );
@@ -34,18 +32,14 @@ describe("AboutPage", () => {
     expect(screen.queryByText("公开证据原则")).not.toBeInTheDocument();
   });
 
-  it("switches the full page copy from Chinese to English", () => {
-    renderAboutPage();
-
-    expect(screen.getByRole("heading", { name: "谁来负责项目" })).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "切换到 English" }));
+  it("renders the full English page from the English route locale", () => {
+    renderAboutPage("en");
 
     expect(screen.getByRole("heading", { name: "Who leads the project" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "How collaboration starts" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /Submit a business problem/ })).toHaveLength(2);
     for (const link of screen.getAllByRole("link", { name: /Submit a business problem/ })) {
-      expect(link).toHaveAttribute("href", "/contact");
+      expect(link).toHaveAttribute("href", "/en/contact");
     }
     expect(screen.queryByRole("heading", { name: "谁来负责项目" })).not.toBeInTheDocument();
   });

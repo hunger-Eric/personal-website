@@ -95,7 +95,7 @@ export function getLocalizedPublicContent(locale: Locale) {
     schemaVersion: publicContent.schemaVersion,
     updatedAt: publicContent.updatedAt,
     identity: {
-      name: publicIdentity.canonicalName,
+      name: publicIdentity.names[locale],
       slogan: text(publicIdentity.slogan, locale),
       category: text(publicIdentity.category, locale),
       positioning: text(publicIdentity.positioning, locale),

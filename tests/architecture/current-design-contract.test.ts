@@ -9,13 +9,15 @@ const read = (relativePath: string) => fs.readFileSync(path.join(root, relativeP
 describe("current design contract", () => {
   it("has one fixed Shijie Intelligence visual system", () => {
     const packageJson = JSON.parse(read("package.json")) as { name: string; scripts: Record<string, string> };
-    const layout = read("app/layout.tsx");
+    const layout = read("components/SiteDocument.tsx");
     const globals = read("app/globals.css");
 
     expect(packageJson.name).toBe("shijie-intelligence-site");
     expect(packageJson.scripts.setup).toBeUndefined();
     expect(layout).not.toContain("ThemeProvider");
     expect(layout).not.toContain("ThemeScript");
+    expect(read("app/(site-zh)/layout.tsx")).toContain('locale="zh"');
+    expect(read("app/(site-en)/en/layout.tsx")).toContain('locale="en"');
     expect(globals).toContain("--background: #f3efe6");
     expect(globals).toContain("--foreground: #171916");
     expect(globals).toContain("--accent: #c47a18");

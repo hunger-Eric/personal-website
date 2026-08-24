@@ -15,6 +15,10 @@ describe("SEO routes", () => {
     expect(urls).toContain(`${SITE_URL}/services`);
     expect(urls).toContain(`${SITE_URL}/contact`);
     expect(urls).toContain(`${SITE_URL}/about`);
+    expect(urls).toContain(`${SITE_URL}/en`);
+    expect(urls).toContain(`${SITE_URL}/en/services`);
+    expect(urls).toContain(`${SITE_URL}/en/projects/hermes-notebook`);
+    expect(urls).not.toContain(`${SITE_URL}/en/articles/lead-process-ai-automation-four-dimensions-real-sample-validation`);
     expect(urls).toContain(`${SITE_URL}/llms.txt`);
     expect(urls).toContain(`${SITE_URL}/feed.xml`);
     expect(urls).toContain(`${SITE_URL}/feed.json`);
@@ -35,6 +39,11 @@ describe("SEO routes", () => {
     }
 
     const home = entries.find((entry) => entry.url === `${SITE_URL}/`);
+    expect(home?.alternates?.languages).toMatchObject({
+      "zh-CN": `${SITE_URL}/`,
+      en: `${SITE_URL}/en`,
+      "x-default": `${SITE_URL}/`,
+    });
     expect(new Date(home?.lastModified || 0).toISOString()).toBe(
       new Date(publicContent.updatedAt).toISOString()
     );

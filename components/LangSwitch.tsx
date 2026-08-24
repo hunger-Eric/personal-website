@@ -1,7 +1,9 @@
 ﻿"use client";
 
 import { Languages } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { useLocale } from "./LocaleProvider";
+import { getLocaleSwitchPath } from "@/config/locale";
 import {
   getLanguageSwitchLabel,
   getLanguageSwitchSegmentClass,
@@ -13,7 +15,10 @@ type LangSwitchProps = {
 };
 
 export function LangSwitch({ variant = "surface" }: LangSwitchProps) {
-  const { locale, toggleLocale } = useLocale();
+  const { locale, setLocale } = useLocale();
+  const pathname = usePathname();
+  const targetLocale = locale === "zh" ? "en" : "zh";
+  const href = getLocaleSwitchPath(pathname || "/", targetLocale);
   const label = getLanguageSwitchLabel(locale);
   const variantClass =
     variant === "ghost"
@@ -21,8 +26,9 @@ export function LangSwitch({ variant = "surface" }: LangSwitchProps) {
       : "border-border bg-surface-paper px-3 py-1.5 hover:text-foreground";
 
   return (
-    <button
-      onClick={toggleLocale}
+    <a
+      href={href}
+      onClick={() => setLocale(targetLocale)}
       className={[
         "inline-flex items-center gap-2 rounded-control border text-xs font-medium text-muted-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent",
         variantClass,
@@ -40,6 +46,6 @@ export function LangSwitch({ variant = "surface" }: LangSwitchProps) {
       <span className={getLanguageSwitchSegmentClass(locale, "en")}>
         {languageSwitchCopy.segments.en}
       </span>
-    </button>
+    </a>
   );
 }

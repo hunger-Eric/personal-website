@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useLocale } from "@/components/LocaleProvider";
 import { getPublicWebsiteProjects } from "@/config/website-projects";
+import { localizePublicPath } from "@/config/locale";
 const factLabels = {
   zh: {
     problem: "客户原来怎么做",
@@ -28,6 +29,7 @@ const factAnchors = {
 export function PublicProjectsPage() {
   const { locale } = useLocale();
   const zh = locale === "zh";
+  const path = (value: string) => localizePublicPath(value, locale);
   const projects = getPublicWebsiteProjects(locale);
   const labels = factLabels[locale];
 
@@ -90,7 +92,7 @@ export function PublicProjectsPage() {
             <Link
               href={
                 project.liveUrl ??
-                `/projects/${project.id}${project.interactive ? "#open-geo-demo" : ""}`
+                `${path(`/projects/${project.id}`)}${project.interactive ? "#open-geo-demo" : ""}`
               }
               className="mt-8 inline-flex min-h-11 items-center justify-center gap-2 self-start border border-foreground px-4 py-2 text-sm font-semibold text-foreground hover:border-accent hover:text-accent"
             >

@@ -1,15 +1,13 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
-import ServicesPage from "@/app/services/page";
-import { LangSwitch } from "@/components/LangSwitch";
+import ServicesPage from "@/app/(site-zh)/services/page";
 import { LocaleProvider } from "@/components/LocaleProvider";
 
-function renderServicesPage() {
+function renderServicesPage(locale: "zh" | "en" = "zh") {
   return render(
-    <LocaleProvider initialLocale="zh">
-      <LangSwitch />
+    <LocaleProvider initialLocale={locale}>
       <ServicesPage />
     </LocaleProvider>
   );
@@ -35,14 +33,8 @@ describe("ServicesPage", () => {
     expect(schemas.some((schema) => schema["@type"] === "FAQPage")).toBe(true);
   });
 
-  it("switches the full page copy from Chinese to English", () => {
-    renderServicesPage();
-
-    expect(
-      screen.getByRole("heading", { name: "企业 AI 工作流系统设计与交付" })
-    ).toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "切换到 English" }));
+  it("renders the full English page from the English route locale", () => {
+    renderServicesPage("en");
 
     expect(
       screen.getByRole("heading", { name: "Enterprise AI Workflow System Design and Delivery" })
@@ -57,7 +49,7 @@ describe("ServicesPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Submit a business problem/ })).toHaveAttribute(
       "href",
-      "/contact"
+      "/en/contact"
     );
     expect(
       screen.queryByRole("heading", { name: "企业 AI 工作流系统设计与交付" })

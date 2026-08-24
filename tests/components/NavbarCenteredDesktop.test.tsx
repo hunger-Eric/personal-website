@@ -72,7 +72,7 @@ describe("NavbarCentered", () => {
     render(React.createElement(NavbarCentered));
 
     // Check for each nav item label
-    expect(screen.getByRole("link", { name: "Services" })).toHaveAttribute("href", "/services");
+    expect(screen.getByRole("link", { name: "Services" })).toHaveAttribute("href", "/en/services");
     expect(screen.getByText("Projects")).toBeInTheDocument();
     expect(screen.getByText("About")).toBeInTheDocument();
     expect(screen.getByText("Articles")).toBeInTheDocument();
@@ -91,7 +91,7 @@ describe("NavbarCentered", () => {
       "@/components/NavbarCenteredDesktop"
     );
     render(React.createElement(NavbarCentered));
-    expect(screen.getByText("实解智能")).toBeInTheDocument();
+    expect(screen.getByText("SolveReal Systems")).toBeInTheDocument();
     expect(screen.getByText("Enterprise AI system design and delivery")).toBeInTheDocument();
   });
 
@@ -100,6 +100,6 @@ describe("NavbarCentered", () => {
       "@/components/NavbarCenteredDesktop"
     );
     render(React.createElement(NavbarCentered));
-    expect(screen.getByRole("link", { name: /Submit a business problem/i })).toHaveAttribute("href", "/contact");
+    expect(screen.getByRole("link", { name: /Submit a business problem/i })).toHaveAttribute("href", "/en/contact");
   });
 });

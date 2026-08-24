@@ -13,11 +13,11 @@ import { Footer } from "@/components/Footer";
 describe("Footer English copy", () => {
   it("renders the enterprise routes in English", () => {
     render(<Footer />);
-    expect(screen.getByText("Enterprise AI system design and delivery")).toBeInTheDocument();
-    expect(screen.getByText(/© .*实解智能 · Enterprise AI system design and delivery/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Projects" })).toHaveAttribute("href", "/projects");
-    expect(screen.getByRole("link", { name: "Articles" })).toHaveAttribute("href", "/articles");
-    expect(screen.getByRole("link", { name: "WeChat" })).toHaveAttribute("href", "/articles#wechat");
-    expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/contact");
+    expect(screen.getByText("Enterprise AI Systems Design & Delivery")).toBeInTheDocument();
+    expect(screen.getByText(/© .*SolveReal Systems · Enterprise AI Systems Design & Delivery/)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Projects" })).toHaveAttribute("href", "/en/projects");
+    expect(screen.getByRole("link", { name: "Articles" })).toHaveAttribute("href", "/en/articles");
+    expect(screen.queryByRole("link", { name: "WeChat" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute("href", "/en/contact");
   });
 });

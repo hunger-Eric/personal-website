@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Player, type PlayerRef } from "@remotion/player";
+import { localizePublicPath } from "@/config/locale";
 import { AbsoluteFill, Easing, interpolate, useCurrentFrame } from "remotion";
 
 import { useLocale } from "@/components/LocaleProvider";
@@ -272,6 +273,7 @@ function JourneyComposition({ project, compact }: JourneyCompositionProps) {
 
 export function ProjectJourneys() {
   const { locale } = useLocale();
+  const path = (value: string) => localizePublicPath(value, locale);
   const reducedMotion = usePrefersReducedMotion();
   const compact = useCompactJourneyLayout();
   const zh = locale === "zh";
@@ -371,7 +373,7 @@ export function ProjectJourneys() {
                     <a href="https://geo.itheheda.online" target="_blank" rel="noreferrer">
                       {zh ? "进入正式产品" : "Open live product"}<ExternalLink aria-hidden />
                     </a>
-                    <Link href="/projects/open-geo-console#open-geo-demo">
+                    <Link href={`${path("/projects/open-geo-console")}#open-geo-demo`}>
                       {zh ? "模拟演示" : "Open simulation"}<ArrowRight aria-hidden />
                     </Link>
                   </div>
@@ -439,7 +441,7 @@ export function ProjectJourneys() {
                 <span className={styles.status} role="status">
                   {zh ? `当前步骤 ${activeStep + 1} / ${STEP_COUNT}` : `Current step ${activeStep + 1} / ${STEP_COUNT}`}
                 </span>
-                <Link href={`/projects/${selected.id}`} className={styles.detailLink}>
+                <Link href={path(`/projects/${selected.id}`)} className={styles.detailLink}>
                   {zh ? `查看 ${selected.name} 项目详情` : `View ${selected.name} project details`}<ArrowRight aria-hidden />
                 </Link>
               </div>

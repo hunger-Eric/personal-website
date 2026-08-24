@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 
 import { publicIdentity } from "@/config/public-identity";
+import { localizePublicPath, type Locale } from "@/config/locale";
 
 type PublicPageMetadataInput = {
   title: string;
   description: string;
   path: `/${string}`;
   image?: string;
+  locale?: Locale;
+  hasLanguageAlternate?: boolean;
 };
 
 export function buildPublicPageMetadata({
@@ -14,8 +17,13 @@ export function buildPublicPageMetadata({
   description,
   path,
   image = "/images/og/home.png?v=4",
+  locale = "zh",
+  hasLanguageAlternate = true,
 }: PublicPageMetadataInput): Metadata {
-  const socialTitle = `${title} | ${publicIdentity.canonicalName}`;
+  const brandName = publicIdentity.names[locale];
+  const localizedPath = localizePublicPath(path, locale);
+  const chinesePath = localizePublicPath(path, "zh");
+  const socialTitle = `${title} | ${brandName}`;
   const images = [
     {
       url: image,
@@ -28,12 +36,21 @@ export function buildPublicPageMetadata({
   return {
     title,
     description,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: localizedPath,
+      ...(hasLanguageAlternate && {
+        languages: {
+          "zh-CN": chinesePath,
+          en: localizePublicPath(chinesePath, "en"),
+          "x-default": chinesePath,
+        },
+      }),
+    },
     openGraph: {
       type: "website",
-      locale: "zh_CN",
-      url: path,
-      siteName: publicIdentity.canonicalName,
+      locale: locale === "zh" ? "zh_CN" : "en_US",
+      url: localizedPath,
+      siteName: brandName,
       title: socialTitle,
       description,
       images,

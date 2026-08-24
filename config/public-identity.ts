@@ -1,14 +1,18 @@
 export const publicIdentity = {
   schemaVersion: "1.0",
-  updatedAt: "2026-08-06",
+  updatedAt: "2026-08-24",
   canonicalName: "实解智能",
+  names: {
+    zh: "实解智能",
+    en: "SolveReal Systems",
+  },
   slogan: {
     zh: "让 AI 真正在企业里跑起来。",
-    en: "Make AI run in the real business.",
+    en: "AI systems that solve real business problems.",
   },
   category: {
     zh: "企业 AI 系统设计与交付",
-    en: "Enterprise AI system design and delivery",
+    en: "Enterprise AI Systems Design & Delivery",
   },
   positioning: {
     zh: "把依赖人工衔接、容易出错、难以持续运行的业务流程，改造成适合企业实际情况的 AI 自动化系统。",

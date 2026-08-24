@@ -10,7 +10,7 @@ vi.mock("@/components/LocaleProvider", () => ({
   useLocale: () => ({ locale: "zh" }),
 }));
 
-import ContactPage from "@/app/contact/page";
+import ContactPage from "@/app/(site-zh)/contact/page";
 
 describe("contact page", () => {
   it("groups direct email and WeChat beside the inquiry form", () => {

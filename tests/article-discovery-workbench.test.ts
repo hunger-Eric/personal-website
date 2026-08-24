@@ -61,7 +61,7 @@ describe("workbench article discovery fixture", () => {
 describe("workbench article public discovery", () => {
   it("projects the real loaded fixture once to index, feeds, sitemap, and llms.txt", async () => {
     const [{ default: ArticlesPage }, { GET: getRss }, { GET: getJson }, { default: sitemap }, { GET: getLlms }] = await Promise.all([
-      import("@/app/articles/page"),
+      import("@/app/(site-zh)/articles/page"),
       import("@/app/feed.xml/route"),
       import("@/app/feed.json/route"),
       import("@/app/sitemap"),
@@ -85,7 +85,7 @@ describe("workbench article public discovery", () => {
   });
 
   it("builds the actual article page with one canonical BlogPosting record and content hash metadata", async () => {
-    const { default: ArticlePage, generateMetadata } = await import("@/app/articles/[slug]/page");
+    const { default: ArticlePage, generateMetadata } = await import("@/app/(site-zh)/articles/[slug]/page");
     const metadata = await generateMetadata({ params: Promise.resolve({ slug: fixtureSlug }) });
     const page = await ArticlePage({ params: Promise.resolve({ slug: fixtureSlug }) });
     const records = findBlogPostingRecords(page);

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, renderHook, act, waitFor } from "@testing-library/react";
+import { render, screen, renderHook, act } from "@testing-library/react";
 import React from "react";
 
 // Store for our fake localStorage
@@ -42,7 +42,7 @@ describe("LocaleProvider", () => {
   it("renders children inside the provider", async () => {
     const { LocaleProvider } = await import("@/components/LocaleProvider");
     render(
-      React.createElement(LocaleProvider, null,
+      React.createElement(LocaleProvider, { initialLocale: "zh" },
         React.createElement("div", { "data-testid": "child" }, "Hello")
       )
     );
@@ -74,7 +74,7 @@ describe("LocaleProvider", () => {
     };
 
     render(
-      React.createElement(LocaleProvider, null,
+      React.createElement(LocaleProvider, { initialLocale: "zh" },
         React.createElement(Consumer)
       )
     );
@@ -95,8 +95,7 @@ describe("LocaleProvider", () => {
     expect(mockSetItem).toHaveBeenCalledWith("shijie-intelligence-locale", "en");
   });
 
-  it("reads initial locale from localStorage", async () => {
-    // Set localStorage before importing
+  it("uses the server route locale instead of restoring a conflicting preference", async () => {
     store["shijie-intelligence-locale"] = "en";
 
     const { LocaleProvider, useLocale } = await import(
@@ -112,44 +111,30 @@ describe("LocaleProvider", () => {
     };
 
     render(
-      React.createElement(LocaleProvider, null,
+      React.createElement(LocaleProvider, { initialLocale: "zh" },
         React.createElement(Consumer)
       )
     );
 
-    // The hydration-safe first render matches the server default. The saved
-    // preference is restored immediately after mount.
     expect(localeValue).toBe("zh");
-    await waitFor(() => expect(localeValue).toBe("en"));
-    expect(screen.getByText("en")).toBeInTheDocument();
+    expect(screen.getByText("zh")).toBeInTheDocument();
+    expect(mockGetItem).not.toHaveBeenCalled();
   });
 
   it("handles localStorage.setItem throw gracefully", async () => {
     mockSetItem.mockImplementationOnce(() => { throw new Error("storage full"); });
-    store["shijie-intelligence-locale"] = "en";
-
     const { LocaleProvider, useLocale } = await import("@/components/LocaleProvider");
 
     let localeValue: string | undefined;
     const Consumer = () => {
       const ctx = useLocale();
+      const setLocale = ctx.setLocale;
       localeValue = ctx.locale;
+      React.useEffect(() => setLocale("en"), [setLocale]);
       return null;
     };
 
-    render(React.createElement(LocaleProvider, null, React.createElement(Consumer)));
-    await waitFor(() => expect(localeValue).toBe("en"));
-  });
-});
-
-// ── LocaleScript ──────────────────────────────────────────────────────────
-
-describe("LocaleScript", () => {
-  it("renders a script tag with inline code", async () => {
-    const { LocaleScript } = await import("@/components/LocaleProvider");
-    const { container } = render(React.createElement(LocaleScript));
-    const script = container.querySelector("script");
-    expect(script).toBeInTheDocument();
-    expect(script?.innerHTML).toContain("localStorage.getItem");
+    render(React.createElement(LocaleProvider, { initialLocale: "zh" }, React.createElement(Consumer)));
+    expect(localeValue).toBe("en");
   });
 });
