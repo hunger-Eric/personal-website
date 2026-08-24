@@ -31,12 +31,14 @@ AI 爬虫官方 IP 规则由同一 Worker 的每日 Cron（UTC 03:17，北京时
 
 ## 验收状态
 
-- `npm run audit:architecture`：通过；扫描 214 个文件，AI-readable 三项合同通过。
+- 官网曝光增长阶段一已基于 `ca3dcfa8b1c08d3d0f912da2042f4c24a03e3424` 完成本地实现：新增环境变量驱动的 Google/Bing 所有权验证元数据、`/indexnow-key.txt` 与默认 dry-run 的 IndexNow 通知入口。Google/Bing 账号验证、sitemap/URL Inspection 与真实 IndexNow 提交必须以本页后续生产回执为准，不把本地代码或测试冒充为线上已启用或已收录。执行计划见 `docs/superpowers/plans/2026-08-24-website-exposure-growth-plan.md`。
+
+- `npm run audit:architecture`：通过；扫描 227 个文件，AI-readable 三项合同通过。
 - `npm run projects:evidence:audit`：通过；3 个公开案例、231 个公开字符串。
 - `npm run lint`：通过，0 error / 0 warning。
 - `npm run typecheck`：通过。
-- `npm test`：74 个测试文件、631 个测试通过；Crawler Observer 3 个测试文件、56 个测试通过。
-- `npm run build`：Next.js 16.3.2 构建通过，生成 47 个静态页面任务；包含 `/en` 首页、5 个英文核心内页入口和 4 个英文项目详情页。
+- `npm test`：75 个测试文件、641 个测试通过；Crawler Observer 3 个测试文件、56 个测试通过。
+- `npm run build`：Next.js 16.3.2 构建通过，生成 48 个页面任务；包含 `/en` 首页、5 个英文核心内页入口、4 个英文项目详情页和动态 `/indexnow-key.txt`。
 - `npm audit` 与 `npm audit --omit=dev`：0 个已知漏洞。
 - 本地生产构建在 1440×900 与 390×844 下通过首页、项目页视觉检查；移动导航、联系主路径与二维码弹窗可用。
 - 双语品牌与英文站在本地生产入口通过原始 HTML 与真实浏览器检查：中文输出 `lang="zh-CN"`，英文输出 `lang="en"`；英文导航、品牌名、canonical、语言 alternates、同一品牌 JSON-LD、未翻译文章 404 与 `/en/articles` 回退边界正确；1440×900 与 390×844 无页面级横向溢出，浏览器控制台无错误。

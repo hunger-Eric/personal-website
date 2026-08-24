@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 import { publicContent } from "@/config/public-content";
+import { buildRootMetadata } from "@/lib/root-metadata";
 
 const SITE_URL = "https://me.itheheda.online";
 
@@ -59,5 +60,28 @@ describe("SEO routes", () => {
     expect(rules).toContain("/api/");
     expect(rules).not.toContain("/_next/");
     expect(rules).not.toMatch(/GPTBot|ChatGPT-User|CCBot|anthropic-ai/);
+  });
+
+  it("publishes configured Google and Bing ownership verification without defaults", () => {
+    const originalGoogle = process.env.GOOGLE_SITE_VERIFICATION;
+    const originalBing = process.env.BING_SITE_VERIFICATION;
+
+    try {
+      delete process.env.GOOGLE_SITE_VERIFICATION;
+      delete process.env.BING_SITE_VERIFICATION;
+      expect(buildRootMetadata("zh").verification).toBeUndefined();
+
+      process.env.GOOGLE_SITE_VERIFICATION = "google-verification-value";
+      process.env.BING_SITE_VERIFICATION = "bing-verification-value";
+      expect(buildRootMetadata("en").verification).toEqual({
+        google: "google-verification-value",
+        other: { "msvalidate.01": "bing-verification-value" },
+      });
+    } finally {
+      if (originalGoogle === undefined) delete process.env.GOOGLE_SITE_VERIFICATION;
+      else process.env.GOOGLE_SITE_VERIFICATION = originalGoogle;
+      if (originalBing === undefined) delete process.env.BING_SITE_VERIFICATION;
+      else process.env.BING_SITE_VERIFICATION = originalBing;
+    }
   });
 });

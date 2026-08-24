@@ -42,6 +42,8 @@ npm run dev
 从 `.env.example` 创建 `.env.local`，按需配置：
 
 - `NEXT_PUBLIC_BASE_URL`
+- `GOOGLE_SITE_VERIFICATION`、`BING_SITE_VERIFICATION`：Google/Bing 控制台提供的公开站点所有权验证值；留空时不输出对应标签
+- `INDEXNOW_KEY`：公开托管在 `/indexnow-key.txt` 的 IndexNow key；`INDEXNOW_ALLOW_SUBMIT` 默认必须为 `false`
 - `ENABLE_ADMIN`、`ADMIN_TOKEN`、`ADMIN_PASSWORD`
 - `GITHUB_TOKEN`：仅用于文章工作台的明确发布动作
 - `ARTICLE_MODEL_*`、`ANYSEARCH_API_KEY`：文章研究与生成
@@ -49,6 +51,18 @@ npm run dev
 - `CRAWLER_DASHBOARD_PASSWORD`、`CRAWLER_OBSERVER_READ_SECRET`
 
 生成文章不会自动发布；只有已认证用户明确点击“上传并发布”后，才会执行 GitHub 写入。测试和本地预览不等于授权真实模型调用、外部检索、发布或部署。
+
+## 搜索引擎接入
+
+阶段计划和账号侧操作边界见 [`docs/superpowers/plans/2026-08-24-website-exposure-growth-plan.md`](docs/superpowers/plans/2026-08-24-website-exposure-growth-plan.md)。Google 与 Bing 的验证值只通过环境变量注入；仓库不保存账号凭据。
+
+IndexNow 通知入口默认只校验参数并返回 URL 数量，不发送网络请求：
+
+```bash
+npm run indexnow:notify -- --url https://me.itheheda.online/services
+```
+
+真实提交是独立权限门：必须同时显式传入 `--submit` 且令 `INDEXNOW_ALLOW_SUBMIT=true`。仅允许正式 HTTPS 同源、无 query/hash 的公开页面路径；`/admin`、`/api`、`/private`、异域 URL 和非白名单路径都会失败关闭。部署、控制台验证、sitemap 提交和真实 IndexNow 通知均需单独授权。
 
 ## 验收
 

@@ -19,6 +19,17 @@ export function buildRootMetadata(locale: Locale): Metadata {
   const description = publicIdentity.positioning[locale];
   const canonical = localizePublicPath("/", locale);
   const title = `${brandName} — ${category}`;
+  const googleVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+  const bingVerification = process.env.BING_SITE_VERIFICATION?.trim();
+  const verification =
+    googleVerification || bingVerification
+      ? {
+          ...(googleVerification ? { google: googleVerification } : {}),
+          ...(bingVerification
+            ? { other: { "msvalidate.01": bingVerification } }
+            : {}),
+        }
+      : undefined;
 
   return {
     metadataBase: new URL(SITE_URL),
@@ -104,5 +115,6 @@ export function buildRootMetadata(locale: Locale): Metadata {
       },
     },
     category: "technology",
+    verification,
   };
 }
