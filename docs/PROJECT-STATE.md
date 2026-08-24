@@ -11,7 +11,7 @@
 
 AI 爬虫官方 IP 规则由同一 Worker 的每日 Cron（UTC 03:17，北京时间 11:17）自动同步。同步只接受固定的 OpenAI 与 Perplexity 官方 JSON；每个来源独立校验和更新，失败不会清空上一次成功版本。Workers 运行时重定向模式兼容问题已于 2026-08-24 修复，五个官方来源均在生产完成成功同步。
 
-中国爬虫 UA 规则已在本地扩展为 DeepSeekBot、Bytespider、Baiduspider、Sogou Spider、360Spider 与 PetalBot，并在机器访问页提供独立覆盖表。该组规则只依据 User-Agent 线索，统一保持“仅声明身份”；其中 DeepSeek 当前没有公开官方爬虫身份或强验证资料。本项尚未发布到生产。
+中国爬虫 UA 规则已扩展为 DeepSeekBot、Bytespider、Baiduspider、Sogou Spider、360Spider 与 PetalBot，并在机器访问页提供独立覆盖表。该组规则只依据 User-Agent 线索，统一保持“仅声明身份”；其中 DeepSeek 当前没有公开官方爬虫身份或强验证资料。本项已于 2026-08-24 完成 Worker 与网站生产发布。
 
 ## 设计权威
 
@@ -38,8 +38,8 @@ AI 爬虫官方 IP 规则由同一 Worker 的每日 Cron（UTC 03:17，北京时
 - `npm audit` 与 `npm audit --omit=dev`：0 个已知漏洞。
 - 本地生产构建在 1440×900 与 390×844 下通过首页、项目页视觉检查；移动导航、联系主路径与二维码弹窗可用。
 - 访问检测的人类/机器双页面在 1440×900 与 390×844 下通过真实浏览器检查；页面互跳保留时间范围，移动端无页面级横向溢出，国家/地区、一级行政区、设备、浏览器和操作系统表格可读。
-- 生产 D1 已包含人类页面、客户端与地区三张聚合表；Vercel 部署 `dpl_DfHu1GAPWQvmeGwmR9d5k4eC8qSG` 为 Ready 并已提升到生产；正式首页返回 200，访问检测页面与接口未认证时返回 401，发布后 30 分钟内未发现该部署的 error 日志。
-- 官方爬虫规则自动同步已修复并发布为 Worker 版本 `4f7ba915-466d-469d-bfcd-d1d0a595340f`；生产 D1 于 `2026-08-24T07:36:59.261Z` 成功更新 OpenAI 三项和 Perplexity 两项规则，五项错误码均为空。
+- 生产 D1 已包含人类页面、客户端与地区三张聚合表；中国爬虫覆盖网站部署 `dpl_8bHDu8KhTD989PSEanocctFBoErL` 为 Ready 并绑定 `https://me.itheheda.online`；正式首页返回 200，访问检测页面与接口未认证时返回 401，该部署发布后 10 分钟内未发现 error 日志。生产敏感变量不可导出，因此本轮没有把认证态后台读取冒充为已完成的端到端验收。
+- 官方爬虫规则自动同步已修复；中国爬虫 UA 覆盖发布为 Worker 版本 `e29e11d0-b8e3-4bfa-9f17-cd9577bd1011`。生产 D1 此前于 `2026-08-24T07:36:59.261Z` 成功更新 OpenAI 三项和 Perplexity 两项规则，五项错误码均为空。
 - 退役路径：`/admin/site`、`/api/admin/save`、`/api/og`、`/download` 返回 404；`/photography` 保留到首页的 308 兼容跳转。
 
 ## 常用验证
