@@ -105,7 +105,7 @@ function logSyncFailure(sourceId: RuleSourceId, error: unknown): void {
 function requestOptions(): RequestInit {
   return {
     method: "GET",
-    redirect: "error",
+    redirect: "manual",
     headers: { Accept: "application/json" },
     signal: AbortSignal.timeout(10_000),
   };

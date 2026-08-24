@@ -16,7 +16,7 @@ const NAV_ITEMS = [
     items: [
       { href: "/admin", label: adminCopy.sidebar.dashboard, icon: LayoutDashboard },
       { href: "/admin/articles", label: adminCopy.sidebar.articles, icon: FilePenLine },
-      { href: "/admin/crawlers", label: adminCopy.sidebar.crawlers, icon: Radar },
+      { href: "/admin/crawlers/human", label: adminCopy.sidebar.crawlers, icon: Radar },
     ],
   },
 ];

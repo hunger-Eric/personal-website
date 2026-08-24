@@ -163,7 +163,7 @@ describe("official crawler IP rules", () => {
     await syncRuleSource(env.DB, perplexity!, fetcher, new Date("2026-08-06T12:00:00.000Z"));
 
     expect(fetcher).toHaveBeenCalledTimes(1);
-    expect(fetcher).toHaveBeenCalledWith("https://www.perplexity.ai/perplexitybot.json", expect.objectContaining({ redirect: "error" }));
+    expect(fetcher).toHaveBeenCalledWith("https://www.perplexity.ai/perplexitybot.json", expect.objectContaining({ redirect: "manual" }));
     const row = await env.DB.prepare("SELECT source_url, last_success_at, last_error_code FROM crawler_rule_sets WHERE source_id = ?")
       .bind("perplexity_bot")
       .first<{ source_url: string; last_success_at: string | null; last_error_code: string | null }>();

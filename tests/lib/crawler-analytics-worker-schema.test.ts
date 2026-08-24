@@ -4,6 +4,19 @@ import { crawlerAnalyticsWorkerSchema } from "@/lib/crawler-analytics/worker-sch
 const valid = () => ({
   meta: { range: "30d", start: "2026-07-07T00:00:00.000Z", end: "2026-08-06T00:00:00.000Z", generatedAt: "2026-08-06T00:00:00.000Z", source: "cloudflare-worker-d1", bucket: "hour", retentionDays: 90, databaseInitializedAt: "2026-07-10T00:00:00.000Z", requestedWindowComplete: false, bestEffort: true, classifier: { aiCrawlerBots: "0.6.3", otherBots: "isbot@5.2.1" } },
   summary: { crawlerRequests: 3, identifiedAiCrawler: 1, openGeoSelfTest: 1, otherAutomation: 1 },
+  human: {
+    trackingStartedAt: "2026-08-05T00:00:00.000Z",
+    requestedWindowComplete: false,
+    pageViews: 7,
+    trend: [{ bucket: "2026-08-05T23:00:00.000Z", pageViews: 7 }],
+    paths: [{ path: "/articles", pageViews: 5 }, { path: "/", pageViews: 2 }],
+    statuses: [{ status: 200, pageViews: 7 }],
+    devices: [{ id: "desktop", pageViews: 4 }, { id: "mobile", pageViews: 3 }],
+    browsers: [{ id: "chrome", pageViews: 4 }, { id: "safari", pageViews: 3 }],
+    operatingSystems: [{ id: "windows", pageViews: 4 }, { id: "ios", pageViews: 3 }],
+    countries: [{ countryCode: "CN", pageViews: 5 }, { countryCode: "US", pageViews: 2 }],
+    regions: [{ countryCode: "CN", regionCode: "GD", regionName: "Guangdong", pageViews: 5 }],
+  },
   trend: [], bots: [], paths: [{ path: "/", total: 3, identifiedAiCrawler: 1, openGeoSelfTest: 1, otherAutomation: 1 }], statuses: [{ status: 200, requests: 3 }],
   identityPreview: { mode: "shadow", shadowStartedAt: "2026-08-06T00:00:00.000Z", summary: { requests: 4, verifiedOfficial: 1, declaredUnverified: 1, suspectedSpoof: 1, otherAutomation: 1 }, bots: [{ id: "gptbot", name: "GPTBot", providerId: "openai", providerName: "OpenAI", verificationStatus: "verified_official", verificationMethod: "official_ip_range", requests: 1 }], rules: [
     { sourceId: "openai_gptbot", lastAttemptAt: "2026-08-06T00:00:00.000Z", lastSuccessAt: "2026-08-06T00:00:00.000Z", state: "fresh" },
@@ -13,7 +26,17 @@ const valid = () => ({
 
 describe("crawler observer schema", () => {
   it("accepts 30d partial-history data", () => {
-    expect(crawlerAnalyticsWorkerSchema.safeParse(valid()).success).toBe(true);
+    const result = crawlerAnalyticsWorkerSchema.safeParse(valid());
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.human?.regions[0]).toEqual({ countryCode: "CN", regionCode: "GD", regionName: "Guangdong", pageViews: 5 });
+  });
+  it("rejects malformed human browser analytics", () => {
+    const negative = valid(); negative.human.pageViews = -1;
+    expect(crawlerAnalyticsWorkerSchema.safeParse(negative).success).toBe(false);
+    const unsafePath = valid(); unsafePath.human.paths[0].path = "not-a-path";
+    expect(crawlerAnalyticsWorkerSchema.safeParse(unsafePath).success).toBe(false);
+    const unknownDevice = valid(); unknownDevice.human.devices[0].id = "television";
+    expect(crawlerAnalyticsWorkerSchema.safeParse(unknownDevice).success).toBe(false);
   });
   it("accepts a V1 response without the transitional identity preview", () => {
     const v1 = valid();

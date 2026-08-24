@@ -5,6 +5,9 @@ export const verificationStatusSchema = z.enum(["verified_official", "declared_u
 export const verificationMethodSchema = z.enum(["official_ip_range", "signed_hmac", "ua_only", "generic_bot"]);
 export const ruleSourceIdSchema = z.enum(["openai_gptbot", "openai_searchbot", "openai_chatgpt_user", "perplexity_bot", "perplexity_user"]);
 const category = z.enum(["identified_ai_crawler", "open_geo_self_test", "other_automation"]);
+const deviceType = z.enum(["desktop", "mobile", "tablet", "other"]);
+const browser = z.enum(["chrome", "safari", "edge", "firefox", "wechat", "samsung_internet", "other"]);
+const operatingSystem = z.enum(["windows", "macos", "ios", "android", "linux", "chromeos", "other"]);
 const categorizedCounts = z.object({
   identifiedAiCrawler: count,
   openGeoSelfTest: count,
@@ -44,6 +47,19 @@ export const crawlerAnalyticsWorkerSchema = z.object({
     total: count,
   }).merge(categorizedCounts).strict()).max(100),
   statuses: z.array(z.object({ status: z.number().int().min(100).max(599), requests: count }).strict()),
+  human: z.object({
+    trackingStartedAt: z.string().datetime(),
+    requestedWindowComplete: z.boolean(),
+    pageViews: count,
+    trend: z.array(z.object({ bucket: z.string().datetime(), pageViews: count }).strict()).max(2160),
+    paths: z.array(z.object({ path: z.string().min(1).max(2048).startsWith("/"), pageViews: count }).strict()).max(100),
+    statuses: z.array(z.object({ status: z.number().int().min(100).max(599), pageViews: count }).strict()),
+    devices: z.array(z.object({ id: deviceType, pageViews: count }).strict()).max(deviceType.options.length).optional(),
+    browsers: z.array(z.object({ id: browser, pageViews: count }).strict()).max(browser.options.length).optional(),
+    operatingSystems: z.array(z.object({ id: operatingSystem, pageViews: count }).strict()).max(operatingSystem.options.length).optional(),
+    countries: z.array(z.object({ countryCode: z.string().regex(/^(?:[A-Z]{2}|XX)$/), pageViews: count }).strict()).max(100).optional(),
+    regions: z.array(z.object({ countryCode: z.string().regex(/^(?:[A-Z]{2}|XX)$/), regionCode: z.string().min(1).max(16), regionName: z.string().min(1).max(80), pageViews: count }).strict()).max(100).optional(),
+  }).strict().optional(),
   identityPreview: z.object({
     mode: z.literal("shadow"),
     shadowStartedAt: z.string().datetime(),

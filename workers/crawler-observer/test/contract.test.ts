@@ -4,6 +4,7 @@ import worker from "../src/index";
 import { analytics, bucketStart, classify, excluded, handleFetch, observedPath, purge, scheduledMaintenance, validHmac } from "../src/core";
 import migrationSql from "../migrations/0001_initial.sql?raw";
 import identityMigrationSql from "../migrations/0002_identity_shadow.sql?raw";
+import humanPageMigrationSql from "../migrations/0003_human_page_views.sql?raw";
 
 const openGeoSecret = "open-geo-test-secret";
 const readSecret = "observer-read-test-secret";
@@ -53,6 +54,11 @@ function fakeDb(options: { failRun?: boolean; failIdentityRun?: boolean; batchRo
 function waitContext() {
   const tasks: Promise<unknown>[] = [];
   return { waitUntil(promise: Promise<unknown>) { tasks.push(promise); }, passThroughOnException() {}, props: {}, tasks } as unknown as ExecutionContext & { tasks: Promise<unknown>[] };
+}
+
+function withLocation(request: Request, location: { country: string | null; region: string | null; regionCode: string | null }): Request {
+  Object.defineProperty(request, "cf", { value: location, configurable: true });
+  return request;
 }
 
 function observerEnv(db: D1Database) {
@@ -117,6 +123,65 @@ describe("crawler observer cryptographic classification", () => {
 });
 
 describe("crawler observer website isolation", () => {
+  it("records likely human HTML page views without private request data", async () => {
+    const fake = fakeDb();
+    const ctx = waitContext();
+    const request = withLocation(new Request("https://me.itheheda.online/articles?campaign=private", {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/126.0.0.0 Safari/537.36",
+        "CF-Connecting-IP": "198.51.100.42",
+      },
+    }), { country: "CN", region: "Guangdong", regionCode: "GD" });
+    await handleFetch(request, observerEnv(fake.db as D1Database), ctx, async () => new Response("page", {
+      status: 200,
+      headers: { "Content-Type": "text/html; charset=utf-8" },
+    }));
+    await Promise.all(ctx.tasks);
+    expect(fake.sql.some((query) => query.includes("INSERT INTO human_page_counts"))).toBe(true);
+    expect(fake.sql.some((query) => query.includes("INSERT INTO human_client_counts"))).toBe(true);
+    expect(fake.sql.some((query) => query.includes("INSERT INTO human_location_counts"))).toBe(true);
+    expect(fake.values.flat()).toContain("/articles");
+    expect(fake.values.flat()).toEqual(expect.arrayContaining(["desktop", "chrome", "windows"]));
+    expect(fake.values.flat()).toEqual(expect.arrayContaining(["CN", "GD", "Guangdong"]));
+    const persisted = JSON.stringify(fake.values);
+    expect(persisted).not.toContain("campaign=private");
+    expect(persisted).not.toContain("198.51.100.42");
+    expect(persisted).not.toContain("Chrome/126.0.0.0");
+    expect(persisted).not.toContain("city");
+  });
+
+  it("does not count automation, assets, or non-GET requests as human page views", async () => {
+    const fake = fakeDb();
+    const ctx = waitContext();
+    const html = () => new Response("page", { headers: { "Content-Type": "text/html" } });
+    await handleFetch(new Request("https://me.itheheda.online/", { headers: { "User-Agent": "GPTBot" } }), observerEnv(fake.db as D1Database), ctx, html);
+    await handleFetch(new Request("https://me.itheheda.online/logo.png", { headers: { "User-Agent": "Mozilla/5.0 Chrome/126.0.0.0 Safari/537.36" } }), observerEnv(fake.db as D1Database), ctx, async () => new Response("image", { headers: { "Content-Type": "image/png" } }));
+    await handleFetch(new Request("https://me.itheheda.online/contact", { method: "POST", headers: { "User-Agent": "Mozilla/5.0 Chrome/126.0.0.0 Safari/537.36" } }), observerEnv(fake.db as D1Database), ctx, html);
+    await Promise.all(ctx.tasks);
+    expect(fake.sql.some((query) => query.includes("INSERT INTO human_page_counts"))).toBe(false);
+  });
+  it("aggregates mobile Safari, tablet Safari, Android Chrome, and WeChat without storing raw User-Agents", async () => {
+    const fake = fakeDb();
+    const ctx = waitContext();
+    const agents = [
+      "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1",
+      "Mozilla/5.0 (iPad; CPU OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Version/18.0 Mobile/15E148 Safari/604.1",
+      "Mozilla/5.0 (Linux; Android 15; Pixel 9) AppleWebKit/537.36 Chrome/126.0.0.0 Mobile Safari/537.36",
+      "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 Chrome/126.0.0.0 Mobile Safari/537.36 MicroMessenger/8.0",
+    ];
+    for (const userAgent of agents) {
+      await handleFetch(new Request("https://me.itheheda.online/articles", { headers: { "User-Agent": userAgent } }), observerEnv(fake.db as D1Database), ctx, async () => new Response("page", { headers: { "Content-Type": "text/html" } }));
+    }
+    await Promise.all(ctx.tasks);
+    const clientRows = fake.values.filter((_, index) => fake.sql[index]?.includes("INSERT INTO human_client_counts"));
+    expect(clientRows).toEqual([
+      [bucketStart(), "mobile", "safari", "ios"],
+      [bucketStart(), "tablet", "safari", "ios"],
+      [bucketStart(), "mobile", "chrome", "android"],
+      [bucketStart(), "mobile", "wechat", "android"],
+    ]);
+    expect(JSON.stringify(clientRows)).not.toContain("Mozilla/5.0");
+  });
   it("calls the origin exactly once, returns its exact response, and strips private request data from V1 and V2 persistence", async () => {
     const fake = fakeDb();
     const ctx = waitContext();
@@ -229,17 +294,35 @@ describe("crawler observer private analytics", () => {
     [{ bot_id: "gptbot", bot_name: "GPTBot", provider_id: "openai", provider_name: "OpenAI", verification_status: "declared_unverified", verification_method: "ua_only", requests: 3 }],
     [],
     [{ value: "2026-08-06T00:00:00.000Z" }],
+    [{ pageViews: 7 }],
+    [{ bucket_start: bucketStart(), pageViews: 7 }],
+    [{ path: "/articles", pageViews: 5 }, { path: "/", pageViews: 2 }],
+    [{ status: 200, pageViews: 7 }],
+    [{ value: "2026-08-05T00:00:00.000Z" }],
+    [{ id: "desktop", pageViews: 4 }, { id: "mobile", pageViews: 3 }],
+    [{ id: "chrome", pageViews: 4 }, { id: "safari", pageViews: 3 }],
+    [{ id: "windows", pageViews: 4 }, { id: "ios", pageViews: 3 }],
+    [{ countryCode: "CN", pageViews: 5 }, { countryCode: "US", pageViews: 2 }],
+    [{ countryCode: "CN", regionCode: "GD", regionName: "Guangdong", pageViews: 4 }, { countryCode: "US", regionCode: "CA", regionName: "California", pageViews: 2 }],
   ];
 
   it.each(["24h", "7d", "30d"] as const)("returns the locked %s API schema", async (range) => {
     const response = await analytics(await readRequest(range), observerEnv(fakeDb({ batchRows }).db as D1Database));
     expect(response.status).toBe(200);
-    const body = await response.json() as { meta: { range: string }; trend: Array<Record<string, unknown>>; summary: Record<string, unknown> };
+    const body = await response.json() as { meta: { range: string }; trend: Array<Record<string, unknown>>; summary: Record<string, unknown>; human: { pageViews: number; paths: Array<Record<string, unknown>>; devices: Array<Record<string, unknown>>; browsers: Array<Record<string, unknown>>; operatingSystems: Array<Record<string, unknown>>; countries: Array<Record<string, unknown>>; regions: Array<Record<string, unknown>> } };
     expect(body.meta.range).toBe(range);
     expect(body.trend).toHaveLength(range === "24h" ? 24 : range === "7d" ? 168 : 720);
     expect(body.trend[0]).toHaveProperty("bucket");
     expect(body.trend[0]).not.toHaveProperty("start");
     expect(body.summary).toMatchObject({ crawlerRequests: 3, identifiedAiCrawler: 3, openGeoSelfTest: 0, otherAutomation: 0 });
+    expect(body.human).toMatchObject({ pageViews: 7 });
+    expect(body.human.trend.some((row) => row.pageViews === 7)).toBe(true);
+    expect(body.human.paths[0]).toMatchObject({ path: "/articles", pageViews: 5 });
+    expect(body.human.devices[0]).toEqual({ id: "desktop", pageViews: 4 });
+    expect(body.human.browsers[0]).toEqual({ id: "chrome", pageViews: 4 });
+    expect(body.human.operatingSystems[0]).toEqual({ id: "windows", pageViews: 4 });
+    expect(body.human.countries[0]).toEqual({ countryCode: "CN", pageViews: 5 });
+    expect(body.human.regions[0]).toEqual({ countryCode: "CN", regionCode: "GD", regionName: "Guangdong", pageViews: 4 });
     const identityPreview = (body as { identityPreview: { mode: string; summary: Record<string, number>; rules: Array<Record<string, unknown>> } }).identityPreview;
     expect(identityPreview.mode).toBe("shadow");
     expect(identityPreview.summary).toMatchObject({ requests: 3, declaredUnverified: 3 });
@@ -269,8 +352,11 @@ describe("crawler observer private analytics", () => {
     const fake = fakeDb();
     await purge({ DB: fake.db as D1Database });
     expect(fake.sql[0]).toContain("DELETE FROM crawler_counts");
+    expect(fake.sql.some((query) => query.includes("DELETE FROM human_page_counts"))).toBe(true);
+    expect(fake.sql.some((query) => query.includes("DELETE FROM human_client_counts"))).toBe(true);
+    expect(fake.sql.some((query) => query.includes("DELETE FROM human_location_counts"))).toBe(true);
     expect(fake.sql[1]).toContain("DELETE FROM crawler_identity_counts");
-    expect(fake.values.map((value) => value[0])).toEqual([bucketStart() - 90 * 24 * 3600, bucketStart() - 90 * 24 * 3600]);
+    expect(fake.values.map((value) => value[0])).toEqual([bucketStart() - 90 * 24 * 3600, bucketStart() - 90 * 24 * 3600, bucketStart() - 90 * 24 * 3600, bucketStart() - 90 * 24 * 3600, bucketStart() - 90 * 24 * 3600]);
   });
 
   it("continues purging and syncing Perplexity when OpenAI rule sources fail", async () => {
@@ -375,9 +461,19 @@ describe("crawler observer Miniflare D1 integration", () => {
     for (const statement of identityMigrationSql.split(/;\s*(?:\r?\n|$)/).map((item) => item.trim()).filter(Boolean)) {
       await env.DB.prepare(statement).run();
     }
+    for (const statement of humanPageMigrationSql.split(/;\s*(?:\r?\n|$)/).map((item) => item.trim()).filter(Boolean)) {
+      await env.DB.prepare(statement).run();
+    }
     await env.DB.prepare("DELETE FROM crawler_counts").run();
     await env.DB.prepare("DELETE FROM crawler_identity_counts").run();
+    await env.DB.prepare("DELETE FROM human_page_counts").run();
+    await env.DB.prepare("DELETE FROM human_location_counts").run();
     await env.DB.prepare("DELETE FROM crawler_rule_sets").run();
+  });
+
+  it("has a dedicated privacy-preserving human page-view table", async () => {
+    const tables = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('human_page_counts', 'human_client_counts', 'human_location_counts') ORDER BY name").all<{ name: string }>();
+    expect(tables.results.map((row) => row.name)).toEqual(["human_client_counts", "human_location_counts", "human_page_counts"]);
   });
 
   it("applies the migration, upserts real D1 counts, aggregates analytics, and purges through the scheduled handler", async () => {

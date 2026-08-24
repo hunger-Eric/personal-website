@@ -19,7 +19,7 @@ const CARDS = [
     icon: FilePenLine,
   },
   {
-    href: "/admin/crawlers",
+    href: "/admin/crawlers/human",
     label: adminCopy.dashboard.cards.crawlers.label,
     desc: adminCopy.dashboard.cards.crawlers.description,
     icon: Radar,

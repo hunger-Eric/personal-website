@@ -38,7 +38,7 @@ const navGroups = [
     items: [
       { href: "/admin", label: adminCopy.sidebar.dashboard },
       { href: "/admin/articles", label: adminCopy.sidebar.articles },
-      { href: "/admin/crawlers", label: adminCopy.sidebar.crawlers },
+      { href: "/admin/crawlers/human", label: adminCopy.sidebar.crawlers },
     ],
   },
 ];

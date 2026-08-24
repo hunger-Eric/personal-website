@@ -8,7 +8,7 @@ export const adminCopy = {
     general: "当前工具",
     dashboard: "工作台首页",
     articles: "文章工作台",
-    crawlers: "AI 爬虫检测",
+    crawlers: "访问检测",
     scopeHint: "仅保留当前在用的运营工具",
   },
   login: {
@@ -28,15 +28,15 @@ export const adminCopy = {
   },
   dashboard: {
     title: "系统工作台",
-    description: "管理文章生产，并查看 AI 爬虫访问情况。官网品牌与设计由代码中的权威配置维护。",
+    description: "管理文章生产，并查看人类浏览器与 AI 爬虫访问情况。官网品牌与设计由代码中的权威配置维护。",
     cards: {
       articles: {
         label: "文章工作台",
         description: "基于业务事实、公开来源和人工编辑生成网页文章。",
       },
       crawlers: {
-        label: "AI 爬虫检测",
-        description: "查看已验证爬虫、访问趋势和抓取异常。",
+        label: "访问检测",
+        description: "分别查看人类页面访问、已验证爬虫、访问趋势和抓取异常。",
       },
     },
     quickLinks: {

@@ -13,9 +13,51 @@ const fixture: CrawlerAnalyticsResponse = {
   ] },
 };
 describe("CrawlerDashboard", () => {
+  it("shows privacy-preserving human browser page views separately from automation", () => {
+    const data = {
+      ...fixture,
+      human: {
+        trackingStartedAt: "2026-08-06T00:00:00.000Z",
+        requestedWindowComplete: false,
+        pageViews: 9,
+        trend: [{ bucket: "2026-08-06T11:00:00.000Z", pageViews: 9 }],
+        paths: [{ path: "/articles", pageViews: 6 }, { path: "/", pageViews: 3 }],
+        statuses: [{ status: 200, pageViews: 9 }],
+        devices: [{ id: "desktop", pageViews: 5 }, { id: "mobile", pageViews: 4 }],
+        browsers: [{ id: "chrome", pageViews: 5 }, { id: "safari", pageViews: 4 }],
+        operatingSystems: [{ id: "windows", pageViews: 5 }, { id: "ios", pageViews: 4 }],
+        countries: [{ countryCode: "CN", pageViews: 6 }, { countryCode: "US", pageViews: 3 }],
+        regions: [{ countryCode: "CN", regionCode: "GD", regionName: "Guangdong", pageViews: 6 }, { countryCode: "US", regionCode: "CA", regionName: "California", pageViews: 3 }],
+      },
+    } as CrawlerAnalyticsResponse;
+    const Dashboard = CrawlerDashboard as unknown as (props: Parameters<typeof CrawlerDashboard>[0] & { view: "human" | "machines" }) => React.ReactNode;
+    const { container } = render(<Dashboard view="human" range="24h" data={data} />);
+    const human = within(container.querySelector("[aria-labelledby='human-traffic-title']") as HTMLElement);
+    expect(human.getByRole("heading", { name: "人类浏览器访问" })).toBeInTheDocument();
+    expect(human.getAllByText("页面访问")[0].nextSibling).toHaveTextContent("9");
+    expect(screen.getByRole("table", { name: "人类访问热门页面" })).toHaveTextContent("/articles");
+    expect(screen.getByText(/不是独立访客数/)).toBeInTheDocument();
+    expect(screen.getByText(/人类访问统计从 2026-08-06T00:00:00.000Z 开始/)).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "访问设备" })).toHaveTextContent("桌面设备");
+    expect(screen.getByRole("table", { name: "访问浏览器" })).toHaveTextContent("Chrome");
+    expect(screen.getByRole("table", { name: "操作系统" })).toHaveTextContent("Windows");
+    expect(screen.getByRole("table", { name: "国家/地区" })).toHaveTextContent("中国");
+    expect(screen.getByRole("table", { name: "省/州" })).toHaveTextContent("Guangdong");
+    expect(screen.queryByRole("heading", { name: "自动化请求趋势" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "机器访问" })).toHaveAttribute("href", "/admin/crawlers/machines?range=24h");
+  });
+  it("keeps crawler evidence on the machine page and preserves the selected range in page navigation", () => {
+    const Dashboard = CrawlerDashboard as unknown as (props: Parameters<typeof CrawlerDashboard>[0] & { view: "human" | "machines" }) => React.ReactNode;
+    render(<Dashboard view="machines" range="7d" data={fixture} />);
+    expect(screen.getByRole("heading", { name: "机器访问" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "自动化请求趋势" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "人类浏览器访问" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "人类访问" })).toHaveAttribute("href", "/admin/crawlers/human?range=7d");
+    expect(screen.getByRole("link", { name: "7d" })).toHaveAttribute("href", "/admin/crawlers/machines?range=7d");
+  });
   it("restores all ranges and renders Worker bot data without User-Agents", () => {
     const { container } = render(<CrawlerDashboard range="24h" data={fixture} />);
-    ["24h", "7d", "30d"].forEach((range) => expect(screen.getByRole("link", { name: range })).toHaveAttribute("href", `?range=${range}`));
+    ["24h", "7d", "30d"].forEach((range) => expect(screen.getByRole("link", { name: range })).toHaveAttribute("href", `/admin/crawlers/machines?range=${range}`));
     expect(screen.getAllByText("Cloudflare Worker + D1").length).toBeGreaterThan(0); expect(screen.getAllByText("OpenAI").length).toBeGreaterThan(0);
     expect(container.textContent).not.toContain("声明的 User-Agent"); expect(container.textContent).not.toContain("总请求基线");
     expect(container.textContent).not.toContain("占比：100%");

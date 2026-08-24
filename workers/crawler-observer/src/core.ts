@@ -16,6 +16,12 @@ type Category = "open_geo_self_test" | "identified_ai_crawler" | "other_automati
 type Classification = { id: string; name: string; category: Category; openGeoVerified: boolean };
 type Row = Record<string, unknown>;
 type RuleState = "fresh" | "last_known_good" | "unavailable";
+type HumanClient = {
+  deviceType: "desktop" | "mobile" | "tablet" | "other";
+  browser: "chrome" | "safari" | "edge" | "firefox" | "wechat" | "samsung_internet" | "other";
+  operatingSystem: "windows" | "macos" | "ios" | "android" | "linux" | "chromeos" | "other";
+};
+type HumanLocation = { countryCode: string; regionCode: string; regionName: string };
 type ObserverEnv = Pick<Env, "DB" | "OPEN_GEO_SELF_TEST_SECRET" | "OBSERVER_READ_SECRET">;
 type OriginFetch = (request: Request) => Promise<Response>;
 
@@ -136,11 +142,87 @@ function safeLog(error: unknown): void {
   console.error(JSON.stringify({ event: "crawler_observer_error", code: error instanceof Error ? error.name : "unknown" }));
 }
 
+function likelyHumanPageView(request: Request, originResponse: Response): boolean {
+  if (request.method !== "GET") return false;
+  if (!(originResponse.headers.get("Content-Type") ?? "").toLowerCase().startsWith("text/html")) return false;
+  const userAgent = request.headers.get("User-Agent") ?? "";
+  return userAgent.startsWith("Mozilla/5.0") && /(?:Chrome|CriOS|Firefox|FxiOS|Safari|Edg|OPR)\//.test(userAgent);
+}
+
+function classifyHumanClient(userAgent: string): HumanClient {
+  const deviceType: HumanClient["deviceType"] = /iPad|Android(?!.*Mobile)/i.test(userAgent)
+    ? "tablet"
+    : /iPhone|iPod|Mobile|Android/i.test(userAgent)
+      ? "mobile"
+      : userAgent.startsWith("Mozilla/5.0")
+        ? "desktop"
+        : "other";
+  const browser: HumanClient["browser"] = /MicroMessenger\//i.test(userAgent)
+    ? "wechat"
+    : /SamsungBrowser\//i.test(userAgent)
+      ? "samsung_internet"
+      : /Edg(?:A|iOS)?\//i.test(userAgent)
+        ? "edge"
+        : /(?:Firefox|FxiOS)\//i.test(userAgent)
+          ? "firefox"
+          : /(?:Chrome|CriOS)\//i.test(userAgent)
+            ? "chrome"
+            : /Safari\//i.test(userAgent)
+              ? "safari"
+              : "other";
+  const operatingSystem: HumanClient["operatingSystem"] = /iPhone|iPad|iPod/i.test(userAgent)
+    ? "ios"
+    : /Android/i.test(userAgent)
+      ? "android"
+      : /Windows NT/i.test(userAgent)
+        ? "windows"
+        : /CrOS/i.test(userAgent)
+          ? "chromeos"
+          : /Mac OS X/i.test(userAgent)
+            ? "macos"
+            : /Linux/i.test(userAgent)
+              ? "linux"
+              : "other";
+  return { deviceType, browser, operatingSystem };
+}
+
+function classifyHumanLocation(request: Request): HumanLocation {
+  const cf = request.cf as { country?: unknown; regionCode?: unknown; region?: unknown } | undefined;
+  const country = typeof cf?.country === "string" ? cf.country.toUpperCase() : "";
+  const regionCode = typeof cf?.regionCode === "string" ? cf.regionCode.toUpperCase() : "";
+  const regionName = typeof cf?.region === "string" ? cf.region.replace(/[\u0000-\u001F\u007F]/g, "").trim().slice(0, 80) : "";
+  return {
+    countryCode: /^[A-Z]{2}$/.test(country) ? country : "XX",
+    regionCode: /^[A-Z0-9-]{1,16}$/.test(regionCode) ? regionCode : "unknown",
+    regionName: regionName || "Unknown",
+  };
+}
+
 async function observe(request: Request, originResponse: Response, env: ObserverEnv): Promise<void> {
   const url = new URL(request.url);
   if (excluded(url.pathname)) return;
   const item = await classify(request, env);
-  if (!item) return;
+  if (!item) {
+    if (!likelyHumanPageView(request, originResponse)) return;
+    const client = classifyHumanClient(request.headers.get("User-Agent") ?? "");
+    const location = classifyHumanLocation(request);
+    await env.DB.prepare(
+      "INSERT INTO human_page_counts (bucket_start, path, status, count) VALUES (?, ?, ?, 1) ON CONFLICT(bucket_start, path, status) DO UPDATE SET count = count + 1",
+    )
+      .bind(bucketStart(), observedPath(url.pathname), originResponse.status)
+      .run();
+    await env.DB.prepare(
+      "INSERT INTO human_client_counts (bucket_start, device_type, browser, operating_system, count) VALUES (?, ?, ?, ?, 1) ON CONFLICT(bucket_start, device_type, browser, operating_system) DO UPDATE SET count = count + 1",
+    )
+      .bind(bucketStart(), client.deviceType, client.browser, client.operatingSystem)
+      .run();
+    await env.DB.prepare(
+      "INSERT INTO human_location_counts (bucket_start, country_code, region_code, region_name, count) VALUES (?, ?, ?, ?, 1) ON CONFLICT(bucket_start, country_code, region_code, region_name) DO UPDATE SET count = count + 1",
+    )
+      .bind(bucketStart(), location.countryCode, location.regionCode, location.regionName)
+      .run();
+    return;
+  }
   if (item.id === "open-geo-declared-test" && openGeoStaticAsset(url.pathname)) return;
   await env.DB.prepare(
     "INSERT INTO crawler_counts (bucket_start, bot_id, bot_name, category, path, status, count) VALUES (?, ?, ?, ?, ?, ?, 1) ON CONFLICT(bucket_start, bot_id, category, path, status) DO UPDATE SET count = count + 1, bot_name = excluded.bot_name",
@@ -226,6 +308,16 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
     env.DB.prepare("SELECT bot_id, bot_name, provider_id, provider_name, verification_status, verification_method, SUM(count) requests FROM crawler_identity_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY bot_id, bot_name, provider_id, provider_name, verification_status, verification_method ORDER BY requests DESC LIMIT 100").bind(queryStart, queryEnd),
     env.DB.prepare("SELECT source_id, last_attempt_at, last_success_at, last_error_code FROM crawler_rule_sets ORDER BY source_id"),
     env.DB.prepare("SELECT value FROM crawler_identity_meta WHERE key = 'shadow_started_at'"),
+    env.DB.prepare("SELECT SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ?").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT bucket_start, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY bucket_start ORDER BY bucket_start").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT path, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY path ORDER BY pageViews DESC LIMIT 100").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT status, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY status ORDER BY status").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT value FROM human_page_meta WHERE key = 'tracking_started_at'"),
+    env.DB.prepare("SELECT device_type id, SUM(count) pageViews FROM human_client_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY device_type ORDER BY pageViews DESC, device_type").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT browser id, SUM(count) pageViews FROM human_client_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY browser ORDER BY pageViews DESC, browser").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT operating_system id, SUM(count) pageViews FROM human_client_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY operating_system ORDER BY pageViews DESC, operating_system").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT country_code countryCode, SUM(count) pageViews FROM human_location_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY country_code ORDER BY pageViews DESC, country_code LIMIT 100").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT country_code countryCode, region_code regionCode, region_name regionName, SUM(count) pageViews FROM human_location_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY country_code, region_code, region_name ORDER BY pageViews DESC, country_code, region_code LIMIT 100").bind(queryStart, queryEnd),
   ];
   const results = await env.DB.batch<Row>(statements);
   const rows = (index: number): Row[] => results[index]?.results ?? [];
@@ -255,6 +347,26 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
     if (status in identityStatuses) identityStatuses[status as VerificationStatus] = numberValue(item, "requests");
   }
   const ruleRows = new Map(rows(8).map((item) => [stringValue(item, "source_id"), item]));
+  const humanTrackingStartedAt = stringValue(rows(14)[0] ?? {}, "value");
+  const humanByBucket = new Map<number, number>();
+  for (let point = queryStart; point < queryEnd; point += HOUR_SECONDS) humanByBucket.set(point, 0);
+  for (const item of rows(11)) {
+    const point = numberValue(item, "bucket_start");
+    if (humanByBucket.has(point)) humanByBucket.set(point, numberValue(item, "pageViews"));
+  }
+  const human = Number.isNaN(Date.parse(humanTrackingStartedAt)) ? undefined : {
+    trackingStartedAt: humanTrackingStartedAt,
+    requestedWindowComplete: Date.parse(humanTrackingStartedAt) <= queryStart * 1000,
+    pageViews: numberValue(rows(10)[0] ?? {}, "pageViews"),
+    trend: [...humanByBucket].map(([point, pageViews]) => ({ bucket: iso(point), pageViews })),
+    paths: rows(12).map((item) => ({ path: stringValue(item, "path"), pageViews: numberValue(item, "pageViews") })),
+    statuses: rows(13).map((item) => ({ status: numberValue(item, "status"), pageViews: numberValue(item, "pageViews") })),
+    devices: rows(15).map((item) => ({ id: stringValue(item, "id"), pageViews: numberValue(item, "pageViews") })),
+    browsers: rows(16).map((item) => ({ id: stringValue(item, "id"), pageViews: numberValue(item, "pageViews") })),
+    operatingSystems: rows(17).map((item) => ({ id: stringValue(item, "id"), pageViews: numberValue(item, "pageViews") })),
+    countries: rows(18).map((item) => ({ countryCode: stringValue(item, "countryCode"), pageViews: numberValue(item, "pageViews") })),
+    regions: rows(19).map((item) => ({ countryCode: stringValue(item, "countryCode"), regionCode: stringValue(item, "regionCode"), regionName: stringValue(item, "regionName"), pageViews: numberValue(item, "pageViews") })),
+  };
 
   return jsonResponse({
     meta: {
@@ -285,6 +397,7 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
     bots: rows(2).map((item) => ({ id: stringValue(item, "bot_id"), name: stringValue(item, "bot_name"), category: stringValue(item, "category"), requests: numberValue(item, "requests") })),
     paths: rows(3).map((item) => ({ path: stringValue(item, "path"), openGeoSelfTest: numberValue(item, "openGeoSelfTest"), identifiedAiCrawler: numberValue(item, "identifiedAiCrawler"), otherAutomation: numberValue(item, "otherAutomation"), total: numberValue(item, "total") })),
     statuses: rows(4).map((item) => ({ status: numberValue(item, "status"), requests: numberValue(item, "requests") })),
+    ...(human ? { human } : {}),
     identityPreview: {
       mode: "shadow",
       shadowStartedAt,
@@ -328,6 +441,9 @@ export async function purge(env: Pick<ObserverEnv, "DB">): Promise<void> {
   await env.DB.batch([
     env.DB.prepare("DELETE FROM crawler_counts WHERE bucket_start < ?").bind(cutoff),
     env.DB.prepare("DELETE FROM crawler_identity_counts WHERE bucket_start < ?").bind(cutoff),
+    env.DB.prepare("DELETE FROM human_page_counts WHERE bucket_start < ?").bind(cutoff),
+    env.DB.prepare("DELETE FROM human_client_counts WHERE bucket_start < ?").bind(cutoff),
+    env.DB.prepare("DELETE FROM human_location_counts WHERE bucket_start < ?").bind(cutoff),
   ]);
 }
 
