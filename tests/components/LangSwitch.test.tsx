@@ -60,11 +60,11 @@ describe("LangSwitch", () => {
     expect(screen.getByRole("link")).toHaveAttribute("aria-label", "Switch to 中文");
   });
 
-  it("persists the target locale on click", async () => {
+  it("does not mutate client locale before URL navigation", async () => {
     const { LangSwitch } = await import("@/components/LangSwitch");
     render(React.createElement(LangSwitch));
     fireEvent.click(screen.getByRole("link"));
-    expect(mockSetLocale).toHaveBeenCalledWith("en");
+    expect(mockSetLocale).not.toHaveBeenCalled();
   });
 
   it("renders Languages icon", async () => {

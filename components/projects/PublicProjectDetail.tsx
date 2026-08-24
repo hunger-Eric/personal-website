@@ -104,7 +104,7 @@ export function PublicProjectDetail({ id }: { id: string }) {
             id="open-geo-demo"
             className="mt-10 border border-hairline bg-surface-graphite"
           >
-            <OpenGeoParticipatoryDemo />
+            <OpenGeoParticipatoryDemo locale={locale} />
           </div>
         ) : null}
 

@@ -15,7 +15,7 @@ type LangSwitchProps = {
 };
 
 export function LangSwitch({ variant = "surface" }: LangSwitchProps) {
-  const { locale, setLocale } = useLocale();
+  const { locale } = useLocale();
   const pathname = usePathname();
   const targetLocale = locale === "zh" ? "en" : "zh";
   const href = getLocaleSwitchPath(pathname || "/", targetLocale);
@@ -28,7 +28,6 @@ export function LangSwitch({ variant = "surface" }: LangSwitchProps) {
   return (
     <a
       href={href}
-      onClick={() => setLocale(targetLocale)}
       className={[
         "inline-flex items-center gap-2 rounded-control border text-xs font-medium text-muted-foreground transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-accent",
         variantClass,
