@@ -8,6 +8,7 @@ const category = z.enum(["identified_ai_crawler", "open_geo_self_test", "other_a
 const deviceType = z.enum(["desktop", "mobile", "tablet", "other"]);
 const browser = z.enum(["chrome", "safari", "edge", "firefox", "wechat", "samsung_internet", "other"]);
 const operatingSystem = z.enum(["windows", "macos", "ios", "android", "linux", "chromeos", "other"]);
+const crawlerPurpose = z.enum(["ai_training", "ai_search", "user_fetch", "search_index", "self_test", "unknown"]);
 const categorizedCounts = z.object({
   identifiedAiCrawler: count,
   openGeoSelfTest: count,
@@ -71,6 +72,10 @@ export const crawlerAnalyticsWorkerSchema = z.object({
     rules: z.array(z.object({
       sourceId: ruleSourceIdSchema, lastAttemptAt: z.string().datetime().nullable(), lastSuccessAt: z.string().datetime().nullable(), state: z.enum(["fresh", "last_known_good", "unavailable"]),
     }).strict()).length(5),
+    chinaUaCoverage: z.array(z.object({
+      id: z.string().min(1).max(80), name: z.string().min(1).max(120), providerName: z.string().min(1).max(120), purpose: crawlerPurpose,
+      uaToken: z.string().min(1).max(120), verificationStatus: z.literal("declared_unverified"), verificationMethod: z.literal("ua_only"),
+    }).strict()).max(20).optional(),
   }).strict().optional(),
 }).strict().superRefine((value, context) => {
   if (value.summary.crawlerRequests !== sumCategories(value.summary)) {

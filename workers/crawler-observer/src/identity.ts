@@ -53,6 +53,15 @@ export type IdentityInput = {
   genericAutomation: boolean;
 };
 
+export const CHINA_IDENTITY_CATALOG: readonly IdentityCandidate[] = [
+  { botId: "deepseekbot", botName: "DeepSeekBot", providerId: "deepseek", providerName: "DeepSeek", region: "cn", purpose: "unknown", uaToken: "DeepSeekBot", ruleSourceId: null },
+  { botId: "bytespider", botName: "Bytespider", providerId: "bytedance", providerName: "ByteDance", region: "cn", purpose: "ai_training", uaToken: "Bytespider", ruleSourceId: null },
+  { botId: "baiduspider", botName: "Baiduspider", providerId: "baidu", providerName: "Baidu", region: "cn", purpose: "search_index", uaToken: "Baiduspider", ruleSourceId: null },
+  { botId: "sogou", botName: "Sogou Spider", providerId: "sogou", providerName: "Sogou", region: "cn", purpose: "search_index", uaToken: "Sogou", ruleSourceId: null },
+  { botId: "360spider", botName: "360Spider", providerId: "360", providerName: "360 Search", region: "cn", purpose: "search_index", uaToken: "360Spider", ruleSourceId: null },
+  { botId: "petalbot", botName: "PetalBot", providerId: "huawei", providerName: "Huawei", region: "cn", purpose: "ai_search", uaToken: "PetalBot", ruleSourceId: null },
+];
+
 const EXPLICIT_IDENTITY_CATALOG: readonly IdentityCandidate[] = [
   { botId: "open-geo-declared-test", botName: "Open GEO test (unverified)", providerId: "open-geo", providerName: "Open GEO", region: "global", purpose: "self_test", uaToken: "OpenGeoConsoleBot", ruleSourceId: null },
   { botId: "open-geo-declared-test", botName: "Open GEO test (unverified)", providerId: "open-geo", providerName: "Open GEO", region: "global", purpose: "self_test", uaToken: "OpenGEOConsole/", ruleSourceId: null },
@@ -61,10 +70,7 @@ const EXPLICIT_IDENTITY_CATALOG: readonly IdentityCandidate[] = [
   { botId: "gptbot", botName: "GPTBot", providerId: "openai", providerName: "OpenAI", region: "global", purpose: "ai_training", uaToken: "GPTBot", ruleSourceId: "openai_gptbot" },
   { botId: "perplexity-user", botName: "Perplexity-User", providerId: "perplexity", providerName: "Perplexity", region: "global", purpose: "user_fetch", uaToken: "Perplexity-User", ruleSourceId: "perplexity_user" },
   { botId: "perplexitybot", botName: "PerplexityBot", providerId: "perplexity", providerName: "Perplexity", region: "global", purpose: "ai_search", uaToken: "PerplexityBot", ruleSourceId: "perplexity_bot" },
-  { botId: "bytespider", botName: "Bytespider", providerId: "bytedance", providerName: "ByteDance", region: "cn", purpose: "ai_training", uaToken: "Bytespider", ruleSourceId: null },
-  { botId: "baiduspider", botName: "Baiduspider", providerId: "baidu", providerName: "Baidu", region: "cn", purpose: "search_index", uaToken: "Baiduspider", ruleSourceId: null },
-  { botId: "sogou", botName: "Sogou Spider", providerId: "sogou", providerName: "Sogou", region: "cn", purpose: "search_index", uaToken: "Sogou", ruleSourceId: null },
-  { botId: "360spider", botName: "360Spider", providerId: "360", providerName: "360 Search", region: "cn", purpose: "search_index", uaToken: "360Spider", ruleSourceId: null },
+  ...CHINA_IDENTITY_CATALOG,
 ];
 
 function providerId(owner: string): string {

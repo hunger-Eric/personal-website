@@ -1,6 +1,6 @@
 import bots from "@geosuite/ai-crawler-bots/bots.json";
 import { isBot } from "isbot";
-import { classifyIdentity, type VerificationStatus } from "./identity";
+import { CHINA_IDENTITY_CATALOG, classifyIdentity, type VerificationStatus } from "./identity";
 import { ensureOfficialRuleSources, syncOpenAiRuleSources, syncPerplexityRuleSources } from "./official-ip-rules";
 
 const encoder = new TextEncoder();
@@ -419,6 +419,15 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
         const lastErrorCode = row ? stringValue(row, "last_error_code") || null : null;
         return { sourceId, lastAttemptAt, lastSuccessAt, state: ruleState(lastSuccessAt, lastErrorCode, generatedAt) };
       }),
+      chinaUaCoverage: CHINA_IDENTITY_CATALOG.map((candidate) => ({
+        id: candidate.botId,
+        name: candidate.botName,
+        providerName: candidate.providerName,
+        purpose: candidate.purpose,
+        uaToken: candidate.uaToken,
+        verificationStatus: "declared_unverified",
+        verificationMethod: "ua_only",
+      })),
     },
   });
 }

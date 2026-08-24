@@ -91,10 +91,12 @@ describe("crawler identity contract", () => {
   });
 
   it.each([
+    ["DeepSeekBot/1.0", "deepseekbot", "unknown"],
     ["Bytespider", "bytespider", "ai_training"],
     ["Baiduspider", "baiduspider", "search_index"],
     ["Sogou web spider", "sogou", "search_index"],
     ["360Spider", "360spider", "search_index"],
+    ["PetalBot", "petalbot", "ai_search"],
   ] as const)("recognizes %s as a China-region UA-only candidate", (ua, botId, purpose) => {
     expect(findIdentityCandidate(ua)).toMatchObject({
       botId,

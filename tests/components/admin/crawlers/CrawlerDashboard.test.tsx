@@ -10,6 +10,9 @@ const fixture: CrawlerAnalyticsResponse = {
   identityPreview: { mode: "shadow", shadowStartedAt: "2026-08-06T00:00:00.000Z", summary: { requests: 4, verifiedOfficial: 1, declaredUnverified: 1, suspectedSpoof: 1, otherAutomation: 1 }, bots: [{ id: "gptbot", name: "GPTBot", providerId: "openai", providerName: "OpenAI", verificationStatus: "verified_official", verificationMethod: "official_ip_range", requests: 1 }], rules: [
     { sourceId: "openai_gptbot", lastAttemptAt: "2026-08-06T00:00:00.000Z", lastSuccessAt: "2026-08-06T00:00:00.000Z", state: "fresh" },
     { sourceId: "openai_searchbot", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" }, { sourceId: "openai_chatgpt_user", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" }, { sourceId: "perplexity_bot", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" }, { sourceId: "perplexity_user", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" },
+  ], chinaUaCoverage: [
+    { id: "deepseekbot", name: "DeepSeekBot", providerName: "DeepSeek", purpose: "unknown", uaToken: "DeepSeekBot", verificationStatus: "declared_unverified", verificationMethod: "ua_only" },
+    { id: "bytespider", name: "Bytespider", providerName: "ByteDance", purpose: "ai_training", uaToken: "Bytespider", verificationStatus: "declared_unverified", verificationMethod: "ua_only" },
   ] },
 };
 describe("CrawlerDashboard", () => {
@@ -59,7 +62,7 @@ describe("CrawlerDashboard", () => {
     const { container } = render(<CrawlerDashboard range="24h" data={fixture} />);
     ["24h", "7d", "30d"].forEach((range) => expect(screen.getByRole("link", { name: range })).toHaveAttribute("href", `/admin/crawlers/machines?range=${range}`));
     expect(screen.getAllByText("Cloudflare Worker + D1").length).toBeGreaterThan(0); expect(screen.getAllByText("OpenAI").length).toBeGreaterThan(0);
-    expect(container.textContent).not.toContain("声明的 User-Agent"); expect(container.textContent).not.toContain("总请求基线");
+    expect(container.textContent).not.toContain("Mozilla/5.0"); expect(container.textContent).not.toContain("总请求基线");
     expect(container.textContent).not.toContain("占比：100%");
   });
   it("renders the V2 identity preview without exposing verification inputs", () => {
@@ -73,6 +76,11 @@ describe("CrawlerDashboard", () => {
     expect(dashboard.getByText("官方 IP 范围")).toBeInTheDocument();
     expect(dashboard.getByText(/影子模式不会改变当前正式统计/)).toBeInTheDocument();
     expect(dashboard.getByText(/2026-08-06T00:00:00.000Z/)).toBeInTheDocument();
+    const chinaCoverage = dashboard.getByRole("table", { name: "中国爬虫规则覆盖" });
+    expect(chinaCoverage).toHaveTextContent("DeepSeekBot");
+    expect(chinaCoverage).toHaveTextContent("Bytespider");
+    expect(chinaCoverage).toHaveTextContent("仅声明身份");
+    expect(dashboard.getByText(/DeepSeek 当前没有公开官方爬虫身份或强验证资料/)).toBeInTheDocument();
     ["203.0.113.8", "203.0.113.0/24", "CF-Connecting-IP", "Mozilla/5.0"].forEach((value) => expect(container.textContent).not.toContain(value));
   });
   it("keeps the V1 dashboard visible without rendering the V2 identity preview", () => {

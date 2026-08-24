@@ -21,6 +21,9 @@ const valid = () => ({
   identityPreview: { mode: "shadow", shadowStartedAt: "2026-08-06T00:00:00.000Z", summary: { requests: 4, verifiedOfficial: 1, declaredUnverified: 1, suspectedSpoof: 1, otherAutomation: 1 }, bots: [{ id: "gptbot", name: "GPTBot", providerId: "openai", providerName: "OpenAI", verificationStatus: "verified_official", verificationMethod: "official_ip_range", requests: 1 }], rules: [
     { sourceId: "openai_gptbot", lastAttemptAt: "2026-08-06T00:00:00.000Z", lastSuccessAt: "2026-08-06T00:00:00.000Z", state: "fresh" },
     { sourceId: "openai_searchbot", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" }, { sourceId: "openai_chatgpt_user", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" }, { sourceId: "perplexity_bot", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" }, { sourceId: "perplexity_user", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" },
+  ], chinaUaCoverage: [
+    { id: "deepseekbot", name: "DeepSeekBot", providerName: "DeepSeek", purpose: "unknown", uaToken: "DeepSeekBot", verificationStatus: "declared_unverified", verificationMethod: "ua_only" },
+    { id: "bytespider", name: "Bytespider", providerName: "ByteDance", purpose: "ai_training", uaToken: "Bytespider", verificationStatus: "declared_unverified", verificationMethod: "ua_only" },
   ] },
 });
 
@@ -28,7 +31,10 @@ describe("crawler observer schema", () => {
   it("accepts 30d partial-history data", () => {
     const result = crawlerAnalyticsWorkerSchema.safeParse(valid());
     expect(result.success).toBe(true);
-    if (result.success) expect(result.data.human?.regions[0]).toEqual({ countryCode: "CN", regionCode: "GD", regionName: "Guangdong", pageViews: 5 });
+    if (result.success) {
+      expect(result.data.human?.regions[0]).toEqual({ countryCode: "CN", regionCode: "GD", regionName: "Guangdong", pageViews: 5 });
+      expect(result.data.identityPreview?.chinaUaCoverage?.[0]).toMatchObject({ id: "deepseekbot", verificationStatus: "declared_unverified" });
+    }
   });
   it("rejects malformed human browser analytics", () => {
     const negative = valid(); negative.human.pageViews = -1;
@@ -62,5 +68,7 @@ describe("crawler observer schema", () => {
     expect(crawlerAnalyticsWorkerSchema.safeParse(identityBots).success).toBe(false);
     const leaked = valid(); (leaked.identityPreview.rules[0] as Record<string, unknown>).prefixes = ["203.0.113.0/24"];
     expect(crawlerAnalyticsWorkerSchema.safeParse(leaked).success).toBe(false);
+    const falseTrust = valid(); (falseTrust.identityPreview.chinaUaCoverage[0] as Record<string, unknown>).verificationStatus = "verified_official";
+    expect(crawlerAnalyticsWorkerSchema.safeParse(falseTrust).success).toBe(false);
   });
 });

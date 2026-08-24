@@ -11,6 +11,8 @@
 
 AI 爬虫官方 IP 规则由同一 Worker 的每日 Cron（UTC 03:17，北京时间 11:17）自动同步。同步只接受固定的 OpenAI 与 Perplexity 官方 JSON；每个来源独立校验和更新，失败不会清空上一次成功版本。Workers 运行时重定向模式兼容问题已于 2026-08-24 修复，五个官方来源均在生产完成成功同步。
 
+中国爬虫 UA 规则已在本地扩展为 DeepSeekBot、Bytespider、Baiduspider、Sogou Spider、360Spider 与 PetalBot，并在机器访问页提供独立覆盖表。该组规则只依据 User-Agent 线索，统一保持“仅声明身份”；其中 DeepSeek 当前没有公开官方爬虫身份或强验证资料。本项尚未发布到生产。
+
 ## 设计权威
 
 - `DESIGN.md`：唯一品牌与视觉设计合同
@@ -31,7 +33,7 @@ AI 爬虫官方 IP 规则由同一 Worker 的每日 Cron（UTC 03:17，北京时
 - `npm run projects:evidence:audit`：通过；3 个公开案例、231 个公开字符串。
 - `npm run lint`：通过，0 error / 0 warning。
 - `npm run typecheck`：通过。
-- `npm test`：72 个测试文件、626 个测试通过；Crawler Observer 3 个测试文件、54 个测试通过。
+- `npm test`：72 个测试文件、626 个测试通过；Crawler Observer 3 个测试文件、56 个测试通过。
 - `npm run build`：Next.js 16.3.2 构建通过，生成 37 个静态页面任务。
 - `npm audit` 与 `npm audit --omit=dev`：0 个已知漏洞。
 - 本地生产构建在 1440×900 与 390×844 下通过首页、项目页视觉检查；移动导航、联系主路径与二维码弹窗可用。

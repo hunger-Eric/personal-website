@@ -323,11 +323,14 @@ describe("crawler observer private analytics", () => {
     expect(body.human.operatingSystems[0]).toEqual({ id: "windows", pageViews: 4 });
     expect(body.human.countries[0]).toEqual({ countryCode: "CN", pageViews: 5 });
     expect(body.human.regions[0]).toEqual({ countryCode: "CN", regionCode: "GD", regionName: "Guangdong", pageViews: 4 });
-    const identityPreview = (body as { identityPreview: { mode: string; summary: Record<string, number>; rules: Array<Record<string, unknown>> } }).identityPreview;
+    const identityPreview = (body as { identityPreview: { mode: string; summary: Record<string, number>; rules: Array<Record<string, unknown>>; chinaUaCoverage: Array<Record<string, unknown>> } }).identityPreview;
     expect(identityPreview.mode).toBe("shadow");
     expect(identityPreview.summary).toMatchObject({ requests: 3, declaredUnverified: 3 });
     expect(identityPreview.rules).toHaveLength(5);
     expect(identityPreview.rules[0]).toMatchObject({ sourceId: "openai_gptbot", lastAttemptAt: null, lastSuccessAt: null, state: "unavailable" });
+    expect(identityPreview.chinaUaCoverage).toHaveLength(6);
+    expect(identityPreview.chinaUaCoverage).toContainEqual(expect.objectContaining({ id: "deepseekbot", providerName: "DeepSeek", purpose: "unknown", uaToken: "DeepSeekBot", verificationStatus: "declared_unverified" }));
+    expect(identityPreview.chinaUaCoverage).toContainEqual(expect.objectContaining({ id: "bytespider", providerName: "ByteDance", purpose: "ai_training", uaToken: "Bytespider", verificationStatus: "declared_unverified" }));
   });
 
   it("rejects unauthenticated, malformed, and non-GET reads", async () => {

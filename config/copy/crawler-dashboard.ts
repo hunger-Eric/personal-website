@@ -95,6 +95,22 @@ export const crawlerDashboardCopy = {
       perplexity_bot: "PerplexityBot",
       perplexity_user: "Perplexity-User",
     },
+    chinaCoverage: {
+      title: "中国爬虫规则覆盖",
+      description: "这些规则按公开或自声明的 User-Agent 识别。DeepSeek 当前没有公开官方爬虫身份或强验证资料，因此 DeepSeekBot 只作为监测候选，不会显示为官方可信。",
+      token: "UA 规则",
+      provider: "厂商",
+      purpose: "用途",
+      verification: "验证",
+      purposes: {
+        ai_training: "AI 训练",
+        ai_search: "AI 搜索",
+        user_fetch: "用户触发抓取",
+        search_index: "搜索索引",
+        self_test: "自测",
+        unknown: "尚未公开",
+      },
+    },
   },
   errors: {
     configuration_missing: "爬虫检测尚未配置 Worker 读取密钥。",
