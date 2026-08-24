@@ -35,12 +35,13 @@ AI 爬虫官方 IP 规则由同一 Worker 的每日 Cron（UTC 03:17，北京时
 - `npm run projects:evidence:audit`：通过；3 个公开案例、231 个公开字符串。
 - `npm run lint`：通过，0 error / 0 warning。
 - `npm run typecheck`：通过。
-- `npm test`：73 个测试文件、629 个测试通过；Crawler Observer 3 个测试文件、56 个测试通过。
+- `npm test`：74 个测试文件、631 个测试通过；Crawler Observer 3 个测试文件、56 个测试通过。
 - `npm run build`：Next.js 16.3.2 构建通过，生成 47 个静态页面任务；包含 `/en` 首页、5 个英文核心内页入口和 4 个英文项目详情页。
 - `npm audit` 与 `npm audit --omit=dev`：0 个已知漏洞。
 - 本地生产构建在 1440×900 与 390×844 下通过首页、项目页视觉检查；移动导航、联系主路径与二维码弹窗可用。
 - 双语品牌与英文站在本地生产入口通过原始 HTML 与真实浏览器检查：中文输出 `lang="zh-CN"`，英文输出 `lang="en"`；英文导航、品牌名、canonical、语言 alternates、同一品牌 JSON-LD、未翻译文章 404 与 `/en/articles` 回退边界正确；1440×900 与 390×844 无页面级横向溢出，浏览器控制台无错误。
 - 双语品牌与英文站提交 `95a978c` 已发布为 Vercel 生产部署 `dpl_2P8Y9MoHhFrx3GJveD1CstP6ejwC`，状态 Ready 并绑定 `https://me.itheheda.online`。正式域名的中文首页、`/en`、`/en/services`、`/en/articles` 与英文项目详情均返回 200，语言、品牌、canonical、语言 alternates、同一 Organization `@id` 和 sitemap 正确且不含 localhost；未翻译英文文章返回 404。真实浏览器复核英文首页和服务页无页面级横向溢出，该部署近 15 分钟未发现 error 日志。
+- 语言切换与英文项目详情修复提交 `f22e9a9` 已发布为 Vercel 生产部署 `dpl_9CnhSmkSqvf5cU3r2wuvrWByjmse`，状态 Ready 并绑定 `https://me.itheheda.online`。正式域名真实点击确认 `/services` 与 `/en/services` 可双向切换；英文 Open GEO 项目页、完整模拟流程、模拟交付物及 `/en/contact` 携带的场景上下文均为英文，主内容无中文残留或页面级横向溢出。
 - 访问检测的人类/机器双页面在 1440×900 与 390×844 下通过真实浏览器检查；页面互跳保留时间范围，移动端无页面级横向溢出，国家/地区、一级行政区、设备、浏览器和操作系统表格可读。
 - 生产 D1 已包含人类页面、客户端与地区三张聚合表；中国爬虫覆盖网站部署 `dpl_8bHDu8KhTD989PSEanocctFBoErL` 为 Ready 并绑定 `https://me.itheheda.online`；正式首页返回 200，访问检测页面与接口未认证时返回 401，该部署发布后 10 分钟内未发现 error 日志。生产敏感变量不可导出，因此本轮没有把认证态后台读取冒充为已完成的端到端验收。
 - 官方爬虫规则自动同步已修复；中国爬虫 UA 覆盖发布为 Worker 版本 `e29e11d0-b8e3-4bfa-9f17-cd9577bd1011`。生产 D1 此前于 `2026-08-24T07:36:59.261Z` 成功更新 OpenAI 三项和 Perplexity 两项规则，五项错误码均为空。
