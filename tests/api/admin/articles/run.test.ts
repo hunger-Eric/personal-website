@@ -10,6 +10,40 @@ import { ArticleEditsRequestSchema, GenerateRequestSchema, articleApiError, crea
 import { createArticleWorkbenchRunStore } from "@/lib/article-workbench/run-store";
 const context = { params: Promise.resolve({ runId: "awr_aaaaaaaaaaaaaaaaaaaaaaaa" }) };
 describe("article run API", () => {
+  it("imports and projects an Open GEO Markdown run through the server boundary", async () => {
+    const serverModule = await import("@/lib/article-workbench/server") as Record<string, unknown>;
+    const schema = serverModule.ImportOpenGeoMarkdownRequestSchema as { safeParse?: (value: unknown) => { success: boolean } } | undefined;
+    expect(schema?.safeParse?.({
+      markdown: "# 标题\n\n摘要。\n\n正文 [来源](https://example.com/source)。",
+      slugProposal: "open-geo-article",
+      tags: ["GEO"],
+    }).success).toBe(true);
+
+    const root = await mkdtemp(path.join(tmpdir(), "article-import-server-"));
+    try {
+      const server = createArticleWorkbenchServer({
+        ARTICLE_MODEL_PROVIDER: "test", ARTICLE_MODEL_PROTOCOL: "openai_compatible",
+        ARTICLE_MODEL_BASE_URL: "https://models.example.test/v1", ARTICLE_MODEL_NAME: "test-model",
+        ARTICLE_MODEL_API_KEY: "test-key", ARTICLE_MODEL_STRUCTURED_OUTPUT_MODE: "prompt_only",
+        NEXT_PUBLIC_BASE_URL: "https://example.com",
+      }, { rootDir: root }) as ReturnType<typeof createArticleWorkbenchServer> & {
+        importOpenGeoMarkdown?: (input: unknown) => Promise<{ id: string }>;
+      };
+      expect(typeof server.importOpenGeoMarkdown).toBe("function");
+      if (!server.importOpenGeoMarkdown) return;
+      const imported = await server.importOpenGeoMarkdown({
+        markdown: "# 标题\n\n摘要。\n\n正文 [来源](https://example.com/source)。",
+        slugProposal: "open-geo-article",
+        tags: ["GEO"],
+      });
+      await expect(server.getRun(imported.id)).resolves.toMatchObject({
+        status: "validated",
+        origin: "open_geo_markdown",
+        article: { title: "标题", body: "正文 [来源](https://example.com/source)。", sourceAssessments: [] },
+      });
+    } finally { await rm(root, { recursive: true, force: true }); }
+  });
+
   it("returns 404 when disabled", async () => { vi.stubEnv("NODE_ENV", "production"); process.env.ENABLE_ADMIN = "true"; process.env.ADMIN_TOKEN = "test"; expect((await GET(new NextRequest("http://localhost", { headers: { "x-admin-token": "test" } }), context)).status).toBe(404); });
   it("does not expose extracted source content", async () => {
     vi.stubEnv("NODE_ENV", "test"); process.env.ENABLE_ADMIN = "true"; process.env.ADMIN_TOKEN = "test";

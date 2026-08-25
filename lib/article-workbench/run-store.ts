@@ -10,6 +10,7 @@ import path from "node:path";
 import { z } from "zod";
 
 import {
+  ArticleOriginSchema,
   ArticleRunStatusSchema,
   ArticleWorkbenchRunSchema,
   BusinessProfileSchema,
@@ -29,6 +30,8 @@ const secretKeyPattern = /api[-_]?key|authorization|token|secret|cookie/i;
 const artifactFiles = {
   input: "input.json",
   publicationDefaults: "publication-defaults.json",
+  articleOrigin: "article-origin.json",
+  openGeoTask: "open-geo-task.json",
   researchPlan: "research-plan.json",
   sourcePacket: "source-packet.json",
   modelResponse: "model-response.json",
@@ -104,7 +107,9 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
     if (!current) {
       throw new Error(`Article workbench run not found: ${runId}`);
     }
-    if (current.status === nextStatus || !isLegalTransition(current.status, nextStatus)) throw new Error("ARTICLE_WORKBENCH_TRANSITION_INVALID");
+    const importedValidation = current.status === "created" && nextStatus === "validated" &&
+      ArticleOriginSchema.safeParse(await this.loadArtifact(runId, "articleOrigin")).success;
+    if (current.status === nextStatus || (!isLegalTransition(current.status, nextStatus) && !importedValidation)) throw new Error("ARTICLE_WORKBENCH_TRANSITION_INVALID");
     if ((nextStatus === "failed") !== Boolean(failure)) throw new Error("ARTICLE_WORKBENCH_FAILURE_STATE_INVALID");
     const next = ArticleWorkbenchRunSchema.parse({ id: current.id, status: nextStatus, ...(failure ? { failure } : {}) });
     await this.writeJsonAtomically(this.runManifestPath(runId), next);

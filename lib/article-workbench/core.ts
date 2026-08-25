@@ -1,5 +1,6 @@
 import {
   ArticlePublicationRecordSchema,
+  ArticleOriginSchema,
   ArticleResearchPlanInputSchema,
   ArticleSourceBoundWriteInputSchema,
   BusinessProfileSchema,
@@ -22,9 +23,8 @@ import {
   type SourceConfirmation,
 } from "./contracts";
 import { z } from "zod";
-import { ArticlePublicationDefaultsSchema, formatArticle, type ArticlePublicationDefaults } from "./article-format";
-
-const authoritativeCategories = new Set(["official", "standard", "original_research", "peer_reviewed"]);
+import { ArticlePublicationDefaultsSchema, formatArticle, formatOpenGeoMarkdownImport, type ArticlePublicationDefaults, type OpenGeoMarkdownImportInput } from "./article-format";
+import type { OpenGeoArticleOutput } from "./open-geo-local";
 
 export interface GenerateArticleInput {
   topic: string;
@@ -53,6 +53,39 @@ export function createArticleWorkflow(dependencies: ArticleWorkflowDependencies)
 
 class ArticleWorkflow {
   constructor(private readonly dependencies: ArticleWorkflowDependencies) {}
+
+  async importOpenGeoMarkdown(input: Omit<OpenGeoMarkdownImportInput, "defaults">): Promise<ArticleWorkbenchRun> {
+    const { store } = this.dependencies;
+    const run = await store.createRun();
+    const defaults = ArticlePublicationDefaultsSchema.parse(this.dependencies.publicationDefaultsForRun());
+    const formatted = formatOpenGeoMarkdownImport({ ...input, defaults });
+    await store.saveArtifact(run.id, "publicationDefaults", defaults);
+    await store.saveArtifact(run.id, "articleOrigin", { type: "open_geo_markdown" });
+    await store.saveArtifact(run.id, "validatedArticle", formatted.article);
+    await store.saveArtifact(run.id, "renderedMdx", formatted.renderedMdx);
+    await store.saveArtifact(run.id, "publicationRecord", formatted.publicationRecord);
+    await store.updateRunStatus(run.id, "validated");
+    return this.requireRun(run.id);
+  }
+
+  async completeOpenGeoGeneration(runId: string, output: OpenGeoArticleOutput): Promise<ArticleWorkbenchRun> {
+    const run = await this.requireRun(runId);
+    if (run.status !== "created") throw new Error("ARTICLE_EDIT_STATE_INVALID");
+    const origin = ArticleOriginSchema.parse(await this.dependencies.store.loadArtifact(runId, "articleOrigin"));
+    if (origin.type !== "open_geo_local") throw new Error("ARTICLE_EDIT_STATE_INVALID");
+    const defaults = await this.publicationDefaults(runId);
+    const formatted = formatOpenGeoMarkdownImport({
+      markdown: `# ${output.title}\n\n${output.summary}\n\n${output.bodyMarkdown}`,
+      slugProposal: `open-geo-${runId.slice(-12)}`,
+      tags: ["GEO"],
+      defaults,
+    });
+    await this.dependencies.store.saveArtifact(runId, "validatedArticle", formatted.article);
+    await this.dependencies.store.saveArtifact(runId, "renderedMdx", formatted.renderedMdx);
+    await this.dependencies.store.saveArtifact(runId, "publicationRecord", formatted.publicationRecord);
+    await this.dependencies.store.updateRunStatus(runId, "validated");
+    return this.requireRun(runId);
+  }
 
   async generateArticle(input: GenerateArticleInput): Promise<ArticleWorkbenchRun> {
     const { store, profile: profilePort } = this.dependencies;
@@ -110,6 +143,24 @@ class ArticleWorkflow {
     const article = await this.validatedArticle(runId);
     const assessedIds = new Set(article.sourceAssessments.map((assessment) => assessment.sourceId));
     if (confirmations.some((confirmation) => !assessedIds.has(confirmation.sourceId))) throw new Error("SOURCE_CONFIRMATION_INVALID");
+    const imported = ArticleOriginSchema.safeParse(await this.dependencies.store.loadArtifact(runId, "articleOrigin")).success;
+    if (imported) {
+      if (confirmations.length) throw new Error("SOURCE_CONFIRMATION_INVALID");
+      const previous = await this.edits(runId);
+      const merged = { ...article, ...pickEditable(previous), ...pickEditable(parsedEdits), sourceAssessments: [] };
+      const defaults = await this.publicationDefaults(runId);
+      const formatted = formatOpenGeoMarkdownImport({
+        markdown: `# ${merged.title}\n\n${merged.summary}\n\n${merged.body}`,
+        slugProposal: merged.slugProposal,
+        tags: merged.tags,
+        defaults,
+      });
+      await this.dependencies.store.saveArtifact(runId, "articleEdits", { ...pickEditable(previous), ...pickEditable(parsedEdits), confirmations: [] });
+      await this.dependencies.store.saveArtifact(runId, "validatedArticle", formatted.article);
+      await this.dependencies.store.saveArtifact(runId, "renderedMdx", formatted.renderedMdx);
+      await this.dependencies.store.saveArtifact(runId, "publicationRecord", formatted.publicationRecord);
+      return this.requireRun(runId);
+    }
     const packet = SourcePacketResultSchema.parse(await this.dependencies.store.loadArtifact(runId, "sourcePacket"));
     if (packet.status !== "ok") throw new Error("ARTICLE_EDIT_STATE_INVALID");
     const previous = await this.edits(runId);
@@ -135,13 +186,6 @@ class ArticleWorkflow {
       return PublicationReceiptSchema.parse(receipt);
     }
     if (run.status !== "validated") throw new Error("PUBLICATION_STATE_INVALID");
-    const article = await this.validatedArticle(runId);
-    const edits = await this.edits(runId);
-    const confirmed = new Set(edits.confirmations.map((value) => value.sourceId));
-    const authoritative = article.sourceAssessments
-      .filter((assessment) => authoritativeCategories.has(assessment.category) && confirmed.has(assessment.sourceId))
-      .map((assessment) => assessment.sourceId);
-    if (new Set(authoritative).size < 2) throw new Error("PUBLICATION_CONFIRMATION_REQUIRED");
     const recordValue = await store.loadArtifact(runId, "publicationRecord");
     if (!recordValue) throw new Error("PUBLICATION_RECORD_REQUIRED");
     const record = ArticlePublicationRecordSchema.parse(recordValue);

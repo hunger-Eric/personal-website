@@ -23,6 +23,8 @@ export const ArticleWorkbenchFailureCodeSchema = z.enum([
   "PROVIDER_RECEIPT_PERSISTENCE_FAILED",
   "PUBLISHER_CONFLICT",
   "VERIFICATION_MISMATCH",
+  "OPEN_GEO_TASK_FAILED",
+  "OPEN_GEO_OUTPUT_INVALID",
 ]);
 export type ArticleWorkbenchFailureCode = z.infer<
   typeof ArticleWorkbenchFailureCodeSchema
@@ -177,7 +179,7 @@ export const SourceConfirmationSchema = z
 export type SourceConfirmation = z.infer<typeof SourceConfirmationSchema>;
 
 export const ArticleRunFailureSchema = z.object({
-  stage: z.enum(["profile", "research_plan", "sources", "article", "publication", "verification"]),
+  stage: z.enum(["profile", "research_plan", "sources", "article", "open_geo", "publication", "verification"]),
   code: ArticleWorkbenchFailureCodeSchema,
   message: nonEmptyText.max(500),
   occurredAt: z.string().datetime(),
@@ -196,9 +198,24 @@ export const ArticleWorkbenchRunSchema = z.object({
 export type ArticleWorkbenchRun = z.infer<typeof ArticleWorkbenchRunSchema>;
 
 export const ArticleWorkbenchArtifactSchema = z.enum([
-  "input", "publicationDefaults", "researchPlan", "sourcePacket", "modelResponse", "modelProviderReceipts", "searchProviderReceipts", "validatedArticle", "articleEdits", "publicationRecord", "publicationAttempt", "publicationConflictEvidence", "verificationAttempt", "renderedMdx", "publicationReceipt",
+  "input", "publicationDefaults", "articleOrigin", "openGeoTask", "researchPlan", "sourcePacket", "modelResponse", "modelProviderReceipts", "searchProviderReceipts", "validatedArticle", "articleEdits", "publicationRecord", "publicationAttempt", "publicationConflictEvidence", "verificationAttempt", "renderedMdx", "publicationReceipt",
 ]);
 export type ArticleWorkbenchArtifact = z.infer<typeof ArticleWorkbenchArtifactSchema>;
+
+export const ArticleOriginSchema = z.object({ type: z.enum(["open_geo_markdown", "open_geo_local"]) }).strict();
+export type ArticleOrigin = z.infer<typeof ArticleOriginSchema>;
+
+export const OpenGeoTaskSchema = z.object({
+  phase: z.enum(["checking", "queued", "collecting_sources", "planning", "writing", "saving", "completed", "needs_input", "expired", "failed"]),
+  preflightId: z.string().trim().min(1).max(200),
+  projectId: z.string().trim().min(1).max(200).optional(),
+  jobId: z.string().trim().min(1).max(200).optional(),
+  progress: z.number().int().min(0).max(100),
+  etaSeconds: z.number().int().min(0).nullable().optional(),
+  publicError: z.string().trim().min(1).max(500).optional(),
+  updatedAt: z.string().datetime(),
+}).strict();
+export type OpenGeoTask = z.infer<typeof OpenGeoTaskSchema>;
 
 export interface SearchRequest {
   query: string;
@@ -299,7 +316,7 @@ export const SourceBoundArticleProposalSchema = z
     summary: nonEmptyText.max(2_000),
     tags: z.array(nonEmptyText.max(100)).min(1).max(10),
     body: z.string().trim().min(1).max(40_000),
-    sourceAssessments: z.array(articleSourceAssessmentSchema).min(1).max(8),
+    sourceAssessments: z.array(articleSourceAssessmentSchema).max(8),
   })
   .strict();
 export type SourceBoundArticleProposal = z.infer<typeof SourceBoundArticleProposalSchema>;

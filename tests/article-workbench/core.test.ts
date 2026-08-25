@@ -152,6 +152,72 @@ function createWorkflow(options: {
 }
 
 describe("article workbench workflow", () => {
+  it("imports an Open GEO Markdown export without invoking model or search ports", async () => {
+    const { store, workflow } = createWorkflow();
+    const importOpenGeoMarkdown = (workflow as unknown as { importOpenGeoMarkdown?: (input: unknown) => Promise<ArticleWorkbenchRun> }).importOpenGeoMarkdown;
+    expect(typeof importOpenGeoMarkdown).toBe("function");
+    if (!importOpenGeoMarkdown) return;
+
+    const run = await importOpenGeoMarkdown.call(workflow, {
+      markdown: "# 已生成文章\n\n这是 Open GEO 生成的摘要。\n\n正文保留 [来源](https://example.com/source)。",
+      slugProposal: "open-geo-article",
+      tags: ["GEO"],
+    });
+
+    expect(run.status).toBe("validated");
+    expect(store.events).toEqual([
+      "store:create",
+      "store:artifact:publicationDefaults",
+      "store:artifact:articleOrigin",
+      "store:artifact:validatedArticle",
+      "store:artifact:renderedMdx",
+      "store:artifact:publicationRecord",
+      "store:status:validated",
+    ]);
+    expect(store.artifacts.get(`${run.id}:articleOrigin`)).toEqual({ type: "open_geo_markdown" });
+    expect(store.artifacts.get(`${run.id}:renderedMdx`)).toContain("正文保留 [来源](https://example.com/source)。");
+    expect(store.events).not.toContain("model:plan");
+    expect(store.events).not.toContain("search:collect");
+  });
+
+  it("submits an imported Open GEO article without legacy source confirmations", async () => {
+    const { workflow, submissions, submittedRecord } = createWorkflow();
+    const run = await workflow.importOpenGeoMarkdown({
+      markdown: "# 已生成文章\n\n这是 Open GEO 生成的摘要。\n\n正文保留 [来源](https://example.com/source)。",
+      slugProposal: "open-geo-article",
+      tags: ["GEO"],
+    });
+
+    const receipt = await workflow.submitPublication(run.id);
+
+    expect(receipt).toMatchObject({ status: "submitted", slug: "open-geo-article" });
+    expect(submissions()).toBe(1);
+    expect(submittedRecord()).toMatchObject({ path: "content/articles/2026-08-09-open-geo-article.mdx" });
+  });
+
+  it("keeps an imported article editable without rewriting its Markdown links", async () => {
+    const { store, workflow } = createWorkflow();
+    const run = await workflow.importOpenGeoMarkdown({
+      markdown: "# 已生成文章\n\n这是 Open GEO 生成的摘要。\n\n正文保留 [来源](https://example.com/source)。",
+      slugProposal: "open-geo-article",
+      tags: ["GEO"],
+    });
+
+    await workflow.saveArticleEdits(run.id, {
+      confirmations: [],
+      title: "人工复核后的标题",
+      body: "正文继续保留 [来源](https://example.com/source)，并补充人工说明。",
+    });
+
+    expect(store.artifacts.get(`${run.id}:validatedArticle`)).toMatchObject({
+      title: "人工复核后的标题",
+      body: "正文继续保留 [来源](https://example.com/source)，并补充人工说明。",
+      sourceAssessments: [],
+    });
+    expect(store.artifacts.get(`${run.id}:renderedMdx`)).toContain("正文继续保留 [来源](https://example.com/source)，并补充人工说明。");
+    expect(store.artifacts.get(`${run.id}:renderedMdx`)).not.toContain("## 相关链接");
+  });
+
   it("persists each checkpoint before the next provider boundary and reaches validated", async () => {
     const { store, workflow } = createWorkflow();
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
@@ -231,12 +297,9 @@ describe("article workbench workflow", () => {
     expect([...store.runs.values()][0]).toMatchObject({ failure: { stage: "article", code: "ARTICLE_MODEL_OUTPUT_INVALID" } });
   });
 
-  it("requires human confirmation of two authoritative sources before idempotent publication", async () => {
+  it("publishes an article with its embedded sources without a second manual confirmation", async () => {
     const { store, workflow, submissions } = createWorkflow();
     const run = await workflow.generateArticle({ topic: "Research controls", articleRules: ["Use supplied sources only"] });
-    await expect(workflow.submitPublication(run.id)).rejects.toThrow("PUBLICATION_CONFIRMATION_REQUIRED");
-
-    await confirmAndSeedPublication(store, workflow, run.id);
     const first = await workflow.submitPublication(run.id);
     const repeated = await workflow.submitPublication(run.id);
 

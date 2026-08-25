@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatArticle } from "@/lib/article-workbench/article-format";
+import { formatArticle, formatOpenGeoMarkdownImport } from "@/lib/article-workbench/article-format";
 
 const sources = [
   {
@@ -32,6 +32,58 @@ const proposal = {
 };
 
 describe("article workbench formatter", () => {
+  it("preserves an Open GEO Markdown export as the imported publication body", async () => {
+    const formatModule = await import("@/lib/article-workbench/article-format") as Record<string, unknown>;
+    const formatter = formatModule.formatOpenGeoMarkdownImport;
+    expect(typeof formatter).toBe("function");
+    if (typeof formatter !== "function") return;
+
+    const result = (formatter as (input: unknown) => { renderedMdx: string; publicationRecord: { slug: string; path: string; contentHash: string } })({
+      markdown: [
+        "# 企业官网如何为 AI 搜索准备证据",
+        "",
+        "从可核实事实开始，而不是堆砌宣传语。",
+        "",
+        "## 先回答采购问题",
+        "",
+        "保留 Open GEO 选择的 [官方来源](https://example.com/official) 和自然跳转。",
+        "",
+        "## 参考资料",
+        "",
+        "- [官方资料](https://example.com/official)",
+      ].join("\n"),
+      slugProposal: "enterprise-geo-evidence",
+      tags: ["GEO", "企业官网"],
+      defaults: { date: "2026-08-25", author: "fengc" },
+    });
+
+    expect(result.publicationRecord).toMatchObject({
+      slug: "enterprise-geo-evidence",
+      path: "content/articles/2026-08-25-enterprise-geo-evidence.mdx",
+      contentHash: expect.stringMatching(/^sha256:[a-f0-9]{64}$/),
+    });
+    expect(result.renderedMdx).toContain('title: "企业官网如何为 AI 搜索准备证据"');
+    expect(result.renderedMdx).toContain('summary: "从可核实事实开始，而不是堆砌宣传语。"');
+    expect(result.renderedMdx).toContain("保留 Open GEO 选择的 [官方来源](https://example.com/official) 和自然跳转。");
+    expect(result.renderedMdx).toContain("## 参考资料\n\n- [官方资料](https://example.com/official)");
+    expect(result.renderedMdx).not.toContain("## 相关链接");
+  });
+
+  it.each([
+    ["MDX import", "import Widget from './widget'"],
+    ["MDX export", "export const secret = process.env.SECRET"],
+    ["JSX", "<Widget />"],
+    ["MDX expression", "{process.env.SECRET}"],
+    ["second title", "# 伪造标题"],
+  ])("rejects executable or ambiguous Open GEO Markdown: %s", (_label, body) => {
+    expect(() => formatOpenGeoMarkdownImport({
+      markdown: `# 安全标题\n\n安全摘要。\n\n${body}`,
+      slugProposal: "safe-title",
+      tags: ["GEO"],
+      defaults: { date: "2026-08-25", author: "fengc" },
+    })).toThrow("ARTICLE_FORMAT_INVALID");
+  });
+
   it("renders deterministic citations, canonical MDX, and publication identity", () => {
     const result = formatArticle({ article: proposal, sources, defaults: { date: "2026-08-09", author: "fengc" } });
 

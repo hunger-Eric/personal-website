@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { z } from "zod";
 
 import {
+  ArticlePublicationRecordSchema,
   ExtractedSourceSchema,
   SourceBoundArticleProposalSchema,
   normalizeEvidenceText,
@@ -27,6 +28,45 @@ export type ArticlePublicationDefaults = z.infer<typeof ArticlePublicationDefaul
 export interface FormattedArticle {
   publicationRecord: ArticlePublicationRecord;
   renderedMdx: string;
+}
+
+export interface OpenGeoMarkdownImportInput {
+  markdown: string;
+  slugProposal: string;
+  tags: string[];
+  defaults: ArticlePublicationDefaults;
+}
+
+export function formatOpenGeoMarkdownImport(input: OpenGeoMarkdownImportInput): FormattedArticle & { article: SourceBoundArticleProposal } {
+  const defaults = parseDefaults(input.defaults);
+  const slug = normalizeSlug(input.slugProposal);
+  if (!slug || slug.length > 160) throw formatError();
+  const tags = input.tags.map((tag) => tag.replace(/\s+/g, " ").trim());
+  if (!tags.length || tags.length > 10 || tags.some((tag) => !tag || tag.length > 100 || /[\r\n<>]/.test(tag))) throw formatError();
+  const parsed = parseOpenGeoMarkdown(input.markdown);
+  const frontmatterWithoutHash = `---\ntitle: ${yamlString(parsed.title)}\nslug: ${yamlString(slug)}\nsummary: ${yamlString(parsed.summary)}\ndate: ${yamlString(defaults.date)}\ncategory: "企业 AI 工作流"\ntags: [${tags.map(yamlString).join(", ")}]\nfeatured: false\ndraft: false\nauthor: ${yamlString(defaults.author)}\n`;
+  const canonicalWithoutHash = `${frontmatterWithoutHash}---\n\n${parsed.body}\n`;
+  const contentHash = `sha256:${createHash("sha256").update(canonicalWithoutHash, "utf8").digest("hex")}`;
+  const renderedMdx = `${frontmatterWithoutHash}contentHash: ${yamlString(contentHash)}\n---\n\n${parsed.body}\n`;
+  const publicationRecord = ArticlePublicationRecordSchema.parse({
+    title: parsed.title,
+    body: renderedMdx,
+    slug,
+    contentHash,
+    path: `content/articles/${defaults.date}-${slug}.mdx`,
+  });
+  return {
+    article: {
+      title: parsed.title,
+      slugProposal: slug,
+      summary: parsed.summary,
+      tags,
+      body: parsed.body,
+      sourceAssessments: [],
+    },
+    publicationRecord,
+    renderedMdx,
+  };
 }
 
 /**
@@ -117,6 +157,19 @@ function normalizeBody(value: string): string {
   return value.replace(/\r\n?/g, "\n").trim();
 }
 
+function parseOpenGeoMarkdown(value: string): { title: string; summary: string; body: string } {
+  const markdown = normalizeBody(value);
+  if (!markdown || markdown.length > 40_000 || markdown.startsWith("---\n")) throw formatError();
+  const match = /^#\s+([^\n]+)\n{2,}([^\n]+(?:\n(?!\n)[^\n]+)*)\n{2,}([\s\S]+)$/.exec(markdown);
+  if (!match) throw formatError();
+  const title = match[1].trim();
+  const summary = match[2].replace(/\s+/g, " ").trim();
+  const body = match[3].trim();
+  if (!title || title.length > 200 || !summary || summary.length > 2_000 || !body) throw formatError();
+  validateImportedMdxBody(body);
+  return { title, summary, body };
+}
+
 function citationIds(
   body: string,
   sources: readonly ExtractedSource[],
@@ -176,6 +229,17 @@ function safeSourceLabel(value: string): string {
   const markdownNeutral = normalized.replace(/[\[\]()`]/g, " ").replace(/\s+/g, " ").trim();
   if (!markdownNeutral) throw formatError();
   return markdownNeutral.replace(/\\/g, "\\\\");
+}
+
+function validateImportedMdxBody(body: string): void {
+  const executableText = maskCode(body);
+  if (
+    /^\s*#(?!#)\s+/m.test(executableText) ||
+    /^\s*(?:import|export)(?:\s|["'*{])/m.test(executableText) ||
+    /^\s*(?:import|export)\/\*/m.test(executableText) ||
+    /<\/?[A-Za-z][^>]*>/m.test(executableText) ||
+    /[{}]/.test(executableText)
+  ) throw formatError();
 }
 
 function markdownDestination(url: string): string {

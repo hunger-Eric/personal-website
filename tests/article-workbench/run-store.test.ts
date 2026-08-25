@@ -102,6 +102,18 @@ describe("article workbench run store", () => {
     ).resolves.toContain('"status": "research_planned"');
   });
 
+  it("allows a created run to become a validated Open GEO import", async () => {
+    const root = await createTemporaryRoot();
+    const store = createArticleWorkbenchRunStore({ rootDir: root });
+    const run = await store.createRun();
+
+    await store.saveArtifact(run.id, "articleOrigin", { type: "open_geo_markdown" });
+    await store.updateRunStatus(run.id, "validated");
+
+    await expect(store.getRun(run.id)).resolves.toMatchObject({ status: "validated" });
+    await expect(store.loadArtifact(run.id, "articleOrigin")).resolves.toEqual({ type: "open_geo_markdown" });
+  });
+
   it("rejects illegal status jumps and failed states without a typed failure", async () => {
     const root = await createTemporaryRoot();
     const store = createArticleWorkbenchRunStore({ rootDir: root });
