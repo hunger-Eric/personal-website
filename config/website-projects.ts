@@ -160,7 +160,7 @@ export function getWebsiteProjects(locale: Locale) {
       text: project.facts[locale][index],
     })),
     interactive: project.interactive,
-    liveUrl: project.liveUrl,
+    liveUrl: project.id === "open-geo-console" ? `${project.liveUrl}/${locale}` : project.liveUrl,
   }));
 }
 
@@ -177,7 +177,7 @@ export function getPublicWebsiteProjects(locale: Locale) {
       text: project.facts[locale][index],
     })),
     interactive: project.interactive,
-    liveUrl: project.liveUrl,
+    liveUrl: project.id === "open-geo-console" ? `${project.liveUrl}/${locale}` : project.liveUrl,
   }));
 }
 
