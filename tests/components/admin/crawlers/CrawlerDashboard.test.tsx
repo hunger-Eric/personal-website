@@ -34,7 +34,7 @@ describe("CrawlerDashboard", () => {
       },
     } as CrawlerAnalyticsResponse;
     const Dashboard = CrawlerDashboard as unknown as (props: Parameters<typeof CrawlerDashboard>[0] & { view: "human" | "machines" }) => React.ReactNode;
-    const { container } = render(<Dashboard view="human" range="24h" data={data} />);
+    const { container } = render(<Dashboard view="human" site="personal" range="24h" data={data} />);
     const human = within(container.querySelector("[aria-labelledby='human-traffic-title']") as HTMLElement);
     expect(human.getByRole("heading", { name: "人类浏览器访问" })).toBeInTheDocument();
     expect(human.getAllByText("页面访问")[0].nextSibling).toHaveTextContent("9");
@@ -47,20 +47,22 @@ describe("CrawlerDashboard", () => {
     expect(screen.getByRole("table", { name: "国家/地区" })).toHaveTextContent("中国");
     expect(screen.getByRole("table", { name: "省/州" })).toHaveTextContent("Guangdong");
     expect(screen.queryByRole("heading", { name: "自动化请求趋势" })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "机器访问" })).toHaveAttribute("href", "/admin/crawlers/machines?range=24h");
+    expect(screen.getByRole("link", { name: "机器访问" })).toHaveAttribute("href", "/admin/crawlers/machines?site=personal&range=24h");
   });
   it("keeps crawler evidence on the machine page and preserves the selected range in page navigation", () => {
     const Dashboard = CrawlerDashboard as unknown as (props: Parameters<typeof CrawlerDashboard>[0] & { view: "human" | "machines" }) => React.ReactNode;
-    render(<Dashboard view="machines" range="7d" data={fixture} />);
+    render(<Dashboard view="machines" site="open_geo" range="7d" data={fixture} />);
     expect(screen.getByRole("heading", { name: "机器访问" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "自动化请求趋势" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "人类浏览器访问" })).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "人类访问" })).toHaveAttribute("href", "/admin/crawlers/human?range=7d");
-    expect(screen.getByRole("link", { name: "7d" })).toHaveAttribute("href", "/admin/crawlers/machines?range=7d");
+    expect(screen.getByRole("link", { name: "人类访问" })).toHaveAttribute("href", "/admin/crawlers/human?site=open_geo&range=7d");
+    expect(screen.getByRole("link", { name: "7d" })).toHaveAttribute("href", "/admin/crawlers/machines?site=open_geo&range=7d");
+    expect(screen.getByRole("link", { name: "Open GEO Console" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "个人网站" })).toHaveAttribute("href", "/admin/crawlers/machines?site=personal&range=7d");
   });
   it("restores all ranges and renders Worker bot data without User-Agents", () => {
-    const { container } = render(<CrawlerDashboard range="24h" data={fixture} />);
-    ["24h", "7d", "30d"].forEach((range) => expect(screen.getByRole("link", { name: range })).toHaveAttribute("href", `/admin/crawlers/machines?range=${range}`));
+    const { container } = render(<CrawlerDashboard site="personal" range="24h" data={fixture} />);
+    ["24h", "7d", "30d"].forEach((range) => expect(screen.getByRole("link", { name: range })).toHaveAttribute("href", `/admin/crawlers/machines?site=personal&range=${range}`));
     expect(screen.getAllByText("Cloudflare Worker + D1").length).toBeGreaterThan(0); expect(screen.getAllByText("OpenAI").length).toBeGreaterThan(0);
     expect(container.textContent).not.toContain("Mozilla/5.0"); expect(container.textContent).not.toContain("总请求基线");
     expect(container.textContent).not.toContain("占比：100%");

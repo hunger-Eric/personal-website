@@ -28,7 +28,18 @@ describe("GET /api/admin/crawlers", () => {
   it("returns private no-store observer data", async () => {
     vi.mocked(getCrawlerAnalytics).mockResolvedValue(fixture);
     const result = await GET(request("?range=7d"));
-    expect(result.status).toBe(200); expect(result.headers.get("cache-control")).toBe("private, no-store"); expect(getCrawlerAnalytics).toHaveBeenCalledWith("7d");
+    expect(result.status).toBe(200); expect(result.headers.get("cache-control")).toBe("private, no-store"); expect(getCrawlerAnalytics).toHaveBeenCalledWith("personal", "7d");
+  });
+  it("selects only the fixed Open GEO adapter", async () => {
+    vi.mocked(getCrawlerAnalytics).mockResolvedValue(fixture);
+    const result = await GET(request("?site=open_geo&range=7d"));
+    expect(result.status).toBe(200);
+    expect(getCrawlerAnalytics).toHaveBeenCalledWith("open_geo", "7d");
+  });
+  it.each(["?site=attacker", "?site=personal&site=open_geo"])("rejects invalid site input without invoking an observer: %s", async (query) => {
+    const result = await GET(request(query));
+    expect(result.status).toBe(400);
+    expect(getCrawlerAnalytics).not.toHaveBeenCalled();
   });
   it("rejects invalid ranges without invoking the observer", async () => {
     const result = await GET(request("?range=nope"));

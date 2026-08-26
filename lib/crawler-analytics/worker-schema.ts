@@ -98,6 +98,31 @@ export const crawlerAnalyticsWorkerSchema = z.object({
   }
 });
 
+export const openGeoCrawlerAnalyticsWorkerSchema = z.preprocess((value) => {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const envelope = value as Record<string, unknown>;
+  if (envelope.siteId !== "open_geo") return {};
+  const meta = envelope.meta;
+  if (!meta || typeof meta !== "object" || Array.isArray(meta)) return {};
+  const classifier = (meta as Record<string, unknown>).classifier;
+  if (!classifier || typeof classifier !== "object" || Array.isArray(classifier)) return {};
+  const classifierRecord = classifier as Record<string, unknown>;
+  if (
+    Object.keys(classifierRecord).length !== 2 ||
+    classifierRecord.aiCrawlerRules !== "@open-geo-console/crawler-rules" ||
+    classifierRecord.otherBots !== "isbot@5.2.1"
+  ) return {};
+  const body = { ...envelope };
+  delete body.siteId;
+  return {
+    ...body,
+    meta: {
+      ...(meta as Record<string, unknown>),
+      classifier: { aiCrawlerBots: "0.6.3", otherBots: "isbot@5.2.1" },
+    },
+  };
+}, crawlerAnalyticsWorkerSchema);
+
 export type CrawlerAnalyticsWorkerResponse = z.infer<typeof crawlerAnalyticsWorkerSchema>;
 export type CrawlerIdentityPreview = NonNullable<CrawlerAnalyticsWorkerResponse["identityPreview"]>;
 export type CrawlerVerificationStatus = z.infer<typeof verificationStatusSchema>;

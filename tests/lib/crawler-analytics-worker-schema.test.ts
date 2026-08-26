@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { crawlerAnalyticsWorkerSchema } from "@/lib/crawler-analytics/worker-schema";
+import { crawlerAnalyticsWorkerSchema, openGeoCrawlerAnalyticsWorkerSchema } from "@/lib/crawler-analytics/worker-schema";
 
 const valid = () => ({
   meta: { range: "30d", start: "2026-07-07T00:00:00.000Z", end: "2026-08-06T00:00:00.000Z", generatedAt: "2026-08-06T00:00:00.000Z", source: "cloudflare-worker-d1", bucket: "hour", retentionDays: 90, databaseInitializedAt: "2026-07-10T00:00:00.000Z", requestedWindowComplete: false, bestEffort: true, classifier: { aiCrawlerBots: "0.6.3", otherBots: "isbot@5.2.1" } },
@@ -28,6 +28,20 @@ const valid = () => ({
 });
 
 describe("crawler observer schema", () => {
+  it("keeps Personal and Open GEO observer envelopes site-specific", () => {
+    const personal = valid();
+    const openGeo = {
+      ...personal,
+      siteId: "open_geo",
+      meta: { ...personal.meta, classifier: { aiCrawlerRules: "@open-geo-console/crawler-rules", otherBots: "isbot@5.2.1" } },
+    };
+    expect(crawlerAnalyticsWorkerSchema.safeParse(personal).success).toBe(true);
+    expect(crawlerAnalyticsWorkerSchema.safeParse(openGeo).success).toBe(false);
+    const parsed = openGeoCrawlerAnalyticsWorkerSchema.safeParse(openGeo);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data).not.toHaveProperty("siteId");
+    expect(openGeoCrawlerAnalyticsWorkerSchema.safeParse(personal).success).toBe(false);
+  });
   it("accepts 30d partial-history data", () => {
     const result = crawlerAnalyticsWorkerSchema.safeParse(valid());
     expect(result.success).toBe(true);

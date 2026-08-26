@@ -1,13 +1,15 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { parseCrawlerRange } from "@/lib/crawler-analytics/service";
+import { parseCrawlerRange, parseCrawlerSite } from "@/lib/crawler-analytics/service";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "访问检测 | Admin", robots: { index: false, follow: false } };
 
-export default async function CrawlerDashboardPage({ searchParams }: { searchParams: Promise<{ range?: string | string[] }> }) {
-  const requested = (await searchParams).range;
+export default async function CrawlerDashboardPage({ searchParams }: { searchParams: Promise<{ site?: string | string[]; range?: string | string[] }> }) {
+  const requestedParams = await searchParams;
+  const requested = requestedParams.range;
   let range = "24h";
+  let site = "personal";
   if (!Array.isArray(requested)) {
     try {
       range = parseCrawlerRange(requested);
@@ -15,5 +17,10 @@ export default async function CrawlerDashboardPage({ searchParams }: { searchPar
       range = "24h";
     }
   }
-  redirect(`/admin/crawlers/human?range=${range}`);
+  try {
+    site = parseCrawlerSite(requestedParams.site);
+  } catch {
+    site = "personal";
+  }
+  redirect(`/admin/crawlers/human?site=${site}&range=${range}`);
 }

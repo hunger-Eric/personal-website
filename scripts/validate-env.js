@@ -78,6 +78,12 @@ const ENV_VARS = [
     description: "Crawler Observer signed read secret",
     usedBy: ["Crawler Analytics Admin"],
   },
+  {
+    name: "OPEN_GEO_OBSERVER_READ_SECRET",
+    required: false,
+    description: "Open GEO Observer signed read secret",
+    usedBy: ["Crawler Analytics Admin: Open GEO Console"],
+  },
 ];
 
 function validateEnv() {

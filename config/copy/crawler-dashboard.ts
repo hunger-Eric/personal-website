@@ -2,6 +2,7 @@ import type { CrawlerAnalyticsErrorCode } from "@/lib/crawler-analytics/types";
 
 export const crawlerDashboardCopy = {
   title: "访问检测",
+  sites: { personal: "个人网站", open_geo: "Open GEO Console" },
   views: {
     human: { label: "人类访问", title: "人类访问", description: "查看真实浏览器页面请求、热门页面、访问时段和客户端分布。" },
     machines: { label: "机器访问", title: "机器访问", description: "查看声明的 AI 爬虫、Open GEO 自测、其他自动化请求和身份验证证据。" },
@@ -117,5 +118,6 @@ export const crawlerDashboardCopy = {
     observer_auth_invalid: "Crawler Observer 读取签名无效。",
     observer_unavailable: "Crawler Observer 当前不可用。",
     invalid_range: "时间范围无效，请选择 24 小时、7 天或 30 天。",
+    invalid_site: "网站范围无效，请选择个人网站或 Open GEO Console。",
   } satisfies Record<CrawlerAnalyticsErrorCode, string>,
 } as const;

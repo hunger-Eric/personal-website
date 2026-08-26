@@ -1,14 +1,16 @@
-import { crawlerAnalyticsWorkerSchema } from "./worker-schema";
+import { crawlerAnalyticsWorkerSchema, openGeoCrawlerAnalyticsWorkerSchema } from "./worker-schema";
 import {
   CRAWLER_RANGES,
+  CRAWLER_SITES,
   CrawlerAnalyticsError,
   type CrawlerAnalyticsResponse,
   type CrawlerRange,
+  type CrawlerSite,
 } from "./types";
 
 type ServiceDependencies = {
   now?: Date;
-  env?: { readSecret: string };
+  env?: { readSecret?: string; personalReadSecret?: string; openGeoReadSecret?: string };
   fetch?: typeof globalThis.fetch;
 };
 
@@ -18,16 +20,26 @@ export function parseCrawlerRange(value: string | null | undefined): CrawlerRang
   throw new CrawlerAnalyticsError("invalid_range", "Unsupported crawler analytics range", 400);
 }
 
-function resolveSecret(overrides?: ServiceDependencies["env"]) {
-  const readSecret = overrides?.readSecret ?? process.env.CRAWLER_OBSERVER_READ_SECRET ?? "";
+export function parseCrawlerSite(value: string | string[] | null | undefined): CrawlerSite {
+  if (value == null) return "personal";
+  if (typeof value === "string" && (CRAWLER_SITES as readonly string[]).includes(value)) return value as CrawlerSite;
+  throw new CrawlerAnalyticsError("invalid_site", "Unsupported crawler analytics site", 400);
+}
+
+function resolveSecret(site: CrawlerSite, overrides?: ServiceDependencies["env"]) {
+  const readSecret = site === "personal"
+    ? overrides?.personalReadSecret ?? overrides?.readSecret ?? process.env.CRAWLER_OBSERVER_READ_SECRET ?? ""
+    : overrides?.openGeoReadSecret ?? overrides?.readSecret ?? process.env.OPEN_GEO_OBSERVER_READ_SECRET ?? "";
   if (!readSecret) {
     throw new CrawlerAnalyticsError("configuration_missing", "Crawler observer read access is not configured", 503);
   }
   return readSecret;
 }
 
-function observerUrl() {
-  return new URL("https://crawler-observer.itheheda.online/_crawler-observer/v1/analytics");
+function observerUrl(site: CrawlerSite) {
+  return site === "personal"
+    ? new URL("https://crawler-observer.itheheda.online/_crawler-observer/v1/analytics")
+    : new URL("https://open-geo-observer.itheheda.online/_traffic-observer/v1/analytics");
 }
 
 type ObserverReadFailureStage = "fetch" | "http_status" | "invalid_json" | "invalid_schema";
@@ -67,12 +79,14 @@ async function sign(secret: string, canonical: string) {
 }
 
 export async function getCrawlerAnalytics(
+  site: CrawlerSite,
   range: CrawlerRange,
   dependencies: ServiceDependencies = {}
 ): Promise<CrawlerAnalyticsResponse> {
+  const parsedSite = parseCrawlerSite(site);
   const parsedRange = parseCrawlerRange(range);
-  const secret = resolveSecret(dependencies.env);
-  const url = observerUrl();
+  const secret = resolveSecret(parsedSite, dependencies.env);
+  const url = observerUrl(parsedSite);
   url.searchParams.set("range", parsedRange);
   const timestamp = String(Math.floor((dependencies.now ?? new Date()).getTime() / 1000));
   const host = url.hostname.toLowerCase();
@@ -107,7 +121,8 @@ export async function getCrawlerAnalytics(
     logObserverReadFailure("invalid_json");
     throw new CrawlerAnalyticsError("observer_unavailable", "Crawler observer returned an invalid response", 502);
   }
-  const parsed = crawlerAnalyticsWorkerSchema.safeParse(body);
+  const schema = parsedSite === "personal" ? crawlerAnalyticsWorkerSchema : openGeoCrawlerAnalyticsWorkerSchema;
+  const parsed = schema.safeParse(body);
   if (!parsed.success || parsed.data.meta.range !== parsedRange) {
     logObserverReadFailure("invalid_schema");
     throw new CrawlerAnalyticsError("observer_unavailable", "Crawler observer returned an invalid response", 502);

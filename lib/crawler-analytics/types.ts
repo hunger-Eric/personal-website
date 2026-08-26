@@ -1,5 +1,7 @@
 export const CRAWLER_RANGES = ["24h", "7d", "30d"] as const;
 export type CrawlerRange = (typeof CRAWLER_RANGES)[number];
+export const CRAWLER_SITES = ["personal", "open_geo"] as const;
+export type CrawlerSite = (typeof CRAWLER_SITES)[number];
 
 export type VisibleCrawlerCategory =
   | "identified_ai_crawler"
@@ -18,7 +20,8 @@ export type CrawlerAnalyticsErrorCode =
   | "configuration_missing"
   | "observer_auth_invalid"
   | "observer_unavailable"
-  | "invalid_range";
+  | "invalid_range"
+  | "invalid_site";
 
 export class CrawlerAnalyticsError extends Error {
   constructor(

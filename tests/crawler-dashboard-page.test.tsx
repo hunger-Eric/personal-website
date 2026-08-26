@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CrawlerAnalyticsResponse } from "@/lib/crawler-analytics/types";
-vi.mock("@/lib/crawler-analytics/service", () => ({ parseCrawlerRange: vi.fn((value) => value ?? "24h"), getCrawlerAnalytics: vi.fn() }));
+vi.mock("@/lib/crawler-analytics/service", () => ({ parseCrawlerRange: vi.fn((value) => value ?? "24h"), parseCrawlerSite: vi.fn((value) => value ?? "personal"), getCrawlerAnalytics: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
 import * as service from "@/lib/crawler-analytics/service";
 import { redirect } from "next/navigation";
@@ -16,16 +16,20 @@ const response: CrawlerAnalyticsResponse = {
   ] },
 };
 describe("CrawlerDashboardPage", () => {
-  beforeEach(() => { vi.clearAllMocks(); vi.mocked(service.parseCrawlerRange).mockImplementation((value) => (value ?? "24h") as "24h"); vi.mocked(service.getCrawlerAnalytics).mockResolvedValue(response); });
+  beforeEach(() => { vi.clearAllMocks(); vi.mocked(service.parseCrawlerRange).mockImplementation((value) => (value ?? "24h") as "24h"); vi.mocked(service.parseCrawlerSite).mockImplementation((value) => (value ?? "personal") as "personal"); vi.mocked(service.getCrawlerAnalytics).mockResolvedValue(response); });
   it("redirects the legacy combined route to the human page while preserving range", async () => {
     await CrawlerDashboardPage({ searchParams: Promise.resolve({ range: "7d" }) });
-    expect(redirect).toHaveBeenCalledWith("/admin/crawlers/human?range=7d");
+    expect(redirect).toHaveBeenCalledWith("/admin/crawlers/human?site=personal&range=7d");
     expect(service.getCrawlerAnalytics).not.toHaveBeenCalled();
   });
   it("falls back to 24h when the legacy route receives an invalid range", async () => {
     vi.mocked(service.parseCrawlerRange).mockImplementation(() => { throw new Error("bad"); });
     await CrawlerDashboardPage({ searchParams: Promise.resolve({ range: "bad" }) });
-    expect(redirect).toHaveBeenCalledWith("/admin/crawlers/human?range=24h");
+    expect(redirect).toHaveBeenCalledWith("/admin/crawlers/human?site=personal&range=24h");
+  });
+  it("preserves Open GEO selection in the legacy redirect", async () => {
+    await CrawlerDashboardPage({ searchParams: Promise.resolve({ site: "open_geo", range: "30d" }) });
+    expect(redirect).toHaveBeenCalledWith("/admin/crawlers/human?site=open_geo&range=30d");
   });
   it("uses noindex metadata", () => expect(metadata.robots).toEqual({ index: false, follow: false }));
 });
