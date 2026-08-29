@@ -160,13 +160,59 @@ describe("article workbench run store", () => {
     await expect(store.getRun(runId)).rejects.toThrow("ARTICLE_WORKBENCH_READ_FAILED");
   });
 
-  it("atomically gives one claimant ownership of a publication record", async () => {
+  it("atomically gives one claimant ownership while many claims race", async () => {
     const root = await createTemporaryRoot();
     const store = createArticleWorkbenchRunStore({ rootDir: root });
     const run = await store.createRun();
     const record = { title: "Title", body: "Body", slug: "title", contentHash: `sha256:${"a".repeat(64)}`, path: "content/articles/2026-08-09-title.mdx" };
 
-    const claims = await Promise.all([store.claimPublication(run.id, record), store.claimPublication(run.id, record)]);
+    const claims = await Promise.all(
+      Array.from({ length: 100 }, () => store.claimPublication(run.id, record)),
+    );
+
+    expect(claims.filter((claim) => claim.status === "claimed")).toHaveLength(1);
+    expect(claims.filter((claim) => claim.status === "already_claimed")).toHaveLength(99);
+  });
+
+  it("never exposes a publication claim before its JSON is complete", async () => {
+    const root = await createTemporaryRoot();
+    let markClaimCreated: (() => void) | undefined;
+    let releaseClaimWrite: (() => void) | undefined;
+    let markClaimRead: (() => void) | undefined;
+    const claimCreated = new Promise<void>((resolve) => { markClaimCreated = resolve; });
+    const claimWriteReleased = new Promise<void>((resolve) => { releaseClaimWrite = resolve; });
+    const claimRead = new Promise<void>((resolve) => { markClaimRead = resolve; });
+    let partialWriteObserved = false;
+    const delayedWriteFile = (async (filePath: Parameters<typeof writeFile>[0], data: Parameters<typeof writeFile>[1], options?: Parameters<typeof writeFile>[2]) => {
+      const isExclusiveClaim = String(filePath).endsWith("publication-claim.json")
+        && typeof options === "object"
+        && options !== null
+        && "flag" in options
+        && options.flag === "wx";
+      if (!isExclusiveClaim) return writeFile(filePath, data, options as never);
+      partialWriteObserved = true;
+      await writeFile(filePath, "", options as never);
+      markClaimCreated?.();
+      await claimWriteReleased;
+      return writeFile(filePath, data, { encoding: "utf8", flag: "w" });
+    }) as typeof writeFile;
+    const observedReadFile = (async (...args: Parameters<typeof readFile>) => {
+      if (String(args[0]).endsWith("publication-claim.json")) markClaimRead?.();
+      return readFile(...args);
+    }) as typeof readFile;
+    const store = createArticleWorkbenchRunStore({
+      rootDir: root,
+      filesystem: { writeFile: delayedWriteFile, readFile: observedReadFile },
+    });
+    const run = await store.createRun();
+    const record = { title: "Title", body: "Body", slug: "title", contentHash: `sha256:${"a".repeat(64)}`, path: "content/articles/2026-08-09-title.mdx" };
+
+    const first = store.claimPublication(run.id, record);
+    await Promise.race([claimCreated, first.then(() => undefined)]);
+    const second = store.claimPublication(run.id, record);
+    if (partialWriteObserved) await claimRead;
+    releaseClaimWrite?.();
+    const claims = await Promise.all([first, second]);
 
     expect(claims.map((claim) => claim.status).sort()).toEqual(["already_claimed", "claimed"]);
   });

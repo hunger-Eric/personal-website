@@ -8,6 +8,7 @@ export type ReadableRouteKind = "primary" | "project" | "article" | "machine";
 
 export type ReadableRoute = {
   kind: ReadableRouteKind;
+  locale?: "zh" | "en";
   path: string;
   url: string;
   title: string;
@@ -181,21 +182,44 @@ function machineRoutes(): ReadableRoute[] {
       description: "JSON feed for relevant published articles.",
       priority: 0.5,
     },
+    {
+      ...common,
+      path: "/en/feed.xml",
+      url: absoluteUrl("/en/feed.xml"),
+      title: "English RSS feed",
+      description: "RSS feed for reviewed English articles.",
+      priority: 0.5,
+    },
+    {
+      ...common,
+      path: "/en/feed.json",
+      url: absoluteUrl("/en/feed.json"),
+      title: "English JSON feed",
+      description: "JSON feed for reviewed English articles.",
+      priority: 0.5,
+    },
   ];
 }
 
 export async function getReadableRoutes(): Promise<ReadableRoute[]> {
-  const articles = await getArticles();
-  const articleRoutes: ReadableRoute[] = articles.map((article) => ({
-    kind: "article",
-    path: article.publicPath,
-    url: absoluteUrl(article.publicPath),
-    title: article.title,
-    description: article.summary,
-    lastModified: dateOrUndefined(article.updated || article.date),
-    changeFrequency: "monthly",
-    priority: 0.55,
-  }));
+  const [chineseArticles, englishArticles] = await Promise.all([
+    getArticles("zh"),
+    getArticles("en"),
+  ]);
+  const articleRoutes: ReadableRoute[] = [
+    ...chineseArticles.map((article) => ({ article, locale: "zh" as const })),
+    ...englishArticles.map((article) => ({ article, locale: "en" as const })),
+  ].map(({ article, locale }) => ({
+      kind: "article",
+      locale,
+      path: article.publicPath,
+      url: absoluteUrl(article.publicPath),
+      title: article.title,
+      description: article.summary,
+      lastModified: dateOrUndefined(article.updated || article.date),
+      changeFrequency: "monthly",
+      priority: 0.55,
+    }));
 
   return [
     ...primaryRoutes(),

@@ -239,6 +239,20 @@ describe("generateProjectSchema", () => {
 describe("generateArticleSchema", () => {
   beforeEach(() => { vi.resetModules(); });
 
+  it("uses the requested article language in the canonical URL and schema", async () => {
+    const { generateArticleSchema } = await import("@/lib/structured-data");
+    const schema = generateArticleSchema({
+      title: "English GEO audit",
+      slug: "ai-search-visibility-audit-geo",
+      date: "2026-08-29",
+    }, "en");
+
+    expect(schema).toMatchObject({
+      url: "https://me.itheheda.online/en/articles/ai-search-visibility-audit-geo",
+      inLanguage: "en",
+    });
+  });
+
   it("returns BlogPosting schema with minimal fields", async () => {
     vi.doMock("@/config/siteConfig", () => ({
       siteConfig: { name: "Kevin Trinh", socialsList: [] },

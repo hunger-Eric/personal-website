@@ -2,6 +2,12 @@ export type Locale = "zh" | "en";
 
 export const LOCALE_STORAGE_KEY = "shijie-intelligence-locale";
 
+export const reviewedBilingualArticleSlugs = [
+  "ai-search-visibility-audit-geo",
+] as const;
+
+const REVIEWED_BILINGUAL_ARTICLE_SLUGS = new Set<string>(reviewedBilingualArticleSlugs);
+
 export const localeConfig = {
   zh: { htmlLang: "zh-CN", pathPrefix: "" },
   en: { htmlLang: "en", pathPrefix: "/en" },
@@ -23,6 +29,10 @@ export function localizePublicPath(path: string, locale: Locale): string {
 export function getLocaleSwitchPath(pathname: string, target: Locale): string {
   const chinesePath = localizePublicPath(pathname, "zh");
   if (target === "en" && /^\/articles\/[^/]+/.test(chinesePath)) {
+    const slug = chinesePath.match(/^\/articles\/([^/]+)$/)?.[1];
+    if (slug && REVIEWED_BILINGUAL_ARTICLE_SLUGS.has(slug)) {
+      return localizePublicPath(chinesePath, "en");
+    }
     return "/en/articles";
   }
   return localizePublicPath(chinesePath, target);

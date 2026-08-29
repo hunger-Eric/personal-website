@@ -23,6 +23,8 @@ describe("SEO routes", () => {
     expect(urls).toContain(`${SITE_URL}/llms.txt`);
     expect(urls).toContain(`${SITE_URL}/feed.xml`);
     expect(urls).toContain(`${SITE_URL}/feed.json`);
+    expect(urls).toContain(`${SITE_URL}/en/feed.xml`);
+    expect(urls).toContain(`${SITE_URL}/en/feed.json`);
     expect(urls).toContain(`${SITE_URL}/.well-known/brand-facts.json`);
     expect(urls).toContain(`${SITE_URL}/ai/services.json`);
     expect(urls).toContain(`${SITE_URL}/ai/projects.json`);

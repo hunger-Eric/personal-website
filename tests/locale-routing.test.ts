@@ -23,6 +23,15 @@ describe("public locale routing", () => {
     expect(getLocaleSwitchPath("/en/services", "zh")).toBe("/services");
   });
 
+  it("switches a reviewed bilingual article to its matching English detail", () => {
+    expect(
+      getLocaleSwitchPath("/articles/ai-search-visibility-audit-geo", "en")
+    ).toBe("/en/articles/ai-search-visibility-audit-geo");
+    expect(
+      getLocaleSwitchPath("/en/articles/ai-search-visibility-audit-geo", "zh")
+    ).toBe("/articles/ai-search-visibility-audit-geo");
+  });
+
   it("defines distinct HTML languages and public brand names", () => {
     expect(localeConfig.zh.htmlLang).toBe("zh-CN");
     expect(localeConfig.en.htmlLang).toBe("en");

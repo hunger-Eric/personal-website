@@ -1,4 +1,3 @@
-// app/articles/[slug]/page.tsx
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -8,7 +7,7 @@ import { ArticleCard } from "@/components/articles/ArticleCard";
 import type { ArticleListItem } from "@/components/articles/ArticlesBrowser";
 import { JsonLd } from "@/components/JsonLd";
 import { MdxRenderer } from "@/components/mdx/MdxRenderer";
-import { siteConfig } from "@/config/siteConfig";
+import { publicIdentity } from "@/config/public-identity";
 import {
   getArticleBySlug,
   getArticleSlugs,
@@ -16,13 +15,11 @@ import {
 } from "@/lib/mdx/mdx";
 import { generateArticleSchema } from "@/lib/structured-data";
 
-// Fully static: MDX is bundled at build time; fs access at runtime is not
-// available on Cloudflare Workers, so we skip revalidation entirely.
 export const dynamic = "force-static";
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  const slugs = await getArticleSlugs();
+  const slugs = await getArticleSlugs("en");
   return slugs.map((slug) => ({ slug }));
 }
 
@@ -32,14 +29,12 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const article = await getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug, "en");
 
-  if (!article) {
-    return { title: "Article Not Found" };
-  }
+  if (!article) return { title: "Article Not Found" };
 
   const canonical = article.publicPath;
-  const englishArticle = await getArticleBySlug(slug, "en");
+  const chinesePath = `/articles/${article.slug}`;
   const ogImages = article.imageSrc
     ? [{ url: article.imageSrc, alt: article.imageAlt || article.title }]
     : undefined;
@@ -47,18 +42,14 @@ export async function generateMetadata({
   return {
     title: article.title,
     description: article.summary,
-    authors: [{ name: article.author || siteConfig.name }],
+    authors: [{ name: article.author || publicIdentity.names.en }],
     alternates: {
       canonical,
-      ...(englishArticle
-        ? {
-            languages: {
-              "zh-CN": canonical,
-              en: englishArticle.publicPath,
-              "x-default": canonical,
-            },
-          }
-        : {}),
+      languages: {
+        "zh-CN": chinesePath,
+        en: canonical,
+        "x-default": chinesePath,
+      },
     },
     openGraph: {
       type: "article",
@@ -67,7 +58,7 @@ export async function generateMetadata({
       description: article.summary,
       publishedTime: article.date,
       modifiedTime: article.updated || article.date,
-      authors: [article.author || siteConfig.name],
+      authors: [article.author || publicIdentity.names.en],
       tags: article.tags,
       images: ogImages,
     },
@@ -77,14 +68,15 @@ export async function generateMetadata({
       description: article.summary,
       images: article.imageSrc ? [article.imageSrc] : undefined,
     },
-    ...(article.contentHash ? { other: { "article-content-hash": article.contentHash } } : {}),
+    ...(article.contentHash
+      ? { other: { "article-content-hash": article.contentHash } }
+      : {}),
   };
 }
 
 function formatDate(dateStr: string): string {
   try {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString("zh-CN", {
+    return new Date(dateStr).toLocaleDateString("en", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -94,49 +86,50 @@ function formatDate(dateStr: string): string {
   }
 }
 
-export default async function ArticlePage({
+export default async function EnglishArticlePage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const article = await getArticleBySlug(slug);
+  const article = await getArticleBySlug(slug, "en");
 
-  if (!article) {
-    notFound();
-  }
+  if (!article) notFound();
 
-  const relatedArticles = await getRelatedArticles(slug, 3);
-  const author = article.author || siteConfig.name;
-  const related: ArticleListItem[] = relatedArticles.map((a) => ({
-    slug: a.slug,
-    title: a.title,
-    summary: a.summary,
-    date: a.date,
-    category: a.category,
-    tags: a.tags,
-    featured: a.featured,
-    imageSrc: a.imageSrc,
-    imageAlt: a.imageAlt,
-    readingTime: a.readingTime,
-    author: a.author,
-    publicPath: a.publicPath,
+  const relatedArticles = await getRelatedArticles(slug, 3, "en");
+  const related: ArticleListItem[] = relatedArticles.map((item) => ({
+    slug: item.slug,
+    title: item.title,
+    summary: item.summary,
+    date: item.date,
+    category: item.category,
+    tags: item.tags,
+    featured: item.featured,
+    imageSrc: item.imageSrc,
+    imageAlt: item.imageAlt,
+    readingTime: item.readingTime,
+    author: item.author,
+    publicPath: item.publicPath,
   }));
+  const author = article.author || publicIdentity.names.en;
 
   return (
     <>
       <JsonLd
-        data={generateArticleSchema({
-          title: article.title,
-          slug: article.slug,
-          publicPath: article.publicPath,
-          summary: article.summary,
-          date: article.date,
-          updated: article.updated,
-          imageSrc: article.imageSrc,
-          tags: article.tags,
-          readingTime: article.readingTime,
-        })}
+        data={generateArticleSchema(
+          {
+            title: article.title,
+            slug: article.slug,
+            publicPath: article.publicPath,
+            summary: article.summary,
+            date: article.date,
+            updated: article.updated,
+            imageSrc: article.imageSrc,
+            tags: article.tags,
+            readingTime: article.readingTime,
+          },
+          "en"
+        )}
       />
 
       <div className="mx-auto w-full max-w-3xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
@@ -144,29 +137,24 @@ export default async function ArticlePage({
           <h1 className="text-balance text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
             {article.title}
           </h1>
-
           <div className="mt-6 flex flex-wrap items-center gap-2 text-sm font-semibold">
             <span className="text-foreground">{author}</span>
-            <span aria-hidden className="font-normal text-muted-foreground">
-              |
-            </span>
+            <span aria-hidden className="font-normal text-muted-foreground">|</span>
             <span className="text-foreground">{formatDate(article.date)}</span>
           </div>
-
-          {article.summary && (
+          {article.summary ? (
             <p className="mt-6 text-balance text-base leading-relaxed text-muted-foreground sm:text-lg">
               {article.summary}
             </p>
-          )}
-
-          {article.updated && article.updated !== article.date && (
+          ) : null}
+          {article.updated && article.updated !== article.date ? (
             <p className="mt-3 text-xs text-muted-foreground/80">
-              最后更新于 {formatDate(article.updated)}
+              Last updated {formatDate(article.updated)}
             </p>
-          )}
+          ) : null}
         </header>
 
-        {article.imageSrc && (
+        {article.imageSrc ? (
           <figure className="mb-10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -177,7 +165,7 @@ export default async function ArticlePage({
               decoding="async"
             />
           </figure>
-        )}
+        ) : null}
 
         <article className="min-w-0">
           <MdxRenderer source={article.content} />
@@ -185,25 +173,25 @@ export default async function ArticlePage({
 
         <nav className="mt-12 flex items-center justify-between border-t border-hairline pt-8">
           <Link
-            href="/articles"
+            href="/en/articles"
             className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-accent"
           >
             <ArrowLeft className="h-4 w-4" />
-            返回文章列表
+            Back to articles
           </Link>
         </nav>
       </div>
 
-      {related.length > 0 && (
+      {related.length > 0 ? (
         <div className="mx-auto w-full max-w-6xl px-4 pb-20 sm:px-6 lg:px-8">
-          <h2 className="mb-5 text-xl font-semibold">相关文章</h2>
+          <h2 className="mb-5 text-xl font-semibold">Related articles</h2>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {related.map((r) => (
-              <ArticleCard key={r.slug} article={r} />
+            {related.map((item) => (
+              <ArticleCard key={item.slug} article={item} />
             ))}
           </div>
         </div>
-      )}
+      ) : null}
     </>
   );
 }

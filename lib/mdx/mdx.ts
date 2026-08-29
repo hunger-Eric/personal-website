@@ -5,7 +5,12 @@ import path from "path";
 import matter from "gray-matter";
 import { z } from "zod";
 
-const CONTENT_DIR = path.join(process.cwd(), "content/articles");
+export type ArticleLocale = "zh" | "en";
+
+const CONTENT_DIRECTORIES: Record<ArticleLocale, string> = {
+  zh: path.join(process.cwd(), "content/articles"),
+  en: path.join(process.cwd(), "content/articles-en"),
+};
 
 // Slug must be kebab-style: starts with alphanum, then alphanum/hyphen, max 80 chars.
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-]{0,80}$/i;
@@ -65,13 +70,14 @@ export interface ArticlePreview extends ArticleFrontmatter {
   publicPath: string;
 }
 
-function getPublicArticlePath(slug: string): string {
+function getPublicArticlePath(slug: string, locale: ArticleLocale): string {
   const standalonePath = path.join(
     process.cwd(),
     "public",
     "articles",
     `${slug}.html`
   );
+  if (locale === "en") return `/en/articles/${slug}`;
   return fs.existsSync(standalonePath)
     ? `/articles/${slug}.html`
     : `/articles/${slug}`;
@@ -119,13 +125,14 @@ export function calculateReadingTime(
 /**
  * Get all article files from the content directory
  */
-function getArticleFiles(): string[] {
+function getArticleFiles(locale: ArticleLocale): string[] {
+  const contentDir = CONTENT_DIRECTORIES[locale];
   try {
-    if (!fs.existsSync(CONTENT_DIR)) {
+    if (!fs.existsSync(contentDir)) {
       return [];
     }
     return fs
-      .readdirSync(CONTENT_DIR)
+      .readdirSync(contentDir)
       .filter((file) => file.endsWith(".mdx") || file.endsWith(".md"));
   } catch {
     return [];
@@ -185,12 +192,15 @@ function parseArticleFile(
 /**
  * Get all published articles (excludes drafts in production)
  */
-export async function getArticles(): Promise<ArticlePreview[]> {
-  const files = getArticleFiles();
+export async function getArticles(
+  locale: ArticleLocale = "zh"
+): Promise<ArticlePreview[]> {
+  const contentDir = CONTENT_DIRECTORIES[locale];
+  const files = getArticleFiles(locale);
   const articles: ArticlePreview[] = [];
 
   for (const file of files) {
-    const filePath = path.join(CONTENT_DIR, file);
+    const filePath = path.join(contentDir, file);
     const parsed = parseArticleFile(filePath);
 
     if (!parsed) continue;
@@ -208,7 +218,7 @@ export async function getArticles(): Promise<ArticlePreview[]> {
       ...frontmatter,
       readingTime: time,
       chapter,
-      publicPath: getPublicArticlePath(frontmatter.slug),
+      publicPath: getPublicArticlePath(frontmatter.slug, locale),
     });
   }
 
@@ -223,11 +233,15 @@ export async function getArticles(): Promise<ArticlePreview[]> {
 /**
  * Get a single article by slug
  */
-export async function getArticleBySlug(slug: string): Promise<Article | null> {
-  const files = getArticleFiles();
+export async function getArticleBySlug(
+  slug: string,
+  locale: ArticleLocale = "zh"
+): Promise<Article | null> {
+  const contentDir = CONTENT_DIRECTORIES[locale];
+  const files = getArticleFiles(locale);
 
   for (const file of files) {
-    const filePath = path.join(CONTENT_DIR, file);
+    const filePath = path.join(contentDir, file);
     const parsed = parseArticleFile(filePath);
 
     if (!parsed) continue;
@@ -246,7 +260,7 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
         content,
         readingTime: time,
         wordCount: words,
-        publicPath: getPublicArticlePath(frontmatter.slug),
+        publicPath: getPublicArticlePath(frontmatter.slug, locale),
       };
     }
   }
@@ -257,8 +271,10 @@ export async function getArticleBySlug(slug: string): Promise<Article | null> {
 /**
  * Get all article slugs for static generation
  */
-export async function getArticleSlugs(): Promise<string[]> {
-  const articles = await getArticles();
+export async function getArticleSlugs(
+  locale: ArticleLocale = "zh"
+): Promise<string[]> {
+  const articles = await getArticles(locale);
   return articles.map((article) => article.slug);
 }
 
@@ -266,9 +282,10 @@ export async function getArticleSlugs(): Promise<string[]> {
  * Get articles by category
  */
 export async function getArticlesByCategory(
-  category: string
+  category: string,
+  locale: ArticleLocale = "zh"
 ): Promise<ArticlePreview[]> {
-  const articles = await getArticles();
+  const articles = await getArticles(locale);
   return articles.filter(
     (article) =>
       article.category?.toLowerCase() === category.toLowerCase()
@@ -278,8 +295,11 @@ export async function getArticlesByCategory(
 /**
  * Get articles by tag
  */
-export async function getArticlesByTag(tag: string): Promise<ArticlePreview[]> {
-  const articles = await getArticles();
+export async function getArticlesByTag(
+  tag: string,
+  locale: ArticleLocale = "zh"
+): Promise<ArticlePreview[]> {
+  const articles = await getArticles(locale);
   return articles.filter((article) =>
     article.tags?.some((t) => t.toLowerCase() === tag.toLowerCase())
   );
@@ -322,12 +342,13 @@ export async function getTags(): Promise<string[]> {
  */
 export async function getRelatedArticles(
   currentSlug: string,
-  limit: number = 3
+  limit: number = 3,
+  locale: ArticleLocale = "zh"
 ): Promise<ArticlePreview[]> {
-  const current = await getArticleBySlug(currentSlug);
+  const current = await getArticleBySlug(currentSlug, locale);
   if (!current || !current.tags?.length) return [];
 
-  const articles = await getArticles();
+  const articles = await getArticles(locale);
 
   // Score articles by number of matching tags
   const scored = articles

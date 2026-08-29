@@ -20,18 +20,37 @@ const fixturePath = path.join(
 const fixtureFilename = path.basename(fixturePath);
 const fixtureSlug = "evidence-led-enterprise-ai-workflow";
 const canonicalUrl = `https://me.itheheda.online/articles/${fixtureSlug}`;
+const englishFixturePath = path.join(
+  process.cwd(),
+  "tests",
+  "fixtures",
+  "articles-en",
+  "2026-08-29-ai-search-visibility-audit-geo.mdx",
+);
+const englishFixtureFilename = path.basename(englishFixturePath);
+const englishFixtureSlug = "ai-search-visibility-audit-geo";
 let fixtureMdx = "";
+let englishFixtureMdx = "";
 const legacyMdx = `---\ntitle: "Legacy article"\ndate: "2025-01-01"\n---\n\nLegacy content.`;
 
 beforeEach(async () => {
   const actualFs = await vi.importActual<typeof import("node:fs")>("node:fs");
   fixtureMdx = actualFs.readFileSync(fixturePath, "utf8");
+  englishFixtureMdx = actualFs.readFileSync(englishFixturePath, "utf8");
   vi.resetModules();
-  fsMocks.existsSync.mockImplementation((value: string) => /content[\\/]articles$/.test(String(value)));
-  fsMocks.readdirSync.mockReturnValue([fixtureFilename, "legacy.mdx"]);
-  fsMocks.readFileSync.mockImplementation((value: string) =>
-    String(value).endsWith(fixtureFilename) ? fixtureMdx : legacyMdx,
+  fsMocks.existsSync.mockImplementation((value: string) =>
+    /content[\\/]articles(?:-en)?$/.test(String(value)),
   );
+  fsMocks.readdirSync.mockImplementation((value: string) =>
+    /content[\\/]articles-en$/.test(String(value))
+      ? [englishFixtureFilename]
+      : [fixtureFilename, "legacy.mdx"],
+  );
+  fsMocks.readFileSync.mockImplementation((value: string) => {
+    if (String(value).endsWith(englishFixtureFilename)) return englishFixtureMdx;
+    if (String(value).endsWith(fixtureFilename)) return fixtureMdx;
+    return legacyMdx;
+  });
 });
 
 describe("workbench article discovery fixture", () => {
@@ -55,6 +74,23 @@ describe("workbench article discovery fixture", () => {
     });
     await expect(getArticleBySlug("legacy")).resolves.toMatchObject({ slug: "legacy", contentHash: undefined });
     await expect(getArticles()).resolves.toHaveLength(2);
+  });
+
+  it("loads reviewed English MDX from an independent fixed directory", async () => {
+    const { getArticleBySlug, getArticles } = await import("@/lib/mdx/mdx");
+
+    await expect(getArticles("en")).resolves.toEqual([
+      expect.objectContaining({
+        slug: englishFixtureSlug,
+        title: "Why AI Search Cannot See Your Website",
+        publicPath: `/en/articles/${englishFixtureSlug}`,
+      }),
+    ]);
+    await expect(getArticleBySlug(englishFixtureSlug, "en")).resolves.toMatchObject({
+      slug: englishFixtureSlug,
+      content: expect.stringContaining("intentionally different"),
+      publicPath: `/en/articles/${englishFixtureSlug}`,
+    });
   });
 });
 

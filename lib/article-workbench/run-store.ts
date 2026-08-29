@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import {
+  link,
   mkdir,
   readFile,
   rename,
@@ -47,7 +48,7 @@ const artifactFiles = {
   publicationReceipt: "publication-receipt.json",
 } as const;
 
-type FileOperations = Pick<typeof import("node:fs/promises"), "mkdir" | "readFile" | "rename" | "rm" | "writeFile">;
+type FileOperations = Pick<typeof import("node:fs/promises"), "link" | "mkdir" | "readFile" | "rename" | "rm" | "writeFile">;
 
 export interface ArticleWorkbenchRunStoreOptions {
   rootDir?: string;
@@ -70,7 +71,7 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
 
   constructor({ rootDir, filesystem = {} }: ArticleWorkbenchRunStoreOptions = {}) {
     this.rootDir = rootDir ?? path.join(process.cwd(), "output", "article-workbench");
-    this.filesystem = { mkdir, readFile, rename, rm, writeFile, ...filesystem };
+    this.filesystem = { link, mkdir, readFile, rename, rm, writeFile, ...filesystem };
   }
 
   async saveProfile(profile: unknown): Promise<void> {
@@ -142,16 +143,29 @@ export class ArticleWorkbenchRunStore implements RunStorePort {
   async claimPublication(id: string, record: ArticlePublicationRecord): Promise<PublicationClaimResult> {
     const runId = this.validateRunId(id);
     const claimPath = path.join(this.rootDir, "runs", runId, "publication-claim.json");
+    const temporaryPath = path.join(
+      path.dirname(claimPath),
+      `.publication-claim.${randomBytes(8).toString("hex")}.tmp`,
+    );
     const serialized = JSON.stringify({ slug: record.slug, contentHash: record.contentHash }, null, 2) + "\n";
     try {
       await this.filesystem.mkdir(path.dirname(claimPath), { recursive: true });
-      await this.filesystem.writeFile(claimPath, serialized, { encoding: "utf8", flag: "wx" });
+      await this.filesystem.writeFile(temporaryPath, serialized, { encoding: "utf8", flag: "wx" });
+    } catch {
+      await this.filesystem.rm(temporaryPath, { force: true }).catch(() => undefined);
+      throw persistenceError();
+    }
+
+    try {
+      await this.filesystem.link(temporaryPath, claimPath);
       return { status: "claimed" };
     } catch (error) {
       if (!isExistsFileError(error)) throw persistenceError();
       const existing = await this.readJsonIfPresent(claimPath, z.object({ slug: z.string(), contentHash: z.string() }).strict());
       if (!existing || existing.slug !== record.slug || existing.contentHash !== record.contentHash) throw new Error("PUBLICATION_CLAIM_CONFLICT");
       return { status: "already_claimed" };
+    } finally {
+      await this.filesystem.rm(temporaryPath, { force: true }).catch(() => undefined);
     }
   }
 

@@ -176,6 +176,7 @@ export function generateArticleSchema(article: {
     headline: article.title,
     description: article.summary,
     url,
+    inLanguage: locale === "zh" ? "zh-CN" : "en",
     datePublished: article.date,
     dateModified: article.updated || article.date,
     ...(article.imageSrc && {
