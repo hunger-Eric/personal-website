@@ -4,6 +4,7 @@ export const LOCALE_STORAGE_KEY = "shijie-intelligence-locale";
 
 export const reviewedBilingualArticleSlugs = [
   "ai-search-visibility-audit-geo",
+  "google-indexed-ai-does-not-recommend-website",
 ] as const;
 
 const REVIEWED_BILINGUAL_ARTICLE_SLUGS = new Set<string>(reviewedBilingualArticleSlugs);

@@ -1,0 +1,133 @@
+---
+title: "Google Indexed Your Website. Why Won't AI Recommend Your Company?"
+slug: "google-indexed-ai-does-not-recommend-website"
+summary: "Google indexing makes a page eligible for search. It does not make a company defensible in an AI-generated supplier answer. Recommendation readiness depends on buyer-question fit, entity clarity, service boundaries, traceable evidence, and accessible public pages."
+date: "2026-08-30"
+updated: "2026-08-30"
+category: "AI search visibility"
+tags: ["GEO", "AI recommendations", "enterprise website", "Google indexing", "Open GEO Console"]
+featured: true
+draft: false
+author: "SolveReal Systems"
+contentHash: "sha256:7da53f5a4125645873d9598d47b971a31ba087ce2d5cb5f531729eb8faa71037"
+---
+
+## An indexed page is only eligible to compete
+
+A business owner opens Search Console and sees that the company website is indexed. The same owner asks an AI assistant to recommend a provider for a specific operational problem. The answer names other companies and leaves this one out.
+
+The two observations do not conflict. Google indexing means Google processed and retained a page in its index. Google's technical requirements say that an accessible page returning HTTP 200 with indexable content can be eligible for indexing, while indexing itself is not guaranteed. Google's newer guidance for generative search adds another boundary. A page must be indexed and eligible for a search snippet before it can appear in Google's generative features, yet serving is still not guaranteed.
+
+An AI supplier answer has a different job from an index. It must connect the buyer's request to a company, decide that the service fits, and support the answer with material it can retrieve. A homepage that says “innovative AI solutions for every business” may be fully indexed and still provide little help with that decision.
+
+The useful question is therefore narrower than “Does AI know our brand?” Ask whether the public website gives a system enough defensible evidence to include the company for one real buying situation.
+
+## Start with the request a buyer would make
+
+Brand-name prompts are weak tests. Someone who already knows the company may ask an assistant to summarize it, but a new buyer usually describes a problem.
+
+The request might concern a knowledge base that needs reviewed answers, an approval flow with human sign-off, or a website that never appears in AI search. The buyer may also include constraints such as language, deployment environment, evidence requirements, or recovery when automation fails.
+
+Choose one request that the company is genuinely qualified to answer. Write it in the buyer's language and remove the company name. Then identify the public page that should support the answer.
+
+If no page can answer the request, more prompt testing will not create the missing material. The website needs a reviewed explanation of the problem, the intended customer, the delivery method, and the conditions that make the service a poor fit. A dozen near-duplicate keyword pages would only multiply the gap.
+
+Google's current generative-search guidance makes a similar point from the search side. It recommends useful, original, non-commodity material and warns against producing pages for every query variation. Google says its systems can understand relevance without an exact keyword match. The page should help a buyer decide, rather than imitate every possible prompt.
+
+## Make the company and service unambiguous
+
+An indexed collection of pages can still describe an uncertain entity.
+
+Check the company name, product name, official domain, service scope, and contact route across the home page, service pages, articles, and structured data. Language variants should preserve the same underlying facts even when their wording and examples differ. A product should not look like a consulting service on one page and a finished customer case on another.
+
+Service fit also needs boundaries. The site should explain who supplies data and access, where human review remains required, what the customer receives, and how a result is accepted. Recovery and privacy constraints often matter more to an enterprise buyer than another claim about innovation.
+
+Structured data can clarify the relationship between an organization, a service, and an article. It cannot resolve contradictory visible copy. Review the facts first, then let metadata, internal links, canonicals, and language annotations describe the same public entity.
+
+## Give a recommendation something it can defend
+
+Imagine that an assistant has found two companies with similar category labels. A buyer asks why one belongs on the shortlist.
+
+The answer needs more than adjectives. A delivery sequence, a named output, an acceptance method, and a stated limitation give the reader something to verify. Public documentation and original sources can support external facts. Approved project evidence can support a capability claim within its actual boundary.
+
+Unsupported customer outcomes should stay out. A website does not need an invented percentage to be useful. It can publish the method used to evaluate a workflow, the evidence a reviewer receives, and the point where a human must decide. Those details are often closer to the purchasing decision than a broad success claim.
+
+External references matter when they provide genuine independent context. Manufactured directory profiles, reciprocal mentions, and unrelated backlinks do not make the underlying service clearer. Google explicitly advises against inauthentic mentions and says no third-party tool has access to its internal ranking or AI systems.
+
+Google also says that `llms.txt`, special AI markup, mechanical content chunking, and rewriting solely for AI are not required for its generative search features. A site may maintain machine-readable files for other consumers, but those files do not replace useful HTML pages or reviewed evidence.
+
+## Check whether each system can retrieve the evidence
+
+Good evidence still has to be reachable.
+
+OpenAI's publisher guidance says a site should allow OAI-SearchBot if it wants content to be available for summaries, citations, and links in ChatGPT search. The same guidance identifies a measurable downstream signal. Referral links from ChatGPT search include `utm_source=chatgpt.com`, so visits can be separated in analytics.
+
+Perplexity documents two different access paths. PerplexityBot discovers and links websites in search results. Perplexity-User may fetch a page in response to a user's question. Sites using a web application firewall may need to verify both the user agent and Perplexity's current published IP ranges.
+
+These access controls establish an opportunity to retrieve a page. They do not promise a citation or recommendation. Test the production response that each system receives, including status code, robots rules, canonical URL, initial HTML, and any WAF challenge. A successful visit from an ordinary browser is useful, but it does not prove that an identified crawler received the same response.
+
+## Keep a recommendation test reproducible
+
+AI answers can vary with the product, account state, location, time, and wording of the request. One answer is an observation, not a durable rank.
+
+For each test, retain the exact question, date, product, named companies, and cited URLs. Use a small question set approved by the business owner. Repeat it after a bounded website change, and compare the evidence rather than only the presence of the brand.
+
+Measurement should follow the same separation. Search Console records Google's search visibility under its own reporting rules. Analytics can identify some referral visits, including ChatGPT links carrying the documented UTM parameter. A form or CRM records an inquiry. Indexing, an AI mention, an impression, a visit, and an inquiry are different events.
+
+## A one-week review sequence
+
+### Select one commercial question
+
+Pick a buyer request tied to an actual service and write down the audience, operational problem, and constraints. Do not include the company name.
+
+### Trace the supporting pages
+
+Move from the home page to the service, product, and evidence pages. Confirm that a reader can identify the company, understand the fit, and find the stated limits without relying on a sales call.
+
+### Review the claims
+
+Connect material statements to approved facts, public documentation, or original sources. Remove outcome numbers that cannot be substantiated. Record the person authorized to approve each company or product fact.
+
+### Test production access
+
+Inspect robots rules, HTTP status, canonical annotations, server-rendered content, and edge-security behavior. Check Google, OAI-SearchBot, and Perplexity access separately because one successful path does not prove the others.
+
+### Repeat the same questions
+
+Run the recorded question set after the reviewed changes. Store the answer and citations. Report deployment, indexing, AI mentions, referrals, and inquiries as separate states.
+
+## Review checklist
+
+- The target question describes a real buying situation without naming the company
+- A public page directly explains the operational problem and intended customer
+- Company, product, domain, service, and contact facts agree across languages
+- Delivery method, customer inputs, human review, and acceptance are visible
+- Material claims have an original source or an explicit evidence boundary
+- The relevant public pages are retrievable through the intended search access path
+- The test record preserves the prompt, product, time, answer, and cited URLs
+- Indexing, AI mentions, impressions, visits, and inquiries use separate evidence
+- Each remediation has a page owner, fact owner, closing evidence, and review date
+- No report promises an AI recommendation or a commercial result
+
+## Boundaries
+
+This review applies to public company websites, service pages, product pages, articles, and approved public evidence. It should not expose customer-confidential material, account-only pages, access tokens, or private reports.
+
+AI products use different retrieval and answer systems, and those systems change. A recommendation-readiness review can improve the clarity, accessibility, and support behind a company's public claims. It cannot control a provider's answer and does not guarantee indexing, citations, recommendations, rankings, traffic, or inquiries.
+
+Open GEO Console checks public technical foundations, buyer questions, public answers, citation evidence, and remediation priorities. Its findings should become owned website tasks, not a claim that a platform will select the company.
+
+## Sources
+
+1. [Google Search technical requirements](https://developers.google.com/search/docs/essentials/technical)
+2. [Google guide to generative AI features on Search](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)
+3. [Google guide to ranking systems](https://developers.google.com/search/docs/appearance/ranking-systems-guide)
+4. [OpenAI publishers and developers FAQ](https://help.openai.com/en/articles/12627856-publishers-and-developers-faq)
+5. [Perplexity crawler documentation](https://docs.perplexity.ai/docs/resources/perplexity-crawlers)
+6. [Open GEO Console in English](https://geo.itheheda.online/en)
+
+## Next step
+
+If the priority pages are indexed but the company still disappears from supplier answers, take one real buyer question to [Open GEO Console](https://geo.itheheda.online/en). The free check begins with the homepage, robots.txt, sitemap.xml, and public content so the team can identify the first technical, question-coverage, or citation-evidence gap.
+
+Review the [Open GEO Console project boundary](/en/projects/open-geo-console) for its public scope and simulated-demo limits. You can also see the [enterprise AI service](/en/services) and other [public projects](/en/projects). When the production URLs, buyer questions, and desired deliverables are clear, [submit the problem](/en/contact) for a scoped discussion.
