@@ -7,14 +7,12 @@ import { ArrowRight, Bot, CheckCircle2, FileSearch, Network, RefreshCw, ShieldCh
 import { useLocale } from "@/components/LocaleProvider";
 import { ProjectJourneys } from "@/components/home/ProjectJourneys";
 import { getLocalizedPublicContent } from "@/config/public-content";
-import { getPublicWebsiteProjects } from "@/config/website-projects";
 import { localizePublicPath } from "@/config/locale";
 
 export function EnterpriseHomepage() {
   const { locale } = useLocale();
   const zh = locale === "zh";
   const content = getLocalizedPublicContent(locale);
-  const projects = getPublicWebsiteProjects(locale);
   const path = (value: string) => localizePublicPath(value, locale);
   const capabilities = zh
     ? ([
@@ -105,18 +103,11 @@ export function EnterpriseHomepage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 lg:py-20" aria-labelledby="project-library-title">
-        <div className="flex items-end justify-between gap-4"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">02 / Project library</p><h2 id="project-library-title" className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "公开案例" : "Public cases"}</h2></div><Link href={path("/projects")} className="text-sm font-semibold text-accent">{zh ? "查看公开证据" : "View public evidence"} →</Link></div>
-        <div className="mt-7 grid gap-px border border-hairline bg-hairline sm:grid-cols-2">
-          {projects.map((project, index) => <article key={project.id} className="bg-surface-paper-elevated p-6"><div className="flex items-start justify-between gap-4"><span className="font-mono text-xs text-accent">0{index + 1}</span><span className="border border-hairline px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-muted-foreground">{project.status}</span></div><p className="mt-8 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{project.category}</p><h3 className="mt-2 text-2xl font-semibold text-foreground">{project.name}</h3><p className="mt-3 text-sm leading-7 text-muted-foreground">{project.summary}</p><Link href={project.liveUrl ?? (project.interactive ? "#project-journeys" : path(`/projects/${project.id}`))} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:text-accent">{project.liveUrl ? (zh ? "立即体验" : "Try the live site") : project.interactive ? (zh ? "参与体验" : "Try the prototype") : (zh ? "查看项目" : "View project")}<ArrowRight className="h-4 w-4" aria-hidden /></Link></article>)}
-        </div>
-      </section>
-
       <ProjectJourneys />
 
-      <section id="method" className="mx-auto max-w-6xl px-4 py-16 lg:py-20"><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">04 / Delivery method</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "我们如何把 AI 做成可运行的系统" : "How AI becomes a working system"}</h2><div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">{content.service.method.map((step, index) => <article key={step.id} className="border-t border-hairline pt-5"><span className="font-mono text-xs text-accent">0{index + 1}</span><h3 className="mt-5 text-lg font-semibold text-foreground">{step.title}</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">{step.description}</p></article>)}</div></section>
+      <section id="method" className="mx-auto max-w-6xl px-4 py-16 lg:py-20"><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">03 / Delivery method</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "我们如何把 AI 做成可运行的系统" : "How AI becomes a working system"}</h2><div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">{content.service.method.map((step, index) => <article key={step.id} className="border-t border-hairline pt-5"><span className="font-mono text-xs text-accent">0{index + 1}</span><h3 className="mt-5 text-lg font-semibold text-foreground">{step.title}</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">{step.description}</p></article>)}</div></section>
 
-      <section className="mx-auto grid max-w-6xl gap-8 border-t border-hairline px-4 py-16 md:grid-cols-[1fr_220px] md:items-center lg:py-20" id="wechat"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">05 / Independent System</p><h2 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "公众号「独立系统」" : "WeChat channel: Independent System"}</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground">{zh ? "记录企业 AI 系统、自动化与独立开发实践。扫码进入公众号，或从文章库先看方法与案例。" : "Notes on enterprise AI systems, automation, and independent building."}</p><Link href={path("/articles")} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:text-accent">{zh ? "进入文章库" : "Browse articles"}<ArrowRight className="h-4 w-4" aria-hidden /></Link></div>{zh?<Image src="/images/contact/wechat-official.jpg" alt="微信公众号「独立系统」二维码" width={220} height={220} className="border border-hairline bg-white p-2" />:null}</section>
+      <section className="mx-auto grid max-w-6xl gap-8 border-t border-hairline px-4 py-16 md:grid-cols-[1fr_220px] md:items-center lg:py-20" id="wechat"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">04 / Independent System</p><h2 className="mt-3 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "公众号「独立系统」" : "WeChat channel: Independent System"}</h2><p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground">{zh ? "记录企业 AI 系统、自动化与独立开发实践。扫码进入公众号，或从文章库先看方法与案例。" : "Notes on enterprise AI systems, automation, and independent building."}</p><Link href={path("/articles")} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-foreground hover:text-accent">{zh ? "进入文章库" : "Browse articles"}<ArrowRight className="h-4 w-4" aria-hidden /></Link></div>{zh?<Image src="/images/contact/wechat-official.jpg" alt="微信公众号「独立系统」二维码" width={220} height={220} className="border border-hairline bg-white p-2" />:null}</section>
 
       <section className="bg-surface-graphite px-4 py-12 text-surface-graphite-foreground"><div className="mx-auto flex max-w-6xl flex-col gap-6 md:flex-row md:items-center md:justify-between"><div><h2 className="text-3xl font-semibold tracking-[-0.035em]">{zh ? "有一个重复、易错、难以持续的流程？" : "Have a repetitive, fragile workflow?"}</h2><p className="mt-2 text-sm text-surface-graphite-foreground/60">{zh ? "从真实业务问题开始，不从功能清单开始。" : "Start from the real business problem, not a feature list."}</p></div><Link href={path("/contact")} className="inline-flex min-h-11 items-center justify-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent-hover">{zh ? "提交你的业务问题" : "Submit your business problem"}<ArrowRight className="h-4 w-4" aria-hidden /></Link></div></section>
     </div>

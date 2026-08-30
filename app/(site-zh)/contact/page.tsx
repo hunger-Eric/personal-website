@@ -8,7 +8,7 @@ import { buildPublicPageMetadata } from "@/lib/public-page-metadata";
 
 export const metadata = buildPublicPageMetadata({
   title: "提交业务问题",
-  description: "描述真实流程，或携带 Open GEO Console 模拟体验上下文联系实解智能。",
+  description: "描述真实流程、人工投入和业务问题，联系实解智能判断 AI 系统是否适合介入。",
   path: "/contact",
 });
 

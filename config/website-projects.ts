@@ -1,6 +1,6 @@
 import type { Locale } from "./locale";
 
-export type WebsiteProjectStatus = "simulation" | "reviewed" | "materials-pending";
+export type WebsiteProjectStatus = "reviewed" | "materials-pending";
 
 type LocalizedText = { zh: string; en: string };
 export type WebsiteProjectFactKind = "problem" | "solution" | "buyerValue" | "boundary";
@@ -23,8 +23,8 @@ export const websiteProjects: WebsiteProject[] = [
     id: "open-geo-console",
     name: { zh: "Open GEO Console", en: "Open GEO Console" },
     category: { zh: "AI 搜索可见性诊断与整改", en: "AI search visibility diagnosis and remediation" },
-    status: { zh: "公开产品｜本页演示使用模拟数据", en: "Public product | simulated on-page demo" },
-    statusKind: "simulation",
+    status: { zh: "公开产品｜可直接使用", en: "Public product | available now" },
+    statusKind: "reviewed",
     summary: {
       zh: "为企业官网做 AI 搜索可见性诊断，把网站技术基础、买家问题、公开答案和引用证据整理成管理层决策报告与供应商任务包。",
       en: "Diagnoses an enterprise website's visibility in AI search, turning technical foundations, buyer questions, public answers, and citation evidence into an executive report and a vendor task package.",
@@ -42,7 +42,7 @@ export const websiteProjects: WebsiteProject[] = [
         "Customers receive an actionable, ongoing GEO optimization plan that identifies what to change on the website, recommends how to change it, and defines what to monitor and improve next",
       ],
     },
-    interactive: true,
+    interactive: false,
     liveUrl: "https://geo.itheheda.online",
   },
   {

@@ -92,7 +92,7 @@ export function PublicProjectsPage() {
             <Link
               href={
                 project.liveUrl ??
-                `${path(`/projects/${project.id}`)}${project.interactive ? "#open-geo-demo" : ""}`
+                path(`/projects/${project.id}`)
               }
               className="mt-8 inline-flex min-h-11 items-center justify-center gap-2 self-start border border-foreground px-4 py-2 text-sm font-semibold text-foreground hover:border-accent hover:text-accent"
             >
@@ -100,11 +100,7 @@ export function PublicProjectsPage() {
                 ? zh
                   ? "了解产品"
                   : "Explore the product"
-                : project.interactive
-                  ? zh
-                    ? "参与体验"
-                    : "Try the prototype"
-                  : zh
+                : zh
                     ? "查看项目"
                     : "View project"}
               <ArrowRight className="h-4 w-4" aria-hidden />

@@ -7,7 +7,7 @@ import { useLocale } from "@/components/LocaleProvider";
 import { localizePublicPath } from "@/config/locale";
 import { getLocalizedPublicContent } from "@/config/public-content";
 import { getWebsiteProject } from "@/config/website-projects";
-import OpenGeoParticipatoryDemo from "./OpenGeoParticipatoryDemo";
+import { OpenGeoProductFlow } from "./OpenGeoProductFlow";
 
 export function PublicProjectDetail({ id }: { id: string }) {
   const { locale } = useLocale();
@@ -49,8 +49,7 @@ export function PublicProjectDetail({ id }: { id: string }) {
     : [];
 
   const contactHref = localizePublicPath("/contact", locale);
-  const actionHref =
-    project.liveUrl ?? (project.interactive ? "#open-geo-demo" : contactHref);
+  const actionHref = project.liveUrl ?? contactHref;
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-surface-paper pb-20 pt-28 text-surface-paper-foreground sm:pt-32">
@@ -99,13 +98,8 @@ export function PublicProjectDetail({ id }: { id: string }) {
           </div>
         </header>
 
-        {project.interactive ? (
-          <div
-            id="open-geo-demo"
-            className="mt-10 border border-hairline bg-surface-graphite"
-          >
-            <OpenGeoParticipatoryDemo locale={locale} />
-          </div>
+        {project.id === "open-geo-console" && project.liveUrl ? (
+          <OpenGeoProductFlow locale={locale} liveUrl={project.liveUrl} />
         ) : null}
 
         {reviewed ? (
@@ -141,7 +135,7 @@ export function PublicProjectDetail({ id }: { id: string }) {
               ))}
             </div>
           </>
-        ) : !project.interactive ? (
+        ) : project.id !== "open-geo-console" ? (
           <section className="mt-10 border border-hairline bg-surface-paper-elevated p-6">
             <div className="flex gap-3">
               <Info className="mt-1 h-5 w-5 flex-none text-accent" aria-hidden />
@@ -165,11 +159,7 @@ export function PublicProjectDetail({ id }: { id: string }) {
               ? zh
                 ? "Open GEO Console 已开放使用，可直接进入网站开始体验。"
                 : "Open GEO Console is available now. Visit the live website to try it."
-              : project.interactive
-                ? zh
-                  ? "完成模拟体验后，可以把项目与场景上下文一起带到联系页。"
-                  : "After the simulation, carry project and scenario context to contact."
-                : zh
+              : zh
                   ? "你的业务不需要复制这个项目；我们会从实际流程重新诊断。"
                   : "Your business does not need to copy this project; diagnosis starts from the actual workflow."}
           </p>
@@ -181,11 +171,7 @@ export function PublicProjectDetail({ id }: { id: string }) {
               ? zh
                 ? "前往 Open GEO"
                 : "Open live site"
-              : project.interactive
-                ? zh
-                  ? "开始模拟体验"
-                  : "Start the simulation"
-                : zh
+              : zh
                   ? "讨论你的流程"
                   : "Discuss your workflow"}
             <ArrowRight className="h-4 w-4" aria-hidden />

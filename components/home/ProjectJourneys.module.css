@@ -1,16 +1,16 @@
 .section {
-  background: var(--surface-graphite);
-  color: var(--surface-graphite-foreground);
-  padding: 2rem 1rem;
+  background: var(--surface-paper);
+  color: var(--foreground);
+  padding: 2.5rem 1rem 3rem;
 }
 
 .shell {
   margin: 0 auto;
-  max-width: 90rem;
+  max-width: 84rem;
 }
 
 .eyebrow {
-  color: var(--accent-light);
+  color: var(--accent);
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.72rem;
   font-weight: 700;
@@ -19,321 +19,341 @@
 }
 
 .intro {
-  margin-top: 0.75rem;
+  margin-top: 0.9rem;
 }
 
 .intro h2 {
-  max-width: 76rem;
-  font-size: clamp(2.2rem, 3vw, 3.35rem);
+  max-width: 82rem;
+  font-size: clamp(2.5rem, 4vw, 3.8rem);
   font-weight: 650;
-  line-height: 1.08;
-  letter-spacing: -0.045em;
+  line-height: 1.04;
+  letter-spacing: -0.055em;
 }
 
 .intro p {
-  max-width: 34rem;
-  margin-top: 0.75rem;
-  color: color-mix(in srgb, var(--surface-graphite-foreground) 58%, transparent);
-  font-size: 0.92rem;
-  line-height: 1.75;
-}
-
-.tabs {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-top: 1.75rem;
-  min-height: 6.5rem;
-}
-
-.tabs::before {
-  position: absolute;
-  top: 3.75rem;
-  right: 0;
-  left: 0;
-  height: 1px;
-  background: color-mix(in srgb, var(--surface-graphite-foreground) 22%, transparent);
-  content: "";
-}
-
-.tabCell {
-  position: relative;
-  min-width: 0;
-}
-
-.tabCell[data-selected="true"] {
-  background: transparent;
-  box-shadow: none;
-}
-
-.tabCell::after {
-  position: absolute;
-  top: 3.38rem;
-  left: 0;
-  width: 0.8rem;
-  height: 0.8rem;
-  border: 1px solid color-mix(in srgb, var(--surface-graphite-foreground) 45%, transparent);
-  border-radius: 999px;
-  background: var(--surface-graphite);
-  content: "";
-}
-
-.tabCell[data-selected="true"]::after {
-  width: 1.05rem;
-  height: 1.05rem;
-  top: 3.26rem;
-  border: 3px solid var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
-}
-
-.tabCell > button {
-  width: 100%;
-  min-height: 4.2rem;
-  padding: 0 1.25rem 0 0;
-  text-align: left;
-}
-
-.tabCell > button span {
-  display: block;
-  color: var(--accent-light);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.68rem;
-}
-
-.tabCell > button strong,
-.tabCell > button small {
-  display: block;
-}
-
-.tabCell > button strong {
-  margin-top: 0.5rem;
-  font-size: 1rem;
-  font-weight: 650;
-}
-
-.tabCell > button small {
-  display: none;
-  margin-top: 0;
-  color: color-mix(in srgb, var(--surface-graphite-foreground) 48%, transparent);
-  font-size: 0.72rem;
-  line-height: 1.4;
-}
-
-.tabCell > button:hover strong,
-.tabCell > button:focus-visible strong {
-  color: var(--accent-light);
-}
-
-.tabCell[data-selected="true"] > button strong {
-  color: var(--accent-light);
-}
-
-.openGeoLinks {
-  position: absolute;
-  top: 4.55rem;
-  left: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.85rem;
-  padding: 0;
-}
-
-.openGeoLinks a {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: var(--surface-graphite-foreground);
-  font-size: 0.72rem;
-  font-weight: 650;
-}
-
-.openGeoLinks a:first-child {
-  color: var(--accent-light);
-}
-
-.openGeoLinks svg,
-.detailLink svg {
-  width: 0.85rem;
-  height: 0.85rem;
-}
-
-.panel {
-  border-right: 1px solid var(--border-inverse);
-  border-bottom: 1px solid var(--border-inverse);
-  border-left: 1px solid var(--border-inverse);
-  background: #141613;
-}
-
-.playerFrame {
-  overflow: hidden;
-  border-bottom: 1px solid var(--border-inverse);
-}
-
-.openGeoGateway {
-  display: flex;
-  min-height: 28rem;
-  align-items: center;
-  justify-content: space-between;
-  gap: 3rem;
-  padding: clamp(2rem, 6vw, 6rem);
-}
-
-.openGeoGateway p {
-  color: var(--accent-light);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.18em;
-}
-
-.openGeoGateway h3 {
-  max-width: 53rem;
-  margin-top: 1.25rem;
-  font-size: clamp(2rem, 4vw, 4rem);
-  line-height: 1.08;
-  letter-spacing: -0.045em;
-}
-
-.openGeoGateway span {
-  display: block;
-  max-width: 45rem;
-  margin-top: 1.5rem;
-  color: color-mix(in srgb, var(--surface-graphite-foreground) 60%, transparent);
+  max-width: 42rem;
+  margin-top: 1rem;
+  color: var(--muted-foreground);
+  font-size: 0.95rem;
   line-height: 1.8;
 }
 
-.openGeoGateway > svg {
-  width: clamp(5rem, 12vw, 10rem);
-  height: clamp(5rem, 12vw, 10rem);
-  color: var(--accent);
-  stroke-width: 1;
-}
-
-.controls {
+.tabs {
   display: grid;
-  grid-template-columns: auto minmax(12rem, 1fr) auto auto;
-  align-items: center;
-  gap: 1.25rem;
-  padding: 1rem 1.25rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 2.25rem;
+  border-bottom: 1px solid var(--hairline);
 }
 
-.controls > button,
-.detailLink {
-  display: inline-flex;
-  min-height: 2.75rem;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.78rem;
-  font-weight: 650;
-}
-
-.controls > button svg {
-  width: 1.1rem;
-  height: 1.1rem;
-  color: var(--accent-light);
-}
-
-.stepButtons {
+.tabs button {
   position: relative;
-  display: flex;
-  justify-content: space-between;
-  gap: 0.35rem;
+  min-width: 0;
+  min-height: 5.5rem;
+  padding: 0 1.5rem 1rem 0;
+  text-align: left;
 }
 
-.stepButtons::before {
+.tabs button::after {
   position: absolute;
-  top: 50%;
-  right: 0.9rem;
-  left: 0.9rem;
-  height: 1px;
-  background: var(--border-inverse);
+  right: 1.5rem;
+  bottom: -0.34rem;
+  left: 0;
+  height: 0.36rem;
+  background: transparent;
   content: "";
 }
 
-.stepButtons button {
-  position: relative;
-  z-index: 1;
-  width: 1.8rem;
-  height: 1.8rem;
-  border: 1px solid var(--border-inverse);
-  border-radius: 999px;
-  background: var(--surface-graphite);
-  color: color-mix(in srgb, var(--surface-graphite-foreground) 50%, transparent);
+.tabs button > span,
+.tabs button small,
+.projectHeader span {
+  display: block;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.65rem;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
 }
 
-.stepButtons button[data-active="true"] {
+.tabs button > span {
+  color: var(--muted-foreground);
+}
+
+.tabs button strong {
+  display: block;
+  margin-top: 0.7rem;
+  overflow-wrap: anywhere;
+  font-size: 1.05rem;
+  font-weight: 650;
+  line-height: 1.2;
+}
+
+.tabs button small {
+  margin-top: 0.5rem;
+  color: var(--muted-foreground);
+}
+
+.tabs button:hover strong,
+.tabs button:focus-visible strong,
+.tabs button[data-selected="true"] strong {
+  color: var(--accent);
+}
+
+.tabs button[data-selected="true"]::after {
+  background: var(--accent);
+}
+
+.tabs button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+.panel {
+  padding-top: 0.75rem;
+}
+
+.projectHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding: 0.6rem 0 1rem;
+}
+
+.projectHeader > div {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.projectHeader span {
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+.projectHeader p {
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.projectHeader > strong {
+  border: 1px solid var(--accent);
+  padding: 0.35rem 0.55rem;
+  color: var(--accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.transformation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: stretch;
+  gap: 1rem;
+}
+
+.phase {
+  min-height: 15rem;
+  border: 1px solid var(--hairline);
+  padding: 1.75rem;
+}
+
+.systemPhase {
   border-color: var(--accent);
+  background: var(--surface-paper-elevated);
+}
+
+.phaseLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--hairline);
+  color: var(--accent);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.phaseLabel svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  stroke-width: 1.5;
+}
+
+.phase > p {
+  margin-top: 1.5rem;
+  font-size: clamp(1.02rem, 1.35vw, 1.25rem);
+  line-height: 1.7;
+}
+
+.flowArrow,
+.flowArrowMobile {
+  align-self: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  color: var(--accent);
+  stroke-width: 1.4;
+}
+
+.flowArrowMobile {
+  display: none;
+}
+
+.boundaries {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 1.25rem auto 0;
+  border: 1px solid var(--hairline);
+}
+
+.boundaries > div {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: start;
+  gap: 0.7rem;
+  padding: 1rem 1.2rem;
+}
+
+.boundaries > div + div {
+  border-left: 1px solid var(--hairline);
+}
+
+.boundaries svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  color: var(--accent);
+  stroke-width: 1.5;
+}
+
+.boundaries span {
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.boundaries p {
+  color: var(--muted-foreground);
+  font-size: 0.85rem;
+  line-height: 1.65;
+}
+
+.deliverableBar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2rem;
+  margin-top: 1.25rem;
+  background: var(--surface-graphite);
+  color: var(--surface-graphite-foreground);
+  padding: 1.4rem 1.5rem;
+}
+
+.deliverableTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
   color: var(--accent-light);
 }
 
-.status {
-  color: color-mix(in srgb, var(--surface-graphite-foreground) 50%, transparent);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.7rem;
+.deliverableTitle svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  stroke-width: 1.5;
 }
 
-.detailLink {
-  justify-self: end;
+.deliverableTitle span {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.deliverables ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem 1.5rem;
+  margin-top: 1rem;
+}
+
+.deliverables li {
+  color: color-mix(in srgb, var(--surface-graphite-foreground) 78%, transparent);
+  font-size: 0.875rem;
+  line-height: 1.55;
+  list-style: square;
+  margin-left: 1rem;
+}
+
+.actions {
+  display: flex;
+  min-width: 11rem;
+  align-items: flex-end;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.65rem;
+  border-left: 1px solid var(--border-inverse);
+  padding-left: 1.5rem;
+}
+
+.actions a {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--accent-light);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.actions a:hover,
+.actions a:focus-visible {
   color: var(--surface-graphite-foreground);
 }
 
-.detailLink:hover,
-.detailLink:focus-visible {
-  color: var(--accent-light);
+.actions svg {
+  width: 1rem;
+  height: 1rem;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .tabs {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    min-height: 13rem;
+    border-right: 1px solid var(--hairline);
+    border-left: 1px solid var(--hairline);
   }
 
-  .tabs::before {
-    display: none;
-  }
-
-  .tabCell {
-    border-bottom: 1px solid var(--border-inverse);
-  }
-
-  .tabCell:nth-child(odd) {
-    border-right: 1px solid var(--border-inverse);
-  }
-
-  .tabCell::after {
-    display: none;
-  }
-
-  .tabCell > button {
-    min-height: 6.5rem;
+  .tabs button {
+    min-height: 6rem;
     padding: 1rem;
+    border-bottom: 1px solid var(--hairline);
   }
 
-  .tabCell > button small {
+  .tabs button:nth-child(odd) {
+    border-right: 1px solid var(--hairline);
+  }
+
+  .tabs button::after {
+    right: 1rem;
+    bottom: 0;
+    left: 1rem;
+  }
+
+  .transformation {
+    grid-template-columns: 1fr;
+  }
+
+  .phase {
+    min-height: 0;
+  }
+
+  .flowArrow {
+    display: none;
+  }
+
+  .flowArrowMobile {
     display: block;
-    margin-top: 0.45rem;
-  }
-
-  .openGeoLinks {
-    position: static;
-    padding: 0 1rem 1rem;
-  }
-
-  .controls {
-    grid-template-columns: auto 1fr;
-  }
-
-  .status {
-    justify-self: end;
-  }
-
-  .detailLink {
-    justify-self: start;
+    justify-self: center;
   }
 }
 
-@media (max-width: 560px) {
+@media (max-width: 680px) {
   .section {
     padding: 3.5rem 1rem;
   }
@@ -343,56 +363,81 @@
   }
 
   .tabs {
-    margin-top: 2.25rem;
-  }
-
-  .tabCell > button {
-    min-height: 7rem;
-    padding: 1rem;
-  }
-
-  .tabCell > button strong {
-    font-size: 0.9rem;
-  }
-
-  .openGeoLinks {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.55rem;
-    padding: 0 1rem 1rem;
-  }
-
-  .controls {
     grid-template-columns: 1fr;
-    gap: 0.75rem;
+    margin-top: 2.5rem;
   }
 
-  .stepButtons {
-    justify-content: space-between;
+  .tabs button {
+    display: grid;
+    grid-template-columns: 2rem minmax(0, 1fr) auto;
+    min-height: 4.5rem;
+    align-items: center;
+    gap: 0.6rem;
   }
 
-  .stepButtons button {
-    flex: 1;
-    width: auto;
+  .tabs button:nth-child(odd) {
+    border-right: 0;
   }
 
-  .status,
-  .detailLink {
-    justify-self: start;
+  .tabs button strong,
+  .tabs button small {
+    margin-top: 0;
   }
 
-  .openGeoGateway {
-    min-height: 30rem;
+  .tabs button small {
+    text-align: right;
+  }
+
+  .projectHeader {
     align-items: flex-start;
     flex-direction: column;
   }
-}
 
-@media (prefers-reduced-motion: reduce) {
-  .tabCell,
-  .tabCell > button,
-  .openGeoLinks a,
-  .detailLink {
-    scroll-behavior: auto;
+  .projectHeader > div {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .phase {
+    padding: 1.35rem;
+  }
+
+  .phase > p {
+    font-size: 1rem;
+  }
+
+  .boundaries {
+    grid-template-columns: 1fr;
+  }
+
+  .boundaries > div {
+    grid-template-columns: auto 1fr;
+  }
+
+  .boundaries > div + div {
+    border-top: 1px solid var(--hairline);
+    border-left: 0;
+  }
+
+  .boundaries p {
+    grid-column: 1 / -1;
+  }
+
+  .deliverableBar {
+    grid-template-columns: 1fr;
+  }
+
+  .deliverables ul {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    min-width: 0;
+    align-items: flex-start;
+    border-top: 1px solid var(--border-inverse);
+    border-left: 0;
+    padding-top: 1rem;
+    padding-left: 0;
   }
 }

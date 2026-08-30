@@ -23,8 +23,6 @@ export function GET() {
         })),
         publicStatus: project.status,
         reviewStatus: project.statusKind,
-        isSimulation: project.statusKind === "simulation",
-        simulationScope: project.id === "open-geo-console" ? { usesSimulatedData: true, performsLiveCrawling: false, performsModelCalls: false, isFormalDiagnosis: false } : undefined,
         reviewedFacts: reviewed ? { currentStatus: reviewed.currentStatus, transferableCapabilities: reviewed.transferableCapabilities, limitations: reviewed.limitations, reviewedAt: reviewed.reviewedAt } : undefined,
         url: `/projects/${project.id}`,
         machineUrl: reviewed ? `/ai/projects/${project.id}.json` : undefined,

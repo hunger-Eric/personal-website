@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import { LocaleProvider } from "@/components/LocaleProvider";
@@ -14,71 +14,72 @@ function renderJourneys(locale: "zh" | "en" = "zh") {
 }
 
 describe("ProjectJourneys", () => {
-  it("starts with Codex Feishu Bridge and exposes controllable story steps", () => {
+  it("starts with Freight Lead Agent and explains the full evidence chain without playback", () => {
     renderJourneys();
 
-    expect(screen.getByRole("tab", { name: /Codex Feishu Bridge/ })).toHaveAttribute(
+    expect(screen.getByRole("tab", { name: /Freight Lead Agent/ })).toHaveAttribute(
       "aria-selected",
       "true"
     );
-    expect(screen.getByRole("heading", { name: "手机飞书提交任务" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "暂停流程动画" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /查看 Codex Feishu Bridge 项目详情/ })).toHaveAttribute(
+    expect(screen.getByRole("heading", { name: "一眼看懂：原来哪里耗人，系统接走了什么。" })).toBeInTheDocument();
+    expect(screen.getByText("改造前")).toBeInTheDocument();
+    expect(screen.getByText("系统接管")).toBeInTheDocument();
+    expect(screen.getByText("人工保留")).toBeInTheDocument();
+    expect(screen.getByText("恢复与边界")).toBeInTheDocument();
+    expect(screen.getByText("可验收交付")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /播放|暂停/ })).not.toBeInTheDocument();
+    expect(screen.queryByText("当前步骤")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /查看项目证据/ })).toHaveAttribute(
       "href",
-      "/projects/codex-feishu-bridge"
+      "/projects/freight-lead-agent"
     );
-
-    fireEvent.click(screen.getByRole("button", { name: "查看步骤 4：结果回到原话题" }));
-    expect(screen.getByRole("status")).toHaveTextContent("当前步骤 4 / 4");
-    expect(screen.getByText(/沉淀为 Skill/)).toBeInTheDocument();
   });
 
-  it("switches the animated story to another project", () => {
+  it("switches the whole evidence story to Hermes Notebook", () => {
     renderJourneys();
 
     fireEvent.click(screen.getByRole("tab", { name: /Hermes Notebook/ }));
 
-    expect(screen.getByRole("heading", { name: "导入分散资料" })).toBeInTheDocument();
-    expect(screen.getByText(/客服机器人、内部知识问答和业务助手/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /查看 Hermes Notebook 项目详情/ })).toHaveAttribute(
+    const panel = screen.getByRole("tabpanel");
+    expect(within(panel).getByText(/企业真正有价值的数据散落/)).toBeInTheDocument();
+    expect(within(panel).getByText(/Hermes 导入多种格式的资料/)).toBeInTheDocument();
+    expect(within(panel).getByText(/管理员决定哪些文件夹和资料/)).toBeInTheDocument();
+    expect(within(panel).getByText(/按业务主题整理的企业知识库/)).toBeInTheDocument();
+    expect(within(panel).getByRole("link", { name: /查看项目证据/ })).toHaveAttribute(
       "href",
       "/projects/hermes-notebook"
     );
   });
 
-  it("provides a distinct demo path for every project", () => {
+  it("keeps Open GEO as a live product and removes the homepage simulation route", () => {
     renderJourneys();
 
-    fireEvent.click(screen.getByRole("tab", { name: /Freight Lead Agent/ }));
-    expect(screen.getByRole("heading", { name: "Google 地图发现企业" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /查看 Freight Lead Agent 项目详情/ })).toHaveAttribute(
-      "href",
-      "/projects/freight-lead-agent"
-    );
-
     fireEvent.click(screen.getByRole("tab", { name: /Open GEO Console/ }));
-    expect(screen.getByRole("heading", { name: "用真实官网完成一次 AI 搜索可见性诊断" })).toBeInTheDocument();
-    expect(screen.queryByTestId("remotion-project-journey")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /进入正式产品/ })).toHaveAttribute(
+
+    const panel = screen.getByRole("tabpanel");
+    expect(within(panel).getByText(/企业很难看见 AI 能否读懂官网/)).toBeInTheDocument();
+    expect(within(panel).getByRole("link", { name: /进入正式产品/ })).toHaveAttribute(
       "href",
-      "https://geo.itheheda.online"
+      "https://geo.itheheda.online/zh"
     );
-    expect(screen.getByRole("link", { name: /模拟演示/ })).toHaveAttribute(
+    expect(within(panel).getByRole("link", { name: /查看项目证据/ })).toHaveAttribute(
       "href",
-      "/projects/open-geo-console#open-geo-demo"
+      "/projects/open-geo-console"
     );
+    expect(screen.queryByRole("link", { name: /模拟演示/ })).not.toBeInTheDocument();
   });
 
-  it("renders the full experience in English", () => {
+  it("renders the evidence structure in English", () => {
     renderJourneys("en");
 
     expect(
-      screen.getByRole("heading", { name: "See how work gets completed, not a feature list." })
+      screen.getByRole("heading", {
+        name: "See where work was draining time—and what the system took over.",
+      })
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open live product/ })).toHaveAttribute(
-      "href",
-      "https://geo.itheheda.online"
-    );
-    expect(screen.getByRole("heading", { name: "Submit a task from Feishu mobile" })).toBeInTheDocument();
+    expect(screen.getByText("Before")).toBeInTheDocument();
+    expect(screen.getByText("System takeover")).toBeInTheDocument();
+    expect(screen.getByText("Human control")).toBeInTheDocument();
+    expect(screen.getByText("Verifiable deliverables")).toBeInTheDocument();
   });
 });

@@ -23,6 +23,8 @@ describe("PublicProjectsPage", () => {
     expect(screen.getByText(/可以持续执行的 GEO 优化方案/)).toBeInTheDocument();
     expect(screen.getByText(/官网需要修改的位置、对应的修改建议/)).toBeInTheDocument();
     expect(screen.getByText(/持续监测和迭代的方向/)).toBeInTheDocument();
+    expect(screen.getByText("公开产品｜可直接使用")).toBeInTheDocument();
+    expect(screen.queryByText(/模拟体验/)).not.toBeInTheDocument();
 
     expect(screen.getByText("企业数据整理与 AI 应用引擎")).toBeInTheDocument();
     expect(screen.getByText(/散落在 PDF、Word、Excel、PPT/)).toBeInTheDocument();

@@ -30,7 +30,7 @@ describe("public AI routes", () => {
     expect(body.contact.responseExpectation.zh).toContain("不承诺固定响应时限");
   });
 
-  it("publishes only reviewed cases and explicitly labeled simulations", async () => {
+  it("publishes only reviewed projects without a simulated product state", async () => {
     const body = await (await getProjects()).json();
 
     expect(body.projects.map((project: { id: string }) => project.id)).toEqual([
@@ -40,12 +40,13 @@ describe("public AI routes", () => {
       "codex-feishu-bridge",
     ]);
     expect(body.projects.map((project: { reviewStatus: string }) => project.reviewStatus)).toEqual([
-      "simulation",
+      "reviewed",
       "reviewed",
       "reviewed",
       "reviewed",
     ]);
-    expect(body.projects[0].simulationScope).toMatchObject({ usesSimulatedData: true, performsLiveCrawling: false, performsModelCalls: false, isFormalDiagnosis: false });
+    expect(body.projects[0]).not.toHaveProperty("isSimulation");
+    expect(body.projects[0]).not.toHaveProperty("simulationScope");
     expect(body.projects[0].facts.map((fact: { kind: string }) => fact.kind)).toEqual([
       "problem",
       "solution",

@@ -57,7 +57,7 @@ const pageCopy = {
     boundariesTitle: "明确边界",
     reviewedTitle: "先看已审核事实，再判断是否适合",
     reviewedDescription:
-      "项目库只公开已审核事实，或明确标注为模拟体验的内容；未完成公开审核的项目不会作为销售证明。",
+      "项目库只公开已审核事实；未完成公开审核的项目不会作为销售证明。",
     reviewedLink: "查看项目证据",
     faqTitle: "采购前常见问题",
     faqDescription: "先判断流程和交付方式，再比较工具或服务商。",
@@ -110,7 +110,7 @@ const pageCopy = {
     boundariesTitle: "Clear boundaries",
     reviewedTitle: "Review verified facts before deciding whether it fits",
     reviewedDescription:
-      "The project library only publishes reviewed facts or content explicitly labeled as a simulation. Projects without public review are not used as sales proof.",
+      "The project library only publishes reviewed facts. Projects without public review are not used as sales proof.",
     reviewedLink: "View project evidence",
     faqTitle: "Frequently asked questions before buying",
     faqDescription: "Judge the workflow and delivery model before comparing tools or providers.",

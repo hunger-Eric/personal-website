@@ -8,5 +8,7 @@ describe("Open GEO outbound language", () => {
     expect(getPublicWebsiteProject("open-geo-console", locale)?.liveUrl).toBe(expected);
     expect(getWebsiteProjects(locale).find((p) => p.id === "open-geo-console")?.liveUrl).toBe(expected);
     expect(getPublicWebsiteProjects(locale).find((p) => p.id === "open-geo-console")?.liveUrl).toBe(expected);
+    expect(getPublicWebsiteProject("open-geo-console", locale)?.interactive).toBe(false);
+    expect(getPublicWebsiteProject("open-geo-console", locale)?.statusKind).toBe("reviewed");
   });
 });
