@@ -28,8 +28,29 @@ describe("PublicProjectDetail", () => {
     expect(
       screen.getByRole("link", { name: /阅读 AI 可见性审计方法/ })
     ).toHaveAttribute("href", "/articles/ai-search-visibility-audit-geo");
+    expect(
+      screen.getByRole("heading", {
+        name: "先看一份完整报告，再判断这套诊断有没有用",
+      })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /查看完整中文深度报告/ })
+    ).toHaveAttribute("href", "/projects/open-geo-console/report");
     expect(container.querySelector("#open-geo-demo")).not.toBeInTheDocument();
     expect(screen.queryByText(/模拟体验/)).not.toBeInTheDocument();
+  });
+
+  it("keeps the Chinese report sample out of the English project page", () => {
+    render(
+      <LocaleProvider initialLocale="en">
+        <PublicProjectDetail id="open-geo-console" />
+      </LocaleProvider>
+    );
+
+    expect(
+      screen.queryByRole("link", { name: /deep report/i })
+    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/真实产物样例/)).not.toBeInTheDocument();
   });
 
   it("gives reviewed project facts stable citation anchors", () => {

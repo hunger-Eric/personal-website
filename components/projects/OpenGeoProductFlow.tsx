@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, ExternalLink } from "lucide-react";
 
 import { localizePublicPath, type Locale } from "@/config/locale";
@@ -96,6 +97,65 @@ export function OpenGeoProductFlow({
           ))}
         </ul>
       </div>
+
+      {copy.reportShowcase ? (
+        <section
+          id="open-geo-report-sample"
+          className="mt-6 grid overflow-hidden border border-hairline bg-surface-paper-elevated lg:grid-cols-[1.18fr_0.82fr]"
+          aria-labelledby="open-geo-report-sample-title"
+        >
+          <div className="relative min-h-72 overflow-hidden border-b border-hairline bg-[#e9e5db] lg:min-h-[34rem] lg:border-b-0 lg:border-r">
+            <Image
+              src="/showcase/open-geo-personal-site-report/preview.png"
+              alt={copy.reportShowcase.imageAlt}
+              width={1280}
+              height={900}
+              className="h-full w-full object-cover object-left-top"
+              sizes="(min-width: 1024px) 58vw, 100vw"
+            />
+          </div>
+          <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
+            <div>
+              <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.16em] text-accent">
+                {copy.reportShowcase.eyebrow}
+              </p>
+              <h3
+                id="open-geo-report-sample-title"
+                className="mt-4 text-2xl font-semibold tracking-[-0.035em] text-foreground sm:text-3xl"
+              >
+                {copy.reportShowcase.heading}
+              </h3>
+              <p className="mt-5 text-sm leading-7 text-muted-foreground">
+                {copy.reportShowcase.description}
+              </p>
+              <dl className="mt-7 grid gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+                {copy.reportShowcase.facts.map((fact) => (
+                  <div key={fact.label} className="bg-surface-paper p-4">
+                    <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">
+                      {fact.label}
+                    </dt>
+                    <dd className="mt-2 text-sm font-semibold text-foreground">
+                      {fact.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <p className="mt-5 text-xs leading-6 text-muted-foreground">
+                {copy.reportShowcase.disclaimer}
+              </p>
+            </div>
+            <Link
+              href={copy.reportShowcase.path}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-8 inline-flex min-h-11 items-center justify-between gap-3 border-t border-hairline pt-5 text-sm font-semibold text-foreground hover:text-accent"
+            >
+              {copy.reportShowcase.action}
+              <ArrowRight className="h-4 w-4" aria-hidden />
+            </Link>
+          </div>
+        </section>
+      ) : null}
 
       <div className="mt-6 grid gap-5 border-l-2 border-accent pl-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <div>

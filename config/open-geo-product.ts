@@ -19,6 +19,16 @@ type OpenGeoProductCopy = {
   primaryAction: string;
   secondaryAction: string;
   humanBoundary: string;
+  reportShowcase?: {
+    eyebrow: string;
+    heading: string;
+    description: string;
+    facts: Array<{ label: string; value: string }>;
+    disclaimer: string;
+    action: string;
+    path: string;
+    imageAlt: string;
+  };
 };
 
 export const openGeoProductCopy: Record<Locale, OpenGeoProductCopy> = {
@@ -56,6 +66,23 @@ export const openGeoProductCopy: Record<Locale, OpenGeoProductCopy> = {
     secondaryAction: "阅读 AI 可见性审计方法",
     humanBoundary:
       "诊断结果与整改优先级需要人工复核，是否修改、发布或持续监测由网站负责人决定。",
+    reportShowcase: {
+      eyebrow: "真实产物样例 · 中文",
+      heading: "先看一份完整报告，再判断这套诊断有没有用",
+      description:
+        "这份报告由 Open GEO 针对实解智能官网真实生成。它不是界面模拟，而是从公开页面证据出发，把网站现状、买家问题、未出现原因和整改动作整理成一份可阅读的深度报告。",
+      facts: [
+        { label: "检测对象", value: "实解智能官网" },
+        { label: "页面覆盖", value: "观察 22 页 · 分析 21 页" },
+        { label: "问题诊断", value: "3 个问题 · 3 组诊断" },
+        { label: "生成日期", value: "2026-08-22" },
+      ],
+      disclaimer:
+        "这是基于生成当日公开页面形成的历史样例，用于展示报告结构与交付深度，不代表当前网站或 AI 搜索平台的实时结论。",
+      action: "查看完整中文深度报告",
+      path: "/projects/open-geo-console/report",
+      imageAlt: "Open GEO 为实解智能官网生成的中文深度报告预览",
+    },
   },
   en: {
     eyebrow: "Open GEO Console · Live product",
