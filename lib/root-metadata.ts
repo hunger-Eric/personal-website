@@ -13,23 +13,42 @@ export const siteViewport: Viewport = {
   maximumScale: 5,
 };
 
+const otherWebmasterVerification = {
+  BING_SITE_VERIFICATION: "msvalidate.01",
+  NAVER_SITE_VERIFICATION: "naver-site-verification",
+  BAIDU_SITE_VERIFICATION: "baidu-site-verification",
+  SO360_SITE_VERIFICATION: "360-site-verification",
+  SOGOU_SITE_VERIFICATION: "sogou_site_verification",
+  SHENMA_SITE_VERIFICATION: "shenma-site-verification",
+  TOUTIAO_SITE_VERIFICATION: "bytedance-verification-code",
+} as const;
+
+function buildWebmasterVerification(): Metadata["verification"] {
+  const google = process.env.GOOGLE_SITE_VERIFICATION?.trim();
+  const yandex = process.env.YANDEX_SITE_VERIFICATION?.trim();
+  const other = Object.fromEntries(
+    Object.entries(otherWebmasterVerification).flatMap(([environmentName, metaName]) => {
+      const value = process.env[environmentName]?.trim();
+      return value ? [[metaName, value]] : [];
+    })
+  );
+
+  if (!google && !yandex && Object.keys(other).length === 0) return undefined;
+
+  return {
+    ...(google ? { google } : {}),
+    ...(yandex ? { yandex } : {}),
+    ...(Object.keys(other).length > 0 ? { other } : {}),
+  };
+}
+
 export function buildRootMetadata(locale: Locale): Metadata {
   const brandName = publicIdentity.names[locale];
   const category = publicIdentity.category[locale];
   const description = publicIdentity.positioning[locale];
   const canonical = localizePublicPath("/", locale);
   const title = `${brandName} — ${category}`;
-  const googleVerification = process.env.GOOGLE_SITE_VERIFICATION?.trim();
-  const bingVerification = process.env.BING_SITE_VERIFICATION?.trim();
-  const verification =
-    googleVerification || bingVerification
-      ? {
-          ...(googleVerification ? { google: googleVerification } : {}),
-          ...(bingVerification
-            ? { other: { "msvalidate.01": bingVerification } }
-            : {}),
-        }
-      : undefined;
+  const verification = buildWebmasterVerification();
 
   return {
     metadataBase: new URL(SITE_URL),

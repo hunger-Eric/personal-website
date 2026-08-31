@@ -64,26 +64,47 @@ describe("SEO routes", () => {
     expect(rules).not.toMatch(/GPTBot|ChatGPT-User|CCBot|anthropic-ai/);
   });
 
-  it("publishes configured Google and Bing ownership verification without defaults", () => {
-    const originalGoogle = process.env.GOOGLE_SITE_VERIFICATION;
-    const originalBing = process.env.BING_SITE_VERIFICATION;
+  it("publishes configured international and Chinese webmaster verification without defaults", () => {
+    const verificationEnvironment = {
+      GOOGLE_SITE_VERIFICATION: "google-verification-value",
+      BING_SITE_VERIFICATION: "bing-verification-value",
+      YANDEX_SITE_VERIFICATION: "yandex-verification-value",
+      NAVER_SITE_VERIFICATION: "naver-verification-value",
+      BAIDU_SITE_VERIFICATION: "baidu-verification-value",
+      SO360_SITE_VERIFICATION: "360-verification-value",
+      SOGOU_SITE_VERIFICATION: "sogou-verification-value",
+      SHENMA_SITE_VERIFICATION: "shenma-verification-value",
+      TOUTIAO_SITE_VERIFICATION: "toutiao-verification-value",
+    } as const;
+    const originalValues = Object.fromEntries(
+      Object.keys(verificationEnvironment).map((name) => [name, process.env[name]])
+    );
 
     try {
-      delete process.env.GOOGLE_SITE_VERIFICATION;
-      delete process.env.BING_SITE_VERIFICATION;
+      for (const name of Object.keys(verificationEnvironment)) {
+        delete process.env[name];
+      }
       expect(buildRootMetadata("zh").verification).toBeUndefined();
 
-      process.env.GOOGLE_SITE_VERIFICATION = "google-verification-value";
-      process.env.BING_SITE_VERIFICATION = "bing-verification-value";
+      Object.assign(process.env, verificationEnvironment);
       expect(buildRootMetadata("en").verification).toEqual({
         google: "google-verification-value",
-        other: { "msvalidate.01": "bing-verification-value" },
+        yandex: "yandex-verification-value",
+        other: {
+          "msvalidate.01": "bing-verification-value",
+          "naver-site-verification": "naver-verification-value",
+          "baidu-site-verification": "baidu-verification-value",
+          "360-site-verification": "360-verification-value",
+          sogou_site_verification: "sogou-verification-value",
+          "shenma-site-verification": "shenma-verification-value",
+          "bytedance-verification-code": "toutiao-verification-value",
+        },
       });
     } finally {
-      if (originalGoogle === undefined) delete process.env.GOOGLE_SITE_VERIFICATION;
-      else process.env.GOOGLE_SITE_VERIFICATION = originalGoogle;
-      if (originalBing === undefined) delete process.env.BING_SITE_VERIFICATION;
-      else process.env.BING_SITE_VERIFICATION = originalBing;
+      for (const [name, value] of Object.entries(originalValues)) {
+        if (value === undefined) delete process.env[name];
+        else process.env[name] = value;
+      }
     }
   });
 });

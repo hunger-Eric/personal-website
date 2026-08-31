@@ -42,7 +42,8 @@ npm run dev
 从 `.env.example` 创建 `.env.local`，按需配置：
 
 - `NEXT_PUBLIC_BASE_URL`
-- `GOOGLE_SITE_VERIFICATION`、`BING_SITE_VERIFICATION`：Google/Bing 控制台提供的公开站点所有权验证值；留空时不输出对应标签
+- `GOOGLE_SITE_VERIFICATION`、`BING_SITE_VERIFICATION`、`YANDEX_SITE_VERIFICATION`、`NAVER_SITE_VERIFICATION`：国际站长平台提供的公开站点所有权验证值；留空时不输出对应标签
+- `BAIDU_SITE_VERIFICATION`、`SO360_SITE_VERIFICATION`、`SOGOU_SITE_VERIFICATION`、`SHENMA_SITE_VERIFICATION`、`TOUTIAO_SITE_VERIFICATION`：百度、360、搜狗、神马、头条搜索平台提供的公开验证值；只复制平台生成的 `content` 值，不提交账号凭据
 - `INDEXNOW_KEY`：公开托管在 `/indexnow-key.txt` 的 IndexNow key；`INDEXNOW_ALLOW_SUBMIT` 默认必须为 `false`
 - `ENABLE_ADMIN`、`ADMIN_TOKEN`、`ADMIN_PASSWORD`
 - `GITHUB_TOKEN`：仅用于文章工作台的明确发布动作
@@ -54,7 +55,7 @@ npm run dev
 
 ## 搜索引擎接入
 
-阶段计划和账号侧操作边界见 [`docs/superpowers/plans/2026-08-24-website-exposure-growth-plan.md`](docs/superpowers/plans/2026-08-24-website-exposure-growth-plan.md)。Google 与 Bing 的验证值只通过环境变量注入；仓库不保存账号凭据。
+阶段计划和账号侧操作边界见 [`docs/superpowers/plans/2026-08-24-website-exposure-growth-plan.md`](docs/superpowers/plans/2026-08-24-website-exposure-growth-plan.md)。Google、Bing、Yandex、Naver、百度、360、搜狗、神马与头条的验证值只通过环境变量注入；仓库不保存账号凭据。所有搜索引擎共用正式 `robots.txt` 与 `sitemap.xml`，不为单个平台复制页面或地图。
 
 IndexNow 通知入口默认只校验参数并返回 URL 数量，不发送网络请求：
 
