@@ -1,12 +1,12 @@
 .section {
   background: var(--surface-paper);
   color: var(--foreground);
-  padding: 2.5rem 1rem 3rem;
+  padding: 0 1rem;
 }
 
 .shell {
   margin: 0 auto;
-  max-width: 84rem;
+  max-width: 72rem;
 }
 
 .eyebrow {
@@ -23,8 +23,8 @@
 }
 
 .intro h2 {
-  max-width: 82rem;
-  font-size: clamp(2.5rem, 4vw, 3.8rem);
+  max-width: 66rem;
+  font-size: clamp(2.35rem, 3.2vw, 3.25rem);
   font-weight: 650;
   line-height: 1.04;
   letter-spacing: -0.055em;
@@ -354,12 +354,8 @@
 }
 
 @media (max-width: 680px) {
-  .section {
-    padding: 3.5rem 1rem;
-  }
-
   .intro h2 {
-    font-size: 2.65rem;
+    font-size: 2.25rem;
   }
 
   .tabs {
