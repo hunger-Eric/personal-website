@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { ArrowRight, ExternalLink } from "lucide-react";
 
 import { localizePublicPath, type Locale } from "@/config/locale";
@@ -104,15 +103,67 @@ export function OpenGeoProductFlow({
           className="mt-6 grid overflow-hidden border border-hairline bg-surface-paper-elevated lg:grid-cols-[1.18fr_0.82fr]"
           aria-labelledby="open-geo-report-sample-title"
         >
-          <div className="relative min-h-72 overflow-hidden border-b border-hairline bg-[#e9e5db] lg:min-h-[34rem] lg:border-b-0 lg:border-r">
-            <Image
-              src="/showcase/open-geo-personal-site-report/preview.png"
-              alt={copy.reportShowcase.imageAlt}
-              width={1280}
-              height={900}
-              className="h-full w-full object-cover object-left-top"
-              sizes="(min-width: 1024px) 58vw, 100vw"
-            />
+          <div className="overflow-hidden border-b border-hairline bg-[#e9e5db] p-3 sm:p-5 lg:min-h-[36rem] lg:border-b-0 lg:border-r">
+            <div
+              data-report-preview-lang={locale}
+              aria-label={copy.reportShowcase.preview.label}
+              className="grid min-h-full overflow-hidden border border-[#c8c2b5] bg-[#f7f4ec] shadow-[0_18px_45px_-32px_rgba(34,62,55,0.55)] sm:grid-cols-[10rem_minmax(0,1fr)]"
+            >
+              <aside className="border-b border-[#d8d2c6] bg-[#173f37] p-5 text-[#f8f4ea] sm:border-b-0 sm:border-r">
+                <p className="text-lg font-semibold tracking-[-0.03em]">Open GEO</p>
+                <p className="mt-1 text-[10px] uppercase tracking-[0.15em] text-[#c8ddd5]">
+                  {copy.reportShowcase.preview.brandLine}
+                </p>
+                <ol className="mt-8 hidden space-y-3 sm:block">
+                  {copy.reportShowcase.preview.sections.map((section, index) => (
+                    <li
+                      key={section}
+                      className={`grid grid-cols-[1.5rem_1fr] gap-2 border-t pt-3 text-[10px] leading-4 ${
+                        index === 0
+                          ? "border-[#8bb5a7] text-white"
+                          : "border-white/15 text-[#c8ddd5]"
+                      }`}
+                    >
+                      <span className="font-mono">{String(index).padStart(2, "0")}</span>
+                      <span>{section}</span>
+                    </li>
+                  ))}
+                </ol>
+              </aside>
+              <article className="flex min-w-0 flex-col justify-between p-6 sm:p-8 lg:p-10">
+                <div>
+                  <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-[#2f7465]">
+                    00 / {copy.reportShowcase.preview.title}
+                  </p>
+                  <h4 className="mt-5 text-3xl font-semibold tracking-[-0.045em] text-[#173f37] sm:text-4xl">
+                    {copy.reportShowcase.preview.title}
+                  </h4>
+                  <p className="mt-6 max-w-xl text-sm leading-7 text-[#526760] sm:text-base sm:leading-8">
+                    {copy.reportShowcase.preview.summary}
+                  </p>
+                  <div className="mt-8 h-px bg-[#d8d2c6]" />
+                  <p className="mt-6 text-xs font-semibold leading-6 text-[#173f37]">
+                    {copy.reportShowcase.preview.sections.slice(1, 4).join(" · ")}
+                  </p>
+                </div>
+                <dl className="mt-10 grid gap-px border border-[#d8d2c6] bg-[#d8d2c6] sm:grid-cols-3">
+                  {[
+                    [copy.reportShowcase.preview.targetLabel, copy.reportShowcase.preview.target],
+                    [copy.reportShowcase.preview.generatedLabel, copy.reportShowcase.preview.generated],
+                    [copy.reportShowcase.preview.questionsLabel, copy.reportShowcase.preview.questions],
+                  ].map(([label, value]) => (
+                    <div key={label} className="min-w-0 bg-[#fbf8f1] p-3 sm:p-4">
+                      <dt className="text-[9px] font-semibold uppercase tracking-[0.12em] text-[#708078]">
+                        {label}
+                      </dt>
+                      <dd className="mt-2 whitespace-nowrap font-mono text-[9px] font-semibold text-[#173f37] sm:text-[10px]">
+                        {value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </article>
+            </div>
           </div>
           <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10">
             <div>

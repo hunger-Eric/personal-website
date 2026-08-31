@@ -27,7 +27,19 @@ type OpenGeoProductCopy = {
     disclaimer: string;
     action: string;
     path: string;
-    imageAlt: string;
+    preview: {
+      label: string;
+      brandLine: string;
+      title: string;
+      summary: string;
+      sections: string[];
+      targetLabel: string;
+      target: string;
+      generatedLabel: string;
+      generated: string;
+      questionsLabel: string;
+      questions: string;
+    };
   };
 };
 
@@ -67,21 +79,44 @@ export const openGeoProductCopy: Record<Locale, OpenGeoProductCopy> = {
     humanBoundary:
       "诊断结果与整改优先级需要人工复核，是否修改、发布或持续监测由网站负责人决定。",
     reportShowcase: {
-      eyebrow: "真实产物样例 · 中文",
+      eyebrow: "真实产物样例 · 中文报告",
       heading: "先看一份完整报告，再判断这套诊断有没有用",
       description:
-        "这份报告由 Open GEO 针对实解智能官网真实生成。它不是界面模拟，而是从公开页面证据出发，把网站现状、买家问题、未出现原因和整改动作整理成一份可阅读的深度报告。",
+        "这里按照 Open GEO 最新中文报告的章节和视觉结构做原生页面预览，不再使用静态截图。完整报告从公开页面证据出发，把网站现状、买家问题、未出现原因和整改动作整理成可执行的深度诊断。",
       facts: [
         { label: "检测对象", value: "实解智能官网" },
-        { label: "页面覆盖", value: "观察 22 页 · 分析 21 页" },
-        { label: "问题诊断", value: "3 个问题 · 3 组诊断" },
-        { label: "生成日期", value: "2026-08-22" },
+        { label: "报告结构", value: "9 个完整章节" },
+        { label: "问题诊断", value: "3 个买家问题" },
+        { label: "生成日期", value: "2026-08-31" },
       ],
       disclaimer:
-        "这是基于生成当日公开页面形成的历史样例，用于展示报告结构与交付深度，不代表当前网站或 AI 搜索平台的实时结论。",
+        "报告保留生成当日的公开页面证据，用于展示 Open GEO 当前的报告结构与交付深度；它不是对网站或 AI 平台状态的实时监测。",
       action: "查看完整中文深度报告",
       path: "/projects/open-geo-console/report",
-      imageAlt: "Open GEO 为实解智能官网生成的中文深度报告预览",
+      preview: {
+        label: "Open GEO 中文深度报告结构预览",
+        brandLine: "决策型深度报告",
+        title: "核心结论",
+        summary:
+          "实解智能从真实流程诊断开始，把稳定、重复的步骤交给系统，并为关键动作保留人工确认、异常恢复与可审计证据。",
+        sections: [
+          "核心结论",
+          "网站现状",
+          "客户问题",
+          "回答差距",
+          "页面分析",
+          "技术整改",
+          "行动摘要",
+          "文章示例",
+          "来源与方法",
+        ],
+        targetLabel: "检测网站",
+        target: "me.itheheda.online",
+        generatedLabel: "生成时间",
+        generated: "2026-08-31",
+        questionsLabel: "已回答问题",
+        questions: "3 / 3",
+      },
     },
   },
   en: {
@@ -123,5 +158,45 @@ export const openGeoProductCopy: Record<Locale, OpenGeoProductCopy> = {
     secondaryAction: "Read the AI visibility audit method",
     humanBoundary:
       "People review the diagnosis and priorities, then decide what to change, publish, or continue monitoring.",
+    reportShowcase: {
+      eyebrow: "Real deliverable · English report",
+      heading: "Review a complete report before deciding whether the diagnosis is useful",
+      description:
+        "This native preview reproduces the section and visual structure of the latest English Open GEO report instead of using a static screenshot. The complete report connects public-page evidence, buyer questions, visibility gaps, and remediation actions in one decision-ready diagnosis.",
+      facts: [
+        { label: "Audit target", value: "SolveReal Systems" },
+        { label: "Report structure", value: "9 complete sections" },
+        { label: "Question diagnosis", value: "3 buyer questions" },
+        { label: "Generated", value: "Aug 31, 2026" },
+      ],
+      disclaimer:
+        "The report preserves evidence from the date it was generated to demonstrate the current Open GEO deliverable. It is not live monitoring of the website or AI platforms.",
+      action: "View the complete English deep report",
+      path: "/en/projects/open-geo-console/report",
+      preview: {
+        label: "Open GEO English deep-report structure preview",
+        brandLine: "Decision-ready report",
+        title: "Core conclusion",
+        summary:
+          "SolveReal Systems starts with real process diagnosis, assigns stable repetitive steps to the system, and keeps human confirmation, recovery paths, and auditable evidence around critical actions.",
+        sections: [
+          "Core conclusion",
+          "Website status",
+          "Customer questions",
+          "Answer gaps",
+          "Page analysis",
+          "Technical remediation",
+          "Action summary",
+          "Article example",
+          "Sources and method",
+        ],
+        targetLabel: "Audited website",
+        target: "me.itheheda.online",
+        generatedLabel: "Generated",
+        generated: "Aug 31, 2026",
+        questionsLabel: "Questions answered",
+        questions: "3 / 3",
+      },
+    },
   },
 };

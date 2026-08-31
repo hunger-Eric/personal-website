@@ -36,21 +36,35 @@ describe("PublicProjectDetail", () => {
     expect(
       screen.getByRole("link", { name: /查看完整中文深度报告/ })
     ).toHaveAttribute("href", "/projects/open-geo-console/report");
+    expect(container.querySelector('[data-report-preview-lang="zh"]')).toHaveTextContent(
+      "核心结论"
+    );
+    expect(container.querySelector("iframe")).not.toBeInTheDocument();
+    expect(container.querySelector('img[src*="preview.png"]')).not.toBeInTheDocument();
     expect(container.querySelector("#open-geo-demo")).not.toBeInTheDocument();
     expect(screen.queryByText(/模拟体验/)).not.toBeInTheDocument();
   });
 
-  it("keeps the Chinese report sample out of the English project page", () => {
-    render(
+  it("shows the localized English report as native HTML instead of a screenshot", () => {
+    const { container } = render(
       <LocaleProvider initialLocale="en">
         <PublicProjectDetail id="open-geo-console" />
       </LocaleProvider>
     );
 
     expect(
-      screen.queryByRole("link", { name: /deep report/i })
-    ).not.toBeInTheDocument();
-    expect(screen.queryByText(/真实产物样例/)).not.toBeInTheDocument();
+      screen.getByRole("heading", {
+        name: "Review a complete report before deciding whether the diagnosis is useful",
+      })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: /View the complete English deep report/i })
+    ).toHaveAttribute("href", "/en/projects/open-geo-console/report");
+    expect(container.querySelector('[data-report-preview-lang="en"]')).toHaveTextContent(
+      "Core conclusion"
+    );
+    expect(container.querySelector("iframe")).not.toBeInTheDocument();
+    expect(container.querySelector('img[src*="preview.png"]')).not.toBeInTheDocument();
   });
 
   it("gives reviewed project facts stable citation anchors", () => {
