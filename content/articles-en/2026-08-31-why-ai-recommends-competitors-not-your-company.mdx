@@ -1,0 +1,132 @@
+---
+title: "Why Does AI Recommend Your Competitors but Leave Out Your Company?"
+slug: "why-ai-recommends-competitors-not-your-company"
+summary: "A competitor mention is useful only when the team can trace the buyer request, recommendation reason, cited page, and missing evidence. A controlled comparison turns an AI answer into a remediation queue without pretending to know a model's ranking formula."
+date: "2026-08-31"
+updated: "2026-08-31"
+category: "AI search visibility"
+tags: ["GEO", "AI recommendations", "competitor analysis", "enterprise website", "Open GEO Console"]
+featured: true
+draft: false
+author: "SolveReal Systems"
+contentHash: "sha256:032c748da1467e8eab79c96ce61c533f7e52372a0d1ad665d0b5eb4a91d5980a"
+---
+
+## The question behind the missing recommendation
+
+A procurement lead asks an AI assistant for providers that can solve a defined operational problem. The answer names several companies and omits yours. Saving the screenshot may feel like the obvious response, but the names alone reveal very little.
+
+The useful evidence sits beside each name. What requirement did the assistant think the company matched? Which public page supported that reason? Did the page describe a service, a product, an independently reported result, or a broad marketing claim? Those details give your team something it can compare with its own public material.
+
+This is a competitor evidence audit. It cannot reveal a provider's internal weights, and it cannot promise that a website change will produce a recommendation. It can identify a missing answer, an ambiguous entity, an unsupported service claim, a retrieval failure, or a test that was never controlled well enough to compare.
+
+## Establish a repeatable buyer prompt
+
+Begin with one request that a plausible buyer would make. Remove your company name and the competitor names. Keep the operational problem, the intended customer, and the constraints that would affect a purchase.
+
+A prompt might ask for a provider that can turn internal documents into a reviewed question-answer system while preserving human approval and acceptance records. That is a method example, not a customer case. Your working prompt should come from approved sales notes, search queries, consultation forms, or a business owner who can confirm the buying situation.
+
+Record the exact prompt, product, date, language, region, and account state. Google explains that relevance can vary with factors including location, language, and device. AI products also change their retrieval sources and answer behavior over time. A test in English from a signed-in account cannot be compared cleanly with an anonymous Chinese test run from another region.
+
+Perfect repeatability is unavailable. A disciplined record still matters. It lets the team distinguish a website change from a test whose inputs moved at the same time.
+
+## Capture the reason and the cited page
+
+For every named company, copy the recommendation reason and open the cited URLs. Then ask a narrow question of each citation. What sentence or public fact supports the recommendation?
+
+A company profile may establish identity. A service page can establish the intended buyer and delivery scope. Product documentation may support a feature claim. An independent publication can add context that the company does not control. These sources perform different jobs, so counting them as interchangeable mentions would hide the useful difference.
+
+OpenAI says any public website can appear in ChatGPT search and advises publishers that want summaries, citations, and clear links to allow OAI-SearchBot. Its current publisher guidance also documents `utm_source=chatgpt.com` on referral links, giving site owners a downstream visit signal. Perplexity describes PerplexityBot as the crawler used to surface and link websites in search results, while Perplexity-User may visit a page in response to a user's request.
+
+Those documents explain access and linking behavior. They do not publish a universal recommendation score. The audit should report the reasons and sources visible in the observed answer, not an invented formula for why one company won.
+
+## Build an evidence coverage comparison
+
+Place the buyer requirements down the left side of a working sheet. For each requirement, record the competitor page, your page, the type of evidence, and the next action. Empty cells should remain empty. They are more useful than a guessed claim.
+
+Start with service fit. Can a reader identify the operational problem, intended customer, required inputs, human review point, deliverable, and acceptance method? If the competitor answers the buyer's constraint and your homepage offers only a broad category label, the first remediation is a reviewed service explanation. Publishing ten pages that repeat the category will leave the decision gap in place.
+
+Check entity clarity next. Company name, product name, official domain, service scope, and contact route should agree across the homepage, product pages, articles, language variants, and structured data. Metadata can express a clean relationship. It cannot repair visible pages that describe the product as a service in one place and a completed customer result in another.
+
+Then examine claim support. A public method, named deliverable, acceptance record template, limitation, or documented demo boundary gives a buyer a way to verify what the company offers. When no approved customer outcome is public, publish the method and its actual limits. An invented percentage would make the page less defensible, even if it made the comparison sheet look full.
+
+## Treat independent references as evidence, not inventory
+
+An industry article, partner document, maintained professional directory, or technical citation can give a buyer context beyond the company's own copy. Review its origin, date, and link to the underlying fact. A lightly edited press release remains company-supplied material even when another domain hosts it.
+
+Reference volume has no stable meaning across AI products. Purchased profiles, reciprocal mentions, and unrelated backlinks create pages without clarifying the service. They also leave a poor evidence trail for a human procurement team.
+
+The durable starting point is first-party material worth citing. Publish a stable explanation of the service method, a truthful project boundary, original research, or a reproducible public artifact. When a partner or journalist genuinely uses that material, help them retain the correct company name and source URL. Independent references should follow real work and real relationships.
+
+## Verify the retrieval path separately
+
+Strong public evidence still has to be reachable by the relevant system. Test robots rules, HTTP status, canonical URL, server-rendered content, and edge-security behavior on the production page.
+
+Google's current guidance for generative search says a page must be indexed and eligible for a Search snippet before it can appear in those features. Google also states that meeting requirements does not guarantee crawling, indexing, or serving. OpenAI recommends allowing OAI-SearchBot for ChatGPT search discovery and citation. Perplexity recommends allowing PerplexityBot and, where a WAF is involved, checking both its published IP ranges and user agent.
+
+A browser receiving HTTP 200 proves only the browser path. A WAF can return a challenge or 403 response to identified automated traffic. Each intended access path needs its own production response check.
+
+Retrieval is one row in the comparison. Once access works, move back to the buyer request. Technical eligibility does not supply a missing delivery method or acceptance boundary.
+
+## Turn the audit into a short remediation queue
+
+Prioritize the gap that prevents a buyer from making a decision.
+
+If no public page answers the target request, create or revise that page with an authorized fact owner. If the page exists but the company and product relationship conflicts across the site, resolve the public identity. When service fit is clear but the important claims lack deliverables, acceptance evidence, or limitations, add reviewed support. Repair a crawl, canonical, or WAF problem when a production test proves it exists.
+
+Write each action with a target URL, fact owner, closing evidence, and review date. “Improve GEO” cannot be verified. “Add the human approval point and acceptance record to the service page, then obtain business-owner review” can be closed and retested.
+
+Open GEO Console can organize the public pages, buyer question, answer citations, evidence gaps, and remediation priorities in one review. It does not approve company facts and cannot control the answer produced by any search or AI platform.
+
+## Retest without erasing the earlier result
+
+After the reviewed change is public and available for discovery, run the recorded prompt under the same conditions. Preserve the earlier answer. Compare recommendation reasons and citations before reducing the result to a brand present-or-absent flag.
+
+Keep the measurement chain separate. Indexing shows that a search engine processed a page under its reporting rules. An AI mention is an observed answer event. Search impressions and referral visits come from their own reporting systems. An inquiry belongs in the form or CRM record. Movement at one stage does not prove movement at the next.
+
+One retest is still one observation. A useful trend needs dated, comparable runs. The team should also record when the AI product, prompt, language, or region changed, because those changes limit the comparison.
+
+## Boundaries
+
+This method applies to public company sites, service and product pages, articles, and approved project evidence. Customer-confidential data, private reports, tokens, account-only pages, and unapproved deliverables should remain private.
+
+The audit does not infer model parameters, publish negative claims about a named competitor, or treat a third-party mention as proven causation. AI products use different and changing retrieval systems. A recommendation-readiness review can improve the clarity, accessibility, and support behind public claims, but it does not guarantee indexing, citations, recommendations, rankings, traffic, or inquiries.
+
+Open GEO Console evaluates public technical foundations, buyer-question coverage, answer material, citation evidence, and remediation priorities. Its output is a set of reviewable website actions, not a promise that a platform will select the company.
+
+## A practical review sequence
+
+### Select one commercial request
+
+Use an approved buying situation and remove all company names. Preserve the intended buyer, operational problem, and meaningful constraints.
+
+### Save one complete answer
+
+Record the prompt, product, time, language, region, named companies, recommendation reasons, and cited URLs. Open every citation and note the claim it supports.
+
+### Compare the supporting pages
+
+Map buyer requirements to a small set of relevant pages for each company. Review service fit, entity consistency, evidence type, independent context, and production access.
+
+### Close one material gap
+
+Choose the gap with the clearest effect on the buyer's decision. Assign the target page and fact owner, then define the evidence required to close it.
+
+### Repeat the recorded test
+
+Retest after the public change can be discovered. Keep both answers and report each stage of the measurement chain separately.
+
+## Sources
+
+1. [Google guide to how Search works](https://developers.google.com/search/docs/fundamentals/how-search-works)
+2. [Google guide to generative AI features on Search](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)
+3. [OpenAI publishers and developers FAQ](https://help.openai.com/en/articles/12627856-publishers-and-developers-faq)
+4. [Perplexity crawler documentation](https://docs.perplexity.ai/docs/resources/perplexity-crawlers)
+5. [Bing URL submission and IndexNow guidance](https://www.bing.com/webmasters/help/URL-Submission-62f2860b)
+6. [Open GEO Console in English](https://geo.itheheda.online/en)
+
+## Next step
+
+If an observed AI answer already names several competitors, bring one real buyer request and the relevant public URLs to [Open GEO Console](https://geo.itheheda.online/en). The free check begins with the homepage, robots.txt, sitemap.xml, and public content, then organizes the first question-coverage, citation-evidence, or technical-access gaps.
+
+Review the [Open GEO Console project boundary](/en/projects/open-geo-console) for its public scope and simulated-demo limits. You can also inspect the [enterprise AI service](/en/services) and other [public projects](/en/projects). When the production URLs, buyer request, and expected deliverables are clear, [submit the problem](/en/contact) for a scoped discussion.
