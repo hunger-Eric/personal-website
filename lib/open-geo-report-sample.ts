@@ -11,13 +11,34 @@ const REPORT_HEADERS = {
   "X-Content-Type-Options": "nosniff",
 };
 
+const REPORT_LANG = {
+  en: "en",
+  zh: "zh-CN",
+} as const satisfies Record<OpenGeoReportSampleLocale, string>;
+
+function preparePublicReportHtml(html: string, locale: OpenGeoReportSampleLocale) {
+  return html
+    .replace(/<html\s+lang="[^"]+">/u, `<html lang="${REPORT_LANG[locale]}">`)
+    .replace(
+      /<div class="no-print mx-auto max-w-\[1120px\] px-8 pt-6">[\s\S]*?<\/div>(?=<main\b)/u,
+      ""
+    )
+    .replace(/<link\b[^>]*\bas=["']script["'][^>]*>/giu, "")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/giu, "");
+}
+
 export function serveOpenGeoReportSample(locale: OpenGeoReportSampleLocale) {
-  const html = fs.readFileSync(
+  const html = preparePublicReportHtml(fs.readFileSync(
     path.join(process.cwd(), "content", "report-samples", `open-geo-personal-site-${locale}.html`),
     "utf8"
-  );
+  ), locale);
 
-  return new Response(html, { headers: REPORT_HEADERS });
+  return new Response(html, {
+    headers: {
+      ...REPORT_HEADERS,
+      "Content-Language": REPORT_LANG[locale],
+    },
+  });
 }
 
 export function serveOpenGeoReportEvidence(locale: OpenGeoReportSampleLocale, asset: string) {
