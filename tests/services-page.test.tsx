@@ -26,6 +26,21 @@ describe("ServicesPage", () => {
     expect(screen.getByRole("heading", { name: "采购前常见问题" })).toBeInTheDocument();
     expect(screen.getByText("异常与恢复路径")).toBeInTheDocument();
     expect(screen.getByText(/外部发送、付款、发布或其他高风险动作/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "按具体业务问题查看可交付系统" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Google 地图获客与定制营销系统/ })).toHaveAttribute(
+      "href",
+      "/projects/freight-lead-agent"
+    );
+    expect(screen.getByRole("link", { name: /企业数据整理与 AI 应用引擎/ })).toHaveAttribute(
+      "href",
+      "/projects/hermes-notebook"
+    );
+    expect(screen.getByRole("link", { name: /企业 AI 办公协作系统/ })).toHaveAttribute(
+      "href",
+      "/projects/codex-feishu-bridge"
+    );
 
     const schemas = Array.from(
       container.querySelectorAll<HTMLScriptElement>('script[type="application/ld+json"]')

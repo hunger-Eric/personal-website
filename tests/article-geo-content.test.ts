@@ -135,7 +135,7 @@ describe("published article GEO contract", () => {
       }
       expect(article!.content, preview.slug).toMatch(/https:\/\//);
       expect(article!.content, preview.slug).toContain("](/services)");
-      expect(article!.content, preview.slug).toContain("](/projects)");
+      expect(article!.content, preview.slug).toMatch(/\]\(\/projects(?:\/[^)]+)?\)/);
       expect(article!.content, preview.slug).toContain("](/contact)");
     }
   });

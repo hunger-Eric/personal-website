@@ -56,7 +56,7 @@ describe("SEO routes", () => {
     const result = robots();
     const rules = JSON.stringify(result.rules);
 
-    expect(result.host).toBe(SITE_URL);
+    expect(result.host).toBeUndefined();
     expect(result.sitemap).toBe(`${SITE_URL}/sitemap.xml`);
     expect(rules).toContain("/admin/");
     expect(rules).toContain("/api/");

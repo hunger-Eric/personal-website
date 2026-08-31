@@ -483,6 +483,9 @@ describe("public enterprise structured data", () => {
     expect(person.name).toBe("实解智能");
     expect(person.alternateName).toBe("SolveReal Systems");
     expect(person.description).toContain("人工衔接");
+    expect(website.name).toBe("实解智能");
+    expect(website.alternateName).toBe("SolveReal Systems");
+    expect(website.url).toBe(BASE_URL);
     expect(website.dateModified).toBe("2026-08-23");
     expect(website["@id"]).toBe(`${BASE_URL}/#website`);
     expect(website.author).toEqual({ "@id": `${BASE_URL}/#organization` });
@@ -495,10 +498,12 @@ describe("public enterprise structured data", () => {
     const englishPerson = generatePublicPersonSchema("en");
     const englishWebsite = generatePublicWebSiteSchema("en");
     const englishService = generateProfessionalServiceSchema("en");
-    expect(englishPerson.name).toBe("SolveReal Systems");
-    expect(englishPerson.alternateName).toBe("实解智能");
-    expect(englishWebsite.url).toBe(`${BASE_URL}/en`);
-    expect(englishWebsite.inLanguage).toBe("en");
+    expect(englishPerson.name).toBe("实解智能");
+    expect(englishPerson.alternateName).toBe("SolveReal Systems");
+    expect(englishWebsite.name).toBe("实解智能");
+    expect(englishWebsite.alternateName).toBe("SolveReal Systems");
+    expect(englishWebsite.url).toBe(BASE_URL);
+    expect(englishWebsite.inLanguage).toEqual(["zh-CN", "en"]);
     expect(englishService.name).toContain("SolveReal Systems");
     expect(englishService.potentialAction.target).toBe(`${BASE_URL}/en/contact`);
   });

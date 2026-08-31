@@ -315,13 +315,12 @@ export function generateProfilePageSchema() {
 }
 
 export function generatePublicPersonSchema(locale: Locale = "zh") {
-  const otherLocale: Locale = locale === "zh" ? "en" : "zh";
   return {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": `${SITE_URL}/#organization`,
-    name: publicIdentity.names[locale],
-    alternateName: publicIdentity.names[otherLocale],
+    name: publicIdentity.canonicalName,
+    alternateName: publicIdentity.names.en,
     url: SITE_URL,
     description: publicIdentity.positioning[locale],
     knowsLanguage: publicIdentity.languages,
@@ -329,17 +328,15 @@ export function generatePublicPersonSchema(locale: Locale = "zh") {
 }
 
 export function generatePublicWebSiteSchema(locale: Locale = "zh") {
-  const url = `${SITE_URL}${localizePublicPath("/", locale)}`;
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "@id": `${SITE_URL}/#website`,
-    name: `${publicIdentity.names[locale]} — ${publicIdentity.category[locale]}`,
-    alternateName:
-      locale === "zh" ? publicIdentity.names.en : publicIdentity.names.zh,
-    url,
+    name: publicIdentity.canonicalName,
+    alternateName: publicIdentity.names.en,
+    url: SITE_URL,
     description: publicIdentity.positioning[locale],
-    inLanguage: locale === "zh" ? "zh-CN" : "en",
+    inLanguage: publicIdentity.languages,
     author: { "@id": `${SITE_URL}/#organization` },
     dateModified: publicContent.updatedAt,
   };

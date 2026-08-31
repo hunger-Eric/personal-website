@@ -15,6 +15,7 @@ import { useLocale } from "@/components/LocaleProvider";
 import { getLocalizedPublicContent } from "@/config/public-content";
 import { publicIdentity } from "@/config/public-identity";
 import { localizePublicPath } from "@/config/locale";
+import { getPublicWebsiteProjects } from "@/config/website-projects";
 import { SITE_URL } from "@/lib/site-url";
 
 const pageCopy = {
@@ -59,6 +60,10 @@ const pageCopy = {
     reviewedDescription:
       "项目库只公开已审核事实；未完成公开审核的项目不会作为销售证明。",
     reviewedLink: "查看项目证据",
+    scenariosTitle: "按具体业务问题查看可交付系统",
+    scenariosDescription:
+      "从企业官网可见性、知识库、Google 地图获客和飞书协作等真实问题进入，再查看系统接管范围、人工边界与交付证据。",
+    scenarioLink: "查看系统与证据",
     faqTitle: "采购前常见问题",
     faqDescription: "先判断流程和交付方式，再比较工具或服务商。",
     guideLabel: "阅读完整的服务商选择与验收清单",
@@ -112,6 +117,10 @@ const pageCopy = {
     reviewedDescription:
       "The project library only publishes reviewed facts. Projects without public review are not used as sales proof.",
     reviewedLink: "View project evidence",
+    scenariosTitle: "Explore deliverable systems by concrete business problem",
+    scenariosDescription:
+      "Start from AI search visibility, enterprise knowledge, Google Maps prospecting, or Feishu collaboration, then review system scope, human boundaries, and delivery evidence.",
+    scenarioLink: "View system and evidence",
     faqTitle: "Frequently asked questions before buying",
     faqDescription: "Judge the workflow and delivery model before comparing tools or providers.",
     guideLabel: "Read the complete provider selection and acceptance checklist",
@@ -127,6 +136,7 @@ export function ServicesPageClient() {
   const path = (value: string) => localizePublicPath(value, locale);
   const copy = pageCopy[locale];
   const content = getLocalizedPublicContent(locale);
+  const scenarios = getPublicWebsiteProjects(locale);
 
   return (
     <div className="min-h-screen bg-surface-paper pb-20 pt-28 text-surface-paper-foreground sm:pt-32">
@@ -280,6 +290,34 @@ export function ServicesPageClient() {
                   <h3 className="text-base font-semibold">{item.title}</h3>
                   <p className="mt-2 text-sm leading-7 text-surface-graphite-foreground/70">{item.description}</p>
                 </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="border-t border-hairline py-14" aria-labelledby="scenarios-title">
+          <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">05 / Business scenarios</p>
+              <h2 id="scenarios-title" className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">
+                {copy.scenariosTitle}
+              </h2>
+              <p className="mt-4 text-sm leading-7 text-muted-foreground">{copy.scenariosDescription}</p>
+            </div>
+            <div className="grid gap-px border border-hairline bg-hairline sm:grid-cols-2">
+              {scenarios.map((scenario) => (
+                <Link
+                  key={scenario.id}
+                  href={path(`/projects/${scenario.id}`)}
+                  className="group bg-surface-paper-elevated p-6 hover:bg-surface-paper"
+                >
+                  <p className="font-mono text-xs text-accent">{scenario.category}</p>
+                  <h3 className="mt-3 text-xl font-semibold text-foreground">{scenario.name}</h3>
+                  <p className="mt-3 text-sm leading-7 text-muted-foreground">{scenario.summary}</p>
+                  <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent group-hover:text-accent-hover">
+                    {copy.scenarioLink} <ArrowRight className="h-4 w-4" aria-hidden />
+                  </span>
+                </Link>
               ))}
             </div>
           </div>
