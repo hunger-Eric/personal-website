@@ -11,7 +11,7 @@ import { buildPublicPageMetadata } from "@/lib/public-page-metadata";
 describe("public page metadata", () => {
   it.each([
     ["services", servicesMetadata, "/services", "企业 AI 工作流系统设计与交付"],
-    ["projects", projectsMetadata, "/projects", "项目库"],
+    ["projects", projectsMetadata, "/projects", "企业 AI 系统项目与自动化落地案例"],
     ["articles", articlesMetadata, "/articles", "文章与系统实践"],
     ["about", aboutMetadata, "/about", "关于实解智能"],
     ["contact", contactMetadata, "/contact", "提交业务问题"],

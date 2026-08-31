@@ -15,6 +15,7 @@
     "projects:evidence:draft": "node scripts/project-evidence/build-review-draft.mjs",
     "projects:evidence:audit": "node scripts/project-evidence/audit-public-output.mjs",
     "indexnow:notify": "node scripts/notify-indexnow.mjs",
+    "search:update": "node scripts/update-search-engines.mjs",
     "prebuild": "node scripts/validate-env.js"
   },
   "dependencies": {
