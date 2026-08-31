@@ -13,6 +13,14 @@ function renderHomepage() {
   );
 }
 
+function renderEnglishHomepage() {
+  return render(
+    <LocaleProvider initialLocale="en">
+      <EnterpriseHomepage />
+    </LocaleProvider>
+  );
+}
+
 describe("EnterpriseHomepage", () => {
   it("renders the approved brand, system structure, project evidence, and contact path", () => {
     renderHomepage();
@@ -31,6 +39,20 @@ describe("EnterpriseHomepage", () => {
     expect(screen.getAllByRole("link", { name: /提交你的业务问题/ })[0]).toHaveAttribute("href", "/contact");
     expect(
       screen.getByRole("heading", { name: "一眼看懂：原来哪里耗人，系统接走了什么。" })
+    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "公众号「独立系统」" })).toBeInTheDocument();
+  });
+
+  it("omits the Chinese WeChat channel section from the English homepage", () => {
+    renderEnglishHomepage();
+
+    expect(screen.queryByText("WeChat channel: Independent System")).not.toBeInTheDocument();
+    expect(document.querySelector("#wechat")).not.toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "How AI becomes a working system" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", { name: "Have a repetitive, fragile workflow?" })
     ).toBeInTheDocument();
   });
 
