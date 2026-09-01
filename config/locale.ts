@@ -6,6 +6,7 @@ export const reviewedBilingualArticleSlugs = [
   "ai-search-visibility-audit-geo",
   "google-indexed-ai-does-not-recommend-website",
   "why-ai-recommends-competitors-not-your-company",
+  "why-ai-search-misreads-your-english-brand-name",
 ] as const;
 
 const REVIEWED_BILINGUAL_ARTICLE_SLUGS = new Set<string>(reviewedBilingualArticleSlugs);

@@ -20,6 +20,7 @@ describe("AI-readable route inventory", () => {
     ]);
     expect(groups.article.length).toBeGreaterThan(0);
     expect(groups.article.map((route) => route.path)).toEqual([
+      "/articles/why-ai-search-misreads-your-english-brand-name",
       "/articles/why-ai-recommends-competitors-not-your-company",
       "/articles/google-indexed-ai-does-not-recommend-website",
       "/articles/ai-search-visibility-audit-geo",
@@ -32,6 +33,7 @@ describe("AI-readable route inventory", () => {
       "/articles/invoice-ai-decision-cost-exception-human-review",
       "/articles/knowledge-base-ai-governance-preparation",
       "/articles/lead-process-ai-automation-four-dimensions-real-sample-validation",
+      "/en/articles/why-ai-search-misreads-your-english-brand-name",
       "/en/articles/why-ai-recommends-competitors-not-your-company",
       "/en/articles/google-indexed-ai-does-not-recommend-website",
       "/en/articles/ai-search-visibility-audit-geo",

@@ -1,0 +1,168 @@
+---
+title: "Google Indexed the Site. Why Does AI Search Still Misread the English Brand Name?"
+slug: "why-ai-search-misreads-your-english-brand-name"
+summary: "Google can index an English homepage while AI search still reads the brand as an ordinary phrase. This public SolveReal Systems review separates Google AI Overviews, ChatGPT Search, and Perplexity, then provides a bilingual website repair checklist."
+date: "2026-09-01"
+updated: "2026-09-01"
+category: "AI search visibility"
+tags: ["AI search", "Google AI Overviews", "ChatGPT Search", "Perplexity", "English brand name", "bilingual website", "GEO"]
+featured: true
+draft: false
+author: "SolveReal Systems"
+contentHash: "sha256:aef49213314693a5a6eb4d1d3a96f18ace0ece3b47801c6ea4713f8483040ced"
+---
+
+## The case that prompted this review
+
+SolveReal Systems is the English brand name of 实解智能. The Chinese name could already be found through Google, and the English name appeared on the English website. On September 1, 2026, we checked the production home page and English home page in Search Console. Both URLs were reported as indexed by Google.
+
+The ambiguity remained. An English search for SolveReal Systems could produce an AI-generated explanation that treated the words as a phrase associated with solving real systems, without reliably connecting them to the company that designs and delivers enterprise AI systems.
+
+That observation exposes a narrow but common gap. A search engine can store a page before it has enough consistent public evidence to connect an English name, a Chinese name, an official domain, and a service category as one entity. Google AI Overviews, ChatGPT Search, and Perplexity still have to assemble an answer to the current question. When the relationship is unclear, interpreting the words literally can be safer than asserting that they identify a company.
+
+## Indexing completes only one stage
+
+Google describes Search as a sequence that includes crawling, indexing, and serving results. An indexed status in Search Console means Google has processed and retained the page in its index. It does not promise that the page will appear for a particular name, or that a generative answer will use the company's explanation.
+
+Google keeps the same boundary in its guidance for generative search features. A page must be indexed and eligible for a normal Search snippet before it can be considered for those features. Meeting the requirements still does not guarantee crawling, indexing, or serving.
+
+A bilingual brand review should therefore record at least three separate observations.
+
+- The page was crawled and indexed
+- The search system connected the name to the correct organization
+- A particular AI answer mentioned, cited, or recommended the organization
+
+Each observation is useful. None proves the next one. A recrawl receipt only shows that the request was accepted.
+
+## Why an English name may be read literally
+
+SolveReal Systems contains three familiar English words. A system seeing the phrase for the first time can treat it as a company name or as descriptive language. A young brand with limited independent public material gives the system less context for resolving that ambiguity.
+
+A bilingual site can make the problem harder without intending to. The Chinese home page uses only the Chinese name, while the English page uses only the English name. A person may infer the relationship from a language switcher. A machine still has to reconstruct it from visible copy, links, structured data, and stable URLs. The relationship becomes less clear when English articles keep a Chinese author name or when page titles introduce additional variants.
+
+The public site should answer a few ordinary questions. What is SolveReal Systems, what is 实解智能, do the two names identify the same brand, which domain is official, and what service does the organization provide? Those answers belong in visible copy. Hiding them only in JSON-LD or metadata leaves the reader with the same uncertainty.
+
+## Put both names in the same visible statement
+
+The first change in this case was close to the brand introduction on each home page. The Chinese page now identifies SolveReal Systems as the English brand name of 实解智能. The English page states that SolveReal Systems is also known in Chinese as 实解智能. Both pages use the same official domain, service scope, and contact route.
+
+The sentences are short, and their job is easy to verify. A first-time visitor does not need to use the language switcher to discover the relationship. A search system reaching either page can read both names in visible copy.
+
+The same relationship should continue through the site's reviewed identity configuration. Article authorship, page creators, Organization structured data, and the site name should not invent separate naming systems. English pages can lead with the English name and Chinese pages with the Chinese name while both point to one brand.
+
+Google's Organization structured data guidance lists `name`, `alternateName`, and `url` among the properties that can help it understand and disambiguate an organization. Its site-name guidance also asks site owners to use the chosen name consistently on the home page. Structured data should describe facts that are already visible. It cannot repair contradictory page copy on its own.
+
+## Give each language a stable URL
+
+Chinese and English content work better on separate URLs. Google recommends different URLs for different language versions and supports `hreflang` annotations to describe localized counterparts. The visible content should also make the page language obvious.
+
+On this site, `/` is the Chinese home page and `/en` is the English home page. Each URL emits its own language-specific title, copy, author information, and structured data. Language annotations and crawlable links connect the pair. This arrangement is easier to inspect than changing the language of one URL through browser state. The team can check status codes, canonicals, crawl output, and indexing for each version.
+
+Articles follow the same rule. An English detail URL exists only when a reviewed English article exists. Placing Chinese body copy on an English URL and adding a short English summary would reintroduce uncertainty about the page language and brand identity.
+
+## Ask Google to revisit the published pages
+
+After the revised pages are live, the URL Inspection tool can check each production URL. Google allows owners and full users of a Search Console property to request recrawling for a small number of URLs. Its documentation says recrawling may take from several days to several weeks. Repeated submissions for the same URL will not make crawling faster.
+
+We submitted separate requests for `/` and `/en`. Both pages were already indexed, and Search Console then showed that indexing had been requested. The receipt proves that Google accepted the requests. It does not show that the new identity relationship is already reflected in results, and it does not prove that an AI answer has changed.
+
+The next review should preserve the original English query, date, region, and search product. First check whether the brand query points to the official site. Then use a buyer question that does not contain the brand name to test service relevance. The first query observes entity recognition. The second observes whether the company can enter a real purchasing answer.
+
+## What the before-and-current evidence proves
+
+There is no honest success-style Before/After screenshot yet. The recrawl requests were accepted, and the AI answer has not been retested under the same conditions. The current evidence is more limited.
+
+| Stage | Verifiable evidence | Still unproven |
+| --- | --- | --- |
+| Initial review | `/` and `/en` were indexed by Google, while an English brand query was interpreted as an ordinary phrase | The organization is recognized consistently |
+| Revised pages live | Visible copy on both home pages connects 实解智能 and SolveReal Systems, while English authorship and creator metadata use the English brand | Google has processed the revised copy |
+| Recrawl requests | Search Console reports that indexing was requested for both URLs | Google AI Overviews, ChatGPT Search, or Perplexity has changed its answer |
+| Later retest | The original query, product, language, region, and date will be preserved | No success claim is warranted before that retest |
+
+If a comparable answer changes later, the article can add paired screenshots and cited URLs. Each screenshot should retain the product and date instead of cropping the evidence down to the brand mention.
+
+If you do not know whether AI search connects your English name to the right organization, [Open GEO Console](https://geo.itheheda.online/en) can check public identity, robots.txt, sitemap.xml, production copy, and buyer-question coverage. The free check reports reviewable gaps and does not promise that a platform will use the site.
+
+## Google AI Overviews begin with the Google index
+
+Google places AI Overviews and AI Mode inside its existing Search systems. Its official guidance requires a page to be indexed and eligible for a normal Search snippet. A site does not need special AI markup, and it does not need a separate rewrite for every long-tail query variation.
+
+A title can still use the language of a real problem, such as a site being indexed while AI search misreads the English brand name. The body should continue to solve one coherent problem. Repeating Google AI Overviews, ChatGPT Search, and Perplexity in every section would not create relevance on its own.
+
+## ChatGPT Search depends on OAI-SearchBot access
+
+Google's indexing status belongs to Google. OpenAI advises sites that want content included in ChatGPT Search summaries, citations, and links to allow OAI-SearchBot. The host or CDN should also allow traffic from OpenAI's published IP ranges. Placement is not guaranteed.
+
+OAI-SearchBot supports search discovery, while GPTBot controls potential training use. The two controls serve different purposes. OpenAI also documents `utm_source=chatgpt.com` on ChatGPT Search referral links, which gives the site a distinct visit signal in analytics.
+
+## Perplexity uses two distinct access paths
+
+Perplexity documents PerplexityBot and Perplexity-User separately. PerplexityBot discovers and links public pages, and sites can manage it through robots.txt. Perplexity-User may fetch a page in response to a user's question and generally ignores robots.txt because the user initiated the request.
+
+For sites behind a WAF, Perplexity recommends checking both the User-Agent and its published IP ranges. A User-Agent check alone can admit impersonated requests. A static IP rule can become stale when the official ranges change.
+
+All three products should receive the same approved company facts. Names, official domain, service scope, and public evidence stay consistent, while access controls and test records remain platform-specific.
+
+## Measure referral traffic with downstream evidence
+
+The number of platform names in a title does not measure GEO traffic. Google impressions and clicks belong in Search Console. ChatGPT Search referrals can be identified through the documented `utm_source=chatgpt.com` parameter. Perplexity citations and visits should be recorded separately, while inquiries belong in the form or CRM.
+
+Entity recognition, an article citation, a visit, and an inquiry are related but distinct events. A citation without a visit may mean the answer already satisfied the user. A visit without an inquiry does not establish that the article failed. The team should decide which stage this article is meant to support before judging the corresponding evidence.
+
+## A practical implementation sequence
+
+### Preserve the first incorrect interpretation
+
+Record the exact query, product, date, language, region, answer, and cited URLs. Keep the observation in which the name was treated as an ordinary phrase so later results have a real baseline.
+
+### Inspect both production home pages
+
+Confirm that the Chinese and English pages load and visibly state the relationship between the names. Review the title, author, Organization data, canonical, and localized-page links.
+
+### Use one approved identity source
+
+Home pages, service pages, articles, contact pages, and machine-readable files should draw names from the same reviewed facts. Keep company names, product names, and project names in their proper roles.
+
+### Request recrawling once per changed URL
+
+Submit only pages that are live and already checked. Save the Search Console receipt. Do not keep clicking the request button, and do not describe acceptance as a changed result.
+
+### Repeat the original query
+
+After the pages have been recrawled, repeat the English brand query under the recorded conditions. Add one genuine buyer question afterward. Track indexing, entity recognition, AI citation, referral traffic, and inquiries as separate events.
+
+## Verification checklist
+
+- The Chinese and English home pages are directly available at their production URLs
+- Visible copy on both home pages states the relationship between the two names
+- Page titles, authors, site names, and Organization data use approved identity facts
+- Each language page has its own canonical and points to its localized counterpart
+- Search Console records indexing status and the recrawl receipt for each URL
+- The retest preserves the query, product, date, language, region, answer, and cited URLs
+- Google AI Overviews, ChatGPT Search, and Perplexity access paths are checked independently
+- Indexing, entity recognition, AI citation, visits, and inquiries remain separate measures
+- Legal entity, brand, product, and project names keep their proper roles
+- The report makes no promise of a knowledge panel, recommendation, ranking, visit, or inquiry
+
+## Boundaries
+
+This method applies to bilingual company sites, brand changes, new abbreviations, and regional names. Every public alternate name needs business approval. A legal entity name that differs from the public brand should be identified in its proper context, rather than added to `alternateName` as a search keyword.
+
+Visible copy, structured data, and stable language URLs can reduce ambiguity and give search systems a more consistent set of facts. They cannot control an AI response or guarantee a knowledge panel, citation, recommendation, ranking, visit, or inquiry.
+
+## Sources
+
+1. [Google guide to how Search works](https://developers.google.com/search/docs/fundamentals/how-search-works)
+2. [Google Organization structured data guidance](https://developers.google.com/search/docs/appearance/structured-data/organization)
+3. [Google site name guidance](https://developers.google.com/search/docs/appearance/site-names)
+4. [Google guidance for multilingual sites](https://developers.google.com/search/docs/advanced/crawling/managing-multi-regional-sites)
+5. [Google guide to generative AI features on Search](https://developers.google.com/search/docs/fundamentals/ai-optimization-guide)
+6. [Google recrawl request guidance](https://developers.google.com/search/docs/crawling-indexing/ask-google-to-recrawl)
+7. [OpenAI publishers and developers FAQ](https://help.openai.com/en/articles/12627856-publishers-and-developers-faq)
+8. [Perplexity crawler documentation](https://docs.perplexity.ai/docs/resources/perplexity-crawlers)
+
+## Next step
+
+If the English page is indexed but AI search still treats the brand name as an ordinary phrase, start with a public identity, crawl-access, and buyer-question review in [Open GEO Console](https://geo.itheheda.online/en). The free check begins with the production home page, robots.txt, sitemap.xml, and visible content, and it does not present successful crawling as a successful recommendation.
+
+You can also review the [Open GEO Console project scope](/en/projects/open-geo-console) and the [enterprise AI service](/en/services). When the official URLs, name relationship, and retest questions are ready, [submit the problem](/en/contact) for a scoped discussion.
