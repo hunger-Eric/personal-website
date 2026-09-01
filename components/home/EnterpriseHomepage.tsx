@@ -7,6 +7,7 @@ import { ArrowRight, Bot, CheckCircle2, FileSearch, Network, RefreshCw, ShieldCh
 import { useLocale } from "@/components/LocaleProvider";
 import { ProjectJourneys } from "@/components/home/ProjectJourneys";
 import { getLocalizedPublicContent } from "@/config/public-content";
+import { publicIdentity } from "@/config/public-identity";
 import { localizePublicPath } from "@/config/locale";
 
 export function EnterpriseHomepage() {
@@ -69,8 +70,8 @@ export function EnterpriseHomepage() {
             </h2>
             <p className="mt-5 text-base leading-8 text-muted-foreground">
               {zh
-                ? "实解智能目前由 fengc 负责，提供企业 AI 系统设计与交付服务。我们不从固定行业模板或通用功能清单开始，而是从企业正在消耗人力、容易出错、难以持续运行的真实流程开始。"
-                : "SolveReal Systems is led by fengc and provides enterprise AI system design and delivery. Work starts from a real workflow that consumes staff time, fails easily, or is difficult to sustain—not from a fixed industry template or a generic feature list."}
+                ? `${publicIdentity.names.zh}（英文品牌名：${publicIdentity.names.en}）目前由 fengc 负责，提供企业 AI 系统设计与交付服务。我们不从固定行业模板或通用功能清单开始，而是从企业正在消耗人力、容易出错、难以持续运行的真实流程开始。`
+                : `${publicIdentity.names.en}, also known in Chinese as ${publicIdentity.names.zh}, is led by fengc and provides enterprise AI system design and delivery. Work starts from a real workflow that consumes staff time, fails easily, or is difficult to sustain—not from a fixed industry template or a generic feature list.`}
             </p>
             <Link href={path("/about")} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
               {zh ? "了解实解智能" : "About SolveReal Systems"} <ArrowRight className="h-4 w-4" aria-hidden />

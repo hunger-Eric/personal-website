@@ -3,7 +3,6 @@ import type { Metadata, Viewport } from "next";
 import type { Locale } from "@/config/locale";
 import { localizePublicPath } from "@/config/locale";
 import { publicIdentity } from "@/config/public-identity";
-import { siteConfig } from "@/config/siteConfig";
 import { SITE_URL } from "@/lib/site-url";
 
 export const siteViewport: Viewport = {
@@ -72,8 +71,8 @@ export function buildRootMetadata(locale: Locale): Metadata {
             "human review automation",
             "custom AI systems",
           ],
-    authors: [{ name: siteConfig.name, url: SITE_URL }],
-    creator: siteConfig.name,
+    authors: [{ name: brandName, url: SITE_URL }],
+    creator: brandName,
     publisher: brandName,
     icons: {
       icon: [

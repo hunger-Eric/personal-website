@@ -107,4 +107,17 @@ describe("SEO routes", () => {
       }
     }
   });
+
+  it("publishes the localized public brand as the root metadata author and creator", () => {
+    expect(buildRootMetadata("zh")).toMatchObject({
+      authors: [{ name: "实解智能", url: SITE_URL }],
+      creator: "实解智能",
+      publisher: "实解智能",
+    });
+    expect(buildRootMetadata("en")).toMatchObject({
+      authors: [{ name: "SolveReal Systems", url: SITE_URL }],
+      creator: "SolveReal Systems",
+      publisher: "SolveReal Systems",
+    });
+  });
 });
