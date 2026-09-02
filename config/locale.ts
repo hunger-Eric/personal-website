@@ -3,6 +3,7 @@ export type Locale = "zh" | "en";
 export const LOCALE_STORAGE_KEY = "shijie-intelligence-locale";
 
 export const reviewedBilingualArticleSlugs = [
+  "why-company-websites-matter-more-in-the-ai-era",
   "ai-search-visibility-audit-geo",
   "google-indexed-ai-does-not-recommend-website",
   "why-ai-recommends-competitors-not-your-company",
