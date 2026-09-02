@@ -160,6 +160,19 @@ describe("crawler observer website isolation", () => {
     await Promise.all(ctx.tasks);
     expect(fake.sql.some((query) => query.includes("INSERT INTO human_page_counts"))).toBe(false);
   });
+
+  it("does not count browser-shaped API responses as human page views", async () => {
+    const fake = fakeDb();
+    const ctx = waitContext();
+    await handleFetch(new Request("https://me.itheheda.online/api/reports/report/evidence/asset", {
+      headers: { "User-Agent": "Mozilla/5.0 Chrome/126.0.0.0 Safari/537.36" },
+    }), observerEnv(fake.db as D1Database), ctx, async () => new Response("not found", {
+      status: 404,
+      headers: { "Content-Type": "text/html" },
+    }));
+    await Promise.all(ctx.tasks);
+    expect(fake.sql.some((query) => query.includes("INSERT INTO human_page_counts"))).toBe(false);
+  });
   it("aggregates mobile Safari, tablet Safari, Android Chrome, and WeChat without storing raw User-Agents", async () => {
     const fake = fakeDb();
     const ctx = waitContext();
@@ -477,6 +490,32 @@ describe("crawler observer Miniflare D1 integration", () => {
   it("has a dedicated privacy-preserving human page-view table", async () => {
     const tables = await env.DB.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('human_page_counts', 'human_client_counts', 'human_location_counts') ORDER BY name").all<{ name: string }>();
     expect(tables.results.map((row) => row.name)).toEqual(["human_client_counts", "human_location_counts", "human_page_counts"]);
+  });
+
+  it("omits previously stored API pollution from human page analytics", async () => {
+    const currentBucket = bucketStart();
+    await env.DB.prepare("INSERT INTO human_page_counts (bucket_start, path, status, count) VALUES (?, ?, ?, ?)")
+      .bind(currentBucket, "/", 200, 2)
+      .run();
+    await env.DB.prepare("INSERT INTO human_page_counts (bucket_start, path, status, count) VALUES (?, ?, ?, ?)")
+      .bind(currentBucket, "/api/reports/:uuid/evidence/:token", 404, 3598)
+      .run();
+    vi.stubGlobal("fetch", vi.fn().mockImplementation(async () => new Response(JSON.stringify({
+      creationTime: "2026-08-06T00:00:00.000000",
+      prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
+    }))));
+    try {
+      const response = await analytics(await readRequest("24h"), observerEnv(env.DB));
+      const body = await response.json() as {
+        human: { pageViews: number; trend: Array<{ pageViews: number }>; paths: Array<{ path: string; pageViews: number }>; statuses: Array<{ status: number; pageViews: number }> };
+      };
+      expect(body.human.pageViews).toBe(2);
+      expect(body.human.trend.reduce((total, point) => total + point.pageViews, 0)).toBe(2);
+      expect(body.human.paths).toEqual([{ path: "/", pageViews: 2 }]);
+      expect(body.human.statuses).toEqual([{ status: 200, pageViews: 2 }]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("applies the migration, upserts real D1 counts, aggregates analytics, and purges through the scheduled handler", async () => {

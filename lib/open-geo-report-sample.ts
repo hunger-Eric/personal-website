@@ -23,6 +23,10 @@ function preparePublicReportHtml(html: string, locale: OpenGeoReportSampleLocale
       /<div class="no-print mx-auto max-w-\[1120px\] px-8 pt-6">[\s\S]*?<\/div>(?=<main\b)/u,
       ""
     )
+    .replace(
+      /<link\b(?=[^>]*\bhref=["']\/api\/reports\/[^"']+\/evidence\/[^"']+["'])(?=[^>]*\bas=["']image["'])[^>]*>/giu,
+      ""
+    )
     .replace(/<link\b[^>]*\bas=["']script["'][^>]*>/giu, "")
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/giu, "");
 }

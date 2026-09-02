@@ -24,6 +24,7 @@ describe("Open GEO bilingual report showcase", () => {
     expect(html).not.toContain("local-v4-");
     expect(html).not.toContain("report.html/download");
     expect(html).not.toContain("下载后请用浏览器打开该 HTML 文件。");
+    expect(html).not.toContain("/api/reports/");
     expect(html).not.toMatch(/<script\b/iu);
     expect(html).not.toMatch(/<link\b[^>]*\bas=["']script["']/iu);
   });
@@ -47,6 +48,7 @@ describe("Open GEO bilingual report showcase", () => {
     expect(html).not.toContain("local-v4-");
     expect(html).not.toContain("report.html/download");
     expect(html).not.toContain("下载 HTML");
+    expect(html).not.toContain("/api/reports/");
     expect(html).not.toMatch(/<script\b/iu);
     expect(html).not.toMatch(/<link\b[^>]*\bas=["']script["']/iu);
   });

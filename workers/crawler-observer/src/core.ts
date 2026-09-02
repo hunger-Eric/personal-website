@@ -81,8 +81,8 @@ export function excluded(pathname: string): boolean {
   return (
     pathname === "/admin" ||
     pathname.startsWith("/admin/") ||
-    pathname === "/api/admin" ||
-    pathname.startsWith("/api/admin/") ||
+    pathname === "/api" ||
+    pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/_crawler-observer")
   );
@@ -308,10 +308,10 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
     env.DB.prepare("SELECT bot_id, bot_name, provider_id, provider_name, verification_status, verification_method, SUM(count) requests FROM crawler_identity_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY bot_id, bot_name, provider_id, provider_name, verification_status, verification_method ORDER BY requests DESC LIMIT 100").bind(queryStart, queryEnd),
     env.DB.prepare("SELECT source_id, last_attempt_at, last_success_at, last_error_code FROM crawler_rule_sets ORDER BY source_id"),
     env.DB.prepare("SELECT value FROM crawler_identity_meta WHERE key = 'shadow_started_at'"),
-    env.DB.prepare("SELECT SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ?").bind(queryStart, queryEnd),
-    env.DB.prepare("SELECT bucket_start, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY bucket_start ORDER BY bucket_start").bind(queryStart, queryEnd),
-    env.DB.prepare("SELECT path, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY path ORDER BY pageViews DESC LIMIT 100").bind(queryStart, queryEnd),
-    env.DB.prepare("SELECT status, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY status ORDER BY status").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND path <> '/api' AND path NOT LIKE '/api/%'").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT bucket_start, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND path <> '/api' AND path NOT LIKE '/api/%' GROUP BY bucket_start ORDER BY bucket_start").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT path, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND path <> '/api' AND path NOT LIKE '/api/%' GROUP BY path ORDER BY pageViews DESC LIMIT 100").bind(queryStart, queryEnd),
+    env.DB.prepare("SELECT status, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND path <> '/api' AND path NOT LIKE '/api/%' GROUP BY status ORDER BY status").bind(queryStart, queryEnd),
     env.DB.prepare("SELECT value FROM human_page_meta WHERE key = 'tracking_started_at'"),
     env.DB.prepare("SELECT device_type id, SUM(count) pageViews FROM human_client_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY device_type ORDER BY pageViews DESC, device_type").bind(queryStart, queryEnd),
     env.DB.prepare("SELECT browser id, SUM(count) pageViews FROM human_client_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY browser ORDER BY pageViews DESC, browser").bind(queryStart, queryEnd),
