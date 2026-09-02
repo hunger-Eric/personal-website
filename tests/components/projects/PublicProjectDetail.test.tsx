@@ -26,6 +26,9 @@ describe("PublicProjectDetail", () => {
       screen.getByRole("link", { name: /进入 Open GEO 正式产品/ })
     ).toHaveAttribute("href", "https://geo.itheheda.online/zh");
     expect(
+      screen.getByRole("link", { name: /使用 Open GEO 做 GEO 诊断/ })
+    ).toHaveAttribute("href", "https://geo.itheheda.online/zh");
+    expect(
       screen.getByRole("link", { name: /阅读 AI 可见性审计方法/ })
     ).toHaveAttribute("href", "/articles/ai-search-visibility-audit-geo");
     expect(

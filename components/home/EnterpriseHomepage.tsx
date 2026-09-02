@@ -38,7 +38,7 @@ export function EnterpriseHomepage() {
           <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground">{content.identity.positioning}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href={path("/contact")} className="inline-flex min-h-11 items-center justify-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent-hover">{zh ? "提交你的业务问题" : "Submit your business problem"}<ArrowRight className="h-4 w-4" aria-hidden /></Link>
-            <Link href={path("/projects/open-geo-console")} className="inline-flex min-h-11 items-center justify-center border border-foreground px-5 py-3 text-sm font-semibold text-foreground hover:border-accent hover:text-accent">{zh ? "先体验 Open GEO" : "Try Open GEO first"}</Link>
+            <Link href={path("/projects/open-geo-console")} className="inline-flex min-h-11 items-center justify-center border border-foreground px-5 py-3 text-sm font-semibold text-foreground hover:border-accent hover:text-accent">{zh ? "体验企业官网 GEO 诊断" : "Try Open GEO first"}</Link>
           </div>
         </div>
         <div className="border border-hairline bg-surface-paper-elevated p-5 sm:p-7" aria-label={zh ? "企业 AI 系统交付结构" : "Enterprise AI delivery structure"}>
@@ -98,7 +98,7 @@ export function EnterpriseHomepage() {
       </section>
 
       <section id="capabilities" className="mx-auto max-w-6xl px-4 py-16 lg:py-20">
-        <div className="flex items-end justify-between gap-4 border-b border-hairline pb-5"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">01 / Capabilities</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "\u56db\u4e2a\u7cfb\u7edf\u65b9\u5411\uff0c\u5bf9\u5e94\u56db\u7c7b\u4f01\u4e1a\u80fd\u529b" : "Four system directions, four enterprise capabilities"}</h2></div><Link href={path("/services")} className="hidden text-sm font-semibold text-accent sm:inline-flex">{zh ? "查看完整服务事实" : "See complete service facts"} →</Link></div>
+        <div className="flex items-end justify-between gap-4 border-b border-hairline pb-5"><div><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">01 / Capabilities</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "\u56db\u4e2a\u7cfb\u7edf\u65b9\u5411\uff0c\u5bf9\u5e94\u56db\u7c7b\u4f01\u4e1a\u80fd\u529b" : "Four system directions, four enterprise capabilities"}</h2></div><Link href={path("/services")} className="hidden text-sm font-semibold text-accent sm:inline-flex">{zh ? "查看企业 AI 自动化服务与交付方式" : "See complete service facts"} →</Link></div>
         <div className="grid gap-px border-x border-b border-hairline bg-hairline sm:grid-cols-2">
           {capabilities.map(([title, description, Icon], index) => <article key={title} className="bg-surface-paper p-6 sm:p-8"><div className="flex items-center justify-between"><span className="font-mono text-xs text-accent">0{index + 1}</span><Icon className="h-5 w-5 text-foreground" aria-hidden /></div><h3 className="mt-10 text-xl font-semibold text-foreground">{title}</h3><p className="mt-3 max-w-md text-sm leading-7 text-muted-foreground">{description}</p></article>)}
         </div>

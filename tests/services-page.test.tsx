@@ -21,6 +21,10 @@ describe("ServicesPage", () => {
       screen.getByRole("heading", { name: "标准交付物与验收依据" })
     ).toBeInTheDocument();
     expect(
+      screen.getByRole("heading", { name: "企业 AI 自动化服务与工作流系统交付" })
+    ).toBeInTheDocument();
+    expect(screen.getByText(/面向有重复人工、跨系统流转或非结构化资料处理问题的中小企业/)).toBeInTheDocument();
+    expect(
       screen.getByRole("heading", { name: "数据、权限与运行边界" })
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "采购前常见问题" })).toBeInTheDocument();
@@ -67,7 +71,7 @@ describe("ServicesPage", () => {
       "/en/contact"
     );
     expect(
-      screen.queryByRole("heading", { name: "企业 AI 工作流系统设计与交付" })
+      screen.queryByRole("heading", { name: "企业 AI 自动化服务与工作流系统交付" })
     ).not.toBeInTheDocument();
   });
 });

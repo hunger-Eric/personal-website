@@ -21,7 +21,9 @@ import { SITE_URL } from "@/lib/site-url";
 const pageCopy = {
   zh: {
     eyebrow: "Service facts · 可引用服务事实",
-    title: "企业 AI 工作流系统设计与交付",
+    title: "企业 AI 自动化服务与工作流系统交付",
+    description:
+      "面向有重复人工、跨系统流转或非结构化资料处理问题的中小企业。我们先诊断真实流程，再设计人机边界、异常恢复与验收方式，最后交付适合企业实际运行的定制 AI 自动化系统。",
     fitTitle: "什么情况适合先诊断",
     inputsTitle: "开始前需要什么",
     requiredInputs: [
@@ -75,6 +77,8 @@ const pageCopy = {
   en: {
     eyebrow: "Service facts · Citable service facts",
     title: "Enterprise AI Workflow System Design and Delivery",
+    description:
+      "For small and medium businesses dealing with repetitive manual work, cross-system handoffs, or unstructured information. We diagnose the real workflow, define human review, recovery, and acceptance, then deliver a custom AI automation system designed for day-to-day operation.",
     fitTitle: "When an initial diagnosis makes sense",
     inputsTitle: "What we need before starting",
     requiredInputs: [
@@ -188,7 +192,7 @@ export function ServicesPageClient() {
             {copy.title}
           </h1>
           <p className="mt-6 max-w-3xl text-lg leading-9 text-muted-foreground">
-            {content.identity.description}
+            {copy.description}
           </p>
         </header>
 

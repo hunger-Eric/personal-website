@@ -10,7 +10,7 @@ import { buildPublicPageMetadata } from "@/lib/public-page-metadata";
 
 describe("public page metadata", () => {
   it.each([
-    ["services", servicesMetadata, "/services", "企业 AI 工作流系统设计与交付"],
+    ["services", servicesMetadata, "/services", "企业 AI 自动化服务与工作流系统交付"],
     ["projects", projectsMetadata, "/projects", "企业 AI 系统项目与自动化落地案例"],
     ["articles", articlesMetadata, "/articles", "文章与系统实践"],
     ["about", aboutMetadata, "/about", "关于实解智能"],
@@ -53,11 +53,11 @@ describe("public page metadata", () => {
     expect(metadata.openGraph).toMatchObject({
       type: "website",
       url: "/projects/open-geo-console",
-      title: "Open GEO Console：AI 搜索可见性诊断与整改 | 实解智能",
+      title: "Open GEO Console：企业官网 GEO 诊断与 AI 搜索可见性整改 | 实解智能",
     });
     expect(metadata.twitter).toMatchObject({
       card: "summary_large_image",
-      title: "Open GEO Console：AI 搜索可见性诊断与整改 | 实解智能",
+      title: "Open GEO Console：企业官网 GEO 诊断与 AI 搜索可见性整改 | 实解智能",
     });
   });
 

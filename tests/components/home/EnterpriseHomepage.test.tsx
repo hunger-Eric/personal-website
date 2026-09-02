@@ -59,10 +59,13 @@ describe("EnterpriseHomepage", () => {
   it("offers the live Open GEO product without promoting a homepage simulation", () => {
     renderHomepage();
 
-    expect(screen.getByRole("link", { name: "先体验 Open GEO" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "体验企业官网 GEO 诊断" })).toHaveAttribute(
       "href",
       "/projects/open-geo-console"
     );
+    expect(
+      screen.getByRole("link", { name: /查看企业 AI 自动化服务与交付方式/ })
+    ).toHaveAttribute("href", "/services");
     fireEvent.click(screen.getByRole("tab", { name: /Open GEO Console/ }));
     expect(screen.getByRole("link", { name: /进入正式产品/ })).toHaveAttribute(
       "href",

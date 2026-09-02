@@ -22,7 +22,7 @@ export const websiteProjects: WebsiteProject[] = [
   {
     id: "open-geo-console",
     name: { zh: "Open GEO Console", en: "Open GEO Console" },
-    category: { zh: "AI 搜索可见性诊断与整改", en: "AI search visibility diagnosis and remediation" },
+    category: { zh: "企业官网 GEO 诊断与 AI 搜索可见性整改", en: "AI search visibility diagnosis and remediation" },
     status: { zh: "公开产品｜可直接使用", en: "Public product | available now" },
     statusKind: "reviewed",
     summary: {

@@ -169,7 +169,7 @@ export function PublicProjectDetail({ id }: { id: string }) {
           >
             {project.liveUrl
               ? zh
-                ? "前往 Open GEO"
+                ? "使用 Open GEO 做 GEO 诊断"
                 : "Open live site"
               : zh
                   ? "讨论你的流程"

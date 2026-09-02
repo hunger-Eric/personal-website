@@ -2,9 +2,9 @@ import { ServicesPageClient } from "@/components/services/ServicesPageClient";
 import { buildPublicPageMetadata } from "@/lib/public-page-metadata";
 
 export const metadata = buildPublicPageMetadata({
-  title: "企业 AI 工作流系统设计与交付",
+  title: "企业 AI 自动化服务与工作流系统交付",
   description:
-    "说明实解智能适合处理的流程、标准交付物、验收依据、数据与权限边界、人机审核和异常恢复原则。",
+    "面向有重复人工、跨系统流转或非结构化资料处理问题的中小企业，提供流程诊断、人机边界设计、定制系统开发与交付。",
   path: "/services",
 });
 
