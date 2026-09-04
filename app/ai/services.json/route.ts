@@ -1,4 +1,4 @@
-import { publicContent } from "@/config/public-content";
+import { getLocalizedPublicContent, publicContent } from "@/config/public-content";
 import { publicIdentity } from "@/config/public-identity";
 import { serviceMethod } from "@/config/service-method";
 import { publicJsonResponse } from "@/lib/ai-readable/response";
@@ -21,6 +21,10 @@ export function GET() {
       schemaVersion: publicContent.schemaVersion,
       updatedAt: publicContent.updatedAt,
       service: {
+        capabilities: {
+          zh: getLocalizedPublicContent("zh").service.capabilities,
+          en: getLocalizedPublicContent("en").service.capabilities,
+        },
         problemSignals: {
           zh: serviceMethod.problemSignals.map((item) => ({
             id: item.id,

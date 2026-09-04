@@ -1,4 +1,54 @@
 export const serviceMethod = {
+  capabilities: [
+    {
+      id: "intake",
+      title: { zh: "多来源信息汇总", en: "Multi-source intake" },
+      description: {
+        zh: "把分散信息形成统一、可追踪的结构化底稿。",
+        en: "Turn scattered information into one traceable operating record.",
+      },
+      example: {
+        zh: "资料散落在文档、表格和业务网页里，需要统一整理并保留来源。",
+        en: "Documents, spreadsheets, and business web pages need to be brought together with their sources preserved.",
+      },
+    },
+    {
+      id: "decisions",
+      title: { zh: "重复判断与录入", en: "Repeated decisions and entry" },
+      description: {
+        zh: "把稳定规则交给系统，把例外与高风险决策保留给人工。",
+        en: "Give stable rules to the system while people retain exceptions and high-risk decisions.",
+      },
+      example: {
+        zh: "同类信息每天重复分类、核对，再录入其他系统。",
+        en: "Similar information is classified and checked every day, then entered into another system.",
+      },
+    },
+    {
+      id: "handoffs",
+      title: { zh: "系统之间的数据接力", en: "Handoffs between systems" },
+      description: {
+        zh: "跨文件与业务系统传递状态，减少人工搬运和断点。",
+        en: "Carry state across files and business systems with fewer manual transfers and gaps.",
+      },
+      example: {
+        zh: "文件、任务和处理结果需要在不同工具之间反复传递。",
+        en: "Files, tasks, and results repeatedly move between different tools.",
+      },
+    },
+    {
+      id: "recovery",
+      title: { zh: "异常恢复与人工审核", en: "Recovery and human review" },
+      description: {
+        zh: "记录异常、保留恢复点，让系统真正可持续运行。",
+        en: "Record exceptions and recovery points so the system can keep operating.",
+      },
+      example: {
+        zh: "流程中断后需要知道停在哪里、谁来接管、如何继续。",
+        en: "When work stops, the team needs to know where it stopped, who takes over, and how to continue.",
+      },
+    },
+  ],
   problemSignals: [
     {
       id: "repetitive-entry",

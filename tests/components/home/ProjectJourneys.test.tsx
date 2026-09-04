@@ -29,7 +29,7 @@ describe("ProjectJourneys", () => {
     expect(screen.getByText("可验收交付")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /播放|暂停/ })).not.toBeInTheDocument();
     expect(screen.queryByText("当前步骤")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /查看项目证据/ })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "查看 Freight Lead Agent 项目证据" })).toHaveAttribute(
       "href",
       "/projects/freight-lead-agent"
     );
@@ -42,10 +42,12 @@ describe("ProjectJourneys", () => {
 
     const panel = screen.getByRole("tabpanel");
     expect(within(panel).getByText(/企业真正有价值的数据散落/)).toBeInTheDocument();
+    expect(within(panel).getByRole("heading", { name: "Hermes Notebook" })).toBeInTheDocument();
+    expect(within(panel).queryByRole("heading", { name: "Freight Lead Agent" })).not.toBeInTheDocument();
     expect(within(panel).getByText(/Hermes 导入多种格式的资料/)).toBeInTheDocument();
     expect(within(panel).getByText(/管理员决定哪些文件夹和资料/)).toBeInTheDocument();
     expect(within(panel).getByText(/按业务主题整理的企业知识库/)).toBeInTheDocument();
-    expect(within(panel).getByRole("link", { name: /查看项目证据/ })).toHaveAttribute(
+    expect(within(panel).getByRole("link", { name: "查看 Hermes Notebook 项目证据" })).toHaveAttribute(
       "href",
       "/projects/hermes-notebook"
     );
@@ -57,12 +59,13 @@ describe("ProjectJourneys", () => {
     fireEvent.click(screen.getByRole("tab", { name: /Open GEO Console/ }));
 
     const panel = screen.getByRole("tabpanel");
+    expect(within(panel).getByRole("heading", { name: "Open GEO Console" })).toBeInTheDocument();
     expect(within(panel).getByText(/企业很难看见 AI 能否读懂官网/)).toBeInTheDocument();
     expect(within(panel).getByRole("link", { name: /进入正式产品/ })).toHaveAttribute(
       "href",
       "https://geo.itheheda.online/zh"
     );
-    expect(within(panel).getByRole("link", { name: /查看项目证据/ })).toHaveAttribute(
+    expect(within(panel).getByRole("link", { name: "查看 Open GEO Console 项目证据" })).toHaveAttribute(
       "href",
       "/projects/open-geo-console"
     );
@@ -77,6 +80,8 @@ describe("ProjectJourneys", () => {
         name: "See where work was draining time—and what the system took over.",
       })
     ).toBeInTheDocument();
+    expect(within(screen.getByRole("tabpanel")).getByRole("heading", { name: "Freight Lead Agent" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "View Freight Lead Agent evidence" })).toHaveAttribute("href", "/en/projects/freight-lead-agent");
     expect(screen.getByText("Before")).toBeInTheDocument();
     expect(screen.getByText("System takeover")).toBeInTheDocument();
     expect(screen.getByText("Human control")).toBeInTheDocument();

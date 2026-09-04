@@ -135,7 +135,8 @@ export function ProjectJourneys() {
         >
           <header className={styles.projectHeader}>
             <div>
-              <span>SELECTED PROJECT</span>
+              <span>{zh ? "当前项目" : "SELECTED PROJECT"}</span>
+              <h3>{selected.name}</h3>
               <p>{selected.category}</p>
             </div>
             <strong>{selected.status}</strong>
@@ -213,7 +214,7 @@ export function ProjectJourneys() {
                 </a>
               ) : null}
               <Link href={path(`/projects/${selected.id}`)}>
-                {zh ? "查看项目证据" : "View project evidence"}
+                {zh ? `查看 ${selected.name} 项目证据` : `View ${selected.name} evidence`}
                 <ArrowRight aria-hidden />
               </Link>
             </div>

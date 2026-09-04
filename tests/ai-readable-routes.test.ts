@@ -35,6 +35,7 @@ describe("AI-readable route inventory", () => {
       "/articles/invoice-ai-decision-cost-exception-human-review",
       "/articles/knowledge-base-ai-governance-preparation",
       "/articles/lead-process-ai-automation-four-dimensions-real-sample-validation",
+      "/en/articles/enterprise-ai-automation-provider-selection-acceptance-checklist",
       "/en/articles/how-language-models-read-web-pages-geo",
       "/en/articles/why-company-websites-matter-more-in-the-ai-era",
       "/en/articles/why-ai-search-misreads-your-english-brand-name",

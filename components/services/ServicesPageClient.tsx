@@ -24,6 +24,15 @@ const pageCopy = {
     title: "企业 AI 自动化服务与工作流系统交付",
     description:
       "面向有重复人工、跨系统流转或非结构化资料处理问题的中小企业。我们先诊断真实流程，再设计人机边界、异常恢复与验收方式，最后交付适合企业实际运行的定制 AI 自动化系统。",
+    quickNavTitle: "采购前快速查看",
+    quickNav: [
+      ["fit", "是否适合"],
+      ["delivery-method", "如何交付"],
+      ["deliverables", "交付与验收"],
+      ["data-boundaries", "数据与权限"],
+      ["scenarios", "项目证据"],
+      ["buyer-questions", "采购问答"],
+    ],
     fitTitle: "什么情况适合先诊断",
     inputsTitle: "开始前需要什么",
     requiredInputs: [
@@ -79,6 +88,15 @@ const pageCopy = {
     title: "Enterprise AI Workflow System Design and Delivery",
     description:
       "For small and medium businesses dealing with repetitive manual work, cross-system handoffs, or unstructured information. We diagnose the real workflow, define human review, recovery, and acceptance, then deliver a custom AI automation system designed for day-to-day operation.",
+    quickNavTitle: "Before you buy",
+    quickNav: [
+      ["fit", "Is it a fit?"],
+      ["delivery-method", "Delivery method"],
+      ["deliverables", "Deliverables and acceptance"],
+      ["data-boundaries", "Data and access"],
+      ["scenarios", "Project evidence"],
+      ["buyer-questions", "Buyer questions"],
+    ],
     fitTitle: "When an initial diagnosis makes sense",
     inputsTitle: "What we need before starting",
     requiredInputs: [
@@ -196,7 +214,23 @@ export function ServicesPageClient() {
           </p>
         </header>
 
-        <section className="mt-14 border-y border-hairline py-12" aria-labelledby="fit-title">
+        <nav aria-label={copy.quickNavTitle} className="mt-8 border-t border-hairline pt-6">
+          <p className="text-sm font-semibold text-foreground">{copy.quickNavTitle}</p>
+          <ul className="mt-3 flex flex-wrap gap-x-5 gap-y-1">
+            {copy.quickNav.map(([id, label]) => (
+              <li key={id}>
+                <a href={`#${id}`} className="inline-flex min-h-11 items-center border-b border-hairline text-sm text-accent hover:border-accent hover:text-accent-hover">
+                  {label}
+                </a>
+              </li>
+            ))}
+          </ul>
+          <Link href={path("/articles/enterprise-ai-automation-provider-selection-acceptance-checklist")} className="mt-4 inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-accent hover:text-accent-hover">
+            {copy.guideLabel} <ArrowRight className="h-4 w-4 shrink-0" aria-hidden />
+          </Link>
+        </nav>
+
+        <section id="fit" className="mt-10 scroll-mt-28 border-y border-hairline py-12" aria-labelledby="fit-title">
           <div className="grid gap-12 lg:grid-cols-2">
             <div>
               <h2 id="fit-title" className="text-2xl font-semibold text-foreground">
@@ -241,7 +275,7 @@ export function ServicesPageClient() {
           </div>
         </section>
 
-        <section className="grid gap-10 border-t border-hairline py-14 lg:grid-cols-[0.85fr_1.15fr]" aria-labelledby="method-title">
+        <section id="delivery-method" className="grid scroll-mt-28 gap-10 border-t border-hairline py-14 lg:grid-cols-[0.85fr_1.15fr]" aria-labelledby="method-title">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">02 / Delivery method</p>
             <h2 id="method-title" className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">
@@ -299,7 +333,7 @@ export function ServicesPageClient() {
           </div>
         </section>
 
-        <section className="border-t border-hairline py-14" aria-labelledby="scenarios-title">
+        <section id="scenarios" className="scroll-mt-28 border-t border-hairline py-14" aria-labelledby="scenarios-title">
           <div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr]">
             <div>
               <p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">05 / Business scenarios</p>
@@ -351,12 +385,12 @@ export function ServicesPageClient() {
           </div>
         </section>
 
-        <section className="grid gap-10 border-t border-hairline py-14 lg:grid-cols-[0.7fr_1.3fr]" aria-labelledby="faq-title">
+        <section id="buyer-questions" className="grid scroll-mt-28 gap-10 border-t border-hairline py-14 lg:grid-cols-[0.7fr_1.3fr]" aria-labelledby="faq-title">
           <div>
             <p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">05 / Buyer questions</p>
             <h2 id="faq-title" className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{copy.faqTitle}</h2>
             <p className="mt-4 text-sm leading-7 text-muted-foreground">{copy.faqDescription}</p>
-            <Link href={locale === "zh" ? "/articles/enterprise-ai-automation-provider-selection-acceptance-checklist" : "/en/articles"} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent-hover">
+            <Link href={path("/articles/enterprise-ai-automation-provider-selection-acceptance-checklist")} className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent-hover">
               {copy.guideLabel} <ArrowRight className="h-4 w-4" aria-hidden />
             </Link>
           </div>

@@ -16,7 +16,7 @@ const projects = getPublishedProjectCases(
 
 export const publicContent = {
   schemaVersion: "1.0",
-  updatedAt: "2026-08-23",
+  updatedAt: "2026-09-04",
   identity: publicIdentity,
   service: serviceMethod,
   projects,
@@ -104,6 +104,12 @@ export function getLocalizedPublicContent(locale: Locale) {
       contactPromise: text(publicIdentity.contact.promise, locale),
     },
     service: {
+      capabilities: serviceMethod.capabilities.map((item) => ({
+        id: item.id,
+        title: text(item.title, locale),
+        description: text(item.description, locale),
+        example: text(item.example, locale),
+      })),
       problemSignals: serviceMethod.problemSignals.map((signal) => ({
         id: signal.id,
         title: text(signal.title, locale),

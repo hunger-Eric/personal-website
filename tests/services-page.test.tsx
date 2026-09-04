@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 
 import ServicesPage from "@/app/(site-zh)/services/page";
@@ -14,6 +14,20 @@ function renderServicesPage(locale: "zh" | "en" = "zh") {
 }
 
 describe("ServicesPage", () => {
+  it.each(["zh", "en"] as const)("links the %s quick navigation to existing sections and the complete guide", (locale) => {
+    const { container } = renderServicesPage(locale);
+    const nav = screen.getByRole("navigation", { name: locale === "zh" ? "采购前快速查看" : "Before you buy" });
+    const sectionLinks = within(nav).getAllByRole("link").filter((link) => link.getAttribute("href")?.startsWith("#"));
+    expect(sectionLinks).toHaveLength(6);
+    for (const link of sectionLinks) {
+      const target = container.querySelector(link.getAttribute("href")!);
+      expect(target?.tagName).toBe("SECTION");
+      expect(target?.querySelector("h2")).not.toBeNull();
+    }
+    const guide = within(nav).getByRole("link", { name: /完整的服务商选择与验收清单|complete provider selection and acceptance checklist/ });
+    expect(guide).toHaveAttribute("href", `${locale === "en" ? "/en" : ""}/articles/enterprise-ai-automation-provider-selection-acceptance-checklist`);
+  });
+
   it("shows delivery, data-boundary, and buyer FAQ facts from the public service contract", () => {
     const { container } = renderServicesPage();
 

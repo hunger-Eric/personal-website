@@ -486,7 +486,7 @@ describe("public enterprise structured data", () => {
     expect(website.name).toBe("实解智能");
     expect(website.alternateName).toBe("SolveReal Systems");
     expect(website.url).toBe(BASE_URL);
-    expect(website.dateModified).toBe("2026-08-23");
+    expect(website.dateModified).toBe("2026-09-04");
     expect(website["@id"]).toBe(`${BASE_URL}/#website`);
     expect(website.author).toEqual({ "@id": `${BASE_URL}/#organization` });
     expect(service["@type"]).toBe("ProfessionalService");

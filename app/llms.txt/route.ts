@@ -17,6 +17,9 @@ function links(items: Awaited<ReturnType<typeof getReadableRoutes>>) {
 
 export async function GET() {
   const groups = groupReadableRoutes(await getReadableRoutes());
+  const capabilities = serviceMethod.capabilities
+    .map((item) => `- ${item.title.zh} / ${item.title.en}: ${item.description.en} Typical situation: ${item.example.en}`)
+    .join("\n");
   const method = serviceMethod.method
     .map((step, index) => `${index + 1}. ${step.title.zh} / ${step.title.en}`)
     .join("\n");
@@ -47,6 +50,10 @@ Audience: ${publicIdentity.audience.en}
 ## Primary pages
 
 ${links(groups.primary)}
+
+## System capabilities
+
+${capabilities}
 
 ## Service method
 

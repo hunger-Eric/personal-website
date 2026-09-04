@@ -32,6 +32,12 @@ describe("public locale routing", () => {
     ).toBe("/articles/ai-search-visibility-audit-geo");
   });
 
+  it("switches the buyer guide between complete article pages", () => {
+    const articlePath = "/articles/enterprise-ai-automation-provider-selection-acceptance-checklist";
+    expect(getLocaleSwitchPath(articlePath, "en")).toBe(`/en${articlePath}`);
+    expect(getLocaleSwitchPath(`/en${articlePath}`, "zh")).toBe(articlePath);
+  });
+
   it("defines distinct HTML languages and public brand names", () => {
     expect(localeConfig.zh.htmlLang).toBe("zh-CN");
     expect(localeConfig.en.htmlLang).toBe("en");
