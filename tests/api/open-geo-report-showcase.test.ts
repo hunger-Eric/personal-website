@@ -16,11 +16,11 @@ describe("Open GEO bilingual report showcase", () => {
     expect(response.headers.get("content-security-policy")).toContain(
       "script-src 'none'"
     );
-    expect(html).toMatch(/^<!DOCTYPE html><html lang="zh-CN">/u);
-    expect(html).toContain("ed76a2dc-e0ab-4510-867b-ab7f071f8f16");
+    expect(html).toMatch(/^<!doctype html><html lang="zh-CN">/iu);
+    expect(html).toContain("de897b7a-1f95-4f94-8452-e2881883ff2d");
     expect(html).toContain("https://me.itheheda.online/");
-    expect(html).toContain("核心结论");
-    expect(html).toContain("./evidence/");
+    expect(html).toContain("结果摘要");
+    expect(html).toContain('src="data:image/jpeg;base64,');
     expect(html).not.toContain("local-v4-");
     expect(html).not.toContain("report.html/download");
     expect(html).not.toContain("下载后请用浏览器打开该 HTML 文件。");
@@ -41,10 +41,10 @@ describe("Open GEO bilingual report showcase", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-language")).toBe("en");
     expect(response.headers.get("content-security-policy")).toContain("script-src 'none'");
-    expect(html).toMatch(/^<!DOCTYPE html><html lang="en">/u);
-    expect(html).toContain("b15c9474-7c3b-4688-8fef-d05c418a858c");
-    expect(html).toContain("Core conclusion");
-    expect(html).toContain("./evidence/");
+    expect(html).toMatch(/^<!doctype html><html lang="en">/iu);
+    expect(html).toContain("03bbb2f7-e498-4f96-8e6f-c0864dded6b9");
+    expect(html).toContain("Results summary");
+    expect(html).toContain('src="data:image/jpeg;base64,');
     expect(html).not.toContain("local-v4-");
     expect(html).not.toContain("report.html/download");
     expect(html).not.toContain("下载 HTML");

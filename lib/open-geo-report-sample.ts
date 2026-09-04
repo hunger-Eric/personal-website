@@ -18,7 +18,7 @@ const REPORT_LANG = {
 
 function preparePublicReportHtml(html: string, locale: OpenGeoReportSampleLocale) {
   return html
-    .replace(/<html\s+lang="[^"]+">/u, `<html lang="${REPORT_LANG[locale]}">`)
+    .replace(/<html(?:\s+lang="[^"]+")?>/u, `<html lang="${REPORT_LANG[locale]}">`)
     .replace(
       /<div class="no-print mx-auto max-w-\[1120px\] px-8 pt-6">[\s\S]*?<\/div>(?=<main\b)/u,
       ""
