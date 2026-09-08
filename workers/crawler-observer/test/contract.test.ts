@@ -173,6 +173,22 @@ describe("crawler observer website isolation", () => {
     await Promise.all(ctx.tasks);
     expect(fake.sql.some((query) => query.includes("INSERT INTO human_page_counts"))).toBe(false);
   });
+
+  it.each([301, 403, 404, 500])("does not count browser-shaped HTML responses with status %s", async (status) => {
+    const fake = fakeDb();
+    const ctx = waitContext();
+    await handleFetch(new Request("https://me.itheheda.online/svelte/.env", {
+      headers: { "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0.0.0 Safari/537.36" },
+    }), observerEnv(fake.db as D1Database), ctx, async () => new Response("blocked", {
+      status,
+      headers: { "Content-Type": "text/html" },
+    }));
+    await Promise.all(ctx.tasks);
+    expect(fake.sql.some((query) => query.includes("INSERT INTO human_page_counts"))).toBe(false);
+    expect(fake.sql.some((query) => query.includes("INSERT INTO human_client_counts"))).toBe(false);
+    expect(fake.sql.some((query) => query.includes("INSERT INTO human_location_counts"))).toBe(false);
+  });
+
   it("aggregates mobile Safari, tablet Safari, Android Chrome, and WeChat without storing raw User-Agents", async () => {
     const fake = fakeDb();
     const ctx = waitContext();
@@ -346,6 +362,27 @@ describe("crawler observer private analytics", () => {
     expect(identityPreview.chinaUaCoverage).toContainEqual(expect.objectContaining({ id: "bytespider", providerName: "ByteDance", purpose: "ai_training", uaToken: "Bytespider", verificationStatus: "declared_unverified" }));
   });
 
+  it("suppresses client and location breakdowns when legacy counts exceed qualified page views", async () => {
+    const pollutedRows = batchRows.map((items) => items.map((item) => ({ ...item })));
+    pollutedRows[10] = [{ pageViews: 52 }];
+    pollutedRows[15] = [{ id: "desktop", pageViews: 558 }];
+    pollutedRows[16] = [{ id: "chrome", pageViews: 558 }];
+    pollutedRows[17] = [{ id: "linux", pageViews: 558 }];
+    pollutedRows[18] = [{ countryCode: "DE", pageViews: 558 }];
+    pollutedRows[19] = [{ countryCode: "DE", regionCode: "BE", regionName: "State of Berlin", pageViews: 558 }];
+
+    const response = await analytics(await readRequest("24h"), observerEnv(fakeDb({ batchRows: pollutedRows }).db as D1Database));
+    const body = await response.json() as {
+      human: { devices: unknown[]; browsers: unknown[]; operatingSystems: unknown[]; countries: unknown[]; regions: unknown[] };
+    };
+
+    expect(body.human.devices).toEqual([]);
+    expect(body.human.browsers).toEqual([]);
+    expect(body.human.operatingSystems).toEqual([]);
+    expect(body.human.countries).toEqual([]);
+    expect(body.human.regions).toEqual([]);
+  });
+
   it("rejects unauthenticated, malformed, and non-GET reads", async () => {
     const env = observerEnv(fakeDb({ batchRows }).db as D1Database);
     await expect(analytics(new Request("https://me.itheheda.online/_crawler-observer/v1/analytics?range=24h"), env)).resolves.toMatchObject({ status: 401 });
@@ -499,6 +536,32 @@ describe("crawler observer Miniflare D1 integration", () => {
       .run();
     await env.DB.prepare("INSERT INTO human_page_counts (bucket_start, path, status, count) VALUES (?, ?, ?, ?)")
       .bind(currentBucket, "/api/reports/:uuid/evidence/:token", 404, 3598)
+      .run();
+    vi.stubGlobal("fetch", vi.fn().mockImplementation(async () => new Response(JSON.stringify({
+      creationTime: "2026-08-06T00:00:00.000000",
+      prefixes: [{ ipv4Prefix: "203.0.113.0/24" }],
+    }))));
+    try {
+      const response = await analytics(await readRequest("24h"), observerEnv(env.DB));
+      const body = await response.json() as {
+        human: { pageViews: number; trend: Array<{ pageViews: number }>; paths: Array<{ path: string; pageViews: number }>; statuses: Array<{ status: number; pageViews: number }> };
+      };
+      expect(body.human.pageViews).toBe(2);
+      expect(body.human.trend.reduce((total, point) => total + point.pageViews, 0)).toBe(2);
+      expect(body.human.paths).toEqual([{ path: "/", pageViews: 2 }]);
+      expect(body.human.statuses).toEqual([{ status: 200, pageViews: 2 }]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("omits previously stored unsuccessful HTML requests from human page analytics", async () => {
+    const currentBucket = bucketStart();
+    await env.DB.prepare("INSERT INTO human_page_counts (bucket_start, path, status, count) VALUES (?, ?, ?, ?)")
+      .bind(currentBucket, "/", 200, 2)
+      .run();
+    await env.DB.prepare("INSERT INTO human_page_counts (bucket_start, path, status, count) VALUES (?, ?, ?, ?)")
+      .bind(currentBucket, "/svelte/.env", 403, 505)
       .run();
     vi.stubGlobal("fetch", vi.fn().mockImplementation(async () => new Response(JSON.stringify({
       creationTime: "2026-08-06T00:00:00.000000",

@@ -11,6 +11,7 @@ const CUSTOM_DOMAIN_HOST = "crawler-observer.itheheda.online";
 const READ_PATH = "/_crawler-observer/v1/analytics";
 const READ_HOSTS = new Set([HOST, CUSTOM_DOMAIN_HOST]);
 const RULE_SOURCE_IDS = ["openai_gptbot", "openai_searchbot", "openai_chatgpt_user", "perplexity_bot", "perplexity_user"] as const;
+const QUALIFIED_HUMAN_PAGE_PREDICATE = "status BETWEEN 200 AND 299 AND path <> '/api' AND path NOT LIKE '/api/%'";
 
 type Category = "open_geo_self_test" | "identified_ai_crawler" | "other_automation";
 type Classification = { id: string; name: string; category: Category; openGeoVerified: boolean };
@@ -144,6 +145,7 @@ function safeLog(error: unknown): void {
 
 function likelyHumanPageView(request: Request, originResponse: Response): boolean {
   if (request.method !== "GET") return false;
+  if (!originResponse.ok) return false;
   if (!(originResponse.headers.get("Content-Type") ?? "").toLowerCase().startsWith("text/html")) return false;
   const userAgent = request.headers.get("User-Agent") ?? "";
   return userAgent.startsWith("Mozilla/5.0") && /(?:Chrome|CriOS|Firefox|FxiOS|Safari|Edg|OPR)\//.test(userAgent);
@@ -308,10 +310,10 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
     env.DB.prepare("SELECT bot_id, bot_name, provider_id, provider_name, verification_status, verification_method, SUM(count) requests FROM crawler_identity_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY bot_id, bot_name, provider_id, provider_name, verification_status, verification_method ORDER BY requests DESC LIMIT 100").bind(queryStart, queryEnd),
     env.DB.prepare("SELECT source_id, last_attempt_at, last_success_at, last_error_code FROM crawler_rule_sets ORDER BY source_id"),
     env.DB.prepare("SELECT value FROM crawler_identity_meta WHERE key = 'shadow_started_at'"),
-    env.DB.prepare("SELECT SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND path <> '/api' AND path NOT LIKE '/api/%'").bind(queryStart, queryEnd),
-    env.DB.prepare("SELECT bucket_start, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND path <> '/api' AND path NOT LIKE '/api/%' GROUP BY bucket_start ORDER BY bucket_start").bind(queryStart, queryEnd),
-    env.DB.prepare("SELECT path, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND path <> '/api' AND path NOT LIKE '/api/%' GROUP BY path ORDER BY pageViews DESC LIMIT 100").bind(queryStart, queryEnd),
-    env.DB.prepare("SELECT status, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND path <> '/api' AND path NOT LIKE '/api/%' GROUP BY status ORDER BY status").bind(queryStart, queryEnd),
+    env.DB.prepare(`SELECT SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND ${QUALIFIED_HUMAN_PAGE_PREDICATE}`).bind(queryStart, queryEnd),
+    env.DB.prepare(`SELECT bucket_start, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND ${QUALIFIED_HUMAN_PAGE_PREDICATE} GROUP BY bucket_start ORDER BY bucket_start`).bind(queryStart, queryEnd),
+    env.DB.prepare(`SELECT path, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND ${QUALIFIED_HUMAN_PAGE_PREDICATE} GROUP BY path ORDER BY pageViews DESC LIMIT 100`).bind(queryStart, queryEnd),
+    env.DB.prepare(`SELECT status, SUM(count) pageViews FROM human_page_counts WHERE bucket_start >= ? AND bucket_start < ? AND ${QUALIFIED_HUMAN_PAGE_PREDICATE} GROUP BY status ORDER BY status`).bind(queryStart, queryEnd),
     env.DB.prepare("SELECT value FROM human_page_meta WHERE key = 'tracking_started_at'"),
     env.DB.prepare("SELECT device_type id, SUM(count) pageViews FROM human_client_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY device_type ORDER BY pageViews DESC, device_type").bind(queryStart, queryEnd),
     env.DB.prepare("SELECT browser id, SUM(count) pageViews FROM human_client_counts WHERE bucket_start >= ? AND bucket_start < ? GROUP BY browser ORDER BY pageViews DESC, browser").bind(queryStart, queryEnd),
@@ -354,18 +356,20 @@ export async function analytics(request: Request, env: ObserverEnv): Promise<Res
     const point = numberValue(item, "bucket_start");
     if (humanByBucket.has(point)) humanByBucket.set(point, numberValue(item, "pageViews"));
   }
+  const humanPageViews = numberValue(rows(10)[0] ?? {}, "pageViews");
+  const clientBreakdownsComplete = rows(15).reduce((total, item) => total + numberValue(item, "pageViews"), 0) === humanPageViews;
   const human = Number.isNaN(Date.parse(humanTrackingStartedAt)) ? undefined : {
     trackingStartedAt: humanTrackingStartedAt,
     requestedWindowComplete: Date.parse(humanTrackingStartedAt) <= queryStart * 1000,
-    pageViews: numberValue(rows(10)[0] ?? {}, "pageViews"),
+    pageViews: humanPageViews,
     trend: [...humanByBucket].map(([point, pageViews]) => ({ bucket: iso(point), pageViews })),
     paths: rows(12).map((item) => ({ path: stringValue(item, "path"), pageViews: numberValue(item, "pageViews") })),
     statuses: rows(13).map((item) => ({ status: numberValue(item, "status"), pageViews: numberValue(item, "pageViews") })),
-    devices: rows(15).map((item) => ({ id: stringValue(item, "id"), pageViews: numberValue(item, "pageViews") })),
-    browsers: rows(16).map((item) => ({ id: stringValue(item, "id"), pageViews: numberValue(item, "pageViews") })),
-    operatingSystems: rows(17).map((item) => ({ id: stringValue(item, "id"), pageViews: numberValue(item, "pageViews") })),
-    countries: rows(18).map((item) => ({ countryCode: stringValue(item, "countryCode"), pageViews: numberValue(item, "pageViews") })),
-    regions: rows(19).map((item) => ({ countryCode: stringValue(item, "countryCode"), regionCode: stringValue(item, "regionCode"), regionName: stringValue(item, "regionName"), pageViews: numberValue(item, "pageViews") })),
+    devices: clientBreakdownsComplete ? rows(15).map((item) => ({ id: stringValue(item, "id"), pageViews: numberValue(item, "pageViews") })) : [],
+    browsers: clientBreakdownsComplete ? rows(16).map((item) => ({ id: stringValue(item, "id"), pageViews: numberValue(item, "pageViews") })) : [],
+    operatingSystems: clientBreakdownsComplete ? rows(17).map((item) => ({ id: stringValue(item, "id"), pageViews: numberValue(item, "pageViews") })) : [],
+    countries: clientBreakdownsComplete ? rows(18).map((item) => ({ countryCode: stringValue(item, "countryCode"), pageViews: numberValue(item, "pageViews") })) : [],
+    regions: clientBreakdownsComplete ? rows(19).map((item) => ({ countryCode: stringValue(item, "countryCode"), regionCode: stringValue(item, "regionCode"), regionName: stringValue(item, "regionName"), pageViews: numberValue(item, "pageViews") })) : [],
   };
 
   return jsonResponse({

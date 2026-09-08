@@ -36,9 +36,10 @@ describe("CrawlerDashboard", () => {
     const Dashboard = CrawlerDashboard as unknown as (props: Parameters<typeof CrawlerDashboard>[0] & { view: "human" | "machines" }) => React.ReactNode;
     const { container } = render(<Dashboard view="human" site="personal" range="24h" data={data} />);
     const human = within(container.querySelector("[aria-labelledby='human-traffic-title']") as HTMLElement);
-    expect(human.getByRole("heading", { name: "人类浏览器访问" })).toBeInTheDocument();
-    expect(human.getAllByText("页面访问")[0].nextSibling).toHaveTextContent("9");
-    expect(screen.getByRole("table", { name: "人类访问热门页面" })).toHaveTextContent("/articles");
+    expect(human.getByRole("heading", { name: "浏览器形态页面请求" })).toBeInTheDocument();
+    expect(human.getAllByText("成功页面请求")[0].nextSibling).toHaveTextContent("9");
+    expect(screen.getByRole("table", { name: "热门成功页面" })).toHaveTextContent("/articles");
+    expect(screen.getByText(/只统计返回 2xx 的 HTML 页面请求/)).toBeInTheDocument();
     expect(screen.getByText(/不是独立访客数/)).toBeInTheDocument();
     expect(screen.getByText(/人类访问统计从 2026-08-06T00:00:00.000Z 开始/)).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "访问设备" })).toHaveTextContent("桌面设备");
@@ -49,12 +50,38 @@ describe("CrawlerDashboard", () => {
     expect(screen.queryByRole("heading", { name: "自动化请求趋势" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "机器访问" })).toHaveAttribute("href", "/admin/crawlers/machines?site=personal&range=24h");
   });
+
+  it("shows a reliability notice instead of empty client and location tables", () => {
+    const data = {
+      ...fixture,
+      human: {
+        trackingStartedAt: "2026-08-06T00:00:00.000Z",
+        requestedWindowComplete: true,
+        pageViews: 2,
+        trend: [{ bucket: "2026-08-06T11:00:00.000Z", pageViews: 2 }],
+        paths: [{ path: "/", pageViews: 2 }],
+        statuses: [{ status: 200, pageViews: 2 }],
+        devices: [],
+        browsers: [],
+        operatingSystems: [],
+        countries: [],
+        regions: [],
+      },
+    } as CrawlerAnalyticsResponse;
+
+    render(<CrawlerDashboard view="human" site="personal" range="24h" data={data} />);
+
+    expect(screen.getByText(/旧口径或不完整记录不会展示/)).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "访问地区" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("table", { name: "访问设备" })).not.toBeInTheDocument();
+  });
+
   it("keeps crawler evidence on the machine page and preserves the selected range in page navigation", () => {
     const Dashboard = CrawlerDashboard as unknown as (props: Parameters<typeof CrawlerDashboard>[0] & { view: "human" | "machines" }) => React.ReactNode;
     render(<Dashboard view="machines" site="open_geo" range="7d" data={fixture} />);
     expect(screen.getByRole("heading", { name: "机器访问" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "自动化请求趋势" })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "人类浏览器访问" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "浏览器形态页面请求" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "人类访问" })).toHaveAttribute("href", "/admin/crawlers/human?site=open_geo&range=7d");
     expect(screen.getByRole("link", { name: "7d" })).toHaveAttribute("href", "/admin/crawlers/machines?site=open_geo&range=7d");
     expect(screen.getByRole("link", { name: "Open GEO Console" })).toHaveAttribute("aria-current", "page");
