@@ -12,7 +12,7 @@ const chinesePath = `/articles/${slug}`;
 const englishPath = `/en/articles/${slug}`;
 
 describe("bilingual GEO source-weight article", () => {
-  it("publishes both reviewed versions with official sources and a site-check route", async () => {
+  it("publishes both researched versions with primary sources and a site-check route", async () => {
     const [chinese, english, entries] = await Promise.all([
       getArticleBySlug(slug, "zh"),
       getArticleBySlug(slug, "en"),
@@ -38,7 +38,10 @@ describe("bilingual GEO source-weight article", () => {
     ] as const) {
       expect(article?.content).toContain("https://developers.google.com/search/docs/appearance/ai-features");
       expect(article?.content).toContain("https://help.openai.com/en/articles/9237897-chatgpt-search");
-      expect(article?.content).toContain("https://blogs.bing.com/webmaster/February-2026/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview");
+      expect(article?.content).toContain("https://arxiv.org/abs/2005.11401");
+      expect(article?.content).toContain("https://arxiv.org/abs/2604.25707");
+      expect(article?.content).toContain("https://arxiv.org/abs/2607.15771");
+      expect(article?.content).toContain("https://arxiv.org/abs/2305.14627");
       expect(article?.content).toContain(productUrl);
       expect(entries.some((entry) => entry.url === `https://me.itheheda.online${articlePath}`)).toBe(true);
     }

@@ -1,62 +1,108 @@
 ---
-title: "How AI Search Weighs Company Websites, News, and Social Posts"
+title: "In GEO, How Much Do Websites, News, and Social Posts Count?"
 slug: "geo-source-weight-official-website"
-summary: "There is no published channel percentage for GEO. Start with the buyer's question, then ask what a company site, a news report, or a social post can actually verify."
+summary: "AI answers may retrieve, use, and cite sources in different ways. A company website, reporting, and social posts each carry a different kind of evidence; citation counts alone do not reveal their influence."
 date: "2026-09-16"
 updated: "2026-09-16"
 category: "AI search and GEO"
-tags: ["GEO", "AI search", "company websites", "source evaluation"]
+tags: ["GEO", "AI search", "evidence", "company websites", "RAG"]
 featured: true
 draft: false
 author: "SolveReal Systems"
-contentHash: "sha256:9ad4d10562d5d457f6ead29d11909d3f7072fbd8661160b088fc671f943e94fd"
+contentHash: "sha256:67e307223672c233de196892ed9844b7e9fde72f399516b1c74594df92e60cab"
 ---
 
 ## The short answer
 
-“Is GEO just getting company information into enough news stories, newsletters, and social posts for AI to summarize?” Distribution is part of the picture. The more useful question is what the buyer asked and which accessible source can support the answer.
+When people ask how much “weight” an AI answer gives to a company website, the news, WeChat posts, or creator content, they often imagine a fixed media mix: perhaps one percentage for official pages and another for social discussion. Public research does not establish such a mix.
 
-I looked at the public guidance from Google, Bing, and OpenAI. None publishes a general split such as “company website 50%, news 30%.” Nor is there one shared GEO score across AI products. A count of visible citations does not reveal that split. Bing explicitly says its AI Performance citation count is a measure of frequency, not ranking, authority, prominence, or a page's role in an answer. [Bing's explanation of the metric](https://blogs.bing.com/webmaster/February-2026/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview)
+A source can occupy at least three positions in the process. It may be retrieved as candidate material. It may be used while the system forms an answer. Or it may be shown to the reader as a citation. Those events overlap, but they are not interchangeable. A visible link shows what the system chose to display. Its absence does not reveal the full set of material the system considered.
 
-## Different questions need different sources
+The original retrieval-augmented generation paper makes the underlying distinction clear. Its model generates text while conditioning on retrieved documents, rather than relying only on parameters learned during training. That is a useful conceptual model, not a blueprint for every consumer AI search product today. [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)
 
-Suppose a buyer asks, “What does this company offer now, and where does a person still approve the work?” The current [services page](/en/services) should state the company's position. A two-year-old announcement can establish what was announced then; it may no longer describe the service boundary today. If the buyer asks whether the company has independent press coverage, its own press release cannot establish that. The original article and its publication date matter.
+The practical GEO question is what proposition needs support, which source can responsibly support it, and what can be observed in a particular answer.
 
-A public account post or independent creator's article might add first-hand experience or industry context. Before treating it as evidence, check who wrote it, when it appeared, and whether it points to an original record. Ten accounts reposting one announcement do not create ten independent observations. Access also varies by product and page. We cannot assume every AI service can retrieve a particular social or messaging-platform post.
+## Three layers that are easy to confuse
 
-This is an editorial way to inspect evidence, not a disclosed ranking formula. The eventual answer also depends on whether a page is retrievable, how well it matches the question, how current it is, and the product's own source selection. Google says its AI Search features may run several related searches around a question. A supporting link must be indexed and eligible for a normal Search snippet, yet eligibility does not guarantee that it will appear. [Google's guidance for AI features](https://developers.google.com/search/docs/appearance/ai-features) OpenAI says publicly available websites can appear in ChatGPT Search in its [publisher FAQ](https://help.openai.com/en/articles/12627856); its [search guide](https://help.openai.com/en/articles/9237897-chatgpt-search) says ranking involves multiple factors and placement is not guaranteed.
+Take a buyer’s question: “Which parts of an AI workflow can this provider handle, and who approves external sends?” A useful answer needs a current description of the service and a clear account of the human decision point. The first question might also lead someone to ask for independent evidence of delivery.
 
-## The company's site is a reference point
+The source set depends on how the question is pursued. OpenAI says ChatGPT Search may rewrite a question into one or more targeted searches, while Google says its AI features may search across subtopics and data sources. Neither description reveals every candidate that was considered and discarded. [OpenAI's search guide](https://help.openai.com/en/articles/9237897-chatgpt-search) [Google's AI Search guide](https://developers.google.com/search/docs/appearance/ai-features)
 
-A company can keep its own site current: name, service scope, conditions, contact details, and links to supporting evidence. It cannot edit every outside article. Reports age, and summaries can drop qualifications. The site gives buyers and outside writers a place to check the company's present account.
+The company’s own website is normally the right place for the first two claims. It is the source that can state what the company currently offers and what it is prepared to stand behind. A dated, named service page with a clear owner is more useful than a broad promise because the buyer can return to it when the answer is challenged.
 
-Ownership alone does not earn a citation. A page that says only “end-to-end intelligent solutions” still fails a buyer who asks what will be delivered and which decisions remain with people. An industry article that explains the work clearly may be more useful for that particular question. Google's content guidance favors original information, clear sourcing, and material that helps readers. It does not give a company domain an automatic pass. [Google's helpful-content guidance](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)
+An independent report has a different job. It can corroborate that a product launch happened, describe an external event, or bring an outside perspective. It cannot replace the provider’s current service terms merely because it is independent. A four-year-old press story may be excellent evidence about history and poor evidence about the service boundary today.
 
-Consider a conflict: a current service page says a human approves important external sends, while an older article calls the process “fully automated.” For today's service terms, check the dated site statement and the actual terms. For the history of the announcement, keep the article. The disagreement deserves investigation; counting how many pages repeat each version will not settle it.
+A post from a practitioner, a public account, or a creator can add operational texture: where a workflow was difficult, which wording confused users, or how people experienced a tool. It is weak evidence for a provider’s formal commitment unless the author has direct authority and the statement is attributable. It may also be inaccessible to some products or regions. No responsible GEO claim should assume that every assistant can read every post on a messaging or social platform.
 
-## Where this reasoning stops
+This is why channel labels are too coarse. “News,” “social,” and “official site” describe where a page lives. They do not establish whether the claim is current, primary, attributable, independent, or entailed by the words on the page.
 
-The source roles above are a way to check claims. Google's, Bing's, and OpenAI's guidance applies to their respective products. It cannot be combined into a universal weighting formula. A well-maintained site is not promised indexing, citations, or recommendations. Whether a post behind a login or on a particular platform is accessible needs to be tested with the actual product and URL.
+## Retrieval, use, and citation are different observations
 
-## A practical check
+Availability tells you only that a page could be considered. A retrieved passage may never affect the wording. A citation tells you which link the product displayed; it does not give you access to the source's internal weight. The strongest check is smaller and more demanding: open the cited page and see whether it supports the particular sentence beside the link.
 
-Choose one real buyer question, such as “Which steps can the provider handle, and which decisions stay with a person?” List the site pages, original news pieces, and social posts that appear to answer it. Record the author, date, and original URL. Read what each source can actually establish, marking reposts and conflicting claims.
+That check still leaves the rest of the answer to inspect. In the ALCE benchmark, citation evaluation separates correctness from completeness. A response can cite something accurately while leaving other important statements unsupported. [Enabling Large Language Models to Generate Text with Citations](https://arxiv.org/abs/2305.14627)
 
-Then return to the site. Can a buyer find the current capability, its conditions, and a path to evidence on the relevant page? Our [project pages](/en/projects) and services page have different jobs: the former describe published project facts; the latter explains how the service works. If a claim requires independent endorsement, link to the outside source rather than recasting the company's own description as third-party validation.
+For example, an answer might cite a news story for context while drawing a product detail from an official page, then attach only one link to a paragraph. Counting displayed domains would miss that division of labour.
 
-## What to record
+## What the recent studies do and do not show
 
-Ask the same question in the AI product you care about. Save the question, time, answer, and cited URLs. Record “the page loads,” “the page is cited,” and “the answer is accurate” as separate observations. Bing exposes cited pages and related queries in AI Performance, which can help track changes. One answer, or one product's citation count, cannot disclose its hidden allocation across channels. [Bing AI Performance](https://www.bing.com/webmasters/help/ai-performance-9f8e7d6c)
+The academic GEO literature has started to measure source composition in answers. It is valuable evidence, provided the result is not stretched into a universal algorithm story.
 
-## Next step
+The original GEO paper examined ways of changing web content to improve visibility in generative-engine responses. Its contribution was to make answer visibility an empirical research problem. It did not disclose a platform’s internal channel percentages, and its optimization results should not be read as proof that a source is inherently authoritative. [GEO: Generative Engine Optimization](https://arxiv.org/abs/2311.09735)
 
-If the site still leaves buyer questions, service boundaries, or evidence links unclear, [Open GEO Console](https://geo.itheheda.online/en) can run a GEO check on the public site and target questions. It reviews access, content, question coverage, and citation evidence, then organizes findings into issues and priorities for site changes. It does not reveal an AI platform's internal “website weight.” A person still needs to review important findings and decide what to publish. See the [project overview](/en/projects/open-geo-console), or send a specific site and question through the [contact page](/en/contact).
+A 2026 preprint analyzed 602 controlled prompts and 21,143 valid search-layer citations. In its **displayed citations**, official, news, and vertical sources made up 34.22%, 31.17%, and 22.13% for ChatGPT; 46.35%, 18.99%, and 22.00% for Google AI Overview; and 44.07%, 16.07%, and 18.99% for Perplexity. These are sample compositions, not the products' internal source weights. “Official” includes several kinds of institutional pages, not only company websites. [From Citation Selection to Citation Absorption](https://arxiv.org/abs/2604.25707)
+
+The study also builds a score from observable answer and page features to estimate how much a cited page was absorbed into an answer. That score is a proxy, not a causal trace of model attention. The sample is largely US and English oriented, and it does not include every page that was considered and rejected. It cannot tell a Chinese business what percentage of an answer will come from its site.
+
+Another 2026 preprint asked 614 Chinese-language questions three times across the web and app interfaces of Doubao, DeepSeek, Tencent Yuanbao, and Qwen. Source sets differed even between interfaces of the same product. Its observed outputs come from several consumer categories; they cannot set a rule for every enterprise query or disclose a system's ranking function. [What Do Chinese-Language Generative Search Engines Cite and Surface?](https://arxiv.org/abs/2607.15771)
+
+Together, these studies support a narrower claim. The source mix visible in generated answers varies with the question, language, interface, and product. It does not support putting a permanent “40% official site” label on GEO.
+
+## The official site matters because it carries accountability
+
+The company website has a distinct role. It can hold the organization accountable for a current statement, even though no AI system is obliged to prefer it.
+
+For the buyer question above, a good official page can name the service, define the work it will and will not do, identify the human decision point, and link to the governing evidence where that evidence is public. If the company changes the service, it can update the statement at the source. A buyer, journalist, or model reviewer can see what is being claimed and when it changed.
+
+That makes the site the anchor for first-party facts. It also gives outside coverage something precise to confirm, dispute, or contextualize. Without that anchor, an answer assembled from announcements and reposts can become a collage of stale language with no authoritative place to resolve a contradiction.
+
+This does not make every official claim persuasive. A vague page can be less helpful than a careful independent explanation. An official site also cannot establish independent praise, market adoption, or a customer outcome by assertion alone. Those propositions need appropriate sources.
+
+## Repetition is not corroboration
+
+One press release can be republished by ten outlets. A creator may quote that release, and several public accounts may quote the creator. A citation sampler could show many domains while the underlying evidence still comes from one organization.
+
+For each important claim, trace the line back to its origin:
+
+1. Who first made it?
+2. Who has authority to update or correct it?
+3. Does the later page add independently reported facts, or only repeat the earlier text?
+4. Is the cited passage actually sufficient for the sentence it is attached to?
+
+The answers usually matter more than raw mention volume. They also keep a team from mistaking citation frequency for influence. A repeated claim can occupy many visible citations and still introduce no new corroboration.
+
+## A useful GEO review starts with one answer
+
+Choose one buyer question with a real decision behind it. Before asking an AI product, write down what a careful answer would need. For the workflow question above, the company's current [services page](/en/services) can establish its service scope and approval boundary. A dated outside report can establish an independently observed event. An attributable first-hand account can add experience, with its limitations visible. An undated repost is a poor substitute for any of these.
+
+Ask the target AI system the exact question. Preserve the date, answer, citations, and product interface, then read each cited passage. Mark separately which claims were answered, which were supported, which were merely asserted, and which sources were repeated. Repeat the same questions after a website update to see whether the answer reflects the current statement.
+
+OpenAI's search help says responses that use web search may include citations, and warns that cited material can be incomplete, outdated, or incorrect. Inspect the source beside each material claim. [Searching the web with ChatGPT](https://help.openai.com/en/articles/9237897-chatgpt-search)
+
+## Where Open GEO fits
+
+[Open GEO Console](https://geo.itheheda.online/en) is useful when a team needs to turn that review into a website decision. Starting with a public site and target buyer questions, it checks the site's technical foundation, public content, question coverage, and citation evidence. It organizes the findings into an issue list, page recommendations, and remediation priorities.
+
+It does not measure a platform’s hidden source percentages, prove that an uncited page was used, or promise that an AI product will cite the site. Those are outside what public answers can establish. The useful output is a reviewable set of questions: does the company’s own site carry the current facts it needs to own, where is corroboration required, and which pages leave a buyer unable to verify a material claim?
+
+See the [Open GEO project overview](/en/projects/open-geo-console), the [AI delivery services](/en/services), or [contact us](/en/contact) with a public URL and a buyer question that matters to the business.
 
 ## Sources
 
-- [Google: AI features and your website](https://developers.google.com/search/docs/appearance/ai-features)
-- [Google: Creating helpful content](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)
-- [OpenAI: Publishers and Developers FAQ](https://help.openai.com/en/articles/12627856)
-- [OpenAI: Searching the web with ChatGPT](https://help.openai.com/en/articles/9237897-chatgpt-search)
-- [Bing: AI Performance](https://www.bing.com/webmasters/help/ai-performance-9f8e7d6c)
-- [Bing Webmaster Blog: AI Performance metrics](https://blogs.bing.com/webmaster/February-2026/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview)
+- [Lewis et al., Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)
+- [Aggarwal et al., GEO: Generative Engine Optimization](https://arxiv.org/abs/2311.09735)
+- [Zhang et al., From Citation Selection to Citation Absorption](https://arxiv.org/abs/2604.25707)
+- [Zhen et al., What Do Chinese-Language Generative Search Engines Cite and Surface?](https://arxiv.org/abs/2607.15771)
+- [Gao et al., Enabling Large Language Models to Generate Text with Citations](https://arxiv.org/abs/2305.14627)
+- [OpenAI, Searching the web with ChatGPT](https://help.openai.com/en/articles/9237897-chatgpt-search)
+- [Google, AI features and your website](https://developers.google.com/search/docs/appearance/ai-features)
