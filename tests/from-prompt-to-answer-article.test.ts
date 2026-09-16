@@ -11,15 +11,14 @@ const slug = "from-prompt-to-answer-how-text-llms-work";
 const chinesePath = `/articles/${slug}`;
 const englishPath = `/en/articles/${slug}`;
 const primarySources = [
-  "https://arxiv.org/abs/1706.03762",
-  "https://arxiv.org/abs/2005.14165",
-  "https://arxiv.org/abs/2203.02155",
+  "https://help.openai.com/en/articles/9237897-chatgpt-search",
+  "https://developers.google.com/search/docs/appearance/ai-features",
   "https://arxiv.org/abs/2005.11401",
   "https://arxiv.org/abs/2305.14627",
 ];
 
 describe("bilingual prompt-to-answer article", () => {
-  it("publishes distinct researched versions with working language and sitemap routes", async () => {
+  it("publishes distinct web-search explanations with working language and sitemap routes", async () => {
     const [chinese, english, entries] = await Promise.all([
       getArticleBySlug(slug, "zh"),
       getArticleBySlug(slug, "en"),
@@ -30,6 +29,7 @@ describe("bilingual prompt-to-answer article", () => {
       author: "实解智能",
       date: "2026-09-16",
       publicPath: chinesePath,
+      title: "从一个问题到带来源的回答：AI 搜索怎样使用网页",
     });
     expect(english).toMatchObject({
       author: "SolveReal Systems",
@@ -46,6 +46,7 @@ describe("bilingual prompt-to-answer article", () => {
       for (const source of primarySources) {
         expect(article?.content).toContain(source);
       }
+      expect(article?.content).toContain("geo.itheheda.online");
       expect(entries.some((entry) => entry.url === `https://me.itheheda.online${articlePath}`)).toBe(true);
     }
     expect(chinese?.content).not.toBe(english?.content);

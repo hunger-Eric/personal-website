@@ -1,145 +1,85 @@
 ---
-title: "From Prompt to Answer: How a Text LLM Actually Works"
+title: "From Search Question to Cited Answer: How AI Uses Web Sources"
 slug: "from-prompt-to-answer-how-text-llms-work"
-summary: "A technical account of the path from chat messages to generated tokens: tokenization, attention, prefill, decoding, KV caches, optional retrieval and tools, and the limits of citations."
+summary: "How a web-enabled AI product can move from one buyer question through query fan-out, eligible pages, selected passages, synthesis, and citations—and where a company website fits."
 date: "2026-09-16"
 updated: "2026-09-16"
-category: "AI systems"
-tags: ["LLM", "Transformers", "RAG", "AI systems", "language models"]
+category: "AI search and GEO"
+tags: ["GEO", "AI search", "web sources", "citations", "company websites"]
 featured: true
 draft: false
 author: "SolveReal Systems"
-contentHash: "sha256:3eeaa478eed61836e23ed08e53ba6730d6b92d23255442ff94713139e111ba2f"
+contentHash: "sha256:5e64ee2b54c85f4d2a2106c56d6c42700de0d7ef1ab5bc2b2c2258e4cdb7fd87"
 ---
 
 ## Direct answer
 
-A text LLM does not handle a question and produce a completed answer in one operation. An application first assembles a sequence of chat messages and any other allowed inputs. A tokenizer turns that sequence into token IDs. The model processes those IDs, predicts a distribution for the next token, and a decoding procedure chooses one token. The new token is appended and the loop repeats until the system stops.
+Imagine a procurement manager asking a web-enabled assistant: “Can a software provider process scanned quotations, and who reviews the result?” This is hypothetical. A common path is: decide whether to search, turn the question into searches, find candidate pages, select text, compose an answer, and display source links. Information can be lost at each step.
 
-That compact description hides the parts that matter in practice. Before the first generated token, the model performs a **prefill** pass over the prompt. During generation, it normally reuses a key-value, or KV, cache instead of recomputing attention over every earlier token at every step. A product may also run search, retrieval, code, or other tools around the model. Those are system-level choices, not operations that follow automatically from the Transformer architecture.
+The assistant does not read the entire web at the moment of the question, and not every question triggers search. OpenAI says ChatGPT Search may search automatically when current information would help, or manually when a user selects Search. This article describes a web-search response, not every text model. [OpenAI: Searching the web with ChatGPT](https://help.openai.com/en/articles/9237897-chatgpt-search)
 
-Training happened earlier. Pretraining and post-training shape the parameters used for this request, but a new user message does not normally retrain the model. A citation may give a reader a place to inspect a web claim, but it does not turn a generated answer into proof.
+## One question can become several searches
 
-## Before the model sees anything: the application builds an input
+The question has two requirements: scanned files and a human review boundary. A search for “quotation processing” may find the first while missing the second. A system can rewrite the request or expand it into subquestions.
 
-The visible chat box is not necessarily the model input. A deployed product may place the user’s words beside system instructions, conversation history, tool definitions, retrieved passages, attachments, and an output format. It may remove material that does not fit the available context or make a tool call before asking the model to write the final response. The exact message format, selection rules, and hidden instructions vary by product and are rarely public in full.
+OpenAI says ChatGPT Search can rewrite a question into targeted queries when working with search providers. Google says its AI features may use query fan-out across related subtopics. This establishes several retrieval attempts, not the exact queries, ranking scores, or source weights of one answer. [OpenAI: Searching the web with ChatGPT](https://help.openai.com/en/articles/9237897-chatgpt-search) [Google: AI features and your website](https://developers.google.com/search/docs/appearance/ai-features)
 
-An open implementation makes the first step concrete: a [Hugging Face chat template](https://huggingface.co/docs/transformers/main/chat_templating) formats messages with role boundaries into the token sequence the model continues. The template is model-specific; it is not a disclosure of any closed product's prompt assembly.
+## A page must first be eligible to become a candidate
 
-This distinction matters when someone says, “the model ignored my prompt.” The failure may be in application assembly, retrieval, tool execution, safety filtering, or output rendering. It is not enough to infer a fault in the language model itself from the final text.
+A search product need not fetch every page afresh. Google describes pages as discovered, crawled, and indexed before relevant results; its AI-search guidance requires supporting links to be indexed and eligible for a normal Search snippet. [How Google Search works](https://developers.google.com/search/docs/fundamentals/how-search-works) [Google: AI features and your website](https://developers.google.com/search/docs/appearance/ai-features)
 
-For a simple example, imagine the user writes:
+For ChatGPT Search, OpenAI asks publishers to allow OAI-SearchBot if they want their content included in summaries and snippets. Its separate search guidance says result placement is not guaranteed. Browser reachability, search eligibility, and answer selection are different states. [OpenAI: Publishers and Developers FAQ](https://help.openai.com/en/articles/12627856-publishers-and-developers-faq) [OpenAI: Searching the web with ChatGPT](https://help.openai.com/en/articles/9237897-chatgpt-search)
 
-> Summarize the attached contract and list the approval steps.
+The first gate creates only a possible candidate. The system must still choose material for this question; public documentation does not provide channel quotas.
 
-An application may convert that into message text plus extracted document text. If the document is too long, it may select only some sections. If it has a search feature, it might fetch an external policy document. The model then receives a finite sequence, not the whole file system, web, or prior conversation by default.
+## The model summarizes selected passages, not whole websites
 
-## Tokens are units for computation, not words or ideas
+Retrieval-augmented generation, or RAG, is a useful model for the next step. A retriever finds documents or passages, supplies them with the question, and a generative model writes from that material. The original paper combines a language model with a non-parametric document store. It illustrates an architecture, not commercial systems’ passage lengths, ranking, or orchestration. [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)
 
-Tokenization maps text into a sequence of integers from a fixed vocabulary. A token may correspond to a whole word, part of a word, punctuation, whitespace, or a frequent character sequence. This is why a character count, a word count, and a token count are different measurements. It is also why English and Chinese do not consume context in the same way under a given tokenizer.
+One company page might say “we process quotations,” while another says scans require text recognition and human review. If only the first is selected, the answer can overstate capability. Current service conditions still need checking at the official source.
 
-The model first maps each token ID to a learned vector. Position information is added or otherwise represented so the model can distinguish “approval after payment” from “payment after approval.” The Transformer then builds context-sensitive representations through attention. In the original architecture, attention compares queries, keys, and values to decide how information from permitted positions should be combined. [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
+A found page, a selected passage, a claim in the answer, and a displayed citation are separate observations. Do not collapse them into “the AI used the website.”
 
-For a decoder-only text model, causal masking prevents a position from attending to later tokens. When predicting the next token after “The contract requires”, the model can use the preceding prompt but not the unseen continuation. It therefore learns the language-model objective of predicting the next element of a sequence. The GPT-2 paper gives a clear early account of this autoregressive setup. [Language Models are Unsupervised Multitask Learners](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)
+## A visible citation still needs verification
 
-“Attention” is sometimes described as if the model consciously highlights the important sentence. That is too strong. Attention is a numerical mechanism for combining representations. An attention pattern alone does not establish a human-readable explanation for why the generated answer is correct.
+Links beside an answer are visible citations, not a complete log of candidate sources. A citation can fail to support the nearby sentence, while other material claims lack support. ALCE separates citation correctness from citation completeness for this reason. [Enabling Large Language Models to Generate Text with Citations](https://arxiv.org/abs/2305.14627)
 
-## Prefill builds the working state for this request
+Open the source and test the wording. Does “supports scanned quotations” include text recognition first? Does “automated” omit human review? Finding a source, writing a fact, and displaying a link are different events.
 
-The first expensive step is usually prefill. The model processes the assembled prompt through its layers and creates the internal activations needed to predict what comes next. The prompt positions can be processed together under a causal mask; generation of new tokens then proceeds sequentially. At each self-attention layer, earlier token representations contribute keys and values that later tokens can attend to.
+## The GEO role of the official site
 
-Those keys and values are retained as the KV cache. When the model generates the next token, it computes new queries, keys, and values for that one position and attends to the cached history. It does not need to rerun the full prompt through every layer each time. The cache can make token-by-token decoding much faster, though it consumes memory and must be managed carefully for long contexts or many concurrent requests. [PagedAttention and vLLM](https://arxiv.org/abs/2309.06180)
+For current company facts, the official site is the accountable reference for identity, scope, and conditions. Reporting can corroborate an event; repetition does not make a repost independent evidence. See [our source-weight article](/en/articles/geo-source-weight-official-website) for those roles.
 
-The useful intuition is that prefill is “read the current context” and decoding is “extend it one token at a time.” It is still an approximation to call the cache a memory of facts. The cache is a temporary collection of numerical states for this inference run. It is discarded or managed according to the serving system; it is not a permanent update to the model’s learned knowledge.
-
-## Logits turn the current state into possible next tokens
-
-After the final Transformer layer, a projection produces one score, or logit, for each token in the vocabulary. A softmax transformation turns those scores into a probability distribution. The system then needs a decoding rule.
-
-Greedy decoding picks the highest-probability token each time. Sampling can choose among several plausible tokens, often after temperature scaling or a restriction such as top-p sampling. These settings influence variation, repetition, and the wording of an answer. They do not insert external facts or verify claims. A fluent continuation is still only the token sequence selected under a probability distribution.
-
-[Hugging Face's generation configuration](https://huggingface.co/docs/transformers/main_classes/text_generation) documents these decoding controls as concrete implementation options; a commercial service need not expose or use the same defaults.
-
-The generated token becomes part of the input. The model computes the next distribution, a decoder chooses again, and the cycle continues. The process stops when the system emits a designated end token, reaches a length limit, satisfies a tool protocol, or meets another application-defined stop condition.
-
-This explains why two answers to the same prompt can differ without either application changing its training data. Sampling, system messages, retrieved context, model version, and serving configuration can all alter the sequence. It does not prove that every variation reflects a meaningful change in reasoning.
-
-## Next-token generation can still produce multi-step reasoning
-
-Predicting one token at a time does not limit an answer to a single step. A model can generate intermediate statements, use those statements as part of its growing context, and continue toward a conclusion. A multi-step written solution is still produced by the same next-token loop.
-
-Chain-of-thought prompting research showed that explicit intermediate steps improved results on the arithmetic, commonsense, and symbolic reasoning tasks tested in that work. The finding is about the tested models, prompts, and tasks. It does not establish that every product exposes, uses, or relies on the same internal reasoning process. [Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903)
-
-Nor is a displayed process a certificate of correctness. A model can write coherent intermediate text and still begin from a false premise, make an invalid step, or reach the wrong conclusion. Some products may withhold, summarize, or replace intermediate reasoning with a short explanation. Evaluate the final claim against evidence and task-specific checks, rather than treating any visible reasoning trace as a faithful record of an internal process.
-
-## Search, RAG, and tools sit around the generation loop
-
-Many useful systems give the model material that was not present during training. Retrieval-augmented generation, or RAG, is the best-known pattern. A retriever finds passages relevant to a request; the application supplies them as context; the model writes an answer conditioned on both the question and those passages. The original RAG work combined a parametric sequence model with a non-parametric document memory for knowledge-intensive tasks. [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)
-
-Embeddings are commonly used at the retrieval stage. A separate encoder can map a query and passages into vectors, then compare those vectors to identify candidates with related meaning. That mechanism is useful for finding material expressed in different words, but it is not a guarantee of relevance, truth, or final answer use. A retrieval system can also apply lexical search, filters, reranking, freshness rules, and permissions before any text reaches the LLM. [Sentence-BERT](https://arxiv.org/abs/1908.10084)
-
-Tools add another outer loop. The model may produce a structured request to search, calculate, call an API, or read a document. The application executes the approved tool, returns its result as new context, and asks the model to continue. ReAct demonstrated an early pattern in which language models interleave reasoning traces and actions, but commercial systems may use very different prompting, planning, validation, and tool-security designs. [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629)
-
-None of these patterns says that every chat product searches the web for every answer. It also does not say that a retrieved source caused every statement in the final response. The only defensible claim is about the behavior observed in the named product, mode, request, and time.
-
-## Training happened before this conversation
-
-The model’s parameters are the result of an earlier training process. During pretraining, an autoregressive language model is optimized across a large corpus to predict tokens from preceding context. This produces broad language and pattern knowledge in parameters, rather than a database of passages that can be opened one by one at answer time. The [GPT-3 paper](https://arxiv.org/abs/2005.14165) also shows tasks prompted through text interaction without updating the model's weights for each request.
-
-Post-training changes how that base model behaves in an application. Supervised demonstrations, preference data, and reinforcement learning from human feedback are among the methods used to improve instruction following and align outputs with desired behavior. The InstructGPT paper describes one influential pipeline, but it should not be treated as a disclosure of the current training recipe for every commercial model. [Training language models to follow instructions with human feedback](https://arxiv.org/abs/2203.02155)
-
-For the current request, the model uses its fixed parameters plus the current input and any context supplied by the application. A conversation may be saved by a product, and a service may offer memory features, but those are product-level persistence choices. They should not be confused with immediate parameter updates from the prompt.
-
-## Truth and citations have separate boundaries
-
-Text generation predicts a plausible continuation. It does not perform automatic fact verification. Retrieval can put a primary source in front of the model, and a tool can return a database result, but the answer still needs to represent those materials correctly. A confident sentence can overstate, merge, omit, or misread its evidence.
-
-Citations make review possible when a product exposes them. They do not prove the entire answer. The ALCE evaluation framework separates whether a citation supports a claim from whether all claims that need support have citations. Those are different tests, and both can fail. [Enabling Large Language Models to Generate Text with Citations](https://arxiv.org/abs/2305.14627)
-
-When ChatGPT Search uses the web, OpenAI’s guidance instructs readers to open citations and inspect the sources. That is a sound discipline for any cited answer: identify the exact proposition, open the supporting material, check its date and authority, and distinguish what it says from what the model inferred. [Searching the web with ChatGPT](https://help.openai.com/en/articles/9237897-chatgpt-search)
+GEO asks whether a buyer question has a public page, whether it can enter the candidate set, whether capability and conditions remain together, and whether observed answers represent it accurately. The [services page](/en/services) states our own delivery boundaries; it is not an external assessment.
 
 ## Scope and boundaries
 
-This is a technical model of common text-LLM and retrieval patterns. It does not disclose the internals of any particular commercial system. Product providers can change model versions, tokenizers, retrieval policies, message construction, tool permissions, caching, and citation behavior without public notice.
+This flow joins Google and OpenAI guidance with a RAG example. Products differ in search, indexes, passage selection, and citations. It cannot reveal internal weights or predict a citation rate.
 
-It also does not imply that a token has a stable semantic meaning, that an embedding is a fact score, or that a cited source was the only material used in an answer. For a consequential decision, inspect the source, use the appropriate human expertise, and retain the version and evidence that informed the decision.
+For a material decision, inspect the original record, date, and authority. Fluent prose is not proof that a condition remains current.
 
 ## Practical steps
 
-When evaluating a real assistant, make the technical path visible at the boundaries you can observe.
-
-1. Preserve the exact user prompt, model or product mode, date, and relevant conversation context.
-2. Record what the application was permitted to use: uploaded files, selected knowledge bases, search mode, and tools.
-3. Save the answer, every displayed citation, and the source text or document version that each citation resolves to.
-4. For an important claim, label it as direct from a source, an inference from sources, or unsupported. Do not collapse those labels into one “AI verified” field.
-5. Repeat only when the configuration is comparable. A changed system prompt or search mode is a different experiment.
-
-For an organization introducing an AI workflow, the operational questions are usually more valuable than a generic benchmark score: which documents enter the context, who can update them, what tool actions are allowed, and who reviews a high-impact output. Our [AI delivery services](/en/services) begin from those implementation boundaries rather than a promise that one model can replace judgment.
+Start with one real buyer question. Preserve its wording, time, product mode, answer, and cited URLs. Read each passage against its claim. Then inspect whether the company page gives capability and qualification without an old announcement or sales conversation. Retest under comparable conditions after a reviewed change.
 
 ## Verification checklist
 
-- Can you reconstruct the messages and documents that were available for this answer?
-- Are source-backed statements distinguishable from the model’s own synthesis?
-- Do the displayed citations actually support the sentence beside them?
-- Is the cited document current, attributable, and appropriate for the claim?
-- Is a tool result treated as an input that still needs review, rather than a guarantee of correctness?
-- Are training knowledge, retrieval context, and product memory being described as separate mechanisms?
-- Does a human owner approve consequential output before it is acted on or published?
+- Was web search enabled for the recorded answer?
+- Is the target page eligible to enter the relevant search candidate set?
+- Does the selected or cited material contain the capability and its condition together?
+- Does each displayed citation support the claim beside it?
+- Are current first-party facts and independent evidence recorded separately?
+- Has a person reviewed claims that affect a public or commercial decision?
 
 ## Next step
 
-The right next step is to map one real workflow from user request to action, including the documents, retrieval or tools, model output, and human approval point. The [Open GEO project](/en/projects/open-geo-console) applies a similar evidence-first approach to public website questions, while our [project archive](/en/projects) shows the kinds of scoped systems work we publish. For a specific workflow, [contact us](/en/contact) with the decision it supports and the sources it may use.
+[Open GEO Console](https://geo.itheheda.online/en) can turn this into a website diagnosis: it examines public pages and buyer questions, then organizes answer coverage, citation evidence, and page gaps into priorities. It does not disclose selection scores or guarantee citation. See the [Open GEO project](/en/projects/open-geo-console), [public projects](/en/projects), or [contact us](/en/contact) with a public URL and buyer question.
 
 ## Sources
 
-- [Vaswani et al., Attention Is All You Need](https://arxiv.org/abs/1706.03762)
-- [Radford et al., Language Models are Unsupervised Multitask Learners](https://cdn.openai.com/better-language-models/language_models_are_unsupervised_multitask_learners.pdf)
-- [Brown et al., Language Models are Few-Shot Learners](https://arxiv.org/abs/2005.14165)
-- [Wei et al., Chain-of-Thought Prompting Elicits Reasoning in Large Language Models](https://arxiv.org/abs/2201.11903)
+- [OpenAI: Searching the web with ChatGPT](https://help.openai.com/en/articles/9237897-chatgpt-search)
+- [OpenAI: Publishers and Developers FAQ](https://help.openai.com/en/articles/12627856-publishers-and-developers-faq)
+- [Google: AI features and your website](https://developers.google.com/search/docs/appearance/ai-features)
+- [Google: How Google Search works](https://developers.google.com/search/docs/fundamentals/how-search-works)
 - [Lewis et al., Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)
-- [Reimers and Gurevych, Sentence-BERT](https://arxiv.org/abs/1908.10084)
-- [Kwon et al., Efficient Memory Management for Large Language Model Serving with PagedAttention](https://arxiv.org/abs/2309.06180)
-- [Yao et al., ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629)
-- [Ouyang et al., Training language models to follow instructions with human feedback](https://arxiv.org/abs/2203.02155)
 - [Gao et al., Enabling Large Language Models to Generate Text with Citations](https://arxiv.org/abs/2305.14627)
-- [OpenAI, Searching the web with ChatGPT](https://help.openai.com/en/articles/9237897-chatgpt-search)
