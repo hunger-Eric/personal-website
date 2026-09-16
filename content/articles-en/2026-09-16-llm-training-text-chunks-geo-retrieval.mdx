@@ -1,0 +1,75 @@
+---
+title: "When Does an AI Model Read an Updated Web Page? Training, Retrieval, and GEO"
+slug: "llm-training-text-chunks-geo-retrieval"
+summary: "A text model's training process and an AI search answer's retrieval process encounter web content in different ways. This guide explains tokens, training sequences, retrieved passages, and what a website owner can actually check."
+date: "2026-09-16"
+updated: "2026-09-16"
+category: "AI search and GEO"
+tags: ["GEO", "language models", "training", "AI search"]
+featured: true
+draft: false
+author: "SolveReal Systems"
+contentHash: "sha256:67c350f0266783ca3c07fdb19d7e33304552cabfb955eb1da9249e266d3806a9"
+---
+
+## The short answer
+
+You update a service page today. If you ask an AI assistant about the company tomorrow, will it know what changed? There is no next-day guarantee. I went back to the language-model papers and the search platforms' own documentation because the word “read” hides two separate events. A model may have learned patterns from training data. An answer system may also retrieve a page while answering a question.
+
+The site owner can change the page. The next training run, and whether that run includes a particular page, are generally outside the site's control. GEO work is more concrete when it follows the public page through access, retrieval, and answer use.
+
+## What happens to text during training
+
+A text model receives a sequence of tokens. A tokenizer turns text into token identifiers. A token may be a word or part of one; a Chinese character does not reliably equal one token either. The boundaries depend on the tokenizer. [Hugging Face's tokenizer guide](https://huggingface.co/docs/transformers/main/tokenizer_summary) describes several common subword methods.
+
+One familiar training task asks the model to predict the next token from the tokens before it. The training process adjusts model parameters using prediction errors. The [GPT-3 paper](https://arxiv.org/abs/2005.14165) describes this autoregressive approach and notes that short documents were packed into training sequences for computational efficiency. That paper describes one model and one training setup. Its sequence length is no rule for every model in use today.
+
+Even if a page appeared in a training dataset, it would not become a live, individually editable record inside the model. Many examples contribute to the learned parameters. Changing the page later does not establish that those parameters changed. Outsiders usually cannot verify, page by page, what a commercial model's training set contained.
+
+## Three different things called chunks
+
+GEO advice often suggests an ideal paragraph length for “AI chunks.” It helps to name the units first.
+
+A token is an input unit for the model. A training sequence is a span of tokens processed under a particular training setup. A retrieved passage is material selected from an external source to help with a question. There is no universal word count that converts one into another.
+
+The original [retrieval-augmented generation paper](https://arxiv.org/abs/2005.11401) offers a useful example. It combines a pretrained model with retrieved external passages supplied during generation. A passage can inform that answer without the model being retrained on the page first.
+
+The paper describes a technical method. It does not reveal how every commercial search product splits, ranks, or cites web pages. When someone prescribes a precise paragraph size for AI citations, I want to know which platform and which test produced that number. Without that evidence, it is an editing preference.
+
+## How a page reaches an answer
+
+Google says AI Overviews and AI Mode may issue several related searches around a question and find supporting pages. For a page to be eligible as a supporting link, Google says it must be indexed and eligible to appear with a snippet in ordinary Search. Eligibility does not promise display. [Google's AI Search guidance](https://developers.google.com/search/docs/appearance/ai-features)
+
+An indexed page can still be represented by older content. After an edit, the relevant system has to fetch the page again and update its searchable material before the new text can inform an answer. Google says recrawling can take days to months. An answer that misses tomorrow's edit does not, by itself, tell us anything about the model's training. [Google's recrawling guidance](https://developers.google.com/search/docs/appearance/ai-features)
+
+A complete browser view is only one check. Google's documentation describes crawling, rendering, and indexing. Some pages need JavaScript execution before the main text appears, while other bots may not have the same rendering ability. [Google's JavaScript Search guide](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics) explains how to inspect the content Google receives.
+
+Once a page is available, its wording still matters. Our published [enterprise AI services page](/en/services) says that a system can handle an agreed workflow while important decisions and external sends retain human confirmation. If a standalone passage says only “AI handles business processes,” a reader could easily miss that boundary. Placing the capability beside its conditions helps people understand the service and makes a partial reading less misleading. That is an editorial judgment, not a claim about citation ranking.
+
+## Boundaries
+
+This is an account of text models and public web pages. The GPT-3 and RAG papers are documented technical examples; Google's guidance describes its own search features. None of them reveals another platform's passage splitting or citation rules, or promises indexing, citations, or inquiries.
+
+## Practical steps
+
+Pick one important [service page](/en/services). Inspect its initial response for the main explanation, audience, and important limits. Check its crawl and index status. Then ask a real buyer question in the AI product you care about.
+
+There is little reason to carve sentences into a rumored token count. State one capability with its conditions and supporting evidence nearby. Use headings to help readers find the right section and links that lead back to the source. Google says its AI Search features require no special AI file or dedicated schema markup. [Google's site-owner guidance](https://developers.google.com/search/docs/appearance/ai-features)
+
+## Check the result
+
+Save the question, time, answer, and cited URLs. Record access, answer use, and visible citation separately. If an answer overstates the service, check the service page's wording. For a claim about a particular project, look for public evidence on the [project pages](/en/projects). If no URL appears, record that observation without inferring what was in the model's training data.
+
+The page owner can keep public facts accurate, make them accessible, and inspect actual answers. The answer provider still chooses which sources to use and display.
+
+## Next step
+
+For a page-by-page review of access, indexing, content, and citations, see [Open GEO Console](https://geo.itheheda.online/en). For more on basic text processing, read our earlier guide to [how language models read web pages](/en/articles/how-language-models-read-web-pages-geo). If you have a particular page and buyer question, send them through our [contact page](/en/contact) so we can start with what that page actually says.
+
+## Sources
+
+- [GPT-3 paper](https://arxiv.org/abs/2005.14165)
+- [Hugging Face tokenizer documentation](https://huggingface.co/docs/transformers/main/tokenizer_summary)
+- [Original retrieval-augmented generation paper](https://arxiv.org/abs/2005.11401)
+- [Google AI Search guidance](https://developers.google.com/search/docs/appearance/ai-features)
+- [Google JavaScript Search guide](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics)
