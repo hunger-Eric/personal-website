@@ -1,0 +1,62 @@
+---
+title: "GEO 里的来源权重，官网、新闻和公众号到底怎么比较？"
+slug: "geo-source-weight-official-website"
+summary: "AI 搜索没有公开的渠道占比表。先看一个问题需要什么证据，再看官网、新闻和自媒体各能提供什么，才能判断企业官网该补哪些内容。"
+date: "2026-09-16"
+updated: "2026-09-16"
+category: "AI 搜索与 GEO"
+tags: ["GEO", "AI 搜索", "企业官网", "来源判断"]
+featured: true
+draft: false
+author: "实解智能"
+contentHash: "sha256:4d0ac3969c7852c5ac3b781d0837bc86088ef8fd103fe6b7d67cd734561e4865"
+---
+
+## 直接答案
+
+“做 GEO，是不是把新闻、公众号和官网的内容都铺出去，等 AI 抓来总结？”这个说法只讲到了资料进入回答的一部分。问题是，AI 要回答什么，以及它能从哪些页面取得可核对的材料。
+
+我查了 Google、Bing 和 OpenAI 面向站长的公开说明。它们谈到了页面能否被发现、内容相关性和引用表现，没有给出“官网占 50%，媒体占 30%”这样的通用比例。不同产品也没有共同的 GEO 评分表。把某次回答里的引用数量换算成渠道权重，同样缺少依据。Bing 对自己的 AI Performance 指标就特别提醒，引用次数不代表排名、权威性、展示位置，或页面在回答中起了多大作用。[Bing 的指标说明](https://blogs.bing.com/webmaster/February-2026/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview)
+
+## 同一个问题，来源的工作不一样
+
+假设买家问“这家公司现在提供什么服务，哪些环节需要人工确认？”公司自己的[服务页](/services)应当给出当前版本的正式说法。旧新闻能说明当时发布了什么，却未必能替公司确认今天的服务边界。如果买家问的是“这家公司有没有获得独立报道”，只引用公司新闻稿又不够。此时媒体原文和报道日期才是要核对的对象。
+
+公众号和自媒体文章也可能带来具体的使用经验、行业讨论或转载线索，但先要分清是谁写的、何时写的、有没有指向原始证据。一篇被十个账号重复转载的稿子，仍可能只有一个原始来源。各平台能否取得这些页面也有差异，不能假定某篇公众号文章一定会被每个 AI 产品抓到。
+
+这是一种按问题检查证据的编辑方法，不是搜索平台公布的排序公式。实际回答还受页面能否进入检索、内容是否贴题、信息是否足够新，以及产品自身的来源选择影响。Google 说，它的 AI 搜索功能可能围绕一个问题发起多个相关搜索；支持链接需要先具备索引和普通搜索摘要资格，但符合条件也不保证展示。[Google 的 AI 搜索说明](https://developers.google.com/search/docs/appearance/ai-features) OpenAI 说明公开网页有机会出现在 ChatGPT Search；它的[搜索说明](https://help.openai.com/en/articles/9237897-chatgpt-search)还写明，排序涉及多种因素，不保证展示位置。
+
+## 为什么官网仍然值得先做
+
+企业可以直接维护官网上的名称、服务范围、适用条件、联系方式和证据链接。第三方写了什么，企业无法逐篇修改；新闻会变旧，转述也可能漏掉限定条件。官网至少给了买家和其他作者一个回到原始说明的地方。
+
+但“官方”两个字不会自动赢得引用。如果官网只写“提供端到端智能解决方案”，买家问到具体交付和人工责任时，页面仍然没有答案。假如某篇行业文章把服务步骤写得更清楚，它在这个问题上可能更有用。Google 对网站内容的建议也强调原创信息、清楚的来源和能帮助读者解决问题的内容，并没有给官网一张免检通行证。[Google 的内容指南](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)
+
+还有一种容易被忽略的冲突。官网新页面说关键外部发送需要人工确认，一篇两年前的报道却写成“全自动发送”。判断当前服务时，应检查官网更新日期和实际条款；判断当年的对外说法，则要保留报道原文。来源之间意见不一致，本身就是需要核实的信号，不能简单数哪边的网页更多。
+
+## 适用边界
+
+上面的来源分工是内容核对框架。Google、Bing 和 OpenAI 的公开说明分别只覆盖各自产品，不能合成一个适用于所有 AI 回答的权重公式。官网内容做得好，也不能保证被收录、引用或推荐；公众号、封闭社区和需要登录的页面是否可被取得，要按具体平台和网址检查。
+
+## 实施步骤
+
+先挑一个真实买家问题，比如“服务商能接管哪些流程，哪些决定留给人？”列出目前能回答它的官网页面、媒体原文和社交文章，记下作者、日期、原始网址。接着读每个来源究竟证明了什么，标出重复转载和互相矛盾的地方。
+
+然后回到官网，检查买家能否在一页内找到当前能力、适用条件和证据入口。本站的[项目页](/projects)与服务页承担的内容也不同，项目页说明公开的项目事实，服务页说明服务方式。遇到需要第三方证明的评价，就保留第三方原文链接，不把自己的介绍写成外部认可。
+
+## 验收清单
+
+用相同问题在目标 AI 产品里测试，保存问题、时间、回答和引用网址。把“页面能打开”“页面被引用”“回答正确”分别记录。Bing 已提供被引用页面与相关查询等可观察指标，适合用于发现变化；单次回答和单个平台的引用数都不能反推出隐藏的渠道占比。[Bing AI Performance](https://www.bing.com/webmasters/help/ai-performance-9f8e7d6c)
+
+## 下一步
+
+如果官网还没有把买家问题、服务边界和证据链接讲清楚，可以用 [Open GEO Console](https://geo.itheheda.online/zh) 做一次官网 GEO 检测。它从公开页面和目标问题出发，检查访问、内容、问题覆盖与引用证据，把发现整理成问题清单和整改优先级。它不会给出 AI 平台内部的“官网权重”，关键结论和网站修改仍需人工复核。想先了解交付内容，可看[项目介绍](/projects/open-geo-console)；有具体网址和问题，可以通过[联系页](/contact)发来。
+
+## 参考来源
+
+- [Google AI 搜索与网站说明](https://developers.google.com/search/docs/appearance/ai-features)
+- [Google 创建有帮助的内容](https://developers.google.com/search/docs/fundamentals/creating-helpful-content)
+- [OpenAI 发布者与开发者常见问题](https://help.openai.com/en/articles/12627856)
+- [OpenAI ChatGPT 搜索说明](https://help.openai.com/en/articles/9237897-chatgpt-search)
+- [Bing AI Performance 说明](https://www.bing.com/webmasters/help/ai-performance-9f8e7d6c)
+- [Bing Webmaster Blog 的 AI Performance 指标说明](https://blogs.bing.com/webmaster/February-2026/Introducing-AI-Performance-in-Bing-Webmaster-Tools-Public-Preview)

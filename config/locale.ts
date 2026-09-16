@@ -3,6 +3,7 @@ export type Locale = "zh" | "en";
 export const LOCALE_STORAGE_KEY = "shijie-intelligence-locale";
 
 export const reviewedBilingualArticleSlugs = [
+  "geo-source-weight-official-website",
   "llm-training-text-chunks-geo-retrieval",
   "why-geo-after-seo",
   "enterprise-ai-automation-provider-selection-acceptance-checklist",
