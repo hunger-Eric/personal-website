@@ -20,6 +20,7 @@ describe("AI-readable route inventory", () => {
     ]);
     expect(groups.article.length).toBeGreaterThan(0);
     expect(groups.article.map((route) => route.path)).toEqual([
+      "/articles/how-to-measure-geo-ai-citations",
       "/articles/from-prompt-to-answer-how-text-llms-work",
       "/articles/geo-source-weight-official-website",
       "/articles/llm-training-text-chunks-geo-retrieval",
@@ -39,6 +40,7 @@ describe("AI-readable route inventory", () => {
       "/articles/invoice-ai-decision-cost-exception-human-review",
       "/articles/knowledge-base-ai-governance-preparation",
       "/articles/lead-process-ai-automation-four-dimensions-real-sample-validation",
+      "/en/articles/how-to-measure-geo-ai-citations",
       "/en/articles/from-prompt-to-answer-how-text-llms-work",
       "/en/articles/geo-source-weight-official-website",
       "/en/articles/llm-training-text-chunks-geo-retrieval",
