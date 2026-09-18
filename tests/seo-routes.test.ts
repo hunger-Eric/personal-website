@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import robots from "@/app/robots";
 import sitemap from "@/app/sitemap";
 import { publicContent } from "@/config/public-content";
+import { getReadableRoutes } from "@/lib/ai-readable/routes";
+import { getArticles } from "@/lib/mdx/mdx";
 import { buildRootMetadata } from "@/lib/root-metadata";
 
 const SITE_URL = "https://me.itheheda.online";
@@ -10,6 +12,15 @@ describe("SEO routes", () => {
   it("publishes sitemap entries under the canonical domain", async () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
+    const latestModified = async (locale: "zh" | "en") => {
+      const articles = await getArticles(locale);
+      return new Date(
+        Math.max(
+          new Date(publicContent.updatedAt).getTime(),
+          ...articles.map((article) => new Date(article.updated || article.date).getTime())
+        )
+      ).toISOString();
+    };
 
     expect(entries.length).toBeGreaterThan(0);
     expect(urls).toContain(`${SITE_URL}/projects`);
@@ -20,14 +31,21 @@ describe("SEO routes", () => {
     expect(urls).toContain(`${SITE_URL}/en/services`);
     expect(urls).toContain(`${SITE_URL}/en/projects/hermes-notebook`);
     expect(urls).not.toContain(`${SITE_URL}/en/articles/lead-process-ai-automation-four-dimensions-real-sample-validation`);
-    expect(urls).toContain(`${SITE_URL}/llms.txt`);
-    expect(urls).toContain(`${SITE_URL}/feed.xml`);
-    expect(urls).toContain(`${SITE_URL}/feed.json`);
-    expect(urls).toContain(`${SITE_URL}/en/feed.xml`);
-    expect(urls).toContain(`${SITE_URL}/en/feed.json`);
-    expect(urls).toContain(`${SITE_URL}/.well-known/brand-facts.json`);
-    expect(urls).toContain(`${SITE_URL}/ai/services.json`);
-    expect(urls).toContain(`${SITE_URL}/ai/projects.json`);
+    expect(urls).not.toContain(`${SITE_URL}/llms.txt`);
+    expect(urls).not.toContain(`${SITE_URL}/feed.xml`);
+    expect(urls).not.toContain(`${SITE_URL}/feed.json`);
+    expect(urls).not.toContain(`${SITE_URL}/en/feed.xml`);
+    expect(urls).not.toContain(`${SITE_URL}/en/feed.json`);
+    expect(urls).not.toContain(`${SITE_URL}/.well-known/brand-facts.json`);
+    expect(urls).not.toContain(`${SITE_URL}/ai/services.json`);
+    expect(urls).not.toContain(`${SITE_URL}/ai/projects.json`);
+    expect(urls).not.toContain(`${SITE_URL}/sitemap.xml`);
+    const machineUrls = (await getReadableRoutes())
+      .filter((route) => route.kind === "machine")
+      .map((route) => route.url);
+    for (const machineUrl of machineUrls) {
+      expect(urls).not.toContain(machineUrl);
+    }
     expect(urls.some((url) => url.startsWith(`${SITE_URL}/projects/`))).toBe(true);
     expect(urls).toContain(`${SITE_URL}/projects/hermes-notebook`);
     expect(urls).not.toContain(`${SITE_URL}/projects/enterprise-content-growth`);
@@ -48,6 +66,22 @@ describe("SEO routes", () => {
       "x-default": `${SITE_URL}/`,
     });
     expect(new Date(home?.lastModified || 0).toISOString()).toBe(
+      await latestModified("zh")
+    );
+    const englishHome = entries.find((entry) => entry.url === `${SITE_URL}/en`);
+    expect(new Date(englishHome?.lastModified || 0).toISOString()).toBe(
+      await latestModified("en")
+    );
+    const chineseArticles = entries.find((entry) => entry.url === `${SITE_URL}/articles`);
+    const englishArticles = entries.find((entry) => entry.url === `${SITE_URL}/en/articles`);
+    expect(new Date(chineseArticles?.lastModified || 0).toISOString()).toBe(
+      await latestModified("zh")
+    );
+    expect(new Date(englishArticles?.lastModified || 0).toISOString()).toBe(
+      await latestModified("en")
+    );
+    const services = entries.find((entry) => entry.url === `${SITE_URL}/services`);
+    expect(new Date(services?.lastModified || 0).toISOString()).toBe(
       new Date(publicContent.updatedAt).toISOString()
     );
   });

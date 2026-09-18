@@ -7,15 +7,24 @@ import { ArrowRight, Bot, CheckCircle2, FileSearch, Network, RefreshCw, ShieldCh
 import { useLocale } from "@/components/LocaleProvider";
 import { ProjectJourneys } from "@/components/home/ProjectJourneys";
 import { getLocalizedPublicContent } from "@/config/public-content";
+import { getSiteCopy } from "@/config/contentCopy";
 import { publicIdentity } from "@/config/public-identity";
 import { localizePublicPath } from "@/config/locale";
 
 const capabilityIcons = { intake: Network, decisions: Bot, handoffs: RefreshCw, recovery: ShieldCheck };
 
-export function EnterpriseHomepage() {
+type RecentArticle = {
+  title: string;
+  summary: string;
+  date: string;
+  publicPath: string;
+};
+
+export function EnterpriseHomepage({ recentArticles }: { recentArticles: RecentArticle[] }) {
   const { locale } = useLocale();
   const zh = locale === "zh";
   const content = getLocalizedPublicContent(locale);
+  const copy = getSiteCopy(locale);
   const path = (value: string) => localizePublicPath(value, locale);
 
   return (
@@ -114,6 +123,33 @@ export function EnterpriseHomepage() {
       </section>
 
       <ProjectJourneys />
+
+      {recentArticles.length > 0 ? (
+        <section className="mx-auto max-w-6xl border-t border-hairline px-4 py-16 lg:py-20" aria-labelledby="recent-articles-title">
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-hairline pb-5">
+            <div>
+              <p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">{copy.home.recentArticlesEyebrow}</p>
+              <h2 id="recent-articles-title" className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">
+                {copy.home.recentArticlesTitle}
+              </h2>
+            </div>
+            <Link href={path("/articles")} className="text-sm font-semibold text-accent hover:text-accent-hover">
+              {copy.home.allArticles} →
+            </Link>
+          </div>
+          <div className="grid gap-px border-x border-b border-hairline bg-hairline md:grid-cols-3">
+            {recentArticles.map((article) => (
+              <article key={article.publicPath} className="flex flex-col bg-surface-paper p-6 sm:p-8">
+                <time dateTime={article.date} className="font-mono text-xs text-muted-foreground">{article.date}</time>
+                <h3 className="mt-4 text-xl font-semibold leading-snug text-foreground">
+                  <Link href={article.publicPath} className="hover:text-accent">{article.title}</Link>
+                </h3>
+                <p className="mt-4 text-sm leading-7 text-muted-foreground">{article.summary}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section id="method" className="mx-auto max-w-6xl px-4 py-16 lg:py-20"><p className="font-mono text-xs uppercase tracking-[0.18em] text-accent">03 / Delivery method</p><h2 className="mt-2 text-3xl font-semibold tracking-[-0.035em] text-foreground">{zh ? "我们如何把 AI 做成可运行的系统" : "How AI becomes a working system"}</h2><div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">{content.service.method.map((step, index) => <article key={step.id} className="border-t border-hairline pt-5"><span className="font-mono text-xs text-accent">0{index + 1}</span><h3 className="mt-5 text-lg font-semibold text-foreground">{step.title}</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">{step.description}</p></article>)}</div></section>
 

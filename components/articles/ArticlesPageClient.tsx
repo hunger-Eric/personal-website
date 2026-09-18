@@ -4,6 +4,7 @@ import Image from "next/image";
 
 import { JsonLd } from "@/components/JsonLd";
 import { useLocale } from "@/components/LocaleProvider";
+import { getSiteCopy } from "@/config/contentCopy";
 import {
   ArticlesBrowser,
   type ArticleListItem,
@@ -20,6 +21,7 @@ export function ArticlesPageClient({
 }) {
   const { locale } = useLocale();
   const zh = locale === "zh";
+  const copy = getSiteCopy(locale);
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-surface-paper pb-20 pt-28 text-surface-paper-foreground sm:pt-32">
@@ -32,9 +34,7 @@ export function ArticlesPageClient({
           {zh ? "文章与系统实践" : "Articles and system practice"}
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-8 text-muted-foreground">
-          {zh
-            ? "记录企业 AI 系统、自动化、知识工作流与交付边界。"
-            : "Reviewed English articles will appear here after their full text has passed content review."}
+          {copy.articles.indexDescription}
         </p>
       </header>
       <section

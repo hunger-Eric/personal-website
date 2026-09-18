@@ -8,7 +8,12 @@ import { LocaleProvider } from "@/components/LocaleProvider";
 function renderHomepage() {
   return render(
     <LocaleProvider initialLocale="zh">
-      <EnterpriseHomepage />
+      <EnterpriseHomepage recentArticles={[{
+        title: "官网可见性检查",
+        summary: "从抓取到引用核对官网。",
+        date: "2026-09-18",
+        publicPath: "/articles/ai-search-visibility-audit-geo",
+      }]} />
     </LocaleProvider>
   );
 }
@@ -16,7 +21,12 @@ function renderHomepage() {
 function renderEnglishHomepage() {
   return render(
     <LocaleProvider initialLocale="en">
-      <EnterpriseHomepage />
+      <EnterpriseHomepage recentArticles={[{
+        title: "Website visibility audit",
+        summary: "Check how a website reaches search answers.",
+        date: "2026-09-18",
+        publicPath: "/en/articles/ai-search-visibility-audit-geo",
+      }]} />
     </LocaleProvider>
   );
 }
@@ -41,6 +51,10 @@ describe("EnterpriseHomepage", () => {
       screen.getByRole("heading", { name: "一眼看懂：原来哪里耗人，系统接走了什么。" })
     ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "公众号「独立系统」" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "官网可见性检查" })).toHaveAttribute(
+      "href",
+      "/articles/ai-search-visibility-audit-geo"
+    );
   });
 
   it("omits the Chinese WeChat channel section from the English homepage", () => {
@@ -54,6 +68,10 @@ describe("EnterpriseHomepage", () => {
     expect(
       screen.getByRole("heading", { name: "Have a repetitive, fragile workflow?" })
     ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Website visibility audit" })).toHaveAttribute(
+      "href",
+      "/en/articles/ai-search-visibility-audit-geo"
+    );
   });
 
   it("offers the live Open GEO product without promoting a homepage simulation", () => {
