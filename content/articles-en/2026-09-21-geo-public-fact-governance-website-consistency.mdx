@@ -1,0 +1,129 @@
+---
+title: "When Your Website Contradicts Itself, What Should GEO Fix First?"
+slug: "geo-public-fact-governance-website-consistency"
+summary: "When a homepage, service page, old article, and translated page state different conditions, govern the underlying public fact before producing more content or links."
+date: "2026-09-21"
+updated: "2026-09-21"
+category: "AI search and GEO"
+tags: ["GEO", "content governance", "public facts", "bilingual websites"]
+featured: true
+draft: false
+author: "SolveReal Systems"
+contentHash: "sha256:7187a6f5578656fe84496f6055e73cd6d8f2eb3c984a5528530eba9f4f25b8a5"
+---
+
+## Direct answer
+
+When a homepage, service page, old article, and English page give different conditions for the same capability, the first GEO task is to establish which claim is still true and who can approve it. More articles, Schema markup, and backlinks can make more pages discoverable. They cannot decide which business promise is valid.
+
+Create one governed record for every public fact that can change a buying decision. The record should name the approved claim, fact owner, public evidence page, scope, effective and review dates, dependent pages, and the status of every language version. Individual pages can explain the fact in different words while preserving the same conditions.
+
+This article covers the content-governance layer that comes before retrieval and measurement. [How AI search uses web pages](/en/articles/from-prompt-to-answer-how-text-llms-work) explains the retrieval path. [How to measure a GEO change](/en/articles/how-to-measure-geo-ai-citations) separates answer accuracy, citation support, visits, and inquiries. The question here is earlier and narrower. How does a company keep one reviewable set of public facts across its own site?
+
+## One service change can leave four public versions
+
+Consider a hypothetical company. This example does not describe a SolveReal Systems customer or project.
+
+The company originally accepted spreadsheets only. It later added scanned-document processing. The current service condition says that scans first need optical character recognition and that a person reviews material results. The service page has the current wording. The homepage still promises fully automatic processing for every file. The English page says scans are unsupported. An older article describes the capability as a future release.
+
+All four pages remain public. A buyer can reach any one of them through search, an old link, or an AI answer. A canonical tag can help a search system choose a representative URL among duplicate or very similar pages. [Google's canonical guidance](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls) gives it no role in deciding which commercial claim is true. These pages also contain meaningfully different content, so URL consolidation alone cannot repair the contradiction.
+
+A useful correction starts with one conditional claim. Scans are accepted, optical character recognition happens first, and a person reviews material results. The service owner approves the claim. The service page becomes its public evidence page. Other pages can quote or summarize that source according to their purpose. A later change can then be traced to every dependent page.
+
+## Build a public fact record
+
+The first version can live in a controlled spreadsheet or a structured file in the website repository. A complex knowledge platform is optional. Reviewable fields are essential.
+
+| Field | Review question | Minimum requirement |
+| --- | --- | --- |
+| Fact ID and approved claim | Which proposition is being maintained | One stable ID with every material condition |
+| Fact owner | Who can confirm that it remains valid | A named role or person with decision authority |
+| Public evidence page | Where an external reader can verify it | A current, accessible, approved page |
+| Scope | Which customer, region, version, or input qualifies | Conditions appear in public copy, not only internal notes |
+| Evidence status | Is this live, planned, experimental, or third-party evidence | Planned and tested capabilities stay distinct from live service |
+| Time status | When did it take effect and when is review due | At least an effective date and next review date |
+| Dependencies | Which pages and machine-readable surfaces reuse it | Include service pages, articles, FAQs, feeds, and downloads |
+| Language status | Do local versions preserve the same conditions | Natural local writing with an equivalent factual scope |
+
+[W3C PROV-O](https://www.w3.org/TR/prov-o/) describes provenance through entities, activities, and responsible agents. A company does not need to implement the full ontology for GEO. Its model still offers a useful discipline. A public claim is traceable information, an edit is a recorded activity, and an approver is responsible for confirming the change. This is a governance analogy, not a claim that a search or AI system rewards PROV-O adoption.
+
+Keep the public evidence page separate from the page that the marketing team most wants to rank. They may be the same URL, but they often serve different purposes. A campaign page can use concise language and link to the service page that carries the full conditions. It should not silently expand the approved promise to improve conversion.
+
+## Treat a fact change as a content release
+
+A service change should move through the website like a small release. The fact owner approves the new condition first. The content owner then locates every public dependency. The search should include body copy, titles, descriptions, FAQs, JSON-LD, downloadable files, site-search data, and each supported language.
+
+Visible copy and structured data need the same review. [Google's structured-data policies](https://developers.google.com/search/docs/appearance/structured-data/sd-policies) require markup to represent visible content and remain relevant and current. If the page now says that a person reviews the output while FAQ markup still says fully automatic, the machine-readable layer continues to publish the stale promise.
+
+Dates need an evidence boundary too. [Google's publication-date guidance](https://developers.google.com/search/docs/appearance/publication-dates) recommends consistent visible dates and structured `datePublished` or `dateModified` values. A footer adjustment or image swap should not make an old article look factually new. Google says it uses sitemap `<lastmod>` only when the value is [consistently and verifiably accurate](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap). Reserve it for substantial page changes.
+
+After a material update goes live, the team can notify search systems that support an update protocol. [The IndexNow FAQ](https://www.indexnow.org/faq) covers added, updated, and deleted URLs and advises against resubmitting unchanged pages. A submission is a discovery signal. It does not guarantee immediate crawling, indexing, display, or citation.
+
+Preserve a release record with the fact ID, approver, changed pages, language versions, release date, and remaining review items. When an old statement appears later, the team can distinguish an omitted page from a cache, a third-party copy, or an unfinished translation.
+
+## Fix conflicts by decision risk
+
+Copy differences do not all carry the same risk. A missing adjective in a heading usually matters less than the following conflicts.
+
+| Conflict | Possible consequence | Suggested priority |
+| --- | --- | --- |
+| Eligibility and service scope | A buyer wrongly assumes the service fits | High |
+| Price, region, and delivery time | Budget or schedule expectations are false | High |
+| Human review, safety, and privacy conditions | A required control disappears from the promise | High |
+| Product status and version requirements | Planned or retired behaviour looks current | High |
+| Brand and legal identity | Local pages point to different entities or products | High |
+| Stylistic variation | The wording differs while all conditions remain intact | Low |
+
+Use four factors when sequencing repairs. Ask whether the error changes a buying decision, expands the company's commitment, appears on a high-exposure page, or has remained public for a long time. A low-traffic page can still become a direct source for an answer or an old link repeatedly used by a sales partner, so traffic rank alone is an incomplete queue.
+
+## Bilingual pages need one shared fact
+
+Bilingual sites often treat translation as a one-time handoff. The primary service page changes while the translated page keeps the old scope. A shorter translation may also drop an important condition and turn a limited capability into an unconditional promise.
+
+Each language version should reference the same fact ID while preserving its own reviewed wording, approver, and publication date. [Google's localized-version guidance](https://developers.google.com/search/docs/specialty/international/localized-versions) recommends that each version identify itself and the other versions through reciprocal `hreflang` links. This helps search systems understand page relationships. It does not synchronize the business claims inside those pages. Fact owners and language reviewers still own that work.
+
+Real regional differences need separate scoped records. A service may have different prices, regulatory conditions, or delivery coverage by market. The acceptance target is traceable scope, not word-for-word translation.
+
+## Scope and boundaries
+
+This method fits public service capabilities, price rules, product status, identity details, and approved project facts. Customer-confidential information, account-only data, unapproved roadmaps, and unverifiable outcomes should stay outside the public fact set.
+
+Consistent facts do not guarantee that a platform will index or cite a page. OpenAI describes [OAI-SearchBot](https://developers.openai.com/api/docs/bots) as a control related to surfacing websites in ChatGPT search. Allowing it makes a page eligible for consideration. It does not promise placement or citation. Other platforms make their own crawling, indexing, and display decisions.
+
+The record also does not replace legal, compliance, or professional review. The appropriate owner must approve a high-risk claim. External systems can still use old caches, third-party pages, or other sources. A company can control whether its own public pages offer clear, current, and reviewable facts.
+
+## Practical steps
+
+1. Select ten to twenty public facts that materially affect buying or delivery decisions, starting with service scope, conditions, pricing rules, product status, and human responsibility.
+2. Assign an owner, approved claim, public evidence page, scope, effective date, and review date to each fact.
+3. Search the website and public assets for every Chinese page, English page, structured-data block, and downloadable file that reuses each fact.
+4. Repair pages that create a false commitment before resolving harmless wording variation.
+5. Release visible copy, structured data, page dates, and sitemap dates together, while recording any deferred dependency.
+6. Send discovery notifications for material changes, then inspect the public pages, language switches, and actual answers to target questions. Keep submission receipts separate from citation evidence.
+
+## Verification checklist
+
+- Every high-risk fact has an identifiable owner and public evidence page.
+- Visible copy states the service scope, limitations, and human responsibilities.
+- The homepage, service pages, FAQs, articles, and structured data do not publish conflicting current claims.
+- Local-language pages reference the same fact ID, with separately scoped records for genuine regional differences.
+- `dateModified` and sitemap dates correspond to substantial changes.
+- Old pages have been updated, redirected, removed, or clearly labelled as historical.
+- A release record identifies the approval, synchronized pages, and remaining review items.
+
+## Next step
+
+[Open GEO Console](https://geo.itheheda.online/en) examines public pages against buyer questions and organizes access, wording, question coverage, and citation-evidence gaps into page-level priorities. It cannot decide which business claim is true, approve a change, or publish it. Fact owners confirm the public claim, and website owners carry out the release.
+
+Review the current [service description](/en/services) and [Open GEO project](/en/projects/open-geo-console), or browse [public projects](/en/projects). To discuss high-risk contradictions, bilingual dependencies, and a reviewable acceptance method for your site, use the [contact page](/en/contact) with a public URL and the buyer questions that matter.
+
+## Sources
+
+- [Google Search Central on publication dates](https://developers.google.com/search/docs/appearance/publication-dates)
+- [Google Search Central on sitemaps](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap)
+- [Google Search Central structured-data policies](https://developers.google.com/search/docs/appearance/structured-data/sd-policies)
+- [Google Search Central localized-version guidance](https://developers.google.com/search/docs/specialty/international/localized-versions)
+- [Google Search Central canonical guidance](https://developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls)
+- [IndexNow FAQ](https://www.indexnow.org/faq)
+- [OpenAI crawler documentation](https://developers.openai.com/api/docs/bots)
+- [W3C PROV-O](https://www.w3.org/TR/prov-o/)
