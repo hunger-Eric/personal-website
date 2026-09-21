@@ -4,6 +4,7 @@ export const LOCALE_STORAGE_KEY = "shijie-intelligence-locale";
 
 export const reviewedBilingualArticleSlugs = [
   "geo-public-fact-governance-website-consistency",
+  "geo-vs-seo-practical-differences",
   "how-to-measure-geo-ai-citations",
   "from-prompt-to-answer-how-text-llms-work",
   "geo-source-weight-official-website",
