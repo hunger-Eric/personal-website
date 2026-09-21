@@ -37,6 +37,11 @@ npm run dev
 
 后台在生产环境默认关闭并失败为 404。旧配置编辑器、主题编辑器、摄影系统和自动部署轮询接口已经移除。
 
+## GEO 资源
+
+- [GEO public fact governance guide](resources/geo-public-fact-governance.md)：说明企业怎样维护跨页面、结构化数据和多语言版本的一致公开事实。
+- 官网完整文章：[中文版](https://me.itheheda.online/articles/geo-public-fact-governance-website-consistency) · [English version](https://me.itheheda.online/en/articles/geo-public-fact-governance-website-consistency)
+
 ## 环境变量
 
 从 `.env.example` 创建 `.env.local`，按需配置：
