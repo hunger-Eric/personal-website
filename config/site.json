@@ -17,6 +17,20 @@
       "copyValue": "support@itheheda.online"
     },
     {
+      "key": "whatsapp",
+      "label": "WhatsApp",
+      "href": "https://wa.me/8616601047692",
+      "description": "个人 WhatsApp，用于业务咨询与合作联系。",
+      "copyValue": "+86 166 0104 7692"
+    },
+    {
+      "key": "facebook",
+      "label": "Facebook",
+      "href": "https://www.facebook.com/profile.php?id=61593959894033",
+      "description": "个人 Facebook 主页，用于了解公开动态与联系。",
+      "copyValue": "Chao Feng"
+    },
+    {
       "key": "wechat-official",
       "label": "独立系统",
       "href": "copy:独立系统",

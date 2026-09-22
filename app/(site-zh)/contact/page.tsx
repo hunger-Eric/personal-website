@@ -1,6 +1,7 @@
 import { Suspense } from "react";
-import { ArrowRight, Mail } from "lucide-react";
+import { ArrowRight, Facebook, Mail, MessageCircle } from "lucide-react";
 
+import { ContactLinkRow } from "@/components/contact/ContactLinkRow";
 import { ContactQrCard } from "@/components/contact/ContactQrCard";
 import { WorkflowInquiryForm } from "@/components/contact/WorkflowInquiryForm";
 import { siteConfig } from "@/config/siteConfig";
@@ -14,6 +15,8 @@ export const metadata = buildPublicPageMetadata({
 
 const emailContact = siteConfig.socialsList.find((contact) => contact.key === "email");
 const publicEmail = emailContact?.copyValue || emailContact?.href.replace(/^mailto:/, "");
+const whatsappContact = siteConfig.socialsList.find((contact) => contact.key === "whatsapp");
+const facebookContact = siteConfig.socialsList.find((contact) => contact.key === "facebook");
 const wechatContact = siteConfig.socialsList.find((contact) => contact.key === "wechat");
 
 export default function ContactPage() {
@@ -49,6 +52,26 @@ export default function ContactPage() {
                     <ArrowRight className="h-4 w-4" aria-hidden />
                   </a>
                 </div>
+              ) : null}
+              {whatsappContact?.copyValue ? (
+                <ContactLinkRow
+                  href={whatsappContact.href}
+                  label={whatsappContact.label}
+                  value={whatsappContact.copyValue}
+                  actionLabel="发起对话"
+                  accessibleLabel={`通过 WhatsApp 联系：${whatsappContact.copyValue}（在新标签页中打开）`}
+                  icon={<MessageCircle className="h-5 w-5" />}
+                />
+              ) : null}
+              {facebookContact?.copyValue ? (
+                <ContactLinkRow
+                  href={facebookContact.href}
+                  label={facebookContact.label}
+                  value={facebookContact.copyValue}
+                  actionLabel="查看主页"
+                  accessibleLabel={`查看 Facebook 主页：${facebookContact.copyValue}（在新标签页中打开）`}
+                  icon={<Facebook className="h-5 w-5" />}
+                />
               ) : null}
               {wechatContact?.qrImage && wechatContact.qrAlt ? (
                 <ContactQrCard

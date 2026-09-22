@@ -1,6 +1,7 @@
 import { Suspense } from "react";
-import { ArrowRight, Mail } from "lucide-react";
+import { ArrowRight, Facebook, Mail, MessageCircle } from "lucide-react";
 
+import { ContactLinkRow } from "@/components/contact/ContactLinkRow";
 import { ContactQrCard } from "@/components/contact/ContactQrCard";
 import { WorkflowInquiryForm } from "@/components/contact/WorkflowInquiryForm";
 import { siteConfig } from "@/config/siteConfig";
@@ -16,6 +17,8 @@ export const metadata = buildPublicPageMetadata({
 
 const emailContact = siteConfig.socialsList.find((contact) => contact.key === "email");
 const publicEmail = emailContact?.copyValue || emailContact?.href.replace(/^mailto:/, "");
+const whatsappContact = siteConfig.socialsList.find((contact) => contact.key === "whatsapp");
+const facebookContact = siteConfig.socialsList.find((contact) => contact.key === "facebook");
 const wechatContact = siteConfig.socialsList.find((contact) => contact.key === "wechat");
 
 export default function EnglishContactPage() {
@@ -35,6 +38,26 @@ export default function EnglishContactPage() {
                   <span className="min-w-0"><span className="block text-xs font-medium text-muted-foreground">Email</span><a href={emailContact.href} className="mt-1 block truncate text-base font-medium text-foreground hover:text-accent">{publicEmail}</a></span>
                   <a href={emailContact.href} className="col-start-2 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:text-accent-hover sm:col-start-auto">Send email<ArrowRight className="h-4 w-4" aria-hidden /></a>
                 </div>
+              ) : null}
+              {whatsappContact?.copyValue ? (
+                <ContactLinkRow
+                  href={whatsappContact.href}
+                  label={whatsappContact.label}
+                  value={whatsappContact.copyValue}
+                  actionLabel="Open chat"
+                  accessibleLabel={`Contact via WhatsApp: ${whatsappContact.copyValue} (opens in a new tab)`}
+                  icon={<MessageCircle className="h-5 w-5" />}
+                />
+              ) : null}
+              {facebookContact?.copyValue ? (
+                <ContactLinkRow
+                  href={facebookContact.href}
+                  label={facebookContact.label}
+                  value={facebookContact.copyValue}
+                  actionLabel="View profile"
+                  accessibleLabel={`View Facebook profile: ${facebookContact.copyValue} (opens in a new tab)`}
+                  icon={<Facebook className="h-5 w-5" />}
+                />
               ) : null}
               {wechatContact?.qrImage && wechatContact.qrAlt ? (
                 <ContactQrCard label="WeChat" description={wechatContact.copyValue || "404"} actionLabel="View QR code" qrImage={wechatContact.qrImage} qrAlt={wechatContact.qrAlt} />
