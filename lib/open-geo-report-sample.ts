@@ -16,9 +16,13 @@ const REPORT_LANG = {
   zh: "zh-CN",
 } as const satisfies Record<OpenGeoReportSampleLocale, string>;
 
+const PUBLIC_REPORT_SHELL_STYLE =
+  '<style data-open-geo-public-shell="responsive">.paid-v4-reader .reader-nav{max-width:100%;min-width:0}</style>';
+
 function preparePublicReportHtml(html: string, locale: OpenGeoReportSampleLocale) {
   return html
     .replace(/<html(?:\s+lang="[^"]+")?>/u, `<html lang="${REPORT_LANG[locale]}">`)
+    .replace("</head>", `${PUBLIC_REPORT_SHELL_STYLE}</head>`)
     .replace(
       /<div class="no-print mx-auto max-w-\[1120px\] px-8 pt-6">[\s\S]*?<\/div>(?=<main\b)/u,
       ""
@@ -27,6 +31,7 @@ function preparePublicReportHtml(html: string, locale: OpenGeoReportSampleLocale
       /<link\b(?=[^>]*\bhref=["']\/api\/reports\/[^"']+\/evidence\/[^"']+["'])(?=[^>]*\bas=["']image["'])[^>]*>/giu,
       ""
     )
+    .replace(/<link\b(?=[^>]*\bhref=["']\/_next\/static\/)[^>]*>/giu, "")
     .replace(/<link\b[^>]*\bas=["']script["'][^>]*>/giu, "")
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/giu, "");
 }

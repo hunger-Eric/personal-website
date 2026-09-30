@@ -40,7 +40,10 @@ describe("PublicProjectDetail", () => {
       screen.getByRole("link", { name: /查看完整中文深度报告/ })
     ).toHaveAttribute("href", "/projects/open-geo-console/report");
     expect(container.querySelector('[data-report-preview-lang="zh"]')).toHaveTextContent(
-      "核心结论"
+      "网站分析"
+    );
+    expect(container.querySelector('[data-report-preview-lang="zh"]')).toHaveTextContent(
+      "2026-09-30"
     );
     expect(container.querySelector("iframe")).not.toBeInTheDocument();
     expect(container.querySelector('img[src*="preview.png"]')).not.toBeInTheDocument();
@@ -64,7 +67,10 @@ describe("PublicProjectDetail", () => {
       screen.getByRole("link", { name: /View the complete English deep report/i })
     ).toHaveAttribute("href", "/en/projects/open-geo-console/report");
     expect(container.querySelector('[data-report-preview-lang="en"]')).toHaveTextContent(
-      "Core conclusion"
+      "Website analysis"
+    );
+    expect(container.querySelector('[data-report-preview-lang="en"]')).toHaveTextContent(
+      "Sep 30, 2026"
     );
     expect(container.querySelector("iframe")).not.toBeInTheDocument();
     expect(container.querySelector('img[src*="preview.png"]')).not.toBeInTheDocument();
