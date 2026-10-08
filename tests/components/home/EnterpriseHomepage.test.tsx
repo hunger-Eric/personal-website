@@ -79,7 +79,7 @@ describe("EnterpriseHomepage", () => {
 
     expect(screen.getByRole("link", { name: "体验企业官网 GEO 诊断" })).toHaveAttribute(
       "href",
-      "/projects/open-geo-console"
+      "https://geo.itheheda.online/zh"
     );
     expect(
       screen.getByRole("link", { name: /查看企业 AI 自动化服务与交付方式/ })

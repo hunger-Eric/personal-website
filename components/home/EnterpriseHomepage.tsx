@@ -10,6 +10,7 @@ import { getLocalizedPublicContent } from "@/config/public-content";
 import { getSiteCopy } from "@/config/contentCopy";
 import { publicIdentity } from "@/config/public-identity";
 import { localizePublicPath } from "@/config/locale";
+import { getWebsiteProject } from "@/config/website-projects";
 
 const capabilityIcons = { intake: Network, decisions: Bot, handoffs: RefreshCw, recovery: ShieldCheck };
 
@@ -25,6 +26,7 @@ export function EnterpriseHomepage({ recentArticles }: { recentArticles: RecentA
   const zh = locale === "zh";
   const content = getLocalizedPublicContent(locale);
   const copy = getSiteCopy(locale);
+  const geoProduct = getWebsiteProject("open-geo-console", locale);
   const path = (value: string) => localizePublicPath(value, locale);
 
   return (
@@ -36,7 +38,7 @@ export function EnterpriseHomepage({ recentArticles }: { recentArticles: RecentA
           <p className="mt-6 max-w-xl text-base leading-8 text-muted-foreground">{content.identity.positioning}</p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link href={path("/contact")} className="inline-flex min-h-11 items-center justify-center gap-2 bg-accent px-5 py-3 text-sm font-semibold text-accent-foreground hover:bg-accent-hover">{zh ? "提交你的业务问题" : "Submit your business problem"}<ArrowRight className="h-4 w-4" aria-hidden /></Link>
-            <Link href={path("/projects/open-geo-console")} className="inline-flex min-h-11 items-center justify-center border border-foreground px-5 py-3 text-sm font-semibold text-foreground hover:border-accent hover:text-accent">{zh ? "体验企业官网 GEO 诊断" : "Try Open GEO first"}</Link>
+            <a href={geoProduct?.liveUrl} className="inline-flex min-h-11 items-center justify-center border border-foreground px-5 py-3 text-sm font-semibold text-foreground hover:border-accent hover:text-accent">{zh ? "体验企业官网 GEO 诊断" : "Try Open GEO first"}</a>
           </div>
         </div>
         <div className="border border-hairline bg-surface-paper-elevated p-5 sm:p-7" aria-label={zh ? "企业 AI 系统交付结构" : "Enterprise AI delivery structure"}>
