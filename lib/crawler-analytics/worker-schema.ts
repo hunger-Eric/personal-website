@@ -15,6 +15,54 @@ const categorizedCounts = z.object({
   otherAutomation: count,
 }).strict();
 
+const scanSubmissionStatus = z.object({ status: z.number().int().min(0).max(599), requests: count }).strict();
+const scanSubmissionSummary = z.object({
+  requests: count,
+  accepted: count,
+  failed: count,
+  other: count,
+  transportErrors: count,
+}).strict();
+const scanSubmissionTrend = z.object({ bucket: z.string().datetime(), requests: count, accepted: count, failed: count, other: count }).strict();
+const scanSubmissionErrorCode = z.enum([
+  "emptyUrl", "invalidUrl", "unsupportedUrl", "scanFailed", "forceFreshUnavailable", "humanVerificationRequired",
+  "freePreviewLimitReached", "stagingFreePreviewLimitReached", "deploymentConfigurationInvalid", "transport_error", "unexpected_status", "unknown_error",
+]);
+const scanSubmissionError = z.object({
+  status: z.number().int().min(0).max(599),
+  code: scanSubmissionErrorCode,
+  requests: count,
+}).strict();
+const scanSubmissionDomainSummary = z.object({ requests: count, accepted: count, failed: count, other: count }).strict();
+const scanSubmissionDomain = z.union([
+  z.literal(""),
+  z.string().regex(/^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?![0-9]+$)[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/),
+]);
+const scanSubmissionDomainsSchema = z.union([
+  z.object({ available: z.literal(false) }).strict(),
+  z.object({
+    available: z.literal(true),
+    trackingStartedAt: z.string().datetime().nullable(),
+    requestedWindowComplete: z.boolean(),
+    summary: scanSubmissionDomainSummary,
+    rows: z.array(z.object({ domain: scanSubmissionDomain, requests: count, accepted: count, failed: count, other: count }).strict()).max(100),
+    omittedRequests: count,
+  }).strict(),
+]);
+const scanSubmissionsSchema = z.union([
+  z.object({ available: z.literal(false) }).strict(),
+  z.object({
+    available: z.literal(true),
+    trackingStartedAt: z.string().datetime().nullable(),
+    requestedWindowComplete: z.boolean(),
+    summary: scanSubmissionSummary,
+    trend: z.array(scanSubmissionTrend).max(2160),
+    statuses: z.array(scanSubmissionStatus).max(600),
+    errors: z.array(scanSubmissionError).max(600),
+    domains: scanSubmissionDomainsSchema.optional(),
+  }).strict(),
+]);
+
 const sumCategories = (value: z.infer<typeof categorizedCounts>) =>
   value.identifiedAiCrawler + value.openGeoSelfTest + value.otherAutomation;
 
@@ -61,6 +109,7 @@ export const crawlerAnalyticsWorkerSchema = z.object({
     countries: z.array(z.object({ countryCode: z.string().regex(/^(?:[A-Z]{2}|XX)$/), pageViews: count }).strict()).max(100).optional(),
     regions: z.array(z.object({ countryCode: z.string().regex(/^(?:[A-Z]{2}|XX)$/), regionCode: z.string().min(1).max(16), regionName: z.string().min(1).max(80), pageViews: count }).strict()).max(100).optional(),
   }).strict().optional(),
+  scanSubmissions: scanSubmissionsSchema.optional(),
   identityPreview: z.object({
     mode: z.literal("shadow"),
     shadowStartedAt: z.string().datetime(),
@@ -94,6 +143,58 @@ export const crawlerAnalyticsWorkerSchema = z.object({
     const ruleIds = new Set(value.identityPreview.rules.map((rule) => rule.sourceId));
     if (ruleIds.size !== ruleSourceIdSchema.options.length || ruleSourceIdSchema.options.some((sourceId) => !ruleIds.has(sourceId))) {
       context.addIssue({ code: z.ZodIssueCode.custom, path: ["identityPreview", "rules"], message: "identity preview rules must contain every rule source exactly once" });
+    }
+  }
+  const submissions = value.scanSubmissions;
+  if (submissions?.available) {
+    const validateSummary = (summary: Pick<z.infer<typeof scanSubmissionSummary>, "requests" | "accepted" | "failed" | "other">, path: (string | number)[]) => {
+      if (summary.requests !== summary.accepted + summary.failed + summary.other) {
+        context.addIssue({ code: z.ZodIssueCode.custom, path, message: "scan submission requests must equal accepted, failed, and other" });
+      }
+    };
+    validateSummary(submissions.summary, ["scanSubmissions", "summary"]);
+    if (submissions.summary.transportErrors > submissions.summary.failed) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["scanSubmissions", "summary", "transportErrors"], message: "transport errors must be a subset of failed requests" });
+    }
+    submissions.trend.forEach((row, index) => validateSummary(row, ["scanSubmissions", "trend", index]));
+    const statusRequests = submissions.statuses.reduce((total, row) => total + row.requests, 0);
+    if (statusRequests !== submissions.summary.requests) {
+      context.addIssue({ code: z.ZodIssueCode.custom, path: ["scanSubmissions", "statuses"], message: "scan submission statuses must equal request total" });
+    }
+    const statusSummary = submissions.statuses.reduce((totals, row) => ({
+      accepted: totals.accepted + (row.status === 202 ? row.requests : 0),
+      failed: totals.failed + (row.status === 0 || row.status >= 400 ? row.requests : 0),
+      other: totals.other + (row.status !== 202 && row.status !== 0 && row.status < 400 ? row.requests : 0),
+      transportErrors: totals.transportErrors + (row.status === 0 ? row.requests : 0),
+    }), { accepted: 0, failed: 0, other: 0, transportErrors: 0 });
+    (["accepted", "failed", "other", "transportErrors"] as const).forEach((key) => {
+      if (statusSummary[key] !== submissions.summary[key]) {
+        context.addIssue({ code: z.ZodIssueCode.custom, path: ["scanSubmissions", "summary", key], message: "scan submission summary must match status classification" });
+      }
+    });
+    const statusRequestsByStatus = new Map<number, number>();
+    submissions.statuses.forEach((status) => statusRequestsByStatus.set(status.status, (statusRequestsByStatus.get(status.status) ?? 0) + status.requests));
+    const errorsByStatus = new Map<number, number>();
+    submissions.errors.forEach((error, index) => {
+      errorsByStatus.set(error.status, (errorsByStatus.get(error.status) ?? 0) + error.requests);
+      if (error.status === 202) context.addIssue({ code: z.ZodIssueCode.custom, path: ["scanSubmissions", "errors", index, "status"], message: "accepted submissions cannot have an error reason" });
+      if (error.status === 0 && error.code !== "transport_error") context.addIssue({ code: z.ZodIssueCode.custom, path: ["scanSubmissions", "errors", index, "code"], message: "transport failures must use transport_error" });
+    });
+    new Set([...statusRequestsByStatus.keys(), ...errorsByStatus.keys()]).forEach((status) => {
+      if (status !== 202 && errorsByStatus.get(status) !== statusRequestsByStatus.get(status)) {
+        context.addIssue({ code: z.ZodIssueCode.custom, path: ["scanSubmissions", "errors"], message: "every non-accepted status must have matching error reason counts" });
+      }
+    });
+    const domains = submissions.domains;
+    if (domains?.available) {
+      validateSummary(domains.summary, ["scanSubmissions", "domains", "summary"]);
+      const rowRequests = domains.rows.reduce((total, row, index) => {
+        validateSummary(row, ["scanSubmissions", "domains", "rows", index]);
+        return total + row.requests;
+      }, 0);
+      if (rowRequests + domains.omittedRequests !== domains.summary.requests) {
+        context.addIssue({ code: z.ZodIssueCode.custom, path: ["scanSubmissions", "domains"], message: "scan submission domain rows and omitted requests must equal the domain request total" });
+      }
     }
   }
 });

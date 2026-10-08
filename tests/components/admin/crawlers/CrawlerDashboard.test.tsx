@@ -87,6 +87,13 @@ describe("CrawlerDashboard", () => {
     expect(screen.getByRole("link", { name: "Open GEO Console" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: "个人网站" })).toHaveAttribute("href", "/admin/crawlers/machines?site=personal&range=7d");
   });
+  it("shows free-report submissions only on the Open GEO human page, even without human traffic", () => {
+    const data = { ...fixture, scanSubmissions: { available: false } } as CrawlerAnalyticsResponse;
+    render(<CrawlerDashboard view="human" site="open_geo" range="24h" data={data} />);
+    expect(screen.getByRole("heading", { name: "免费报告提交" })).toBeInTheDocument();
+    expect(screen.getByText(/尚未启用/)).toBeInTheDocument();
+    expect(screen.getByText("人类访问统计尚未启用")).toBeInTheDocument();
+  });
   it("restores all ranges and renders Worker bot data without User-Agents", () => {
     const { container } = render(<CrawlerDashboard site="personal" range="24h" data={fixture} />);
     ["24h", "7d", "30d"].forEach((range) => expect(screen.getByRole("link", { name: range })).toHaveAttribute("href", `/admin/crawlers/machines?site=personal&range=${range}`));

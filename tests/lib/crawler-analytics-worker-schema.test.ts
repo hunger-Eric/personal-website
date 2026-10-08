@@ -28,6 +28,44 @@ const valid = () => ({
 });
 
 describe("crawler observer schema", () => {
+  it("accepts an additive Open GEO free-report submission envelope", () => {
+    const openGeo = valid();
+    const envelope = {
+      ...openGeo,
+      siteId: "open_geo",
+      meta: { ...openGeo.meta, classifier: { aiCrawlerRules: "@open-geo-console/crawler-rules", otherBots: "isbot@5.2.1" } },
+      scanSubmissions: {
+        available: true, trackingStartedAt: "2026-08-05T00:00:00.000Z", requestedWindowComplete: false,
+        summary: { requests: 4, accepted: 1, failed: 2, other: 1, transportErrors: 1 },
+        trend: [{ bucket: "2026-08-05T23:00:00.000Z", requests: 4, accepted: 1, failed: 2, other: 1 }],
+        statuses: [{ status: 202, requests: 1 }, { status: 400, requests: 1 }, { status: 0, requests: 1 }, { status: 302, requests: 1 }],
+        errors: [{ status: 400, code: "invalidUrl", requests: 1 }, { status: 0, code: "transport_error", requests: 1 }, { status: 302, code: "unexpected_status", requests: 1 }],
+        domains: { available: true, trackingStartedAt: "2026-08-05T00:00:00.000Z", requestedWindowComplete: false, summary: { requests: 4, accepted: 1, failed: 2, other: 1 }, rows: [{ domain: "xn--fiqs8s.example", requests: 3, accepted: 1, failed: 2, other: 0 }, { domain: "", requests: 1, accepted: 0, failed: 0, other: 1 }], omittedRequests: 0 },
+      },
+    };
+    expect(openGeoCrawlerAnalyticsWorkerSchema.safeParse(envelope).success).toBe(true);
+  });
+  it("rejects unsafe domains and inconsistent domain aggregates", () => {
+    const base = { available: true as const, trackingStartedAt: "2026-08-05T00:00:00.000Z", requestedWindowComplete: true, summary: { requests: 1, accepted: 1, failed: 0, other: 0 }, rows: [{ domain: "example.com", requests: 1, accepted: 1, failed: 0, other: 0 }], omittedRequests: 0 };
+    const submission = { available: true as const, trackingStartedAt: "2026-08-05T00:00:00.000Z", requestedWindowComplete: true, summary: { requests: 1, accepted: 1, failed: 0, other: 0, transportErrors: 0 }, trend: [{ bucket: "2026-08-05T00:00:00.000Z", requests: 1, accepted: 1, failed: 0, other: 0 }], statuses: [{ status: 202, requests: 1 }], errors: [], domains: base };
+    ["localhost", "127.0.0.1", "example.123"].forEach((domain) => expect(crawlerAnalyticsWorkerSchema.safeParse({ ...valid(), scanSubmissions: { ...submission, domains: { ...base, rows: [{ ...base.rows[0], domain }] } } }).success).toBe(false));
+    expect(crawlerAnalyticsWorkerSchema.safeParse({ ...valid(), scanSubmissions: { ...submission, domains: { ...base, rows: [{ ...base.rows[0], domain: "例子.测试" }] } } }).success).toBe(false);
+    expect(crawlerAnalyticsWorkerSchema.safeParse({ ...valid(), scanSubmissions: { ...submission, domains: { ...base, rows: [{ ...base.rows[0], domain: "https://example.com/path" }] } } }).success).toBe(false);
+    expect(crawlerAnalyticsWorkerSchema.safeParse({ ...valid(), scanSubmissions: { ...submission, domains: { ...base, rows: [{ ...base.rows[0], rawUrl: "https://example.com" }] } } }).success).toBe(false);
+    expect(crawlerAnalyticsWorkerSchema.safeParse({ ...valid(), scanSubmissions: { ...submission, domains: { ...base, rows: [{ ...base.rows[0], requests: 2 }] } } }).success).toBe(false);
+  });
+  it("keeps old responses valid and rejects unrecognized submission reasons", () => {
+    expect(crawlerAnalyticsWorkerSchema.safeParse(valid()).success).toBe(true);
+    const invalid = { ...valid(), scanSubmissions: { available: true, trackingStartedAt: null, requestedWindowComplete: true, summary: { requests: 1, accepted: 0, failed: 1, other: 0, transportErrors: 0 }, trend: [], statuses: [{ status: 400, requests: 1 }], errors: [{ status: 400, code: "captcha_invalid", requests: 1 }] } };
+    expect(crawlerAnalyticsWorkerSchema.safeParse(invalid).success).toBe(false);
+  });
+  it("rejects inflated or invalidly classified submission error counts", () => {
+    const submission = { available: true as const, trackingStartedAt: "2026-08-05T00:00:00.000Z", requestedWindowComplete: true, summary: { requests: 1, accepted: 0, failed: 1, other: 0, transportErrors: 0 }, trend: [], statuses: [{ status: 400, requests: 1 }], errors: [{ status: 400, code: "invalidUrl", requests: 2 }] };
+    expect(crawlerAnalyticsWorkerSchema.safeParse({ ...valid(), scanSubmissions: submission }).success).toBe(false);
+    expect(crawlerAnalyticsWorkerSchema.safeParse({ ...valid(), scanSubmissions: { ...submission, statuses: [{ status: 0, requests: 1 }], errors: [{ status: 0, code: "invalidUrl", requests: 1 }], summary: { ...submission.summary, transportErrors: 1 } } }).success).toBe(false);
+    expect(crawlerAnalyticsWorkerSchema.safeParse({ ...valid(), scanSubmissions: { ...submission, statuses: [{ status: 202, requests: 1 }], summary: { requests: 1, accepted: 1, failed: 0, other: 0, transportErrors: 0 }, errors: [{ status: 202, code: "unknown_error", requests: 1 }] } }).success).toBe(false);
+    expect(crawlerAnalyticsWorkerSchema.safeParse({ ...valid(), scanSubmissions: { ...submission, statuses: [{ status: 202, requests: 1 }], summary: { requests: 1, accepted: 1, failed: 0, other: 0, transportErrors: 0 }, errors: [{ status: 400, code: "invalidUrl", requests: 1 }] } }).success).toBe(false);
+  });
   it("keeps Personal and Open GEO observer envelopes site-specific", () => {
     const personal = valid();
     const openGeo = {

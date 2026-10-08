@@ -57,6 +57,17 @@ describe("crawler observer analytics service", () => {
     expect(result.meta.classifier).toEqual({ aiCrawlerBots: "0.6.3", otherBots: "isbot@5.2.1" });
   });
 
+  it("preserves an available Open GEO submission aggregate", async () => {
+    const openGeoResponse = {
+      ...response, siteId: "open_geo",
+      meta: { ...response.meta, classifier: { aiCrawlerRules: "@open-geo-console/crawler-rules", otherBots: "isbot@5.2.1" } },
+      scanSubmissions: { available: true, trackingStartedAt: "2026-08-06T00:00:00.000Z", requestedWindowComplete: true, summary: { requests: 1, accepted: 1, failed: 0, other: 0, transportErrors: 0 }, trend: [{ bucket: "2026-08-06T00:00:00.000Z", requests: 1, accepted: 1, failed: 0, other: 0 }], statuses: [{ status: 202, requests: 1 }], errors: [] },
+    };
+    const result = await getCrawlerAnalytics("open_geo", "7d", { now, env: { openGeoReadSecret: "open-geo-secret" }, fetch: vi.fn().mockResolvedValue(new Response(JSON.stringify(openGeoResponse), { status: 200 })) });
+    expect(result.scanSubmissions?.available).toBe(true);
+    expect(result.scanSubmissions).toMatchObject({ trend: [{ requests: 1, accepted: 1, failed: 0, other: 0 }] });
+  });
+
   it("requires the observer read secret", async () => {
     await expect(getCrawlerAnalytics("personal", "24h", { now, env: { readSecret: "" } })).rejects.toMatchObject({ code: "configuration_missing" });
   });

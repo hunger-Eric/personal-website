@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { crawlerDashboardCopy as copy } from "@/config/copy/crawler-dashboard";
 import type { CrawlerAnalyticsErrorCode, CrawlerAnalyticsResponse, CrawlerIdentityPreview, CrawlerRange, CrawlerSite } from "@/lib/crawler-analytics/types";
 import { CrawlerTrendChart } from "./CrawlerTrendChart";
+import { FreeReportSubmissions } from "./FreeReportSubmissions";
 
 type DashboardView = "human" | "machines";
 type Props = { view?: DashboardView; site?: CrawlerSite; range: CrawlerRange; data?: CrawlerAnalyticsResponse; errorCode?: CrawlerAnalyticsErrorCode };
@@ -95,13 +96,16 @@ export function CrawlerDashboard({ view = "machines", site = "personal", range, 
   return <main className="min-h-screen bg-background px-4 py-8 text-foreground sm:px-6 sm:py-12"><div className="mx-auto max-w-6xl">
     <Link href="/" className="text-sm font-semibold text-muted-foreground hover:text-foreground">← {copy.backToSite}</Link>
     <header className="mt-6 border-y border-hairline py-7"><p className="font-mono text-xs uppercase tracking-[0.16em] text-accent">{copy.source}</p><nav aria-label="网站" className="mt-4 grid grid-cols-2 gap-px border border-hairline bg-hairline sm:max-w-md">{(["personal", "open_geo"] as const).map((value) => <Link key={value} href={`${basePath}?site=${value}&range=${range}`} aria-current={site === value ? "page" : undefined} className={`px-4 py-3 text-center text-sm font-semibold ${site === value ? "bg-accent text-accent-foreground" : "bg-surface-paper hover:bg-surface-paper-elevated"}`}>{copy.sites[value]}</Link>)}</nav><h1 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">{page.title}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">{page.description}</p><nav aria-label="访问类型" className="mt-5 grid grid-cols-2 gap-px border border-hairline bg-hairline sm:max-w-sm">{(["human", "machines"] as const).map((value) => <Link key={value} href={`/admin/crawlers/${value}?site=${site}&range=${range}`} aria-current={view === value ? "page" : undefined} className={`px-4 py-3 text-center text-sm font-semibold ${view === value ? "bg-accent text-accent-foreground" : "bg-surface-paper hover:bg-surface-paper-elevated"}`}>{copy.views[value].label}</Link>)}</nav><nav aria-label="时间范围" className="mt-4 flex flex-wrap gap-2">{visibleRanges.map((value) => <Link key={value} href={`${basePath}?site=${site}&range=${value}`} aria-current={range === value ? "page" : undefined} className={`border px-3 py-2 text-sm font-semibold ${range === value ? "border-accent bg-accent text-accent-foreground" : "border-hairline bg-surface-paper hover:border-foreground"}`}>{copy.ranges[value]}</Link>)}</nav></header>
-    {errorCode ? <section role="alert" className="mt-8 border border-hairline bg-surface-paper-elevated p-6"><h2 className="text-lg font-semibold">数据暂不可用</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.errors[errorCode]}</p></section> : data ? view === "human" ? <HumanDashboardData data={data} /> : <MachineDashboardData data={data} /> : null}
+    {errorCode ? <section role="alert" className="mt-8 border border-hairline bg-surface-paper-elevated p-6"><h2 className="text-lg font-semibold">数据暂不可用</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.errors[errorCode]}</p></section> : data ? view === "human" ? <HumanDashboardData data={data} site={site} /> : <MachineDashboardData data={data} /> : null}
   </div></main>;
 }
 
-function HumanDashboardData({ data }: { data: CrawlerAnalyticsResponse }) {
-  if (!data.human) return <section role="status" className="mt-8 border border-hairline bg-surface-paper-elevated p-6"><h2 className="text-lg font-semibold">人类访问统计尚未启用</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.human.noClientData}</p></section>;
-  return <div className="mt-8 space-y-10"><HumanTraffic human={data.human} /><footer className="border-t border-hairline pt-5 text-sm leading-6 text-muted-foreground"><DataProvenance data={data} view="human" /></footer></div>;
+function HumanDashboardData({ data, site }: { data: CrawlerAnalyticsResponse; site: CrawlerSite }) {
+  return <div className="mt-8 space-y-10">
+    {site === "open_geo" ? <FreeReportSubmissions submissions={data.scanSubmissions} /> : null}
+    {data.human ? <HumanTraffic human={data.human} /> : <section role="status" className="border border-hairline bg-surface-paper-elevated p-6"><h2 className="text-lg font-semibold">人类访问统计尚未启用</h2><p className="mt-2 text-sm leading-6 text-muted-foreground">{copy.human.noClientData}</p></section>}
+    <footer className="border-t border-hairline pt-5 text-sm leading-6 text-muted-foreground"><DataProvenance data={data} view="human" /></footer>
+  </div>;
 }
 
 function MachineDashboardData({ data }: { data: CrawlerAnalyticsResponse }) {
